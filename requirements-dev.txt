@@ -1,0 +1,12 @@
+# Development-only dependencies — NOT installed in Docker images.
+# Install with: pip install -r requirements-dev.txt
+#
+# Includes all production deps as a base.
+-r requirements.txt
+
+# Testing
+pytest>=8.0,<10
+httpx>=0.28,<0.29
+
+# Linting / formatting
+ruff>=0.11,<1

@@ -33,3 +33,9 @@ venv_pysisense_chatbot/
 
 # Local docs clone (pysisense repo)
 docs_src/
+screenshots/
+
+# Claude Code — machine-specific settings, local artifacts, and dev-phase progress tracker
+.claude/settings.local.json
+.claude/v2-v3-roadmap.html
+.claude/PROGRESS.md

@@ -29,10 +29,9 @@ import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional, Set, Tuple
-
-from logging.handlers import RotatingFileHandler
 
 from backend.agent.llm_agent import call_llm_with_tools
 from backend.agent.mcp_client import McpClient
@@ -236,6 +235,7 @@ async def cancel_active_turn(session_id: str) -> None:
         return
     except Exception:
         return
+
 
 # -----------------------------------------------------------------------------
 # MCP client pool (per UI session)

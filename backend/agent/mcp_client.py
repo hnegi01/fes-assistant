@@ -208,7 +208,7 @@ async def _parse_sse_jsonrpc_messages(
             continue
 
         if line.startswith("data:"):
-            data_lines.append(line[len("data:"):].lstrip())
+            data_lines.append(line[len("data:") :].lstrip())
             continue
 
     if data_lines:

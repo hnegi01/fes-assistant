@@ -54,8 +54,8 @@ if load_dotenv is not None:
         load_dotenv(dotenv_path=env_path, override=True)
 
 import mcp.types as types
-from mcp_server import tools_core
 
+from mcp_server import tools_core
 
 # -----------------------------------------------------------------------------
 # Logging
@@ -426,7 +426,7 @@ async def _call_tool_non_streaming(tool_name: str, arguments: Dict[str, Any]) ->
 # -----------------------------------------------------------------------------
 def _sse_frame(obj: Dict[str, Any], event: str = "message") -> str:
     data = json.dumps(obj, ensure_ascii=False)
-    return f"event: {event}\n" f"data: {data}\n\n"
+    return f"event: {event}\ndata: {data}\n\n"
 
 
 def _notification_message(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -600,9 +600,7 @@ async def _handle_one_rpc(req: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 
     if method == "initialize":
         params = req.get("params") or {}
-        protocol_version = str(
-            params.get("protocolVersion") or os.getenv("MCP_PROTOCOL_VERSION", "2025-11-25")
-        ).strip()
+        protocol_version = str(params.get("protocolVersion") or os.getenv("MCP_PROTOCOL_VERSION", "2025-11-25")).strip()
         if is_notification:
             return None
         return {"jsonrpc": "2.0", "id": rid, "result": _make_initialize_result(protocol_version)}

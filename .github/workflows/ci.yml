@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, dev, v2]
+  push:
+    branches: [main, dev, v2]
+
+jobs:
+  # ── JOB 1: Lint ────────────────────────────────────────────────────────
+  lint:
+    name: Lint (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dev dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Check code style
+        run: ruff check .
+
+      - name: Check formatting
+        run: ruff format --check .
+
+  # ── JOB 2: Unit Tests ──────────────────────────────────────────────────
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    # Dummy env vars so llm_agent.py can import without real credentials.
+    # LLM_CONFIG = _build_llm_config() runs at module load time (line 336).
+    # These values are intentionally fake — no real LLM calls are made in tests.
+    env:
+      LLM_PROVIDER: databricks
+      DATABRICKS_HOST: https://fake.databricks.com
+      DATABRICKS_TOKEN: fake-ci-token
+      LLM_ENDPOINT: fake-endpoint
+      PYSISENSE_MCP_HTTP_URL: http://localhost:8002
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dev dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+  # ── JOB 3: Docker Build Check ──────────────────────────────────────────
+  docker-build:
+    name: Docker Build — ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false   # build all three even if one fails
+      matrix:
+        include:
+          - service: backend
+            dockerfile: Dockerfile.backend
+          - service: mcp
+            dockerfile: Dockerfile.mcp
+          - service: ui
+            dockerfile: Dockerfile.ui
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.service }} image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: false
+          tags: fes-${{ matrix.service }}:ci

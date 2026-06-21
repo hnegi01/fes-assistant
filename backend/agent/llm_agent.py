@@ -27,11 +27,11 @@ import json
 import logging
 import os
 from dataclasses import dataclass
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import httpx
-from logging.handlers import RotatingFileHandler
 
 from .mcp_client import McpClient
 
@@ -131,16 +131,15 @@ def _get_azure_openai_secrets_from_aws() -> Dict[str, str]:
         If boto3 is missing, required env vars are missing, or the secret cannot be read.
     """
     if not _BOTO3_AVAILABLE:
-        raise RuntimeError(
-            "AWS Secrets Manager fallback requires boto3. Install with: pip install boto3"
-        )
+        raise RuntimeError("AWS Secrets Manager fallback requires boto3. Install with: pip install boto3")
 
     secret_id = os.getenv(AWS_SECRET_ID_ENV_VAR)
     region = os.getenv(AWS_REGION_ENV_VAR)
 
     if not (secret_id and region):
         raise RuntimeError(
-            f"To use AWS Secrets Manager for Azure OpenAI credentials, set {AWS_SECRET_ID_ENV_VAR} and {AWS_REGION_ENV_VAR}"
+            f"To use AWS Secrets Manager for Azure OpenAI credentials, "
+            f"set {AWS_SECRET_ID_ENV_VAR} and {AWS_REGION_ENV_VAR}"
         )
 
     try:
@@ -148,22 +147,16 @@ def _get_azure_openai_secrets_from_aws() -> Dict[str, str]:
         response = client.get_secret_value(SecretId=secret_id)
     except ClientError as e:
         logger.exception("Failed to get secret %s from AWS Secrets Manager: %s", secret_id, e)
-        raise RuntimeError(
-            f"Failed to get Azure OpenAI secret from AWS Secrets Manager: {e}"
-        ) from e
+        raise RuntimeError(f"Failed to get Azure OpenAI secret from AWS Secrets Manager: {e}") from e
 
     secret_str = response.get("SecretString")
     if not secret_str:
-        raise RuntimeError(
-            f"Secret {secret_id} has no SecretString (binary secrets not supported)"
-        )
+        raise RuntimeError(f"Secret {secret_id} has no SecretString (binary secrets not supported)")
 
     try:
         data = json.loads(secret_str)
     except json.JSONDecodeError as e:
-        raise RuntimeError(
-            f"Secret {secret_id} is not valid JSON: {e}"
-        ) from e
+        raise RuntimeError(f"Secret {secret_id} is not valid JSON: {e}") from e
 
     if not isinstance(data, dict):
         raise RuntimeError(f"Secret {secret_id} must be a JSON object")
@@ -172,9 +165,7 @@ def _get_azure_openai_secrets_from_aws() -> Dict[str, str]:
     api_key = (data.get("AZURE_OPENAI_API_KEY") or "").strip()
 
     if not endpoint or not api_key:
-        raise RuntimeError(
-            f"Secret {secret_id} must contain AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY"
-        )
+        raise RuntimeError(f"Secret {secret_id} must contain AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY")
 
     logger.info(
         "Loaded Azure OpenAI credentials from AWS Secrets Manager (secret_id=%s, region=%s)",
@@ -290,9 +281,7 @@ def _build_llm_config() -> _LlmConfig:
                 "(set in .env or in AWS Secrets Manager via FES_AZURE_OPENAI_SECRET_ID and AWS_REGION)."
             )
         if not az_deployment:
-            raise RuntimeError(
-                "Azure OpenAI requires AZURE_OPENAI_DEPLOYMENT (set in .env or in the AWS secret)."
-            )
+            raise RuntimeError("Azure OpenAI requires AZURE_OPENAI_DEPLOYMENT (set in .env or in the AWS secret).")
 
         az_api_ver = os.getenv("AZURE_OPENAI_API_VERSION", "2024-11-20").strip()
 
@@ -483,6 +472,44 @@ def load_tools_for_llm() -> List[Dict[str, Any]]:
 
 
 # -----------------------------------------------------------------------------
+# Local result description (used when summarization is disabled)
+# -----------------------------------------------------------------------------
+def _describe_tool_result(tool_name: str, result: Optional[Dict[str, Any]]) -> str:
+    """
+    Generate a human-readable description of a tool result without calling the LLM.
+    Used when ALLOW_SUMMARIZATION is off so the user gets something useful instead
+    of the generic "Summarization disabled by configuration" message.
+    """
+    if not result or not isinstance(result, dict):
+        return f"`{tool_name}` ran. Result shown above."
+
+    # MCP-level failure
+    if not result.get("ok", True):
+        return f"`{tool_name}` failed. Details shown above."
+
+    data = result.get("result")
+
+    # API-level error embedded in the result payload
+    if isinstance(data, dict) and "error" in data:
+        return f"`{tool_name}` returned an error — {data['error']}"
+
+    # List result
+    if isinstance(data, list):
+        n = len(data)
+        if n == 0:
+            return f"`{tool_name}` returned no results."
+        noun = "result" if n == 1 else "results"
+        return f"Found {n} {noun} from `{tool_name}`. Results shown above."
+
+    # Single object result
+    if isinstance(data, dict):
+        return f"Got a response from `{tool_name}`. Details shown above."
+
+    # Primitive or None
+    return f"`{tool_name}` completed. Result shown above."
+
+
+# -----------------------------------------------------------------------------
 # Generic payload shrinker for LLM summarization
 # -----------------------------------------------------------------------------
 MAX_LIST_ITEMS_FOR_LLM = 20
@@ -607,7 +634,9 @@ def _shrink_for_llm(
             )
         else:
             shrunk = {
-                TRUNCATION_NOTE_KEY: "Payload limited due to summarization size constraints; only partial content shown.",
+                TRUNCATION_NOTE_KEY: (
+                    "Payload limited due to summarization size constraints; only partial content shown."
+                ),
                 "partial": shrunk,
             }
 
@@ -1110,16 +1139,14 @@ async def call_llm_with_tools(
     # 3) Summarize (optional) or return local-only message if disabled
     # ---------------------------------------------------------------------
     if not allow_summarization_flag:
-        last_name = tool_messages_for_llm[-1].get("name")
-        return (
-            f"I successfully ran the tool `{last_name}`. "
-            "Summarization to an external LLM is disabled by configuration."
-        )
+        last_name = tool_messages_for_llm[-1].get("name", "unknown")
+        return _describe_tool_result(last_name, LAST_TOOL_RESULT)
 
-    followup_messages: List[Dict[str, Any]] = (
-        [{"role": "system", "content": summary_system_prompt}, latest_user_message, planning_assistant_message]
-        + tool_messages_for_llm
-    )
+    followup_messages: List[Dict[str, Any]] = [
+        {"role": "system", "content": summary_system_prompt},
+        latest_user_message,
+        planning_assistant_message,
+    ] + tool_messages_for_llm
 
     try:
         followup_data = await call_llm_raw(followup_messages, tools=None)

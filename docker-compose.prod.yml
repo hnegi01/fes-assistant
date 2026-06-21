@@ -13,7 +13,7 @@ services:
       - public
 
   fes-ui:
-    image: himanshusisense/fes-ui:0.1.0
+    image: himanshusisense/fes-ui:0.1.1
     container_name: fes-ui
     restart: unless-stopped
     env_file:
@@ -30,7 +30,7 @@ services:
       - private
 
   fes-backend:
-    image: himanshusisense/fes-backend:0.1.0
+    image: himanshusisense/fes-backend:0.1.1
     container_name: fes-backend
     restart: unless-stopped
     env_file:
@@ -45,7 +45,7 @@ services:
       - private
 
   fes-mcp:
-    image: himanshusisense/fes-mcp:0.1.0
+    image: himanshusisense/fes-mcp:0.1.1
     container_name: fes-mcp
     restart: unless-stopped
     env_file:
@@ -59,5 +59,4 @@ services:
 
 networks:
   public: {}
-  private:
-    internal: true
+  private: {}

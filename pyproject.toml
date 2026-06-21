@@ -1,0 +1,19 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+# E/W = pycodestyle  F = pyflakes  I = import order
+select = ["E", "F", "W", "I"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+# dotenv must be loaded before other imports so env vars are set before any
+# module-level code reads them (e.g. LLM_CONFIG = _build_llm_config() in
+# llm_agent.py). E402 on every import that follows is intentional and correct.
+"backend/api_server.py" = ["E402"]
+"frontend/app.py" = ["E402"]
+"mcp_server/server.py" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

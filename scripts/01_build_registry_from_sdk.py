@@ -6,20 +6,25 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import pysisense
+from pysisense import *  # noqa: F401, F403 — brings in all facade classes defined in __all__
 
-from pysisense.access_management import AccessManagement
-from pysisense.datamodel import DataModel
-from pysisense.dashboard import Dashboard
-from pysisense.migration import Migration
-from pysisense.wellcheck import WellCheck
-
-
-MODULES = {
-    "access": AccessManagement,
-    "datamodel": DataModel,
-    "dashboard": Dashboard,
-    "migration": Migration,
-    "wellcheck": WellCheck,
+# Maps registry module key → facade class.
+# Module key is what appears in tool_id ("access.get_all_users") and in the registry
+# "module" field — keep existing keys stable so tool_ids don't change.
+# To add a new module: add ONE line here.
+MODULES: Dict[str, Any] = {
+    "access": AccessManagement,  # noqa: F821
+    "blox": Blox,  # noqa: F821
+    "custom_code": CustomCode,  # noqa: F821
+    "dashboard": Dashboard,  # noqa: F821
+    "datamodel": DataModel,  # noqa: F821
+    "encryption": Encryption,  # noqa: F821
+    "folder": Folder,  # noqa: F821
+    "metadata": Metadata,  # noqa: F821
+    "migration": Migration,  # noqa: F821
+    "plugins": Plugins,  # noqa: F821
+    "queries": Queries,  # noqa: F821
+    "wellcheck": WellCheck,  # noqa: F821
 }
 
 # ---------------------------------------------------------------------------
@@ -35,9 +40,7 @@ _GOOGLE_PARAM_LINE_RE = re.compile(
 
 # NumPy-style param header lines like:
 #   action : str, optional
-_NUMPY_PARAM_LINE_RE = re.compile(
-    r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*([^$]+)$"
-)
+_NUMPY_PARAM_LINE_RE = re.compile(r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*([^$]+)$")
 
 
 def _parse_param_doc_meta_google(doc: str) -> Dict[str, Dict[str, str]]:
@@ -234,6 +237,7 @@ def _parse_param_doc_meta(doc: str) -> Dict[str, Dict[str, str]]:
 # Type inference helpers
 # ---------------------------------------------------------------------------
 
+
 def _schema_type_from_default(default: Any) -> Dict[str, Any]:
     """
     Infer a JSON Schema fragment from a Python default value.
@@ -330,6 +334,7 @@ def _apply_name_heuristics(param_name: str, schema_piece: Dict[str, Any]) -> Dic
 # ---------------------------------------------------------------------------
 # JSON schema builder from signature + docstring (generic only)
 # ---------------------------------------------------------------------------
+
 
 def json_schema_from_signature(
     sig: inspect.Signature,
@@ -492,12 +497,10 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                 "live": ["realtime", "real-time", "live model"],
             },
             "parameters.properties.datamodel_type.description": (
-                "Either 'extract' (Elasticube/EC) or 'live'. "
-                "If user says 'elasticube' or 'ec', normalize to 'extract'."
+                "Either 'extract' (Elasticube/EC) or 'live'. If user says 'elasticube' or 'ec', normalize to 'extract'."
             ),
         }
     },
-
     # Deploy/Build DataModel → constrain build_type / schema_origin / row_limit type
     "datamodel.deploy_datamodel": {
         "patch": {
@@ -514,7 +517,6 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
             "parameters.properties.row_limit.minimum": 1,
         }
     },
-
     # Setup DataModel – enums + rich tables schema
     "datamodel.setup_datamodel": {
         "patch": {
@@ -523,7 +525,6 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                 "extract": ["ec", "elasticube", "elastic cube", "cube", "elastic-cube"],
                 "live": ["realtime", "real-time", "live model"],
             },
-
             # Override the auto-generated `tables` schema with a rich object definition
             "parameters.properties.tables": {
                 "type": "array",
@@ -544,15 +545,12 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                         "schema_name": {
                             "type": "string",
                             "description": (
-                                "Optional override of the table's schema. Defaults to top-level "
-                                "schema_name if omitted."
+                                "Optional override of the table's schema. Defaults to top-level schema_name if omitted."
                             ),
                         },
                         "table_name": {
                             "type": "string",
-                            "description": (
-                                "Physical table name to add, or a logical name when using import_query."
-                            ),
+                            "description": ("Physical table name to add, or a logical name when using import_query."),
                         },
                         "import_query": {
                             "type": "string",
@@ -573,8 +571,7 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                         "build_behavior_config": {
                             "type": "object",
                             "description": (
-                                "Extract models only; omit for 'live'. "
-                                "For 'increment' mode, column_name is required."
+                                "Extract models only; omit for 'live'. For 'increment' mode, column_name is required."
                             ),
                             "properties": {
                                 "mode": {
@@ -584,9 +581,7 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                                 },
                                 "column_name": {
                                     "type": "string",
-                                    "description": (
-                                        "Required when mode='increment'; ignored otherwise."
-                                    ),
+                                    "description": ("Required when mode='increment'; ignored otherwise."),
                                 },
                             },
                         },
@@ -597,14 +592,12 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
             },
         }
     },
-
     # Migration – all dashboards
     "migration.migrate_all_dashboards": {
         "patch": {
             "parameters.properties.action.enum": ["skip", "overwrite", "duplicate"],
         }
     },
-
     # Migration – all datamodels
     "migration.migrate_all_datamodels": {
         "patch": {
@@ -617,14 +610,12 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
             "parameters.properties.action.enum": ["overwrite", "duplicate"],
         }
     },
-
     # Migration – single dashboard
     "migration.migrate_dashboards": {
         "patch": {
             "parameters.properties.action.enum": ["skip", "overwrite", "duplicate"],
         }
     },
-
     # Migration – single datamodel
     "migration.migrate_datamodels": {
         "patch": {
@@ -635,12 +626,10 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                 "hierarchies",
                 "perspectives",
             ],
-
             # action: overwrite vs duplicate
             "parameters.properties.action.enum": ["overwrite", "duplicate"],
         }
     },
-
 }
 
 
@@ -681,8 +670,45 @@ def apply_schema_rules(tool: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Sub-module helpers (for two-stage hierarchical routing)
+# ---------------------------------------------------------------------------
+
+
+def _get_defining_mixin(klass: type, method_name: str) -> type:
+    """
+    Walk the MRO to find the first class (other than the facade and object)
+    that actually defines method_name in its own __dict__.
+    Falls back to klass if nothing else owns it.
+    """
+    for cls in klass.__mro__:
+        if cls is object or cls is klass:
+            continue
+        if method_name in cls.__dict__:
+            return cls
+    return klass
+
+
+def _mixin_to_sub_module(module_key: str, mixin_class: type) -> str:
+    """
+    Derive a sub_module string from the mixin's source file name.
+    e.g. UsersMixin defined in users.py → "access.users"
+         DataModelCoreMixin defined in core.py → "datamodel.core"
+    Falls back to module_key when the file cannot be determined.
+    """
+    try:
+        filepath = inspect.getfile(mixin_class)
+        stem = Path(filepath).stem  # filename without .py extension
+        if stem == "__init__":
+            return module_key  # method defined on the facade class itself
+        return f"{module_key}.{stem}"
+    except (TypeError, OSError):
+        return module_key
+
+
+# ---------------------------------------------------------------------------
 # Registry builder
 # ---------------------------------------------------------------------------
+
 
 def build_registry() -> list:
     sdk_version = getattr(pysisense, "__version__", "unknown")
@@ -706,10 +732,13 @@ def build_registry() -> list:
             schema = json_schema_from_signature(sig, doc)
             mutates = is_mutating(name, doc)
             tags = infer_tags(module_name, name, mutates)
+            defining_mixin = _get_defining_mixin(klass, name)
+            sub_module = _mixin_to_sub_module(module_name, defining_mixin)
 
             tool: Dict[str, Any] = {
                 "tool_id": tool_id,
                 "module": module_name,
+                "sub_module": sub_module,
                 "class": klass_name,
                 "method": name,
                 "description": one_liner,

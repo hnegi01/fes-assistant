@@ -36,13 +36,12 @@ import logging
 import os
 import uuid
 from datetime import datetime, timedelta
+from logging.handlers import RotatingFileHandler
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 import pandas as pd
 import requests
 import streamlit as st
-from logging.handlers import RotatingFileHandler
-
 
 # -----------------------------------------------------------------------------
 # Logging setup
@@ -67,7 +66,7 @@ if not any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
     fh = RotatingFileHandler(
         LOG_DIR / "app.log",
         maxBytes=10 * 1024 * 1024,  # 10 MB per file
-        backupCount=5,              # keep 5 old files
+        backupCount=5,  # keep 5 old files
         encoding="utf-8",
     )
     fh.setLevel(log_level)
@@ -182,11 +181,11 @@ def _iter_sse_events(resp: requests.Response) -> Iterator[Tuple[str, Dict[str, A
             continue
 
         if line.startswith("event:"):
-            event_name = line[len("event:"):].strip() or "message"
+            event_name = line[len("event:") :].strip() or "message"
             continue
 
         if line.startswith("data:"):
-            data_lines.append(line[len("data:"):].lstrip())
+            data_lines.append(line[len("data:") :].lstrip())
             continue
 
     # Flush if stream ends without trailing blank line
@@ -350,7 +349,7 @@ def call_backend_turn(
 
     logger.info("Calling backend /agent/turn (mode=%s, session_id=%s)", mode, session_id)
 
-    is_migration = (mode == BACKEND_MODE_MIGRATION)
+    is_migration = mode == BACKEND_MODE_MIGRATION
 
     headers: Dict[str, str] = {
         "Content-Type": "application/json",
@@ -363,7 +362,7 @@ def call_backend_turn(
         headers["Accept"] = "application/json"
 
     # Timeouts: keep connect timeout reasonable; allow long reads for migration.
-    timeout = (30, 1800) if is_migration else (30, 300)
+    timeout = (30, 1800)
 
     resp = requests.post(
         f"{BACKEND_URL}/agent/turn",
@@ -430,9 +429,7 @@ def call_backend_turn(
 
             if progress_placeholder is not None and progress_lines:
                 tail = progress_lines[-20:]
-                progress_placeholder.markdown(
-                    "**Progress**\n\n" + "\n".join([f"- {x}" for x in tail])
-                )
+                progress_placeholder.markdown("**Progress**\n\n" + "\n".join([f"- {x}" for x in tail]))
 
         st.session_state[_LAST_RUN_LOG_STATE_KEY] = run_log
 
@@ -467,7 +464,9 @@ def fetch_tools_from_backend():
         resp = requests.get(url, timeout=30)
     except Exception as e:
         logger.exception("Request to /tools failed: %s", e)
-        st.error("Could not reach the backend /tools endpoint. Check that the backend is running and BACKEND_URL is correct.")
+        st.error(
+            "Could not reach the backend /tools endpoint. Check that the backend is running and BACKEND_URL is correct."
+        )
         st.stop()
 
     if not resp.ok:
@@ -531,7 +530,7 @@ def render_tool_result(tr: dict):
 # -----------------------------------------------------------------------------
 # Streamlit UI
 # -----------------------------------------------------------------------------
-st.set_page_config(page_title="FES Assistant", page_icon=None)
+st.set_page_config(page_title="FES Assistant", page_icon="images/sisense.png")
 
 check_ui_session_timeout()
 
@@ -566,8 +565,7 @@ st.markdown(
 
 if st.session_state.get("session_expired"):
     st.info(
-        "Your session was idle for a long time, so it was reset. "
-        "Please reconnect your Sisense deployment to continue."
+        "Your session was idle for a long time, so it was reset. Please reconnect your Sisense deployment to continue."
     )
     del st.session_state["session_expired"]
 
@@ -615,8 +613,7 @@ with st.sidebar:
             key="allow_summarization",
             disabled=True,
             help=(
-                "Summarization has been disabled in the server configuration. "
-                "Sisense data will not be sent to the LLM."
+                "Summarization has been disabled in the server configuration. Sisense data will not be sent to the LLM."
             ),
         )
         st.caption("Summarization is disabled by the administrator.")
@@ -790,7 +787,8 @@ if mode == MODE_CHAT:
 - Show all data models
 - Show all tables and columns in 'ecommerce_db' datamodel
 - Add a table called "top_customers" in datamodel "ecommerce_db"
-- Create an elasticube called "nyctaxi_ec" using connection "pysense_databricks", database "samples", schema "nyctaxi". Add tables trips and vendors.
+- Create an elasticube called "nyctaxi_ec" using connection "pysense_databricks",
+  database "samples", schema "nyctaxi". Add tables trips and vendors.
 """
             )
 
@@ -807,10 +805,7 @@ if mode == MODE_CHAT:
             continue
 
         # Apply the hide index in chat mode
-        if (
-            st.session_state[CHAT_HIDE_USER_IDX_KEY] is not None
-            and i == st.session_state[CHAT_HIDE_USER_IDX_KEY]
-        ):
+        if st.session_state[CHAT_HIDE_USER_IDX_KEY] is not None and i == st.session_state[CHAT_HIDE_USER_IDX_KEY]:
             continue
 
         with st.chat_message(msg["role"]):
@@ -970,7 +965,9 @@ if mode == MODE_CHAT:
                 with cols[1]:
                     if st.button("Cancel"):
                         st.session_state[CHAT_PENDING_KEY] = None
-                        st.session_state[CHAT_MESSAGES_KEY].append({"role": "assistant", "content": "Action cancelled."})
+                        st.session_state[CHAT_MESSAGES_KEY].append(
+                            {"role": "assistant", "content": "Action cancelled."}
+                        )
                         st.rerun()
             else:
                 if tr:
@@ -1009,7 +1006,9 @@ if mode == MODE_MIGRATION:
         st.markdown("**Source environment**")
         src_cfg = st.session_state[MIG_SRC_KEY] or {}
         with st.form("source_form"):
-            src_domain = st.text_input("Source domain", value=src_cfg.get("domain", ""), placeholder="https://source.sisense.com")
+            src_domain = st.text_input(
+                "Source domain", value=src_cfg.get("domain", ""), placeholder="https://source.sisense.com"
+            )
             src_token = st.text_input("Source API token", type="password", value=src_cfg.get("token", ""))
             src_ssl = st.checkbox("Verify SSL (source)", value=src_cfg.get("ssl", True))
             src_submitted = st.form_submit_button("Connect source")
@@ -1018,7 +1017,11 @@ if mode == MODE_MIGRATION:
             if not src_domain or not src_token:
                 st.error("Source domain and token are required.")
             else:
-                st.session_state[MIG_SRC_KEY] = {"domain": src_domain.strip(), "token": src_token.strip(), "ssl": src_ssl}
+                st.session_state[MIG_SRC_KEY] = {
+                    "domain": src_domain.strip(),
+                    "token": src_token.strip(),
+                    "ssl": src_ssl,
+                }
                 logger.info("[MIGRATION] Source configured for domain=%s ssl=%s", src_domain.strip(), src_ssl)
                 st.success("Source environment connected.")
                 st.rerun()
@@ -1033,7 +1036,9 @@ if mode == MODE_MIGRATION:
         st.markdown("**Target environment**")
         tgt_cfg = st.session_state[MIG_TGT_KEY] or {}
         with st.form("target_form"):
-            tgt_domain = st.text_input("Target domain", value=tgt_cfg.get("domain", ""), placeholder="https://target.sisense.com")
+            tgt_domain = st.text_input(
+                "Target domain", value=tgt_cfg.get("domain", ""), placeholder="https://target.sisense.com"
+            )
             tgt_token = st.text_input("Target API token", type="password", value=tgt_cfg.get("token", ""))
             tgt_ssl = st.checkbox("Verify SSL (target)", value=tgt_cfg.get("ssl", True))
             tgt_submitted = st.form_submit_button("Connect target")
@@ -1042,7 +1047,11 @@ if mode == MODE_MIGRATION:
             if not tgt_domain or not tgt_token:
                 st.error("Target domain and token are required.")
             else:
-                st.session_state[MIG_TGT_KEY] = {"domain": tgt_domain.strip(), "token": tgt_token.strip(), "ssl": tgt_ssl}
+                st.session_state[MIG_TGT_KEY] = {
+                    "domain": tgt_domain.strip(),
+                    "token": tgt_token.strip(),
+                    "ssl": tgt_ssl,
+                }
                 logger.info("[MIGRATION] Target configured for domain=%s ssl=%s", tgt_domain.strip(), tgt_ssl)
                 st.success("Target environment connected.")
                 st.rerun()
@@ -1183,7 +1192,9 @@ if mode == MODE_MIGRATION:
         with cols[1]:
             if st.button("Cancel migration"):
                 st.session_state[MIG_PENDING_KEY] = None
-                st.session_state[MIG_MESSAGES_KEY].append({"role": "assistant", "content": "Migration action cancelled."})
+                st.session_state[MIG_MESSAGES_KEY].append(
+                    {"role": "assistant", "content": "Migration action cancelled."}
+                )
                 st.rerun()
 
     mig_input = st.chat_input("Describe what you want to migrate...")
@@ -1223,7 +1234,9 @@ if mode == MODE_MIGRATION:
             if isinstance(tr, dict) and tr.get("pending_confirmation"):
                 st.session_state[MIG_PENDING_KEY] = tr["pending_confirmation"]
 
-                st.info("This migration action requires approval before it can make changes to your Sisense deployments.")
+                st.info(
+                    "This migration action requires approval before it can make changes to your Sisense deployments."
+                )
                 with st.expander("View operation details", expanded=True):
                     pc = tr["pending_confirmation"]
                     st.markdown("**Tool:** `{}`".format(pc.get("tool_id", "")))
@@ -1277,7 +1290,9 @@ if mode == MODE_MIGRATION:
                 with cols[1]:
                     if st.button("Cancel migration"):
                         st.session_state[MIG_PENDING_KEY] = None
-                        st.session_state[MIG_MESSAGES_KEY].append({"role": "assistant", "content": "Migration action cancelled."})
+                        st.session_state[MIG_MESSAGES_KEY].append(
+                            {"role": "assistant", "content": "Migration action cancelled."}
+                        )
                         st.rerun()
             else:
                 run_log = st.session_state.get(_LAST_RUN_LOG_STATE_KEY)

@@ -353,14 +353,32 @@ def _tool_supports_emit(func: Callable[..., Any]) -> bool:
 # SDK imports / init
 # -----------------------------------------------------------------------------
 try:
-    from pysisense import SisenseClient, AccessManagement, Dashboard, DataModel, Migration, WellCheck
+    from pysisense import *  # noqa: F401, F403 — brings in all facade classes from __all__
+    from pysisense import SisenseClient  # explicit re-import for static analysis
 except Exception as exc:
     logger.exception("Failed to import pysisense SDK")
     raise RuntimeError(f"Failed to import pysisense SDK: {exc}") from exc
 
 logger.info("pysisense SDK imported successfully. Clients will be created from inline connection at runtime.")
 
-SUPPORTED_MODULES = ["access", "dashboard", "datamodel", "migration", "wellcheck"]
+# Maps registry module key → facade class.
+# Migration is excluded here — it uses a different constructor (source_client/target_client).
+# To add a new module: add ONE line here.
+_MODULE_CLASSES: Dict[str, type] = {
+    "access": AccessManagement,  # noqa: F821
+    "blox": Blox,  # noqa: F821
+    "custom_code": CustomCode,  # noqa: F821
+    "dashboard": Dashboard,  # noqa: F821
+    "datamodel": DataModel,  # noqa: F821
+    "encryption": Encryption,  # noqa: F821
+    "folder": Folder,  # noqa: F821
+    "metadata": Metadata,  # noqa: F821
+    "plugins": Plugins,  # noqa: F821
+    "queries": Queries,  # noqa: F821
+    "wellcheck": WellCheck,  # noqa: F821
+}
+
+SUPPORTED_MODULES = sorted([*_MODULE_CLASSES.keys(), "migration"])
 
 
 # -----------------------------------------------------------------------------
@@ -400,9 +418,7 @@ def _load_registry(path: str) -> List[Dict[str, Any]]:
             payload = json.load(f)
     except FileNotFoundError as exc:
         logger.exception("Registry file not found")
-        raise RuntimeError(
-            f"Registry file not found: {path}. Generate it before starting the server."
-        ) from exc
+        raise RuntimeError(f"Registry file not found: {path}. Generate it before starting the server.") from exc
     except Exception as exc:
         logger.exception("Failed to load registry JSON")
         raise RuntimeError(f"Failed to load registry JSON: {exc}") from exc
@@ -606,18 +622,11 @@ def _get_module_instance(module: str, tenant: Dict[str, Any]) -> Any:
     """
     Return an SDK module instance for the requested module.
     """
+    klass = _MODULE_CLASSES.get(module)
+    if klass is None:
+        raise LookupError(f"Module '{module}' not recognized.")
     client = _build_sisense_client(tenant)
-
-    if module == "access":
-        return AccessManagement(api_client=client)
-    if module == "dashboard":
-        return Dashboard(api_client=client)
-    if module == "datamodel":
-        return DataModel(api_client=client)
-    if module == "wellcheck":
-        return WellCheck(api_client=client)
-
-    raise LookupError(f"Module '{module}' not recognized.")
+    return klass(api_client=client)
 
 
 # -----------------------------------------------------------------------------

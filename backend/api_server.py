@@ -20,8 +20,8 @@ Notes
 
 from __future__ import annotations
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 # -----------------------------------------------------------------------------
 # Optional .env loading (local/dev only; safe for Docker/prod)
@@ -49,9 +49,8 @@ from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
-from backend.runtime import run_turn_once
 from backend.agent import llm_agent
-
+from backend.runtime import run_turn_once
 
 # -----------------------------------------------------------------------------
 # Logging (dedicated file for backend API)
@@ -203,7 +202,7 @@ def _sse_pack(data: Dict[str, Any], event: str = "message") -> str:
         payload = json.dumps(data, ensure_ascii=False, default=str)
     except Exception:
         payload = json.dumps({"ok": False, "error": "Failed to JSON encode SSE payload."})
-    return f"event: {event}\n" f"data: {payload}\n\n"
+    return f"event: {event}\ndata: {payload}\n\n"
 
 
 # -----------------------------------------------------------------------------
