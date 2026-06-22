@@ -1259,9 +1259,7 @@ if mode == MODE_MIGRATION:
             pass
 
         if ctx.get("error_str"):
-            st.session_state[MIG_MESSAGES_KEY].append(
-                {"role": "assistant", "content": f"Error: {ctx['error_str']}"}
-            )
+            st.session_state[MIG_MESSAGES_KEY].append({"role": "assistant", "content": f"Error: {ctx['error_str']}"})
             st.session_state[MIG_PENDING_KEY] = None
             return
 

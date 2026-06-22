@@ -243,9 +243,9 @@ logger.info("Using LLM_PROVIDER=%s", LLM_PROVIDER)
 
 @dataclass(frozen=True)
 class _LlmConfig:
-    model: str            # LiteLLM model string: "azure/gpt-4o", "databricks/ep", "huggingface/..."
+    model: str  # LiteLLM model string: "azure/gpt-4o", "databricks/ep", "huggingface/..."
     api_key: str
-    api_base: Optional[str]     # Provider base URL; None = LiteLLM default
+    api_base: Optional[str]  # Provider base URL; None = LiteLLM default
     api_version: Optional[str]  # Azure legacy API version only
     timeout_seconds: float
 
@@ -1005,8 +1005,7 @@ async def call_llm_with_tools(
     max_tools = int(os.getenv("LLM_MAX_TOOLS", "80"))
     if len(tools) > max_tools:
         logger.warning(
-            "Truncating tool list from %d to %d (LLM_MAX_TOOLS). "
-            "Increase LLM_MAX_TOOLS if tools are missing.",
+            "Truncating tool list from %d to %d (LLM_MAX_TOOLS). Increase LLM_MAX_TOOLS if tools are missing.",
             len(tools),
             max_tools,
         )

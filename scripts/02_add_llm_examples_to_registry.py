@@ -280,6 +280,7 @@ def call_llm(prompt: str, max_retries: int = 5, base_delay: float = 2.0) -> str:
 # (only used when LLM_PROVIDER == "azure")
 # -----------------------------------------------------------------------------
 
+
 def _batch_request_body(prompt: str) -> Dict[str, Any]:
     body: Dict[str, Any] = {
         "messages": [
@@ -299,12 +300,16 @@ def _build_batch_jsonl(tools: List[Dict[str, Any]]) -> str:
     for tool in tools:
         docs_text = get_docs_for_tool(tool)
         prompt = build_prompt_for_tool(tool, docs_text)
-        lines.append(json.dumps({
-            "custom_id": tool["tool_id"],
-            "method": "POST",
-            "url": "/v1/chat/completions",
-            "body": _batch_request_body(prompt),
-        }))
+        lines.append(
+            json.dumps(
+                {
+                    "custom_id": tool["tool_id"],
+                    "method": "POST",
+                    "url": "/v1/chat/completions",
+                    "body": _batch_request_body(prompt),
+                }
+            )
+        )
     return "\n".join(lines)
 
 
@@ -368,8 +373,11 @@ def _poll_batch(batch_id: str, poll_interval: int = 20) -> Dict[str, Any]:
         counts = batch.get("request_counts", {})
         logger.info(
             "Batch %s — status: %s | completed: %d/%d | failed: %d",
-            batch_id, batch["status"],
-            counts.get("completed", 0), counts.get("total", 0), counts.get("failed", 0),
+            batch_id,
+            batch["status"],
+            counts.get("completed", 0),
+            counts.get("total", 0),
+            counts.get("failed", 0),
         )
         if batch["status"] in terminal:
             return batch
@@ -455,7 +463,7 @@ def parse_examples(raw: str) -> Dict[str, Any]:
     start = cleaned.find("{")
     end = cleaned.rfind("}")
     if start != -1 and end != -1 and end > start:
-        cleaned = cleaned[start: end + 1]
+        cleaned = cleaned[start : end + 1]
     return json.loads(cleaned)
 
 
