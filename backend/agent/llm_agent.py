@@ -267,6 +267,7 @@ if not any(isinstance(h, logging.FileHandler) for h in audit_logger.handlers):
 # -----------------------------------------------------------------------------
 MAX_LLM_HTTP_RETRIES: int = int(os.getenv("LLM_HTTP_MAX_RETRIES", "3"))
 LLM_HTTP_RETRY_BASE_DELAY: float = float(os.getenv("LLM_HTTP_RETRY_BASE_DELAY", "0.5"))
+LLM_PLANNING_HISTORY_TURNS: int = int(os.getenv("LLM_PLANNING_HISTORY_TURNS", "5"))
 
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "databricks").strip().lower()
 logger.info("Using LLM_PROVIDER=%s", LLM_PROVIDER)
@@ -396,9 +397,9 @@ def _scrub_secrets(obj: Any) -> Any:
         for k, v in obj.items():
             key_l = str(k).lower()
             if (
-                "token" in key_l
-                or "api_key" in key_l
-                or key_l in ("api-key", "apikey", "authorization", "auth", "password", "passwd", "secret")
+                key_l in ("token", "api_key", "api-key", "apikey", "authorization", "auth",
+                          "password", "passwd", "secret", "access_token", "refresh_token",
+                          "id_token", "bearer_token")
             ):
                 cleaned[k] = "***REDACTED***"
             else:
@@ -801,6 +802,41 @@ Rules:
 # -----------------------------------------------------------------------------
 # Internal helpers
 # -----------------------------------------------------------------------------
+def _build_planning_history(
+    messages: List[Dict[str, Any]],
+    latest_user_message: Dict[str, Any],
+    n_turns: int,
+) -> List[Dict[str, Any]]:
+    """
+    Extract the last n_turns of conversation history for the planning call.
+
+    Rules:
+    - Skips the latest_user_message (it is appended separately by the caller).
+    - Assistant messages are stripped to their text content only — tool result
+      payloads are excluded so they don't bloat the planning prompt.
+    - Empty assistant messages (e.g. pending-confirmation turns) are skipped.
+    - Returns at most n_turns * 2 messages (n_turns user + n_turns assistant).
+    """
+    history: List[Dict[str, Any]] = []
+    for msg in messages:
+        role = msg.get("role")
+        if role not in ("user", "assistant"):
+            continue
+        if msg is latest_user_message:
+            continue
+        if role == "assistant":
+            content = (msg.get("content") or "").strip()
+            if not content:
+                continue
+            history.append({"role": "assistant", "content": content})
+        else:
+            history.append({"role": "user", "content": msg.get("content", "")})
+
+    if n_turns <= 0:
+        return []
+    return history[-(n_turns * 2):]
+
+
 def _approval_key(tool_id: str, args: Dict[str, Any]) -> Tuple[str, str]:
     """
     Stable key for UI approval matching.
@@ -1147,9 +1183,13 @@ async def call_llm_with_tools(
     # ---------------------------------------------------------------------
     # 1) Planning call (with tools)
     # ---------------------------------------------------------------------
+    _history = _build_planning_history(messages, latest_user_message, LLM_PLANNING_HISTORY_TURNS)
+    logger.debug("Planning history: %d prior messages (max turns=%d)", len(_history), LLM_PLANNING_HISTORY_TURNS)
+
     planning_messages: List[Dict[str, Any]] = [
         {"role": "system", "content": PLANNING_SYSTEM_PROMPT},
         {"role": "system", "content": planning_context},
+        *_history,
         latest_user_message,
     ]
 
