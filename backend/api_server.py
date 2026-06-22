@@ -50,7 +50,7 @@ from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
 from backend.agent import llm_agent
-from backend.runtime import run_turn_once
+from backend.runtime import cancel_active_turn, run_turn_once
 
 # -----------------------------------------------------------------------------
 # Logging (dedicated file for backend API)
@@ -254,6 +254,10 @@ class AgentTurnResponse(BaseModel):
     tool_result: Optional[Dict[str, Any]] = None
 
 
+class CancelRequest(BaseModel):
+    session_id: str
+
+
 # -----------------------------------------------------------------------------
 # FastAPI app
 # -----------------------------------------------------------------------------
@@ -293,6 +297,14 @@ def list_tools() -> Dict[str, Any]:
         }
 
     return {"tools": tools, "registry": registry_public}
+
+
+@app.post("/agent/cancel")
+async def cancel_agent_turn(req: CancelRequest) -> Dict[str, Any]:
+    """Cancel any active agent turn for the given session."""
+    await cancel_active_turn(req.session_id)
+    logger.info("Cancel requested for session %s", req.session_id)
+    return {"cancelled": True, "session_id": req.session_id}
 
 
 @app.post("/agent/turn")

@@ -31,9 +31,13 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-import httpx
+import jsonschema
+import litellm
 
 from .mcp_client import McpClient
+
+# Drop unsupported params silently so the same call works across providers.
+litellm.drop_params = True
 
 # Optional: boto3 for AWS Secrets Manager (Azure OpenAI credentials fallback)
 try:
@@ -240,17 +244,22 @@ logger.info("Using LLM_PROVIDER=%s", LLM_PROVIDER)
 
 @dataclass(frozen=True)
 class _LlmConfig:
-    provider: str
-    invocations_url: str
-    headers: Dict[str, str]
-    require_model_field: bool
-    model_or_deployment: Optional[str]
+    model: str            # LiteLLM model string: "azure/gpt-4o", "databricks/ep", "huggingface/..."
+    api_key: str
+    api_base: Optional[str]     # Provider base URL; None = LiteLLM default
+    api_version: Optional[str]  # Azure legacy API version only
     timeout_seconds: float
 
 
 def _build_llm_config() -> _LlmConfig:
     """
-    Build provider-specific LLM configuration from environment variables.
+    Build LiteLLM-compatible configuration from environment variables.
+
+    LiteLLM routes by model string prefix:
+      "openai/<name>"       → OpenAI-compatible endpoint (Azure v1 style)
+      "azure/<name>"        → Azure OpenAI (legacy deployment URL)
+      "databricks/<name>"   → Databricks Model Serving
+      "huggingface/<name>"  → HuggingFace Inference API
 
     Returns
     -------
@@ -285,41 +294,51 @@ def _build_llm_config() -> _LlmConfig:
 
         az_api_ver = os.getenv("AZURE_OPENAI_API_VERSION", "2024-11-20").strip()
 
-        # v1 route uses /openai/v1/chat/completions and requires a "model" field.
         if az_style == "v1":
-            url = f"{az_endpoint}/openai/v1/chat/completions"
-            require_model_field = True
+            # Non-standard Azure route: {endpoint}/openai/v1/chat/completions (requires "model" field).
+            # Treat as a generic OpenAI-compatible endpoint — LiteLLM appends /chat/completions.
+            return _LlmConfig(
+                model=f"openai/{az_deployment}",
+                api_key=az_api_key,
+                api_base=f"{az_endpoint}/openai/v1",
+                api_version=None,
+                timeout_seconds=timeout_seconds,
+            )
         else:
-            url = f"{az_endpoint}/openai/deployments/{az_deployment}/chat/completions?api-version={az_api_ver}"
-            require_model_field = False
-
-        headers = {"api-key": az_api_key, "Content-Type": "application/json"}
-        return _LlmConfig(
-            provider="azure",
-            invocations_url=url,
-            headers=headers,
-            require_model_field=require_model_field,
-            model_or_deployment=az_deployment,
-            timeout_seconds=timeout_seconds,
-        )
+            # Standard Azure deployment URL.
+            return _LlmConfig(
+                model=f"azure/{az_deployment}",
+                api_key=az_api_key,
+                api_base=az_endpoint,
+                api_version=az_api_ver,
+                timeout_seconds=timeout_seconds,
+            )
 
     if LLM_PROVIDER == "databricks":
         host = _require_env("DATABRICKS_HOST").rstrip("/")
         token = _require_env("DATABRICKS_TOKEN")
         endpoint = _require_env("LLM_ENDPOINT")
-
-        url = f"{host}/serving-endpoints/{endpoint}/invocations"
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        # LiteLLM constructs the full invocations URL from api_base + model suffix.
         return _LlmConfig(
-            provider="databricks",
-            invocations_url=url,
-            headers=headers,
-            require_model_field=False,
-            model_or_deployment=None,
+            model=f"databricks/{endpoint}",
+            api_key=token,
+            api_base=host,
+            api_version=None,
             timeout_seconds=timeout_seconds,
         )
 
-    raise RuntimeError(f"Unsupported LLM_PROVIDER: {LLM_PROVIDER}")
+    if LLM_PROVIDER == "huggingface":
+        hf_api_key = _require_env("HUGGINGFACE_API_KEY")
+        hf_model = _require_env("HUGGINGFACE_MODEL")
+        return _LlmConfig(
+            model=f"huggingface/{hf_model}",
+            api_key=hf_api_key,
+            api_base=None,
+            api_version=None,
+            timeout_seconds=timeout_seconds,
+        )
+
+    raise RuntimeError(f"Unsupported LLM_PROVIDER: {LLM_PROVIDER!r}. Valid: azure, databricks, huggingface")
 
 
 LLM_CONFIG = _build_llm_config()
@@ -457,17 +476,7 @@ def load_tools_for_llm() -> List[Dict[str, Any]]:
     if skipped_mutating:
         logger.info("Mutating tools hidden (ALLOW_MUTATING_TOOLS=False): %s", skipped_mutating)
 
-    # Safety cap (some providers/models degrade with extremely large tool lists)
-    max_tools = int(os.getenv("LLM_MAX_TOOLS", "80"))
-    if len(tools) > max_tools:
-        logger.info(
-            "Truncating tool list for LLM from %d to %d (set LLM_MAX_TOOLS to adjust).",
-            len(tools),
-            max_tools,
-        )
-        tools = tools[:max_tools]
-
-    logger.info("Tools sent to LLM: %d", len(tools))
+    logger.info("Tools loaded from registry: %d", len(tools))
     return tools
 
 
@@ -833,98 +842,50 @@ async def call_llm_raw(
     tools: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     """
-    Make a single LLM call and return the raw response payload.
+    Make a single LLM call via LiteLLM and return the response as a plain dict.
 
-    This function does not execute tools. It only requests tool calling from the LLM.
-
-    Parameters
-    ----------
-    messages:
-        Chat messages (system/user/assistant/tool).
-    tools:
-        Optional OpenAI-style tool list.
+    Uses tool_choice="required" when tools are provided so the planner always
+    selects a tool rather than answering in free text. Retries are delegated to
+    LiteLLM (num_retries). Providers: azure, databricks, huggingface.
 
     Returns
     -------
     dict
-        Raw provider response.
+        OpenAI-compatible response dict (choices[0].message.tool_calls / content).
 
     Raises
     ------
-    httpx.HTTPError
-        For network/HTTP errors after retries.
-    RuntimeError
-        For invalid/unexpected responses.
+    litellm.exceptions.APIError (and subclasses)
+        Propagated after retries are exhausted.
     """
-    payload: Dict[str, Any] = {
+    kwargs: Dict[str, Any] = {
+        "model": LLM_CONFIG.model,
         "messages": messages,
+        "api_key": LLM_CONFIG.api_key,
         "max_tokens": int(os.getenv("LLM_MAX_TOKENS", "1024")),
         "temperature": float(os.getenv("LLM_TEMPERATURE", "0.2")),
+        "timeout": LLM_CONFIG.timeout_seconds,
+        "num_retries": MAX_LLM_HTTP_RETRIES,
     }
 
-    if LLM_CONFIG.provider == "azure" and LLM_CONFIG.require_model_field:
-        payload["model"] = LLM_CONFIG.model_or_deployment
+    if LLM_CONFIG.api_base:
+        kwargs["api_base"] = LLM_CONFIG.api_base
+    if LLM_CONFIG.api_version:
+        kwargs["api_version"] = LLM_CONFIG.api_version
 
     if tools:
-        payload["tools"] = tools
-        payload["tool_choice"] = "auto"
+        kwargs["tools"] = tools
+        # "required" forces the planner to always emit a tool_call.
+        # litellm.drop_params=True silently drops this for providers that don't support it.
+        kwargs["tool_choice"] = "required"
 
-    logger.info("LLM call start: messages=%d tools=%d", len(messages), len(tools or []))
-    _log_json_truncated("LLM request payload (truncated)", payload)
+    logger.info("LLM call start: model=%s messages=%d tools=%d", LLM_CONFIG.model, len(messages), len(tools or []))
+    _log_json_truncated("LLM request kwargs (truncated)", {k: v for k, v in kwargs.items() if k != "api_key"})
 
-    last_exc: Optional[Exception] = None
-
-    for attempt in range(1, MAX_LLM_HTTP_RETRIES + 1):
-        try:
-            async with httpx.AsyncClient(timeout=LLM_CONFIG.timeout_seconds) as client:
-                resp = await client.post(
-                    LLM_CONFIG.invocations_url,
-                    headers=LLM_CONFIG.headers,
-                    json=payload,
-                )
-        except httpx.RequestError as exc:
-            last_exc = exc
-            logger.warning("LLM request error attempt=%d/%d: %s", attempt, MAX_LLM_HTTP_RETRIES, exc)
-            if attempt == MAX_LLM_HTTP_RETRIES:
-                raise
-
-            delay = LLM_HTTP_RETRY_BASE_DELAY * (2 ** (attempt - 1))
-            await asyncio.sleep(delay)
-            continue
-
-        if resp.status_code == 200:
-            try:
-                data = resp.json()
-            except Exception as exc:
-                logger.exception("Failed to decode LLM JSON response: %s", exc)
-                raise
-            _log_json_truncated("LLM raw response (truncated)", data)
-            return data
-
-        # Retry transient errors
-        if resp.status_code in (429, 500, 502, 503, 504):
-            body_preview = (resp.text or "")[:500]
-            logger.warning(
-                "LLM call failed status=%s attempt=%d/%d; retryable. Body=%s",
-                resp.status_code,
-                attempt,
-                MAX_LLM_HTTP_RETRIES,
-                body_preview,
-            )
-            if attempt == MAX_LLM_HTTP_RETRIES:
-                resp.raise_for_status()
-
-            delay = LLM_HTTP_RETRY_BASE_DELAY * (2 ** (attempt - 1))
-            await asyncio.sleep(delay)
-            continue
-
-        # Non-retryable
-        body_preview = (resp.text or "")[:1000]
-        logger.error("LLM call failed non-retryable status=%s body=%s", resp.status_code, body_preview)
-        resp.raise_for_status()
-
-    # Should not reach here
-    raise RuntimeError(f"LLM call failed after retries; last_exc={last_exc}")
+    response = await litellm.acompletion(**kwargs)
+    data = response.model_dump()
+    _log_json_truncated("LLM raw response (truncated)", data)
+    return data
 
 
 # -----------------------------------------------------------------------------
@@ -1040,6 +1001,18 @@ async def call_llm_with_tools(
     planning_context = MIGRATION_PLANNING_CONTEXT_PROMPT if mode == "migration" else CHAT_PLANNING_CONTEXT_PROMPT
     summary_system_prompt = SUMMARY_SYSTEM_PROMPT_MIGRATION if mode == "migration" else SUMMARY_SYSTEM_PROMPT_CHAT
 
+    # Cap applied here (after mode filtering) so migration tools are never silently dropped.
+    # Databricks serving endpoints reject payloads with too many tools.
+    max_tools = int(os.getenv("LLM_MAX_TOOLS", "80"))
+    if len(tools) > max_tools:
+        logger.warning(
+            "Truncating tool list from %d to %d (LLM_MAX_TOOLS). "
+            "Increase LLM_MAX_TOOLS if tools are missing.",
+            len(tools),
+            max_tools,
+        )
+        tools = tools[:max_tools]
+
     logger.info(
         "call_llm_with_tools start: mode=%s tools=%d approvals=%d allow_summarization=%s",
         mode,
@@ -1059,7 +1032,7 @@ async def call_llm_with_tools(
 
     try:
         planning_data = await call_llm_raw(planning_messages, tools=tools)
-    except httpx.HTTPError as exc:
+    except Exception as exc:
         logger.warning("Planning LLM call failed (%s). Using fallback direct tool.", exc)
         summary, result = await _fallback_direct_tool(user_text, mcp_client)
         LAST_TOOL_RESULT = result
@@ -1098,6 +1071,14 @@ async def call_llm_with_tools(
 
         meta = TOOL_REGISTRY.get(tool_id) or {}
         mutates = bool(meta.get("mutates", False))
+
+        # Validate args against the tool's JSON schema so bad LLM outputs are visible in logs.
+        tool_schema = meta.get("parameters")
+        if tool_schema:
+            try:
+                jsonschema.validate(instance=args, schema=tool_schema)
+            except jsonschema.ValidationError as _ve:
+                logger.warning("Tool %s arg validation warning: %s", tool_id, _ve.message)
 
         logger.info("Tool selected: %s (mutates=%s)", tool_id, mutates)
         _log_json_truncated("Tool args (from planner)", args)
@@ -1150,7 +1131,7 @@ async def call_llm_with_tools(
 
     try:
         followup_data = await call_llm_raw(followup_messages, tools=None)
-    except httpx.HTTPError as exc:
+    except Exception as exc:
         logger.warning("Summarization LLM call failed (%s). Returning basic status.", exc)
         last_name = tool_messages_for_llm[-1].get("name")
         return f"I ran `{last_name}`, but the summarization step failed, so I cannot provide a richer summary."

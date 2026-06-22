@@ -34,10 +34,12 @@ if load_dotenv is not None:
 import json
 import logging
 import os
+import threading
+import time
 import uuid
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 import pandas as pd
 import requests
@@ -206,6 +208,35 @@ def _iter_sse_events(resp: requests.Response) -> Iterator[Tuple[str, Dict[str, A
 # -----------------------------------------------------------------------------
 _LAST_RUN_LOG_STATE_KEY = "_fes_last_run_log"
 
+# Migration turn threading state keys
+_MIG_TURN_IN_PROGRESS_KEY = "_mig_turn_in_progress"
+_MIG_TURN_CTX_KEY = "_mig_turn_ctx"
+_MIG_PENDING_TURN_META_KEY = "_mig_pending_turn_meta"
+
+
+def _write_run_log(run_log: Any, _run_log_out: Optional[Dict[str, Any]] = None) -> None:
+    """Write run_log to the optional out-dict and, when on the main Streamlit thread, to session state."""
+    if _run_log_out is not None:
+        _run_log_out["run_log"] = run_log
+    try:
+        st.session_state[_LAST_RUN_LOG_STATE_KEY] = run_log
+    except Exception:
+        pass  # Called from background thread — session state not accessible
+
+
+def _cancel_backend_turn(sid: str) -> None:
+    """POST /agent/cancel for the given session id; errors are logged and swallowed."""
+    try:
+        r = requests.post(
+            f"{BACKEND_URL}/agent/cancel",
+            json={"session_id": sid},
+            timeout=10,
+        )
+        r.raise_for_status()
+        logger.info("Cancel request sent for session %s", sid)
+    except Exception as exc:
+        logger.warning("Cancel request failed for session %s: %s", sid, exc)
+
 
 def _extract_progress_payload(data: Any) -> Any:
     """
@@ -318,6 +349,74 @@ def render_run_log(run_log: Optional[Dict[str, Any]]) -> None:
         st.markdown("\n".join([f"- {ln}" for ln in lines]))
 
 
+def _launch_migration_turn(
+    meta: Dict[str, Any],
+    messages: List[Dict[str, Any]],
+    user_input: str,
+    tenant_config: Optional[Dict],
+    approved_keys: Optional[Any],
+    migration_config: Optional[Dict],
+    session_id: str,
+    allow_summarization: bool,
+    mode: str,
+) -> None:
+    """
+    Start call_backend_turn in a background thread for migration mode.
+
+    Writes results into st.session_state[_MIG_TURN_CTX_KEY] so the
+    polling block can pick them up on subsequent Streamlit reruns.
+    meta keys used by _process_mig_turn_result:
+      clear_pending (bool) — whether to clear MIG_PENDING_KEY on completion.
+    """
+    ctx: Dict[str, Any] = {
+        "done": False,
+        "reply": None,
+        "tool_result": None,
+        "error_str": None,
+        "progress_lines": [],
+        "run_log": None,
+    }
+    st.session_state[_MIG_TURN_CTX_KEY] = ctx
+    st.session_state[_MIG_PENDING_TURN_META_KEY] = meta
+    st.session_state[_MIG_TURN_IN_PROGRESS_KEY] = True
+
+    def _progress_cb(line: str) -> None:
+        ctx["progress_lines"].append(line)
+
+    call_kwargs: Dict[str, Any] = {
+        "messages": messages,
+        "user_input": user_input,
+        "tenant_config": tenant_config,
+        "approved_keys": approved_keys,
+        "migration_config": migration_config,
+        "session_id": session_id,
+        "allow_summarization": allow_summarization,
+        "mode": mode,
+        "progress_placeholder": None,
+        "progress_callback": _progress_cb,
+        "_run_log_out": ctx,
+    }
+
+    def _run() -> None:
+        try:
+            reply, tool_result = call_backend_turn(**call_kwargs)
+            ctx["reply"] = reply
+            ctx["tool_result"] = tool_result
+        except Exception as exc:
+            logger.exception("Background migration turn failed: %s", exc)
+            ctx["error_str"] = str(exc)
+        finally:
+            ctx["done"] = True
+
+    thread = threading.Thread(target=_run, daemon=True)
+    thread.start()
+    logger.info(
+        "Launched migration thread for session %s (kind=%s)",
+        session_id,
+        meta.get("kind", "unknown"),
+    )
+
+
 def call_backend_turn(
     messages,
     user_input,
@@ -328,6 +427,8 @@ def call_backend_turn(
     allow_summarization=None,
     mode=None,
     progress_placeholder: Optional[Any] = None,
+    progress_callback: Optional[Callable[[str], None]] = None,
+    _run_log_out: Optional[Dict[str, Any]] = None,
 ):
     """
     Thin HTTP client for the backend /agent/turn API.
@@ -405,15 +506,21 @@ def call_backend_turn(
             if event == "status":
                 phase = data.get("phase")
                 if isinstance(phase, str) and phase.strip():
-                    progress_lines.append(f"Status: {phase}")
+                    new_line = f"Status: {phase}"
+                    progress_lines.append(new_line)
+                    if progress_callback is not None:
+                        progress_callback(new_line)
                 continue
 
             if event == "progress":
                 msg = data.get("message") or data.get("detail")
                 if isinstance(msg, str) and msg.strip():
-                    progress_lines.append(msg.strip())
+                    new_line = msg.strip()
                 else:
-                    progress_lines.append(_format_progress_line(cleaned_payload))
+                    new_line = _format_progress_line(cleaned_payload)
+                progress_lines.append(new_line)
+                if progress_callback is not None:
+                    progress_callback(new_line)
 
             elif event == "result":
                 final_reply = data.get("reply", "")
@@ -421,17 +528,20 @@ def call_backend_turn(
 
             elif event == "error":
                 err = data.get("error") or "Unknown error"
-                st.session_state[_LAST_RUN_LOG_STATE_KEY] = run_log
+                _write_run_log(run_log, _run_log_out)
                 raise RuntimeError(err)
 
             else:
-                progress_lines.append(_format_progress_line(cleaned_payload))
+                new_line = _format_progress_line(cleaned_payload)
+                progress_lines.append(new_line)
+                if progress_callback is not None:
+                    progress_callback(new_line)
 
             if progress_placeholder is not None and progress_lines:
                 tail = progress_lines[-20:]
                 progress_placeholder.markdown("**Progress**\n\n" + "\n".join([f"- {x}" for x in tail]))
 
-        st.session_state[_LAST_RUN_LOG_STATE_KEY] = run_log
+        _write_run_log(run_log, _run_log_out)
 
         if final_reply is None and final_tool_result is None:
             raise RuntimeError("SSE stream ended without a final result.")
@@ -439,7 +549,7 @@ def call_backend_turn(
         return final_reply or "", final_tool_result
 
     # Fallback: backend returned JSON even though we asked for SSE
-    st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
+    _write_run_log(None, _run_log_out)
     data = resp.json()
     reply = data.get("reply", "")
     tool_result = data.get("tool_result")
@@ -1126,6 +1236,46 @@ if mode == MODE_MIGRATION:
         st.session_state[MIG_PENDING_KEY] = None
     if MIG_APPROVED_KEY not in st.session_state:
         st.session_state[MIG_APPROVED_KEY] = set()
+    if _MIG_TURN_IN_PROGRESS_KEY not in st.session_state:
+        st.session_state[_MIG_TURN_IN_PROGRESS_KEY] = False
+    if _MIG_TURN_CTX_KEY not in st.session_state:
+        st.session_state[_MIG_TURN_CTX_KEY] = {}
+    if _MIG_PENDING_TURN_META_KEY not in st.session_state:
+        st.session_state[_MIG_PENDING_TURN_META_KEY] = {}
+
+    def _process_mig_turn_result() -> None:
+        """
+        Called from the polling block once the background thread is done.
+        Reads the completed ctx and meta, updates session state, does NOT call st.rerun().
+        """
+        ctx = st.session_state.get(_MIG_TURN_CTX_KEY, {})
+        meta = st.session_state.get(_MIG_PENDING_TURN_META_KEY, {})
+        st.session_state[_MIG_TURN_IN_PROGRESS_KEY] = False
+
+        run_log = ctx.get("run_log") or st.session_state.get(_LAST_RUN_LOG_STATE_KEY)
+        try:
+            st.session_state[_LAST_RUN_LOG_STATE_KEY] = run_log
+        except Exception:
+            pass
+
+        if ctx.get("error_str"):
+            st.session_state[MIG_MESSAGES_KEY].append(
+                {"role": "assistant", "content": f"Error: {ctx['error_str']}"}
+            )
+            st.session_state[MIG_PENDING_KEY] = None
+            return
+
+        reply = ctx.get("reply") or ""
+        tr = ctx.get("tool_result")
+
+        if isinstance(tr, dict) and tr.get("pending_confirmation"):
+            st.session_state[MIG_PENDING_KEY] = tr["pending_confirmation"]
+        else:
+            if meta.get("clear_pending"):
+                st.session_state[MIG_PENDING_KEY] = None
+            st.session_state[MIG_MESSAGES_KEY].append(
+                {"role": "assistant", "content": reply, "tool_result": tr, "run_log": run_log}
+            )
 
     for i, msg in enumerate(st.session_state[MIG_MESSAGES_KEY]):
         if msg.get("role") not in ("user", "assistant"):
@@ -1143,6 +1293,37 @@ if mode == MODE_MIGRATION:
     if st.session_state[MIG_HIDE_USER_IDX_KEY] is not None:
         st.session_state[MIG_HIDE_USER_IDX_KEY] = None
 
+    # -------------------------------------------------------------------------
+    # Turn-in-progress polling block
+    # Shown while a background migration thread is running.
+    # Calls st.rerun() to poll until done; blocks the rest of the UI meanwhile.
+    # -------------------------------------------------------------------------
+    if st.session_state.get(_MIG_TURN_IN_PROGRESS_KEY):
+        ctx = st.session_state.get(_MIG_TURN_CTX_KEY, {})
+
+        _col_status, _col_stop = st.columns([5, 1])
+        with _col_stop:
+            if st.button("⏹ Stop", key="mig_stop_btn"):
+                _cancel_backend_turn(session_id)
+                st.session_state[_MIG_TURN_IN_PROGRESS_KEY] = False
+                st.session_state[MIG_MESSAGES_KEY].append(
+                    {"role": "assistant", "content": "Migration stopped by user."}
+                )
+                st.rerun()
+        with _col_status:
+            prog = ctx.get("progress_lines", [])
+            if prog:
+                tail = prog[-20:]
+                st.markdown("**Progress**\n\n" + "\n".join([f"- {x}" for x in tail]))
+            else:
+                st.markdown("*Planning migration...*")
+
+        if ctx.get("done"):
+            _process_mig_turn_result()
+        else:
+            time.sleep(0.4)
+        st.rerun()
+
     pending_mig = st.session_state[MIG_PENDING_KEY]
     if pending_mig and isinstance(pending_mig, dict):
         st.info("This migration action requires approval before it can make changes to your Sisense deployments.")
@@ -1155,38 +1336,17 @@ if mode == MODE_MIGRATION:
             if st.button("Approve migration", type="primary"):
                 key = _approval_key(pending_mig["tool_id"], pending_mig.get("arguments", {}))
                 st.session_state[MIG_APPROVED_KEY].add(key)
-
-                progress_box = st.empty()
-                with st.spinner("Running approved migration action..."):
-                    try:
-                        reply, tr = call_backend_turn(
-                            messages=st.session_state[MIG_MESSAGES_KEY],
-                            user_input="",
-                            tenant_config=None,
-                            approved_keys=st.session_state[MIG_APPROVED_KEY],
-                            migration_config=migration_config,
-                            session_id=session_id,
-                            allow_summarization=st.session_state["allow_summarization"],
-                            mode=BACKEND_MODE_MIGRATION,
-                            progress_placeholder=progress_box,
-                        )
-                    except Exception as e:
-                        logger.exception("Migration agent run after approval failed: %s", e)
-                        st.error("The approved migration action failed.")
-                        st.exception(e)
-                        st.session_state[MIG_PENDING_KEY] = None
-                        st.rerun()
-
-                progress_box.empty()
-
-                run_log = st.session_state.get(_LAST_RUN_LOG_STATE_KEY)
-
-                st.session_state[MIG_MESSAGES_KEY].append(
-                    {"role": "assistant", "content": reply, "tool_result": tr, "run_log": run_log}
+                _launch_migration_turn(
+                    meta={"kind": "approval", "clear_pending": True},
+                    messages=st.session_state[MIG_MESSAGES_KEY],
+                    user_input="",
+                    tenant_config=None,
+                    approved_keys=st.session_state[MIG_APPROVED_KEY],
+                    migration_config=migration_config,
+                    session_id=session_id,
+                    allow_summarization=st.session_state["allow_summarization"],
+                    mode=BACKEND_MODE_MIGRATION,
                 )
-
-                st.session_state[MIG_HIDE_USER_IDX_KEY] = st.session_state[MIG_LAST_USER_IDX_KEY]
-                st.session_state[MIG_PENDING_KEY] = None
                 st.rerun()
 
         with cols[1]:
@@ -1199,111 +1359,19 @@ if mode == MODE_MIGRATION:
 
     mig_input = st.chat_input("Describe what you want to migrate...")
 
-    if mig_input:
+    if mig_input and not st.session_state.get(_MIG_TURN_IN_PROGRESS_KEY):
         logger.debug("[MIGRATION] User request: %s", mig_input)
         st.session_state[MIG_LAST_USER_IDX_KEY] = len(st.session_state[MIG_MESSAGES_KEY])
         st.session_state[MIG_MESSAGES_KEY].append({"role": "user", "content": mig_input})
-
-        with st.chat_message("user"):
-            st.markdown(mig_input)
-
-        with st.chat_message("assistant"):
-            progress_box = st.empty()
-            with st.spinner("Planning migration..."):
-                try:
-                    reply, tr = call_backend_turn(
-                        messages=st.session_state[MIG_MESSAGES_KEY],
-                        user_input=mig_input,
-                        tenant_config=None,
-                        approved_keys=None,
-                        migration_config=migration_config,
-                        session_id=session_id,
-                        allow_summarization=st.session_state["allow_summarization"],
-                        mode=BACKEND_MODE_MIGRATION,
-                        progress_placeholder=progress_box,
-                    )
-                except Exception as e:
-                    logger.exception("Migration LLM+tools call failed: %s", e)
-                    st.error("Sorry, something went wrong while running the migration assistant.")
-                    st.exception(e)
-                    reply = f"Error: {e}"
-                    tr = None
-
-            progress_box.empty()
-
-            if isinstance(tr, dict) and tr.get("pending_confirmation"):
-                st.session_state[MIG_PENDING_KEY] = tr["pending_confirmation"]
-
-                st.info(
-                    "This migration action requires approval before it can make changes to your Sisense deployments."
-                )
-                with st.expander("View operation details", expanded=True):
-                    pc = tr["pending_confirmation"]
-                    st.markdown("**Tool:** `{}`".format(pc.get("tool_id", "")))
-                    st.code(json.dumps(pc.get("arguments", {}), indent=2), language="json")
-
-                cols = st.columns([1, 1])
-                with cols[0]:
-                    if st.button("Approve migration", type="primary"):
-                        key = _approval_key(pc["tool_id"], pc.get("arguments", {}))
-                        st.session_state[MIG_APPROVED_KEY].add(key)
-
-                        progress_box2 = st.empty()
-                        with st.spinner("Running approved migration action..."):
-                            try:
-                                reply2, tr2 = call_backend_turn(
-                                    messages=st.session_state[MIG_MESSAGES_KEY],
-                                    user_input=mig_input,
-                                    tenant_config=None,
-                                    approved_keys=st.session_state[MIG_APPROVED_KEY],
-                                    migration_config=migration_config,
-                                    session_id=session_id,
-                                    allow_summarization=st.session_state["allow_summarization"],
-                                    mode=BACKEND_MODE_MIGRATION,
-                                    progress_placeholder=progress_box2,
-                                )
-                            except Exception as e:
-                                logger.exception("Migration agent run after approval failed: %s", e)
-                                st.error("The approved migration action failed.")
-                                st.exception(e)
-                                st.session_state[MIG_PENDING_KEY] = None
-                                st.rerun()
-
-                        progress_box2.empty()
-
-                        run_log2 = st.session_state.get(_LAST_RUN_LOG_STATE_KEY)
-
-                        if tr2:
-                            render_tool_result(tr2)
-                        render_run_log(run_log2)
-                        st.markdown("**Summary**")
-                        st.markdown(reply2)
-
-                        st.session_state[MIG_MESSAGES_KEY].append(
-                            {"role": "assistant", "content": reply2, "tool_result": tr2, "run_log": run_log2}
-                        )
-
-                        st.session_state[MIG_HIDE_USER_IDX_KEY] = st.session_state[MIG_LAST_USER_IDX_KEY]
-                        st.session_state[MIG_PENDING_KEY] = None
-                        st.rerun()
-
-                with cols[1]:
-                    if st.button("Cancel migration"):
-                        st.session_state[MIG_PENDING_KEY] = None
-                        st.session_state[MIG_MESSAGES_KEY].append(
-                            {"role": "assistant", "content": "Migration action cancelled."}
-                        )
-                        st.rerun()
-            else:
-                run_log = st.session_state.get(_LAST_RUN_LOG_STATE_KEY)
-
-                if tr:
-                    render_tool_result(tr)
-                render_run_log(run_log)
-
-                st.markdown("**Summary**")
-                st.markdown(reply)
-
-                st.session_state[MIG_MESSAGES_KEY].append(
-                    {"role": "assistant", "content": reply, "tool_result": tr, "run_log": run_log}
-                )
+        _launch_migration_turn(
+            meta={"kind": "input", "clear_pending": False},
+            messages=st.session_state[MIG_MESSAGES_KEY],
+            user_input=mig_input,
+            tenant_config=None,
+            approved_keys=None,
+            migration_config=migration_config,
+            session_id=session_id,
+            allow_summarization=st.session_state["allow_summarization"],
+            mode=BACKEND_MODE_MIGRATION,
+        )
+        st.rerun()

@@ -4,6 +4,9 @@ uvicorn>=0.38,<0.39
 httpx>=0.28,<0.29
 requests>=2.32,<3
 
+litellm>=1.60,<2
+jsonschema>=4.23,<5
+
 streamlit>=1.48,<1.51
 
 pysisense
