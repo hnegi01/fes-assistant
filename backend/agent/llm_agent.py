@@ -22,9 +22,13 @@ Key Concepts
 
 from __future__ import annotations
 
+import csv
+import datetime
 import json
 import logging
 import os
+import time
+import uuid
 from dataclasses import dataclass
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -32,19 +36,37 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import jsonschema
 import litellm
-from langsmith import traceable
 
 from .mcp_client import McpClient
 
 # Drop unsupported params silently so the same call works across providers.
 litellm.drop_params = True
 
-# Wire LiteLLM → LangSmith when tracing is enabled (LANGCHAIN_TRACING_V2=true).
-# Each litellm.acompletion() call becomes a child span with exact prompt,
-# response, token counts, and latency — no extra code needed per call.
-if os.getenv("LANGCHAIN_TRACING_V2", "").strip().lower() == "true":
-    litellm.success_callback = ["langsmith"]
-    litellm.failure_callback = ["langsmith"]
+
+def _configure_langsmith_tracing() -> None:
+    """Wire LiteLLM → LangSmith when LANGSMITH_TRACING=true.
+
+    Extracted into a function so tests can call it directly with monkeypatched
+    env vars without reloading the module.
+    """
+    if os.getenv("LANGSMITH_TRACING", "").strip().lower() == "true":
+        # macOS venv Python often lacks system CA certs; point to certifi's bundle.
+        try:
+            import certifi
+
+            os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+            os.environ.setdefault("REQUESTS_CA_BUNDLE", certifi.where())
+        except ImportError:
+            pass
+
+        litellm.success_callback = ["langsmith"]
+        litellm.failure_callback = ["langsmith"]
+    else:
+        litellm.success_callback = []
+        litellm.failure_callback = []
+
+
+_configure_langsmith_tracing()
 
 # Optional: boto3 for AWS Secrets Manager (Azure OpenAI credentials fallback)
 try:
@@ -68,6 +90,7 @@ _log_level = getattr(logging, _log_level_name, logging.INFO)
 ROOT_DIR = Path(__file__).resolve().parents[2]
 LOG_DIR = ROOT_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
+LLM_TRACES_PATH = LOG_DIR / "llm_traces.csv"
 
 logger = logging.getLogger("backend.agent.llm_agent")
 logger.setLevel(_log_level)
@@ -366,6 +389,59 @@ _registry_cache_mtime: Optional[float] = None
 _registry_cache_rows: List[Dict[str, Any]] = []
 
 
+def _scrub_secrets(obj: Any) -> Any:
+    """Recursively redact credential fields from dicts/lists before logging."""
+    if isinstance(obj, dict):
+        cleaned: Dict[str, Any] = {}
+        for k, v in obj.items():
+            key_l = str(k).lower()
+            if (
+                "token" in key_l
+                or "api_key" in key_l
+                or key_l in ("api-key", "apikey", "authorization", "auth", "password", "passwd", "secret")
+            ):
+                cleaned[k] = "***REDACTED***"
+            else:
+                cleaned[k] = _scrub_secrets(v)
+        return cleaned
+    if isinstance(obj, list):
+        return [_scrub_secrets(x) for x in obj]
+    return obj
+
+
+_LLM_TRACE_COLUMNS = [
+    "timestamp",
+    "trace_id",
+    "mode",
+    "user_message",
+    "model",
+    "provider",
+    "tools_available",
+    "tool_selected",
+    "outcome",
+    "planning_tokens_in",
+    "planning_tokens_out",
+    "planning_latency_ms",
+    "summary_tokens_in",
+    "summary_tokens_out",
+    "summary_latency_ms",
+    "summarization_used",
+]
+
+
+def _write_llm_trace(trace: Dict[str, Any]) -> None:
+    """Append one row to llm_traces.csv. Swallows all errors — never breaks a turn."""
+    try:
+        write_header = not LLM_TRACES_PATH.exists()
+        with LLM_TRACES_PATH.open("a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=_LLM_TRACE_COLUMNS, extrasaction="ignore")
+            if write_header:
+                writer.writeheader()
+            writer.writerow({col: trace.get(col, "") for col in _LLM_TRACE_COLUMNS})
+    except Exception as exc:
+        logger.warning("Failed to write LLM trace: %s", exc)
+
+
 def _log_json_truncated(title: str, obj: Any, max_len: int = 2000) -> None:
     """
     Log a JSON representation of obj, truncated for readability.
@@ -380,7 +456,7 @@ def _log_json_truncated(title: str, obj: Any, max_len: int = 2000) -> None:
         Maximum number of characters to log.
     """
     try:
-        text = json.dumps(obj, indent=2, ensure_ascii=False, default=str)
+        text = json.dumps(_scrub_secrets(obj), indent=2, ensure_ascii=False, default=str)
     except Exception:
         text = repr(obj)
     if len(text) > max_len:
@@ -847,6 +923,7 @@ def _pick_tool_calls_from_llm_response(data: Dict[str, Any]) -> Tuple[Optional[s
 async def call_llm_raw(
     messages: List[Dict[str, Any]],
     tools: Optional[List[Dict[str, Any]]] = None,
+    trace_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Make a single LLM call via LiteLLM and return the response as a plain dict.
@@ -854,6 +931,17 @@ async def call_llm_raw(
     Uses tool_choice="required" when tools are provided so the planner always
     selects a tool rather than answering in free text. Retries are delegated to
     LiteLLM (num_retries). Providers: azure, databricks, huggingface.
+
+    Parameters
+    ----------
+    messages:
+        Conversation messages to send to the LLM.
+    tools:
+        OpenAI-style tool definitions. When provided, tool_choice is set to "required".
+    trace_id:
+        Optional UUID string. When provided, LiteLLM passes it to the LangSmith
+        callback so all calls within the same agent turn are grouped into one trace.
+        Contains no credentials or customer data.
 
     Returns
     -------
@@ -885,6 +973,11 @@ async def call_llm_raw(
         # "required" forces the planner to always emit a tool_call.
         # litellm.drop_params=True silently drops this for providers that don't support it.
         kwargs["tool_choice"] = "required"
+
+    if trace_id:
+        # Groups the planning and summarization calls for one turn into a single
+        # LangSmith trace. No credentials or customer data included.
+        kwargs["metadata"] = {"trace_id": trace_id}
 
     logger.info("LLM call start: model=%s messages=%d tools=%d", LLM_CONFIG.model, len(messages), len(tools or []))
     _log_json_truncated("LLM request kwargs (truncated)", {k: v for k, v in kwargs.items() if k != "api_key"})
@@ -958,7 +1051,6 @@ async def _fallback_direct_tool(user_text: str, mcp_client: McpClient) -> Tuple[
 # -----------------------------------------------------------------------------
 # Main orchestration
 # -----------------------------------------------------------------------------
-@traceable(name="fes-plan-execute-summarize", run_type="chain")
 async def call_llm_with_tools(
     messages: List[Dict[str, Any]],
     tools: List[Dict[str, Any]],
@@ -1020,12 +1112,36 @@ async def call_llm_with_tools(
         )
         tools = tools[:max_tools]
 
+    # One UUID per agent turn — groups planning + summarization LLM calls into a
+    # single LangSmith trace. Contains no credentials or customer data.
+    turn_trace_id = str(uuid.uuid4())
+
+    _trace: Dict[str, Any] = {
+        "timestamp": datetime.datetime.utcnow().isoformat(),
+        "trace_id": turn_trace_id,
+        "mode": mode,
+        "user_message": user_text[:500],
+        "model": LLM_CONFIG.model,
+        "provider": LLM_PROVIDER,
+        "tools_available": len(tools),
+        "tool_selected": "",
+        "outcome": "unknown",
+        "planning_tokens_in": 0,
+        "planning_tokens_out": 0,
+        "planning_latency_ms": 0,
+        "summary_tokens_in": 0,
+        "summary_tokens_out": 0,
+        "summary_latency_ms": 0,
+        "summarization_used": False,
+    }
+
     logger.info(
-        "call_llm_with_tools start: mode=%s tools=%d approvals=%d allow_summarization=%s",
+        "call_llm_with_tools start: mode=%s tools=%d approvals=%d allow_summarization=%s trace_id=%s",
         mode,
         len(tools),
         len(approved_mutations),
         allow_summarization_flag,
+        turn_trace_id,
     )
 
     # ---------------------------------------------------------------------
@@ -1037,18 +1153,32 @@ async def call_llm_with_tools(
         latest_user_message,
     ]
 
+    _plan_t0 = time.perf_counter()
     try:
-        planning_data = await call_llm_raw(planning_messages, tools=tools)
+        planning_data = await call_llm_raw(planning_messages, tools=tools, trace_id=turn_trace_id)
     except Exception as exc:
+        _trace["planning_latency_ms"] = int((time.perf_counter() - _plan_t0) * 1000)
+        _trace["outcome"] = "fallback"
         logger.warning("Planning LLM call failed (%s). Using fallback direct tool.", exc)
         summary, result = await _fallback_direct_tool(user_text, mcp_client)
         LAST_TOOL_RESULT = result
+        _write_llm_trace(_trace)
         return summary
+
+    _trace["planning_latency_ms"] = int((time.perf_counter() - _plan_t0) * 1000)
+    _plan_usage = planning_data.get("usage") or {}
+    _trace["planning_tokens_in"] = _plan_usage.get("prompt_tokens", 0)
+    _trace["planning_tokens_out"] = _plan_usage.get("completion_tokens", 0)
 
     planning_content, tool_calls = _pick_tool_calls_from_llm_response(planning_data)
 
+    if tool_calls:
+        _trace["tool_selected"] = (tool_calls[0].get("function") or {}).get("name", "")
+
     # If no tool calls, return the direct text answer.
     if not tool_calls:
+        _trace["outcome"] = "no_tool"
+        _write_llm_trace(_trace)
         return planning_content or ""
 
     # ---------------------------------------------------------------------
@@ -1099,11 +1229,21 @@ async def call_llm_with_tools(
                     "reason": "Tool is mutating and requires confirmation in the UI.",
                 }
                 LAST_TOOL_RESULT = {"ok": False, "pending_confirmation": pending}
-                logger.info("Pending mutation approval tool=%s args=%s", tool_id, json.dumps(args, ensure_ascii=False))
+                logger.info(
+                    "Pending mutation approval tool=%s args=%s",
+                    tool_id,
+                    json.dumps(_scrub_secrets(args), ensure_ascii=False),
+                )
+                _trace["outcome"] = "pending_mutation"
+                _write_llm_trace(_trace)
                 return "This action requires confirmation in the UI before proceeding."
 
         if mutates:
-            audit_logger.info("EXECUTING mutation tool=%s args=%s", tool_id, json.dumps(args, ensure_ascii=False))
+            audit_logger.info(
+                "EXECUTING mutation tool=%s args=%s",
+                tool_id,
+                json.dumps(_scrub_secrets(args), ensure_ascii=False),
+            )
 
         result = await mcp_client.invoke_tool(tool_id, args)
         LAST_TOOL_RESULT = result
@@ -1121,6 +1261,8 @@ async def call_llm_with_tools(
 
     # If nothing executed (all tool calls were invalid), just return planning text.
     if not tool_messages_for_llm:
+        _trace["outcome"] = "no_execution"
+        _write_llm_trace(_trace)
         return planning_content or ""
 
     # ---------------------------------------------------------------------
@@ -1128,6 +1270,8 @@ async def call_llm_with_tools(
     # ---------------------------------------------------------------------
     if not allow_summarization_flag:
         last_name = tool_messages_for_llm[-1].get("name", "unknown")
+        _trace["outcome"] = "summarization_disabled"
+        _write_llm_trace(_trace)
         return _describe_tool_result(last_name, LAST_TOOL_RESULT)
 
     followup_messages: List[Dict[str, Any]] = [
@@ -1136,12 +1280,24 @@ async def call_llm_with_tools(
         planning_assistant_message,
     ] + tool_messages_for_llm
 
+    _trace["summarization_used"] = True
+    _sum_t0 = time.perf_counter()
     try:
-        followup_data = await call_llm_raw(followup_messages, tools=None)
+        followup_data = await call_llm_raw(followup_messages, tools=None, trace_id=turn_trace_id)
     except Exception as exc:
+        _trace["summary_latency_ms"] = int((time.perf_counter() - _sum_t0) * 1000)
+        _trace["outcome"] = "summarization_failed"
+        _write_llm_trace(_trace)
         logger.warning("Summarization LLM call failed (%s). Returning basic status.", exc)
         last_name = tool_messages_for_llm[-1].get("name")
         return f"I ran `{last_name}`, but the summarization step failed, so I cannot provide a richer summary."
+
+    _trace["summary_latency_ms"] = int((time.perf_counter() - _sum_t0) * 1000)
+    _sum_usage = followup_data.get("usage") or {}
+    _trace["summary_tokens_in"] = _sum_usage.get("prompt_tokens", 0)
+    _trace["summary_tokens_out"] = _sum_usage.get("completion_tokens", 0)
+    _trace["outcome"] = "ok"
+    _write_llm_trace(_trace)
 
     final_content, _ = _pick_tool_calls_from_llm_response(followup_data)
     return final_content or ""

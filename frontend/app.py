@@ -612,6 +612,10 @@ def render_tool_result(tr: dict):
     if not tr or not isinstance(tr, dict):
         return
 
+    tool_name = tr.get("tool_id", "")
+    if tool_name:
+        st.caption(f"Tool called: `{tool_name}`")
+
     if tr.get("ok", True):
         data = tr.get("result")
         if isinstance(data, list) and data and isinstance(data[0], dict):

@@ -30,3 +30,21 @@ def test_tools_endpoint_returns_expected_shape():
     assert "registry" in body
     assert isinstance(body["tools"], list)
     assert isinstance(body["registry"], dict)
+
+
+def test_cancel_endpoint_returns_cancelled_true():
+    """POST /agent/cancel with a fake session_id must return {cancelled: true}."""
+    response = client.post(
+        "/agent/cancel",
+        json={"session_id": "test-session-does-not-exist"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["cancelled"] is True
+    assert body["session_id"] == "test-session-does-not-exist"
+
+
+def test_cancel_endpoint_missing_body_returns_422():
+    """POST /agent/cancel with no body must return 422 Unprocessable Entity."""
+    response = client.post("/agent/cancel", json={})
+    assert response.status_code == 422
