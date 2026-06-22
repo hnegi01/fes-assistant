@@ -32,11 +32,19 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import jsonschema
 import litellm
+from langsmith import traceable
 
 from .mcp_client import McpClient
 
 # Drop unsupported params silently so the same call works across providers.
 litellm.drop_params = True
+
+# Wire LiteLLM → LangSmith when tracing is enabled (LANGCHAIN_TRACING_V2=true).
+# Each litellm.acompletion() call becomes a child span with exact prompt,
+# response, token counts, and latency — no extra code needed per call.
+if os.getenv("LANGCHAIN_TRACING_V2", "").strip().lower() == "true":
+    litellm.success_callback = ["langsmith"]
+    litellm.failure_callback = ["langsmith"]
 
 # Optional: boto3 for AWS Secrets Manager (Azure OpenAI credentials fallback)
 try:
@@ -950,6 +958,7 @@ async def _fallback_direct_tool(user_text: str, mcp_client: McpClient) -> Tuple[
 # -----------------------------------------------------------------------------
 # Main orchestration
 # -----------------------------------------------------------------------------
+@traceable(name="fes-plan-execute-summarize", run_type="chain")
 async def call_llm_with_tools(
     messages: List[Dict[str, Any]],
     tools: List[Dict[str, Any]],
