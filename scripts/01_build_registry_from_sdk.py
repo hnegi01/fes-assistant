@@ -13,18 +13,18 @@ from pysisense import *  # noqa: F401, F403 — brings in all facade classes def
 # "module" field — keep existing keys stable so tool_ids don't change.
 # To add a new module: add ONE line here.
 MODULES: Dict[str, Any] = {
-    "access": AccessManagement,  # noqa: F821
-    "blox": Blox,  # noqa: F821
-    "custom_code": CustomCode,  # noqa: F821
-    "dashboard": Dashboard,  # noqa: F821
-    "datamodel": DataModel,  # noqa: F821
-    "encryption": Encryption,  # noqa: F821
-    "folder": Folder,  # noqa: F821
-    "metadata": Metadata,  # noqa: F821
-    "migration": Migration,  # noqa: F821
-    "plugins": Plugins,  # noqa: F821
-    "queries": Queries,  # noqa: F821
-    "wellcheck": WellCheck,  # noqa: F821
+    "access": AccessManagement,  # noqa: F405, F821
+    "blox": Blox,  # noqa: F405, F821
+    "custom_code": CustomCode,  # noqa: F405, F821
+    "dashboard": Dashboard,  # noqa: F405, F821
+    "datamodel": DataModel,  # noqa: F405, F821
+    "encryption": Encryption,  # noqa: F405, F821
+    "folder": Folder,  # noqa: F405, F821
+    "metadata": Metadata,  # noqa: F405, F821
+    "migration": Migration,  # noqa: F405, F821
+    "plugins": Plugins,  # noqa: F405, F821
+    "queries": Queries,  # noqa: F405, F821
+    "wellcheck": WellCheck,  # noqa: F405, F821
 }
 
 # ---------------------------------------------------------------------------

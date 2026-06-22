@@ -365,17 +365,17 @@ logger.info("pysisense SDK imported successfully. Clients will be created from i
 # Migration is excluded here — it uses a different constructor (source_client/target_client).
 # To add a new module: add ONE line here.
 _MODULE_CLASSES: Dict[str, type] = {
-    "access": AccessManagement,  # noqa: F821
-    "blox": Blox,  # noqa: F821
-    "custom_code": CustomCode,  # noqa: F821
-    "dashboard": Dashboard,  # noqa: F821
-    "datamodel": DataModel,  # noqa: F821
-    "encryption": Encryption,  # noqa: F821
-    "folder": Folder,  # noqa: F821
-    "metadata": Metadata,  # noqa: F821
-    "plugins": Plugins,  # noqa: F821
-    "queries": Queries,  # noqa: F821
-    "wellcheck": WellCheck,  # noqa: F821
+    "access": AccessManagement,  # noqa: F405, F821
+    "blox": Blox,  # noqa: F405, F821
+    "custom_code": CustomCode,  # noqa: F405, F821
+    "dashboard": Dashboard,  # noqa: F405, F821
+    "datamodel": DataModel,  # noqa: F405, F821
+    "encryption": Encryption,  # noqa: F405, F821
+    "folder": Folder,  # noqa: F405, F821
+    "metadata": Metadata,  # noqa: F405, F821
+    "plugins": Plugins,  # noqa: F405, F821
+    "queries": Queries,  # noqa: F405, F821
+    "wellcheck": WellCheck,  # noqa: F405, F821
 }
 
 SUPPORTED_MODULES = sorted([*_MODULE_CLASSES.keys(), "migration"])
@@ -652,7 +652,7 @@ def _resolve_sdk_callable(
         src_tenant, tgt_tenant = _extract_migration_tenants_from_arguments(arguments)
         src_client = _build_sisense_client(src_tenant)
         tgt_client = _build_sisense_client(tgt_tenant)
-        instance = Migration(source_client=src_client, target_client=tgt_client, debug=SDK_DEBUG)
+        instance = Migration(source_client=src_client, target_client=tgt_client, debug=SDK_DEBUG)  # noqa: F405
     else:
         tenant = _extract_tenant_from_arguments(arguments)
         instance = _get_module_instance(module, tenant)
