@@ -1,8 +1,8 @@
 [
   {
-    "tool_id": "access.change_folder_and_dashboard_ownership",
-    "module": "access",
-    "sub_module": "access.ownership",
+    "tool_id": "access_management.change_folder_and_dashboard_ownership",
+    "module": "access_management",
+    "sub_module": "access_management.ownership",
     "class": "AccessManagement",
     "method": "change_folder_and_dashboard_ownership",
     "description": "Method to change the ownership of folders and optionally dashboards.",
@@ -39,18 +39,18 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "dashboards",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.change_user_password",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.change_user_password",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "change_user_password",
     "description": "Change a user's password.",
@@ -74,18 +74,18 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.create_schedule_build",
-    "module": "access",
-    "sub_module": "access.admin",
+    "tool_id": "access_management.create_schedule_build",
+    "module": "access_management",
+    "sub_module": "access_management.admin",
     "class": "AccessManagement",
     "method": "create_schedule_build",
     "description": "Method to create a schedule build for a DataModel.",
@@ -135,17 +135,17 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.create_user",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.create_user",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "create_user",
     "description": "Creates a new user by processing the provided user data to replace role",
@@ -164,18 +164,18 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.delete_user",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.delete_user",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "delete_user",
     "description": "Deletes a user by their email (username).",
@@ -194,18 +194,18 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.get_all_dashboard_shares",
-    "module": "access",
-    "sub_module": "access.admin",
+    "tool_id": "access_management.get_all_dashboard_shares",
+    "module": "access_management",
+    "sub_module": "access_management.admin",
     "class": "AccessManagement",
     "method": "get_all_dashboard_shares",
     "description": "Method to retrieve all dashboard shares, including user and group details for each shared dashboard.",
@@ -217,18 +217,18 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "dashboards",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.get_datamodel_columns",
-    "module": "access",
-    "sub_module": "access.columns",
+    "tool_id": "access_management.get_datamodel_columns",
+    "module": "access_management",
+    "sub_module": "access_management.columns",
     "class": "AccessManagement",
     "method": "get_datamodel_columns",
     "description": "Retrieves columns from a DataModel by collecting them from its datasets and tables.",
@@ -247,18 +247,18 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "datamodel",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.get_group",
-    "module": "access",
-    "sub_module": "access.groups",
+    "tool_id": "access_management.get_group",
+    "module": "access_management",
+    "sub_module": "access_management.groups",
     "class": "AccessManagement",
     "method": "get_group",
     "description": "Retrieves group details by their name.",
@@ -277,18 +277,18 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "groups",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.get_my_user",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_my_user",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_my_user",
     "description": "Retrieve the currently logged-in user for the API token.",
@@ -300,18 +300,18 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.get_roles",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_roles",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_roles",
     "description": "Retrieve all Sisense roles.",
@@ -323,17 +323,17 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.get_unused_columns",
-    "module": "access",
-    "sub_module": "access.columns",
+    "tool_id": "access_management.get_unused_columns",
+    "module": "access_management",
+    "sub_module": "access_management.columns",
     "class": "AccessManagement",
     "method": "get_unused_columns",
     "description": "Identify unused columns in a given DataModel by comparing all available columns against the columns",
@@ -352,17 +352,17 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.get_unused_columns_bulk",
-    "module": "access",
-    "sub_module": "access.columns",
+    "tool_id": "access_management.get_unused_columns_bulk",
+    "module": "access_management",
+    "sub_module": "access_management.columns",
     "class": "AccessManagement",
     "method": "get_unused_columns_bulk",
     "description": "Run unused-column analysis for one or more data models and return a",
@@ -382,17 +382,17 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.get_user",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_user",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_user",
     "description": "Retrieve a user's details by email address, expanding group and role information.",
@@ -411,18 +411,18 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.get_user_with_role_and_group_names",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_user_with_role_and_group_names",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_user_with_role_and_group_names",
     "description": "Retrieves a single user by email/username and returns both role and",
@@ -441,19 +441,19 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "groups",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.get_users_all",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_users_all",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_users_all",
     "description": "Retrieves user details along with tenant, group, and role information.",
@@ -465,18 +465,18 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.get_users_with_role_names_and_group_names",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_users_with_role_names_and_group_names",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_users_with_role_names_and_group_names",
     "description": "Retrieves all users from Sisense and enriches them with role names and",
@@ -488,19 +488,19 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "groups",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.update_user",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.update_user",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "update_user",
     "description": "Update an existing Sisense user identified by their email address.",
@@ -524,18 +524,18 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.users_per_group",
-    "module": "access",
-    "sub_module": "access.groups",
+    "tool_id": "access_management.users_per_group",
+    "module": "access_management",
+    "sub_module": "access_management.groups",
     "class": "AccessManagement",
     "method": "users_per_group",
     "description": "Retrieves all users within a specific group by name.",
@@ -554,19 +554,19 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "groups",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
-    "tool_id": "access.users_per_group_all",
-    "module": "access",
-    "sub_module": "access.groups",
+    "tool_id": "access_management.users_per_group_all",
+    "module": "access_management",
+    "sub_module": "access_management.groups",
     "class": "AccessManagement",
     "method": "users_per_group_all",
     "description": "Retrieves all groups and maps them with the users belonging to those",
@@ -578,13 +578,13 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "groups",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -613,7 +613,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -635,7 +635,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -664,7 +664,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -697,7 +697,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -726,7 +726,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -755,7 +755,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -786,7 +786,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -815,7 +815,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -849,7 +849,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -883,7 +883,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -921,626 +921,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.add_dashboard_script",
-    "module": "dashboard",
-    "sub_module": "dashboard.scripts",
-    "class": "Dashboard",
-    "method": "add_dashboard_script",
-    "description": "Adds or overwrites a script to a dashboard, temporarily changing ownership if required.",
-    "full_doc": "Adds or overwrites a script to a dashboard, temporarily changing ownership if required.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard where the script will be added.\n    script (str): The JavaScript script as either:\n                - A properly formatted JSON string.\n                - A raw Python docstring (multi-line string).\n    executing_user (str, optional): The username of the API user. This is used to temporarily change\n                                the owner of the dashboard, as only the owner can add scripts.\n                                If not provided, assumes the dashboard owner is the same as the API user.\n\nReturns:\n    str: Success message or error details.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The ID of the dashboard where the script will be added."
-        },
-        "script": {
-          "type": "string",
-          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
-        },
-        "executing_user": {
-          "type": "string",
-          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "script"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.add_dashboard_shares",
-    "module": "dashboard",
-    "sub_module": "dashboard.shares",
-    "class": "Dashboard",
-    "method": "add_dashboard_shares",
-    "description": "Adds or updates shares for a dashboard, specifying users and groups along with their access rules.",
-    "full_doc": "Adds or updates shares for a dashboard, specifying users and groups along with their access rules.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard to which the shares will be added.\n    shares (list of dicts): A list of dictionaries, each containing:\n        - \"name\" (str): The username or group name.\n        - \"type\" (str): Either \"user\" or \"group\" to indicate the share type.\n        - \"rule\" (str): The access level (e.g., \"view\", \"edit\").\n\nReturns:\n    str: Success message or error details.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The ID of the dashboard to which the shares will be added."
-        },
-        "shares": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "A list of dictionaries, each containing: - \"name\" (str): The username or group name. - \"type\" (str): Either \"user\" or \"group\" to indicate the share type. - \"rule\" (str): The access level (e.g., \"view\", \"edit\")."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "shares"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.add_widget_script",
-    "module": "dashboard",
-    "sub_module": "dashboard.scripts",
-    "class": "Dashboard",
-    "method": "add_widget_script",
-    "description": "Adds or overwrites a script for a specific widget within a dashboard.",
-    "full_doc": "Adds or overwrites a script for a specific widget within a dashboard.\n\nIf required, temporarily changes the dashboard ownership, as only the owner can modify widget scripts.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard containing the widget.\n    widget_id (str): The ID of the widget where the script will be added.\n    script (str): The JavaScript script as either:\n                - A properly formatted JSON string.\n                - A raw Python docstring (multi-line string).\n    executing_user (str, optional): The username of the API user. This is used to temporarily change\n                                the owner of the dashboard, as only the owner can add scripts.\n                                If not provided, assumes the dashboard owner is the same as the API user.\n\nReturns:\n    str: Success message or error details.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The ID of the dashboard containing the widget."
-        },
-        "widget_id": {
-          "type": "string",
-          "description": "The ID of the widget where the script will be added."
-        },
-        "script": {
-          "type": "string",
-          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
-        },
-        "executing_user": {
-          "type": "string",
-          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "widget_id",
-        "script"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.can_be_owned",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "can_be_owned",
-    "description": "Check whether a dashboard can be owned by the current user.",
-    "full_doc": "Check whether a dashboard can be owned by the current user.\n\nSends ``GET /api/v1/dashboards/{dashboard_id}/can_be_owned``.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to check.\n\nReturns\n-------\ndict[str, Any]\n    The API response on success, or ``{\"error\": \"...\"}`` on failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard ``oid`` to check."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.export_dashboard",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "export_dashboard",
-    "description": "Export a dashboard definition using the Sisense admin export endpoint.",
-    "full_doc": "Export a dashboard definition using the Sisense admin export endpoint.\n\nSends a GET request to ``/api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``. The response is a JSON array;\nthis method returns the first dashboard object, which includes fields such\nas ``title``, ``oid``, ``script``, ``widgets``, ``layout``, and ``filters``.\nOther features (for example ``get_dashboard_script``) use this payload\ninternally.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to export.\n\nReturns\n-------\ndict[str, Any]\n    The exported dashboard object on success, or ``{\"error\": \"<message>\"}``\n    when the HTTP call fails, the body is not valid JSON, or the payload\n    is not a non-empty list as expected.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard ``oid`` to export."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.get_all_dashboards",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "get_all_dashboards",
-    "description": "Retrieves all dashboards from the Sisense server.",
-    "full_doc": "Retrieves all dashboards from the Sisense server.\n\nReturns:\n    list or dict: A list of dashboards if successful,\n                or a dict containing an error message.",
-    "parameters": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_by_id",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "get_dashboard_by_id",
-    "description": "Retrieves a specific dashboard by its ID.",
-    "full_doc": "Retrieves a specific dashboard by its ID.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard to retrieve.\n\nReturns:\n    dict: A dictionary containing dashboard details if found,\n        or a dict with an error message if the request fails.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The ID of the dashboard to retrieve."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_by_name",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "get_dashboard_by_name",
-    "description": "Retrieves a specific dashboard by its name.",
-    "full_doc": "Retrieves a specific dashboard by its name.\n\nParameters:\n    dashboard_name (str): The name of the dashboard to retrieve.\n\nReturns:\n    dict or list: A dictionary containing dashboard details if found,\n                or {'error': 'message'} if not found or failed.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_name": {
-          "type": "string",
-          "description": "The name of the dashboard to retrieve."
-        }
-      },
-      "required": [
-        "dashboard_name"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_columns",
-    "module": "dashboard",
-    "sub_module": "dashboard.columns",
-    "class": "Dashboard",
-    "method": "get_dashboard_columns",
-    "description": "Retrieves columns from a specific dashboard, including both widget and filter-level columns.",
-    "full_doc": "Retrieves columns from a specific dashboard, including both widget and filter-level columns.\n\nThis method:\n- Uses the `get_dashboard_by_name` method to fetch the dashboard.\n- Extracts columns from widgets and filters.\n- Deduplicates the final column list.\n\nParameters:\n    dashboard_name (str): The name of the dashboard to retrieve columns from.\n\nReturns:\n    list: A list of dictionaries containing distinct table and column information from the dashboard.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_name": {
-          "type": "string",
-          "description": "The name of the dashboard to retrieve columns from."
-        }
-      },
-      "required": [
-        "dashboard_name"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_script",
-    "module": "dashboard",
-    "sub_module": "dashboard.scripts",
-    "class": "Dashboard",
-    "method": "get_dashboard_script",
-    "description": "Build a formatted dashboard script helper object.",
-    "full_doc": "Build a formatted dashboard script helper object.\n\nRetrieves a dashboard export payload and wraps its script content in a\n:class:`SisenseScript` helper that can render plain text, markdown, or file output.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the dashboard is retrieved successfully,\n    or an ``{\"error\": \"...\"}`` dictionary from ``export_dashboard``.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard identifier to export."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_share",
-    "module": "dashboard",
-    "sub_module": "dashboard.shares",
-    "class": "Dashboard",
-    "method": "get_dashboard_share",
-    "description": "Retrieves share details (users and groups) for a specific dashboard by title.",
-    "full_doc": "Retrieves share details (users and groups) for a specific dashboard by title.\n\nParameters:\n    dashboard_name (str): The title of the dashboard to retrieve share information for.\n\nReturns:\n    list: A list of dictionaries containing share type (user or group), and share name (email or group name),\n        or an empty list if the dashboard is not found or has no shares.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_name": {
-          "type": "string",
-          "description": "The title of the dashboard to retrieve share information for."
-        }
-      },
-      "required": [
-        "dashboard_name"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_shares_v1",
-    "module": "dashboard",
-    "sub_module": "dashboard.shares",
-    "class": "Dashboard",
-    "method": "get_dashboard_shares_v1",
-    "description": "Retrieve share details for a dashboard using the v1 shares endpoint.",
-    "full_doc": "Retrieve share details for a dashboard using the v1 shares endpoint.\n\nSends ``GET /api/v1/dashboards/{dashboard_id}/shares``. This returns the\nraw Sisense shares payload (for example ``sharesTo`` and ``owner``),\nunlike ``get_dashboard_share`` which resolves names from the admin list.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid``.\nadmin_access : bool, optional\n    When ``True`` (default), request with ``adminAccess=true``.\n\nReturns\n-------\ndict[str, Any]\n    The shares response from the API, or ``{\"error\": \"...\"}`` on failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard ``oid``."
-        },
-        "admin_access": {
-          "type": "boolean",
-          "description": "When ``True`` (default), request with ``adminAccess=true``."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_widgets",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "get_dashboard_widgets",
-    "description": "Retrieve widget definitions from an admin export of the dashboard.",
-    "full_doc": "Retrieve widget definitions from an admin export of the dashboard.\n\nUses ``export_dashboard`` (``GET /api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``), then reads the ``widgets``\nfield from the first exported dashboard object\u2014the same payload shape\nused by ``get_dashboard_script`` and ``get_widget_script``. If\n``widgets`` is missing or empty, an empty list is returned.\n\n``dashboard_ref`` is resolved with ``resolve_dashboard_reference`` so it\nmay be either a 24-character dashboard ``oid`` or a dashboard title.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard ``oid`` or title.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of widget objects on success (possibly empty). On failure,\n    ``{\"error\": \"...\"}`` when the reference cannot be resolved or\n    ``export_dashboard`` fails. If ``widgets`` is present but neither a\n    list nor a mapping of widget objects, returns an error dict.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_ref": {
-          "type": "string",
-          "description": "Dashboard ``oid`` or title."
-        }
-      },
-      "required": [
-        "dashboard_ref"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.get_dashboards",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "get_dashboards",
-    "description": "Retrieve dashboards visible to the authenticated user.",
-    "full_doc": "Retrieve dashboards visible to the authenticated user.\n\nSends ``GET /api/v1/dashboards``, which returns dashboards the current\nuser owns or has been shared to \u2014 as opposed to\n``get_all_dashboards``, which uses the admin endpoint and requires\nelevated access.\n\nParameters\n----------\nfields : list[str], optional\n    Subset of fields to include in the response (for example\n    ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are\n    returned.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dashboard objects on success, or ``{\"error\": \"...\"}`` on\n    failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "fields": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Subset of fields to include in the response (for example ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are returned."
-        }
-      },
-      "required": []
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.get_widget_script",
-    "module": "dashboard",
-    "sub_module": "dashboard.scripts",
-    "class": "Dashboard",
-    "method": "get_widget_script",
-    "description": "Build a formatted widget script helper object.",
-    "full_doc": "Build a formatted widget script helper object.\n\nRetrieves a dashboard export payload, selects a widget by index/key, and\nwraps its script content in a :class:`SisenseScript` helper for downstream rendering.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\nwidget_id : str\n    The widget identifier or lookup key used in the exported widget mapping.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the widget is found and has script data,\n    or an ``{\"error\": \"...\"}`` dictionary on failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard identifier to export."
-        },
-        "widget_id": {
-          "type": "string",
-          "description": "The widget identifier or lookup key used in the exported widget mapping."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "widget_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.move_dashboard_to_folder",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "move_dashboard_to_folder",
-    "description": "Move a dashboard into a folder.",
-    "full_doc": "Move a dashboard into a folder.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` with only ``parentFolder``\nin the request body. Other dashboard fields are not modified.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to move.\nfolder_id : str\n    The target folder ``oid`` (``parentFolder`` value).\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object from the API, or ``{\"error\": \"...\"}`` on\n    failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard ``oid`` to move."
-        },
-        "folder_id": {
-          "type": "string",
-          "description": "The target folder ``oid`` (``parentFolder`` value)."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "folder_id"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.publish_dashboard",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "publish_dashboard",
-    "description": "Publish (republish) a dashboard.",
-    "full_doc": "Publish (republish) a dashboard.\n\nSends ``POST /api/v1/dashboards/{dashboard_id}/publish``. By default\n``adminAccess=true`` is appended so an admin token can republish when the\ncaller already has access but is not the owner. Pass ``force=True`` to\nappend ``force=true`` (used after script updates).\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to publish.\nadmin_access : bool, optional\n    When ``True`` (default), request with ``adminAccess=true``.\nforce : bool, optional\n    When ``True``, request with ``force=true``. Default is ``False``.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` or the JSON response body on success. On failure,\n    ``{\"error\": \"...\"}``.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard ``oid`` to publish."
-        },
-        "admin_access": {
-          "type": "boolean",
-          "description": "When ``True`` (default), request with ``adminAccess=true``."
-        },
-        "force": {
-          "type": "boolean",
-          "description": "When ``True``, request with ``force=true``. Default is ``False``."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.rename_dashboard",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "rename_dashboard",
-    "description": "Rename a dashboard.",
-    "full_doc": "Rename a dashboard.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` with only ``title`` in\nthe request body. Other dashboard fields are not modified.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard to rename.\ntitle : str\n    The new dashboard title.\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object on success, or ``{\"error\": \"...\"}`` on\n    failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The ``oid`` of the dashboard to rename."
-        },
-        "title": {
-          "type": "string",
-          "description": "The new dashboard title."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "title"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": []
-  },
-  {
-    "tool_id": "dashboard.resolve_dashboard_reference",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "resolve_dashboard_reference",
-    "description": "Resolve a dashboard reference (ID or name) to a concrete dashboard ID and title.",
-    "full_doc": "Resolve a dashboard reference (ID or name) to a concrete dashboard ID and title.\n\nThis helper accepts a single string that may be either:\n- a Sisense dashboard ID (24-character ID), or\n- a dashboard title (name).\n\nIt first attempts to treat the reference as an ID using\n`get_dashboard_by_id`. If that fails or the reference does not look\nlike an ID, it falls back to `get_dashboard_by_name`. The underlying\nmethods are reused as-is.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard reference to resolve. This can be either an ID or a name.\n\nReturns\n-------\ndict\n    A dictionary with the following keys:\n    - success (bool): True if the reference was resolved to a dashboard.\n    - status_code (int): 200 if resolved successfully, 404 if not found,\n      or 500 if an unexpected error occurred.\n    - dashboard_id (str or None): Resolved dashboard ID (oid) if found,\n      otherwise None.\n    - dashboard_title (str or None): Resolved dashboard title if found,\n      otherwise None.\n    - error (str or None): Error message if success is False, otherwise None.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_ref": {
-          "type": "string",
-          "description": "Dashboard reference to resolve. This can be either an ID or a name."
-        }
-      },
-      "required": [
-        "dashboard_ref"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -1577,7 +958,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -1606,7 +987,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -1658,7 +1039,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -1706,7 +1087,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -1771,7 +1152,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -1805,7 +1186,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -1815,7 +1196,7 @@
     "class": "DataModel",
     "method": "deploy_datamodel",
     "description": "Deploy (build or publish) the specified DataModel based on its type.",
-    "full_doc": "Deploy (build or publish) the specified DataModel based on its type.\n\nThis method supports both Elasticube (EXTRACT) and Live models.\nThe behavior and required parameters differ based on model type:\n\n- For Elasticube models:\n    - build_type (str): Type of deployment. Options:\n        * \"schema_changes\" \u2014 Build only schema changes\n        * \"by_table\" \u2014 Build based on each table's config (e.g. incremental, accumulative)\n        * \"full\" \u2014 Rebuild the entire model from scratch (default)\n    - row_limit (int): Maximum number of rows to process. Defaults to 0 (no limit).\n    - schema_origin (str): Schema source. Options:\n        * \"latest\" \u2014 Build the schema as seen in the Data page (default)\n        * \"running\" \u2014 Build from the last successfully built version\n\n- For Live models:\n    - Only the `build_type` parameter is used internally and will be set to \"publish\"\n    - `row_limit` and `schema_origin` are ignored\n\nParameters:\n    datamodel_name (str): Name of the DataModel to deploy.\n    build_type (str): Type of deployment. Required for EXTRACT only.\n    row_limit (int): Row limit for build. Applicable only for EXTRACT.\n    schema_origin (str): Schema origin for build. Applicable only for EXTRACT.\n\nReturns:\n    dict: Deployment result including status, or error details.",
+    "full_doc": "Deploy (build or publish) the specified DataModel based on its type.\n\nThis method supports both Elasticube (EXTRACT) and Live models.\nThe behavior and required parameters differ based on model type:\n\n- For Elasticube models:\n    - build_type (str): Type of deployment. Options:\n        * \"schema_changes\" — Build only schema changes\n        * \"by_table\" — Build based on each table's config (e.g. incremental, accumulative)\n        * \"full\" — Rebuild the entire model from scratch (default)\n    - row_limit (int): Maximum number of rows to process. Defaults to 0 (no limit).\n    - schema_origin (str): Schema source. Options:\n        * \"latest\" — Build the schema as seen in the Data page (default)\n        * \"running\" — Build from the last successfully built version\n\n- For Live models:\n    - Only the `build_type` parameter is used internally and will be set to \"publish\"\n    - `row_limit` and `schema_origin` are ignored\n\nParameters:\n    datamodel_name (str): Name of the DataModel to deploy.\n    build_type (str): Type of deployment. Required for EXTRACT only.\n    row_limit (int): Row limit for build. Applicable only for EXTRACT.\n    schema_origin (str): Schema origin for build. Applicable only for EXTRACT.\n\nReturns:\n    dict: Deployment result including status, or error details.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -1870,7 +1251,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -1899,7 +1280,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -1928,7 +1309,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -1962,7 +1343,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -1984,7 +1365,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2013,7 +1394,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2035,7 +1416,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2073,7 +1454,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2102,7 +1483,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2131,7 +1512,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2160,7 +1541,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2189,7 +1570,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2211,7 +1592,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2240,7 +1621,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2269,7 +1650,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2313,7 +1694,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2346,7 +1727,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2375,7 +1756,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2412,7 +1793,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2544,7 +1925,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2578,7 +1959,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2615,7 +1996,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2644,7 +2025,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2673,7 +2054,626 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.add_dashboard_script",
+    "module": "dashboard",
+    "sub_module": "dashboard.scripts",
+    "class": "Dashboard",
+    "method": "add_dashboard_script",
+    "description": "Adds or overwrites a script to a dashboard, temporarily changing ownership if required.",
+    "full_doc": "Adds or overwrites a script to a dashboard, temporarily changing ownership if required.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard where the script will be added.\n    script (str): The JavaScript script as either:\n                - A properly formatted JSON string.\n                - A raw Python docstring (multi-line string).\n    executing_user (str, optional): The username of the API user. This is used to temporarily change\n                                the owner of the dashboard, as only the owner can add scripts.\n                                If not provided, assumes the dashboard owner is the same as the API user.\n\nReturns:\n    str: Success message or error details.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ID of the dashboard where the script will be added."
+        },
+        "script": {
+          "type": "string",
+          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
+        },
+        "executing_user": {
+          "type": "string",
+          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "script"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.add_dashboard_shares",
+    "module": "dashboard",
+    "sub_module": "dashboard.shares",
+    "class": "Dashboard",
+    "method": "add_dashboard_shares",
+    "description": "Adds or updates shares for a dashboard, specifying users and groups along with their access rules.",
+    "full_doc": "Adds or updates shares for a dashboard, specifying users and groups along with their access rules.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard to which the shares will be added.\n    shares (list of dicts): A list of dictionaries, each containing:\n        - \"name\" (str): The username or group name.\n        - \"type\" (str): Either \"user\" or \"group\" to indicate the share type.\n        - \"rule\" (str): The access level (e.g., \"view\", \"edit\").\n\nReturns:\n    str: Success message or error details.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ID of the dashboard to which the shares will be added."
+        },
+        "shares": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of dictionaries, each containing: - \"name\" (str): The username or group name. - \"type\" (str): Either \"user\" or \"group\" to indicate the share type. - \"rule\" (str): The access level (e.g., \"view\", \"edit\")."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "shares"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.add_widget_script",
+    "module": "dashboard",
+    "sub_module": "dashboard.scripts",
+    "class": "Dashboard",
+    "method": "add_widget_script",
+    "description": "Adds or overwrites a script for a specific widget within a dashboard.",
+    "full_doc": "Adds or overwrites a script for a specific widget within a dashboard.\n\nIf required, temporarily changes the dashboard ownership, as only the owner can modify widget scripts.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard containing the widget.\n    widget_id (str): The ID of the widget where the script will be added.\n    script (str): The JavaScript script as either:\n                - A properly formatted JSON string.\n                - A raw Python docstring (multi-line string).\n    executing_user (str, optional): The username of the API user. This is used to temporarily change\n                                the owner of the dashboard, as only the owner can add scripts.\n                                If not provided, assumes the dashboard owner is the same as the API user.\n\nReturns:\n    str: Success message or error details.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ID of the dashboard containing the widget."
+        },
+        "widget_id": {
+          "type": "string",
+          "description": "The ID of the widget where the script will be added."
+        },
+        "script": {
+          "type": "string",
+          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
+        },
+        "executing_user": {
+          "type": "string",
+          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "widget_id",
+        "script"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.can_be_owned",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "can_be_owned",
+    "description": "Check whether a dashboard can be owned by the current user.",
+    "full_doc": "Check whether a dashboard can be owned by the current user.\n\nSends ``GET /api/v1/dashboards/{dashboard_id}/can_be_owned``.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to check.\n\nReturns\n-------\ndict[str, Any]\n    The API response on success, or ``{\"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to check."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.export_dashboard",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "export_dashboard",
+    "description": "Export a dashboard definition using the Sisense admin export endpoint.",
+    "full_doc": "Export a dashboard definition using the Sisense admin export endpoint.\n\nSends a GET request to ``/api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``. The response is a JSON array;\nthis method returns the first dashboard object, which includes fields such\nas ``title``, ``oid``, ``script``, ``widgets``, ``layout``, and ``filters``.\nOther features (for example ``get_dashboard_script``) use this payload\ninternally.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to export.\n\nReturns\n-------\ndict[str, Any]\n    The exported dashboard object on success, or ``{\"error\": \"<message>\"}``\n    when the HTTP call fails, the body is not valid JSON, or the payload\n    is not a non-empty list as expected.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to export."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.get_all_dashboards",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "get_all_dashboards",
+    "description": "Retrieves all dashboards from the Sisense server.",
+    "full_doc": "Retrieves all dashboards from the Sisense server.\n\nReturns:\n    list or dict: A list of dashboards if successful,\n                or a dict containing an error message.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_by_id",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "get_dashboard_by_id",
+    "description": "Retrieves a specific dashboard by its ID.",
+    "full_doc": "Retrieves a specific dashboard by its ID.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard to retrieve.\n\nReturns:\n    dict: A dictionary containing dashboard details if found,\n        or a dict with an error message if the request fails.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ID of the dashboard to retrieve."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_by_name",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "get_dashboard_by_name",
+    "description": "Retrieves a specific dashboard by its name.",
+    "full_doc": "Retrieves a specific dashboard by its name.\n\nParameters:\n    dashboard_name (str): The name of the dashboard to retrieve.\n\nReturns:\n    dict or list: A dictionary containing dashboard details if found,\n                or {'error': 'message'} if not found or failed.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_name": {
+          "type": "string",
+          "description": "The name of the dashboard to retrieve."
+        }
+      },
+      "required": [
+        "dashboard_name"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_columns",
+    "module": "dashboard",
+    "sub_module": "dashboard.columns",
+    "class": "Dashboard",
+    "method": "get_dashboard_columns",
+    "description": "Retrieves columns from a specific dashboard, including both widget and filter-level columns.",
+    "full_doc": "Retrieves columns from a specific dashboard, including both widget and filter-level columns.\n\nThis method:\n- Uses the `get_dashboard_by_name` method to fetch the dashboard.\n- Extracts columns from widgets and filters.\n- Deduplicates the final column list.\n\nParameters:\n    dashboard_name (str): The name of the dashboard to retrieve columns from.\n\nReturns:\n    list: A list of dictionaries containing distinct table and column information from the dashboard.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_name": {
+          "type": "string",
+          "description": "The name of the dashboard to retrieve columns from."
+        }
+      },
+      "required": [
+        "dashboard_name"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_script",
+    "module": "dashboard",
+    "sub_module": "dashboard.scripts",
+    "class": "Dashboard",
+    "method": "get_dashboard_script",
+    "description": "Build a formatted dashboard script helper object.",
+    "full_doc": "Build a formatted dashboard script helper object.\n\nRetrieves a dashboard export payload and wraps its script content in a\n:class:`SisenseScript` helper that can render plain text, markdown, or file output.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the dashboard is retrieved successfully,\n    or an ``{\"error\": \"...\"}`` dictionary from ``export_dashboard``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard identifier to export."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_share",
+    "module": "dashboard",
+    "sub_module": "dashboard.shares",
+    "class": "Dashboard",
+    "method": "get_dashboard_share",
+    "description": "Retrieves share details (users and groups) for a specific dashboard by title.",
+    "full_doc": "Retrieves share details (users and groups) for a specific dashboard by title.\n\nParameters:\n    dashboard_name (str): The title of the dashboard to retrieve share information for.\n\nReturns:\n    list: A list of dictionaries containing share type (user or group), and share name (email or group name),\n        or an empty list if the dashboard is not found or has no shares.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_name": {
+          "type": "string",
+          "description": "The title of the dashboard to retrieve share information for."
+        }
+      },
+      "required": [
+        "dashboard_name"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_shares_v1",
+    "module": "dashboard",
+    "sub_module": "dashboard.shares",
+    "class": "Dashboard",
+    "method": "get_dashboard_shares_v1",
+    "description": "Retrieve share details for a dashboard using the v1 shares endpoint.",
+    "full_doc": "Retrieve share details for a dashboard using the v1 shares endpoint.\n\nSends ``GET /api/v1/dashboards/{dashboard_id}/shares``. This returns the\nraw Sisense shares payload (for example ``sharesTo`` and ``owner``),\nunlike ``get_dashboard_share`` which resolves names from the admin list.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid``.\nadmin_access : bool, optional\n    When ``True`` (default), request with ``adminAccess=true``.\n\nReturns\n-------\ndict[str, Any]\n    The shares response from the API, or ``{\"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid``."
+        },
+        "admin_access": {
+          "type": "boolean",
+          "description": "When ``True`` (default), request with ``adminAccess=true``."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_widgets",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "get_dashboard_widgets",
+    "description": "Retrieve widget definitions from an admin export of the dashboard.",
+    "full_doc": "Retrieve widget definitions from an admin export of the dashboard.\n\nUses ``export_dashboard`` (``GET /api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``), then reads the ``widgets``\nfield from the first exported dashboard object—the same payload shape\nused by ``get_dashboard_script`` and ``get_widget_script``. If\n``widgets`` is missing or empty, an empty list is returned.\n\n``dashboard_ref`` is resolved with ``resolve_dashboard_reference`` so it\nmay be either a 24-character dashboard ``oid`` or a dashboard title.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard ``oid`` or title.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of widget objects on success (possibly empty). On failure,\n    ``{\"error\": \"...\"}`` when the reference cannot be resolved or\n    ``export_dashboard`` fails. If ``widgets`` is present but neither a\n    list nor a mapping of widget objects, returns an error dict.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_ref": {
+          "type": "string",
+          "description": "Dashboard ``oid`` or title."
+        }
+      },
+      "required": [
+        "dashboard_ref"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.get_dashboards",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "get_dashboards",
+    "description": "Retrieve dashboards visible to the authenticated user.",
+    "full_doc": "Retrieve dashboards visible to the authenticated user.\n\nSends ``GET /api/v1/dashboards``, which returns dashboards the current\nuser owns or has been shared to — as opposed to\n``get_all_dashboards``, which uses the admin endpoint and requires\nelevated access.\n\nParameters\n----------\nfields : list[str], optional\n    Subset of fields to include in the response (for example\n    ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are\n    returned.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dashboard objects on success, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Subset of fields to include in the response (for example ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are returned."
+        }
+      },
+      "required": []
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.get_widget_script",
+    "module": "dashboard",
+    "sub_module": "dashboard.scripts",
+    "class": "Dashboard",
+    "method": "get_widget_script",
+    "description": "Build a formatted widget script helper object.",
+    "full_doc": "Build a formatted widget script helper object.\n\nRetrieves a dashboard export payload, selects a widget by index/key, and\nwraps its script content in a :class:`SisenseScript` helper for downstream rendering.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\nwidget_id : str\n    The widget identifier or lookup key used in the exported widget mapping.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the widget is found and has script data,\n    or an ``{\"error\": \"...\"}`` dictionary on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard identifier to export."
+        },
+        "widget_id": {
+          "type": "string",
+          "description": "The widget identifier or lookup key used in the exported widget mapping."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "widget_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.move_dashboard_to_folder",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "move_dashboard_to_folder",
+    "description": "Move a dashboard into a folder.",
+    "full_doc": "Move a dashboard into a folder.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` with only ``parentFolder``\nin the request body. Other dashboard fields are not modified.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to move.\nfolder_id : str\n    The target folder ``oid`` (``parentFolder`` value).\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object from the API, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to move."
+        },
+        "folder_id": {
+          "type": "string",
+          "description": "The target folder ``oid`` (``parentFolder`` value)."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "folder_id"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.publish_dashboard",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "publish_dashboard",
+    "description": "Publish (republish) a dashboard.",
+    "full_doc": "Publish (republish) a dashboard.\n\nSends ``POST /api/v1/dashboards/{dashboard_id}/publish``. By default\n``adminAccess=true`` is appended so an admin token can republish when the\ncaller already has access but is not the owner. Pass ``force=True`` to\nappend ``force=true`` (used after script updates).\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to publish.\nadmin_access : bool, optional\n    When ``True`` (default), request with ``adminAccess=true``.\nforce : bool, optional\n    When ``True``, request with ``force=true``. Default is ``False``.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` or the JSON response body on success. On failure,\n    ``{\"error\": \"...\"}``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to publish."
+        },
+        "admin_access": {
+          "type": "boolean",
+          "description": "When ``True`` (default), request with ``adminAccess=true``."
+        },
+        "force": {
+          "type": "boolean",
+          "description": "When ``True``, request with ``force=true``. Default is ``False``."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.rename_dashboard",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "rename_dashboard",
+    "description": "Rename a dashboard.",
+    "full_doc": "Rename a dashboard.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` with only ``title`` in\nthe request body. Other dashboard fields are not modified.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard to rename.\ntitle : str\n    The new dashboard title.\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object on success, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ``oid`` of the dashboard to rename."
+        },
+        "title": {
+          "type": "string",
+          "description": "The new dashboard title."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "title"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": []
+  },
+  {
+    "tool_id": "dashboard.resolve_dashboard_reference",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "resolve_dashboard_reference",
+    "description": "Resolve a dashboard reference (ID or name) to a concrete dashboard ID and title.",
+    "full_doc": "Resolve a dashboard reference (ID or name) to a concrete dashboard ID and title.\n\nThis helper accepts a single string that may be either:\n- a Sisense dashboard ID (24-character ID), or\n- a dashboard title (name).\n\nIt first attempts to treat the reference as an ID using\n`get_dashboard_by_id`. If that fails or the reference does not look\nlike an ID, it falls back to `get_dashboard_by_name`. The underlying\nmethods are reused as-is.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard reference to resolve. This can be either an ID or a name.\n\nReturns\n-------\ndict\n    A dictionary with the following keys:\n    - success (bool): True if the reference was resolved to a dashboard.\n    - status_code (int): 200 if resolved successfully, 404 if not found,\n      or 500 if an unexpected error occurred.\n    - dashboard_id (str or None): Resolved dashboard ID (oid) if found,\n      otherwise None.\n    - dashboard_title (str or None): Resolved dashboard title if found,\n      otherwise None.\n    - error (str or None): Error message if success is False, otherwise None.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_ref": {
+          "type": "string",
+          "description": "Dashboard reference to resolve. This can be either an ID or a name."
+        }
+      },
+      "required": [
+        "dashboard_ref"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2706,7 +2706,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2735,7 +2735,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2757,7 +2757,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2767,7 +2767,7 @@
     "class": "Folder",
     "method": "get_folder_ancestors",
     "description": "Retrieve folders by a caller-supplied structure value.",
-    "full_doc": "Retrieve folders by a caller-supplied structure value.\n\nThin alias for ``get_folders(structure)`` \u2014 passes the ``structure``\nstring through to ``GET /api/v1/folders?structure={structure}``\nunchanged. Provided for compatibility with win2linux workflows that\npass an ancestors-specific structure string.\n\nParameters\n----------\nstructure : str\n    Sisense folder structure type for the request.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    Folder data from the API, or ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Retrieve folders by a caller-supplied structure value.\n\nThin alias for ``get_folders(structure)`` — passes the ``structure``\nstring through to ``GET /api/v1/folders?structure={structure}``\nunchanged. Provided for compatibility with win2linux workflows that\npass an ancestors-specific structure string.\n\nParameters\n----------\nstructure : str\n    Sisense folder structure type for the request.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    Folder data from the API, or ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2786,7 +2786,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2815,7 +2815,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2842,7 +2842,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2864,7 +2864,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2905,7 +2905,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2934,7 +2934,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2965,7 +2965,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -2996,7 +2996,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3018,7 +3018,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3047,7 +3047,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3104,7 +3104,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3165,7 +3165,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3193,7 +3193,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3221,7 +3221,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3266,7 +3266,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3329,7 +3329,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3404,7 +3404,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3437,7 +3437,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3470,7 +3470,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3499,7 +3499,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3535,7 +3535,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3564,7 +3564,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3600,7 +3600,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3622,7 +3622,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3651,7 +3651,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3661,7 +3661,7 @@
     "class": "Plugins",
     "method": "restore_snapshot",
     "description": "Restore plugin states to exactly match a previously saved snapshot.",
-    "full_doc": "Restore plugin states to exactly match a previously saved snapshot.\n\nCompares the snapshot's plugin list against the live instance state and\ncomputes the minimal set of changes needed \u2014 enabling plugins that should\nbe on, disabling plugins that should be off. Plugins already in the\ncorrect state are skipped.\n\nParameters\n----------\nsnapshot : dict[str, Any]\n    A snapshot dict as returned by :meth:`save_snapshot`, containing at\n    minimum a ``\"plugins\"`` key with a list of ``folderName`` values for\n    the plugins that should be enabled. All other plugins will be disabled.\nbulk : bool, optional\n    When ``True`` (default), all enable and disable changes are sent in a\n    single PATCH request. When ``False``, one PATCH request is made per\n    plugin change.\n\nReturns\n-------\ndict[str, Any]\n    A summary dict with keys:\n\n    - ``enabled`` (list[str]): ``folderName`` values that were enabled.\n    - ``disabled`` (list[str]): ``folderName`` values that were disabled.\n    - ``already_set`` (int): Count of plugins already in the correct state.\n    - ``not_in_instance`` (list[str]): Snapshot entries with no matching plugin.\n    - ``errors`` (list[str]): ``folderName`` values where the PATCH failed\n      (non-bulk mode only).\n\n    Returns ``{\"error\": \"...\"}`` if the plugin list could not be fetched or\n    the snapshot is missing the ``\"plugins\"`` key.",
+    "full_doc": "Restore plugin states to exactly match a previously saved snapshot.\n\nCompares the snapshot's plugin list against the live instance state and\ncomputes the minimal set of changes needed — enabling plugins that should\nbe on, disabling plugins that should be off. Plugins already in the\ncorrect state are skipped.\n\nParameters\n----------\nsnapshot : dict[str, Any]\n    A snapshot dict as returned by :meth:`save_snapshot`, containing at\n    minimum a ``\"plugins\"`` key with a list of ``folderName`` values for\n    the plugins that should be enabled. All other plugins will be disabled.\nbulk : bool, optional\n    When ``True`` (default), all enable and disable changes are sent in a\n    single PATCH request. When ``False``, one PATCH request is made per\n    plugin change.\n\nReturns\n-------\ndict[str, Any]\n    A summary dict with keys:\n\n    - ``enabled`` (list[str]): ``folderName`` values that were enabled.\n    - ``disabled`` (list[str]): ``folderName`` values that were disabled.\n    - ``already_set`` (int): Count of plugins already in the correct state.\n    - ``not_in_instance`` (list[str]): Snapshot entries with no matching plugin.\n    - ``errors`` (list[str]): ``folderName`` values where the PATCH failed\n      (non-bulk mode only).\n\n    Returns ``{\"error\": \"...\"}`` if the plugin list could not be fetched or\n    the snapshot is missing the ``\"plugins\"`` key.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3684,7 +3684,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3706,7 +3706,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3740,7 +3740,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3774,7 +3774,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3808,7 +3808,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3839,7 +3839,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3870,7 +3870,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3901,7 +3901,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3932,7 +3932,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3963,7 +3963,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -3994,7 +3994,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -4025,7 +4025,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -4059,7 +4059,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   },
   {
@@ -4100,7 +4100,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": []
   }
 ]

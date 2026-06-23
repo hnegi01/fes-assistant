@@ -6,26 +6,12 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import pysisense
-from pysisense import *  # noqa: F401, F403 — brings in all facade classes defined in __all__
 
-# Maps registry module key → facade class.
-# Module key is what appears in tool_id ("access.get_all_users") and in the registry
-# "module" field — keep existing keys stable so tool_ids don't change.
-# To add a new module: add ONE line here.
-MODULES: Dict[str, Any] = {
-    "access": AccessManagement,  # noqa: F405, F821
-    "blox": Blox,  # noqa: F405, F821
-    "custom_code": CustomCode,  # noqa: F405, F821
-    "dashboard": Dashboard,  # noqa: F405, F821
-    "datamodel": DataModel,  # noqa: F405, F821
-    "encryption": Encryption,  # noqa: F405, F821
-    "folder": Folder,  # noqa: F405, F821
-    "metadata": Metadata,  # noqa: F405, F821
-    "migration": Migration,  # noqa: F405, F821
-    "plugins": Plugins,  # noqa: F405, F821
-    "queries": Queries,  # noqa: F405, F821
-    "wellcheck": WellCheck,  # noqa: F405, F821
-}
+from .registry_core import (
+    MODULES,
+    _parse_class_docstring,  # noqa: F401 — re-exported for test_registry_builder.py compat
+    _write_json,
+)
 
 # ---------------------------------------------------------------------------
 # Helper: parse parameter meta from docstring (Google-style + NumPy-style)
@@ -709,6 +695,12 @@ def _mixin_to_sub_module(module_key: str, mixin_class: type) -> str:
 # Registry builder
 # ---------------------------------------------------------------------------
 
+# Tool IDs excluded from the registry entirely.
+# Add here when a method's output is incompatible with the app's rendering pipeline.
+_EXCLUDED_TOOL_IDS: frozenset = frozenset({
+    "wellcheck.run_full_wellcheck",  # nested multi-section output; use individual checks instead
+})
+
 
 def build_registry() -> list:
     sdk_version = getattr(pysisense, "__version__", "unknown")
@@ -729,6 +721,8 @@ def build_registry() -> list:
             sig = inspect.signature(func)
 
             tool_id = f"{module_name}.{name}"
+            if tool_id in _EXCLUDED_TOOL_IDS:
+                continue
             schema = json_schema_from_signature(sig, doc)
             mutates = is_mutating(name, doc)
             tags = infer_tags(module_name, name, mutates)
@@ -768,13 +762,9 @@ def main() -> None:
     config_dir.mkdir(exist_ok=True)
 
     out_file = config_dir / "tools.registry.json"
-
-    with out_file.open("w", encoding="utf-8") as f:
-        json.dump(registry, f, indent=2)
-
-    print(f"Built registry for {len(registry)} tools → {out_file}")
-    print("Sample:")
-    print(json.dumps(registry[:3], indent=2))
+    _write_json(out_file, registry)
+    print(f"Flat registry: {len(registry)} tools → {out_file}")
+    print("Run 02_add_llm_examples_to_registry to generate the hierarchical registry with examples.")
 
 
 if __name__ == "__main__":

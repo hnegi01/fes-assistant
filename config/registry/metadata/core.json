@@ -1,0 +1,84 @@
+[
+  {
+    "tool_id": "metadata.add_datasource_measure",
+    "description": "Create a saved formula measure in Sisense metadata.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "measure": {
+          "type": "object",
+          "description": "Measure object in Sisense metadata format (for example datasource, table, column, expression, and related fields)."
+        }
+      },
+      "required": [
+        "measure"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "metadata.get_datasource_dimensions",
+    "description": "Retrieve saved filter dimensions for a datasource.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datasource": {
+          "type": "string",
+          "description": "Datasource identifier (for example datamodel title)."
+        },
+        "ds_full_name": {
+          "type": "string",
+          "description": "Full datasource name (for example ``localhost/MyModel``)."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "metadata.get_datasource_measures",
+    "description": "Retrieve saved formula measures for a datasource.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datasource": {
+          "type": "string",
+          "description": "Datasource identifier (for example datamodel title)."
+        },
+        "ds_full_name": {
+          "type": "string",
+          "description": "Full datasource name (for example ``localhost/MyModel``)."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "metadata.get_datasources",
+    "description": "Retrieve all datasources visible to the authenticated user.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "metadata.post_metadata_query",
+    "description": "Execute a metadata query against Sisense.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query_payload": {
+          "type": "object",
+          "description": "Metadata query body as required by the Sisense API."
+        }
+      },
+      "required": [
+        "query_payload"
+      ]
+    },
+    "mutates": true
+  }
+]

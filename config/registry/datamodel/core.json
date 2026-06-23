@@ -1,0 +1,150 @@
+[
+  {
+    "tool_id": "datamodel.delete_datamodel",
+    "description": "Delete a data model by title and server using the GraphQL ECM endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The exact title of the data model to delete."
+        },
+        "server": {
+          "type": "string",
+          "description": "The server name where the model is hosted (for example ``\"LocalHost\"``)."
+        }
+      },
+      "required": [
+        "title",
+        "server"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "datamodel.describe_datamodel",
+    "description": "Retrieve detailed datamodel structure in a flat, row-based format suitable for DataFrame or CSV export.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the DataModel to describe."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.describe_datamodel_raw",
+    "description": "Retrieve detailed information about a specific DataModel, including share details.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the DataModel to describe."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.get_all_datamodel",
+    "description": "Retrieves metadata details of all DataModels using an undocumented internal API.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.get_datamodel",
+    "description": "Retrieves a DataModel by its name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the DataModel to retrieve."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.get_elasticubes",
+    "description": "List all ElastiCubes using the legacy v1 endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.get_model_schema",
+    "description": "Retrieves the schema of a DataModel, including tables and columns.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the DataModel to retrieve the schema for."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.load_datamodel",
+    "description": "Look up a data model's OID by title using the GraphQL ECM endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The exact title of the data model to look up."
+        },
+        "server": {
+          "type": "string",
+          "description": "The server name where the model is hosted. Defaults to ``\"LocalHost\"``."
+        }
+      },
+      "required": [
+        "title"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "datamodel.resolve_datamodel_reference",
+    "description": "Resolve a data model reference (ID or title) to a concrete data model ID and title.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_ref": {
+          "type": "string",
+          "description": "Data model reference to resolve. This can be either an ID or a name."
+        }
+      },
+      "required": [
+        "datamodel_ref"
+      ]
+    },
+    "mutates": false
+  }
+]

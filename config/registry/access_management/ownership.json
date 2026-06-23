@@ -1,0 +1,37 @@
+[
+  {
+    "tool_id": "access_management.change_folder_and_dashboard_ownership",
+    "description": "Method to change the ownership of folders and optionally dashboards.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "executing_user": {
+          "type": "string",
+          "description": "executing_user parameter"
+        },
+        "folder_name": {
+          "type": "string",
+          "description": "The target folder whose ownership needs to be changed."
+        },
+        "new_owner_name": {
+          "type": "string",
+          "description": "The new owner to whom the folder (and optionally dashboards) ownership will be transferred."
+        },
+        "original_owner_rule": {
+          "type": "string",
+          "description": "Specifies the ownership rule to set original owner after changing ownership('edit' or 'view'). Default is 'edit'."
+        },
+        "change_dashboard_ownership": {
+          "type": "boolean",
+          "description": "Specifies whether to also change the ownership of dashboards in the folder tree. Default is True."
+        }
+      },
+      "required": [
+        "executing_user",
+        "folder_name",
+        "new_owner_name"
+      ]
+    },
+    "mutates": true
+  }
+]

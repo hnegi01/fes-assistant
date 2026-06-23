@@ -1,0 +1,37 @@
+[
+  {
+    "tool_id": "migration.migrate_all_users",
+    "description": "Migrate all eligible users from the source environment to the target environment using the bulk endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "emit": {
+          "type": "object",
+          "description": "Optional callback invoked with structured progress events. If not provided, the method emits no events and only returns a final result. Event payloads follow a consistent shape: - ``type``: str (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\") - ``step``: str logical step identifier - ``message``: str human-readable message - Additional fields depending on the step (counts, status_code, etc.)"
+        }
+      },
+      "required": []
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "migration.migrate_users",
+    "description": "Migrates specific users from the source environment to the target environment.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_name_list": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of user names to migrate."
+        }
+      },
+      "required": [
+        "user_name_list"
+      ]
+    },
+    "mutates": true
+  }
+]

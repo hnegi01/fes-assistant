@@ -1,0 +1,383 @@
+"""
+backend/agent/_config.py
+
+LLM provider configuration, logging, env helpers, and observability utilities.
+
+What lives here:
+  - LiteLLM + LangSmith wiring (_configure_langsmith_tracing)
+  - Logging setup (logger, audit_logger, LOG_DIR, LLM_TRACES_PATH)
+  - Env helpers (_require_env, _env_bool)
+  - AWS Secrets Manager fallback for Azure OpenAI credentials
+  - Mutation and summarization control flags
+  - _LlmConfig dataclass and _build_llm_config() factory
+  - LLM_CONFIG singleton (built at import)
+  - Observability helpers: _scrub_secrets, _log_json_truncated
+  - _LLM_TRACE_COLUMNS, _write_llm_trace (CSV tracing)
+"""
+
+from __future__ import annotations
+
+import csv
+import datetime
+import json
+import logging
+import os
+from dataclasses import dataclass
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import litellm
+
+# Drop unsupported params silently so the same call works across providers.
+litellm.drop_params = True
+
+
+def _configure_langsmith_tracing() -> None:
+    """Wire LiteLLM → LangSmith when LANGSMITH_TRACING=true.
+
+    Extracted into a function so tests can call it directly with monkeypatched
+    env vars without reloading the module.
+    """
+    if os.getenv("LANGSMITH_TRACING", "").strip().lower() == "true":
+        # macOS venv Python often lacks system CA certs; point to certifi's bundle.
+        try:
+            import certifi
+
+            os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+            os.environ.setdefault("REQUESTS_CA_BUNDLE", certifi.where())
+        except ImportError:
+            pass
+
+        litellm.success_callback = ["langsmith"]
+        litellm.failure_callback = ["langsmith"]
+    else:
+        litellm.success_callback = []
+        litellm.failure_callback = []
+
+
+_configure_langsmith_tracing()
+
+# Optional: boto3 for AWS Secrets Manager (Azure OpenAI credentials fallback)
+try:
+    import boto3
+    from botocore.exceptions import ClientError
+
+    _BOTO3_AVAILABLE = True
+except ImportError:
+    _BOTO3_AVAILABLE = False
+
+
+# -----------------------------------------------------------------------------
+# Logging
+# -----------------------------------------------------------------------------
+LOG_LEVEL_ENV_VAR = "FES_LOG_LEVEL"
+DEFAULT_LOG_LEVEL = "INFO"
+
+_log_level_name = os.getenv(LOG_LEVEL_ENV_VAR, DEFAULT_LOG_LEVEL).upper()
+_log_level = getattr(logging, _log_level_name, logging.INFO)
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+LOG_DIR = ROOT_DIR / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+LLM_TRACES_PATH = LOG_DIR / "llm_traces.csv"
+
+logger = logging.getLogger("backend.agent.llm_agent")
+logger.setLevel(_log_level)
+logger.propagate = False
+
+if not any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
+    _fh = RotatingFileHandler(
+        LOG_DIR / "llm_agent.log",
+        maxBytes=10 * 1024 * 1024,
+        backupCount=5,
+        encoding="utf-8",
+    )
+    _fh.setLevel(_log_level)
+    _fh.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s"))
+    logger.addHandler(_fh)
+
+logger.info("llm_agent logger initialized at level %s (env %s)", _log_level_name, LOG_LEVEL_ENV_VAR)
+
+
+# -----------------------------------------------------------------------------
+# Env helpers
+# -----------------------------------------------------------------------------
+def _require_env(name: str) -> str:
+    """Read a required environment variable, raising RuntimeError if missing or empty."""
+    value = os.getenv(name)
+    if not value:
+        raise RuntimeError(f"Missing required env var: {name}")
+    return value
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    """Read a boolean environment variable."""
+    raw = os.getenv(name)
+    if raw is None or raw.strip() == "":
+        return default
+    return raw.strip().lower() in ("1", "true", "yes", "y", "on")
+
+
+# -----------------------------------------------------------------------------
+# AWS Secrets Manager fallback (Azure OpenAI only)
+# -----------------------------------------------------------------------------
+AWS_SECRET_ID_ENV_VAR = "FES_AZURE_OPENAI_SECRET_ID"
+AWS_REGION_ENV_VAR = "AWS_REGION"
+
+
+def _get_azure_openai_secrets_from_aws() -> Dict[str, str]:
+    """
+    Fetch Azure OpenAI credentials from AWS Secrets Manager.
+
+    Requires env: FES_AZURE_OPENAI_SECRET_ID (secret name/id), AWS_REGION.
+    Expects the secret to be a JSON string with keys such as:
+    AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, and optionally AZURE_OPENAI_DEPLOYMENT.
+    """
+    if not _BOTO3_AVAILABLE:
+        raise RuntimeError("AWS Secrets Manager fallback requires boto3. Install with: pip install boto3")
+
+    secret_id = os.getenv(AWS_SECRET_ID_ENV_VAR)
+    region = os.getenv(AWS_REGION_ENV_VAR)
+
+    if not (secret_id and region):
+        raise RuntimeError(
+            f"To use AWS Secrets Manager for Azure OpenAI credentials, "
+            f"set {AWS_SECRET_ID_ENV_VAR} and {AWS_REGION_ENV_VAR}"
+        )
+
+    try:
+        client = boto3.client("secretsmanager", region_name=region)
+        response = client.get_secret_value(SecretId=secret_id)
+    except ClientError as e:
+        logger.exception("Failed to get secret %s from AWS Secrets Manager: %s", secret_id, e)
+        raise RuntimeError(f"Failed to get Azure OpenAI secret from AWS Secrets Manager: {e}") from e
+
+    secret_str = response.get("SecretString")
+    if not secret_str:
+        raise RuntimeError(f"Secret {secret_id} has no SecretString (binary secrets not supported)")
+
+    try:
+        data = json.loads(secret_str)
+    except json.JSONDecodeError as e:
+        raise RuntimeError(f"Secret {secret_id} is not valid JSON: {e}") from e
+
+    if not isinstance(data, dict):
+        raise RuntimeError(f"Secret {secret_id} must be a JSON object")
+
+    endpoint = (data.get("AZURE_OPENAI_ENDPOINT") or "").strip()
+    api_key = (data.get("AZURE_OPENAI_API_KEY") or "").strip()
+
+    if not endpoint or not api_key:
+        raise RuntimeError(f"Secret {secret_id} must contain AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY")
+
+    logger.info(
+        "Loaded Azure OpenAI credentials from AWS Secrets Manager (secret_id=%s, region=%s)",
+        secret_id,
+        region,
+    )
+
+    return {
+        "AZURE_OPENAI_ENDPOINT": endpoint,
+        "AZURE_OPENAI_API_KEY": api_key,
+        "AZURE_OPENAI_DEPLOYMENT": (data.get("AZURE_OPENAI_DEPLOYMENT") or "").strip(),
+    }
+
+
+# -----------------------------------------------------------------------------
+# Mutation + summarization controls
+# -----------------------------------------------------------------------------
+# If False, mutating tools are not included in the tool list sent to the LLM.
+ALLOW_MUTATING_TOOLS: bool = True
+
+# If True, mutating tool calls require explicit UI approval (two-phase).
+REQUIRE_MUTATION_CONFIRM: bool = True
+
+# Global hard cap: if False, tool results are never sent to the LLM for summarization.
+ALLOW_SUMMARIZATION: bool = _env_bool("ALLOW_SUMMARIZATION", default=True)
+logger.info("ALLOW_SUMMARIZATION=%s", ALLOW_SUMMARIZATION)
+
+# Separate audit logger for mutations
+audit_logger = logging.getLogger("backend.agent.llm_agent.mutations")
+audit_logger.setLevel(_log_level)
+audit_logger.propagate = False
+if not any(isinstance(h, logging.FileHandler) for h in audit_logger.handlers):
+    _audit_fh = logging.FileHandler(LOG_DIR / "mutations.log", encoding="utf-8")
+    _audit_fh.setLevel(_log_level)
+    _audit_fh.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s"))
+    audit_logger.addHandler(_audit_fh)
+
+
+# -----------------------------------------------------------------------------
+# LLM provider config
+# -----------------------------------------------------------------------------
+MAX_LLM_HTTP_RETRIES: int = int(os.getenv("LLM_HTTP_MAX_RETRIES", "3"))
+LLM_HTTP_RETRY_BASE_DELAY: float = float(os.getenv("LLM_HTTP_RETRY_BASE_DELAY", "0.5"))
+LLM_PLANNING_HISTORY_TURNS: int = int(os.getenv("LLM_PLANNING_HISTORY_TURNS", "5"))
+
+LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "databricks").strip().lower()
+logger.info("Using LLM_PROVIDER=%s", LLM_PROVIDER)
+
+
+@dataclass(frozen=True)
+class _LlmConfig:
+    model: str  # LiteLLM model string: "azure/gpt-4o", "databricks/ep", "huggingface/..."
+    api_key: str
+    api_base: Optional[str]  # Provider base URL; None = LiteLLM default
+    api_version: Optional[str]  # Azure legacy API version only
+    timeout_seconds: float
+
+
+def _build_llm_config() -> _LlmConfig:
+    """
+    Build LiteLLM-compatible configuration from environment variables.
+
+    LiteLLM routes by model string prefix:
+      "openai/<name>"       → OpenAI-compatible endpoint (Azure v1 style)
+      "azure/<name>"        → Azure OpenAI (legacy deployment URL)
+      "databricks/<name>"   → Databricks Model Serving
+      "huggingface/<name>"  → HuggingFace Inference API
+    """
+    timeout_seconds = float(os.getenv("LLM_HTTP_TIMEOUT", "60"))
+
+    if LLM_PROVIDER == "azure":
+        az_style = os.getenv("AZURE_OPENAI_API_STYLE", "v1").strip().lower()
+        az_endpoint = (os.getenv("AZURE_OPENAI_ENDPOINT") or "").strip().rstrip("/")
+        az_deployment = (os.getenv("AZURE_OPENAI_DEPLOYMENT") or "").strip()
+        az_api_key = (os.getenv("AZURE_OPENAI_API_KEY") or "").strip()
+
+        # If endpoint or api_key empty, try AWS Secrets Manager
+        if not az_endpoint or not az_api_key:
+            secrets = _get_azure_openai_secrets_from_aws()
+            if not az_endpoint:
+                az_endpoint = secrets["AZURE_OPENAI_ENDPOINT"].rstrip("/")
+            if not az_api_key:
+                az_api_key = secrets["AZURE_OPENAI_API_KEY"]
+            if not az_deployment and secrets.get("AZURE_OPENAI_DEPLOYMENT"):
+                az_deployment = secrets["AZURE_OPENAI_DEPLOYMENT"]
+
+        if not az_endpoint or not az_api_key:
+            raise RuntimeError(
+                "Azure OpenAI requires AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY "
+                "(set in .env or in AWS Secrets Manager via FES_AZURE_OPENAI_SECRET_ID and AWS_REGION)."
+            )
+        if not az_deployment:
+            raise RuntimeError("Azure OpenAI requires AZURE_OPENAI_DEPLOYMENT (set in .env or in the AWS secret).")
+
+        az_api_ver = os.getenv("AZURE_OPENAI_API_VERSION", "2024-11-20").strip()
+
+        if az_style == "v1":
+            # Non-standard Azure route: {endpoint}/openai/v1/chat/completions
+            return _LlmConfig(
+                model=f"openai/{az_deployment}",
+                api_key=az_api_key,
+                api_base=f"{az_endpoint}/openai/v1",
+                api_version=None,
+                timeout_seconds=timeout_seconds,
+            )
+        else:
+            # Standard Azure deployment URL
+            return _LlmConfig(
+                model=f"azure/{az_deployment}",
+                api_key=az_api_key,
+                api_base=az_endpoint,
+                api_version=az_api_ver,
+                timeout_seconds=timeout_seconds,
+            )
+
+    if LLM_PROVIDER == "databricks":
+        host = _require_env("DATABRICKS_HOST").rstrip("/")
+        token = _require_env("DATABRICKS_TOKEN")
+        endpoint = _require_env("LLM_ENDPOINT")
+        return _LlmConfig(
+            model=f"databricks/{endpoint}",
+            api_key=token,
+            api_base=host,
+            api_version=None,
+            timeout_seconds=timeout_seconds,
+        )
+
+    if LLM_PROVIDER == "huggingface":
+        hf_api_key = _require_env("HUGGINGFACE_API_KEY")
+        hf_model = _require_env("HUGGINGFACE_MODEL")
+        return _LlmConfig(
+            model=f"huggingface/{hf_model}",
+            api_key=hf_api_key,
+            api_base=None,
+            api_version=None,
+            timeout_seconds=timeout_seconds,
+        )
+
+    raise RuntimeError(f"Unsupported LLM_PROVIDER: {LLM_PROVIDER!r}. Valid: azure, databricks, huggingface")
+
+
+LLM_CONFIG = _build_llm_config()
+
+
+# -----------------------------------------------------------------------------
+# Observability helpers (credential-safe logging + CSV tracing)
+# -----------------------------------------------------------------------------
+def _scrub_secrets(obj: Any) -> Any:
+    """Recursively redact credential fields from dicts/lists before logging."""
+    if isinstance(obj, dict):
+        cleaned: Dict[str, Any] = {}
+        for k, v in obj.items():
+            key_l = str(k).lower()
+            if key_l in (
+                "token", "api_key", "api-key", "apikey", "authorization", "auth",
+                "password", "passwd", "secret", "access_token", "refresh_token",
+                "id_token", "bearer_token",
+            ):
+                cleaned[k] = "***REDACTED***"
+            else:
+                cleaned[k] = _scrub_secrets(v)
+        return cleaned
+    if isinstance(obj, list):
+        return [_scrub_secrets(x) for x in obj]
+    return obj
+
+
+def _log_json_truncated(title: str, obj: Any, max_len: int = 2000) -> None:
+    """Log a JSON representation of obj, truncated for readability."""
+    try:
+        text = json.dumps(_scrub_secrets(obj), indent=2, ensure_ascii=False, default=str)
+    except Exception:
+        text = repr(obj)
+    if len(text) > max_len:
+        text = text[:max_len] + "... [truncated]"
+    logger.debug("%s:\n%s", title, text)
+
+
+_LLM_TRACE_COLUMNS: List[str] = [
+    "timestamp",
+    "trace_id",
+    "mode",
+    "user_message",
+    "model",
+    "provider",
+    "tools_available",
+    "routing_module",
+    "routing_latency_ms",
+    "tool_selected",
+    "outcome",
+    "planning_tokens_in",
+    "planning_tokens_out",
+    "planning_latency_ms",
+    "summary_tokens_in",
+    "summary_tokens_out",
+    "summary_latency_ms",
+    "summarization_used",
+]
+
+
+def _write_llm_trace(trace: Dict[str, Any]) -> None:
+    """Append one row to llm_traces.csv. Swallows all errors — never breaks a turn."""
+    try:
+        write_header = not LLM_TRACES_PATH.exists()
+        with LLM_TRACES_PATH.open("a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=_LLM_TRACE_COLUMNS, extrasaction="ignore")
+            if write_header:
+                writer.writeheader()
+            writer.writerow({col: trace.get(col, "") for col in _LLM_TRACE_COLUMNS})
+    except Exception as exc:
+        logger.warning("Failed to write LLM trace: %s", exc)

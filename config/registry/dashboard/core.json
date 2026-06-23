@@ -1,0 +1,201 @@
+[
+  {
+    "tool_id": "dashboard.can_be_owned",
+    "description": "Check whether a dashboard can be owned by the current user.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to check."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "dashboard.export_dashboard",
+    "description": "Export a dashboard definition using the Sisense admin export endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to export."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "dashboard.get_all_dashboards",
+    "description": "Retrieves all dashboards from the Sisense server.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_by_id",
+    "description": "Retrieves a specific dashboard by its ID.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ID of the dashboard to retrieve."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_by_name",
+    "description": "Retrieves a specific dashboard by its name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_name": {
+          "type": "string",
+          "description": "The name of the dashboard to retrieve."
+        }
+      },
+      "required": [
+        "dashboard_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_widgets",
+    "description": "Retrieve widget definitions from an admin export of the dashboard.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_ref": {
+          "type": "string",
+          "description": "Dashboard ``oid`` or title."
+        }
+      },
+      "required": [
+        "dashboard_ref"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "dashboard.get_dashboards",
+    "description": "Retrieve dashboards visible to the authenticated user.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Subset of fields to include in the response (for example ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are returned."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "dashboard.move_dashboard_to_folder",
+    "description": "Move a dashboard into a folder.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to move."
+        },
+        "folder_id": {
+          "type": "string",
+          "description": "The target folder ``oid`` (``parentFolder`` value)."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "folder_id"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "dashboard.publish_dashboard",
+    "description": "Publish (republish) a dashboard.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to publish."
+        },
+        "admin_access": {
+          "type": "boolean",
+          "description": "When ``True`` (default), request with ``adminAccess=true``."
+        },
+        "force": {
+          "type": "boolean",
+          "description": "When ``True``, request with ``force=true``. Default is ``False``."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "dashboard.rename_dashboard",
+    "description": "Rename a dashboard.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ``oid`` of the dashboard to rename."
+        },
+        "title": {
+          "type": "string",
+          "description": "The new dashboard title."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "title"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "dashboard.resolve_dashboard_reference",
+    "description": "Resolve a dashboard reference (ID or name) to a concrete dashboard ID and title.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_ref": {
+          "type": "string",
+          "description": "Dashboard reference to resolve. This can be either an ID or a name."
+        }
+      },
+      "required": [
+        "dashboard_ref"
+      ]
+    },
+    "mutates": false
+  }
+]

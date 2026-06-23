@@ -1,0 +1,122 @@
+[
+  {
+    "tool_id": "datamodel.create_connections",
+    "description": "Creates a new connection using the provided payload.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "connection_payload": {
+          "type": "object",
+          "description": "The configuration payload for the connection."
+        }
+      },
+      "required": [
+        "connection_payload"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "datamodel.generate_connections_payload",
+    "description": "Generates the appropriate connections payload based on the datasource type.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datasource_type": {
+          "type": "string",
+          "description": "Type of datasource (e.g., \"ATHENA\", \"SNOWFLAKE\", \"ORACLE\")."
+        },
+        "connection_params": {
+          "type": "object",
+          "description": "Connection details for the datasource."
+        }
+      },
+      "required": [
+        "datasource_type",
+        "connection_params"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.get_connection",
+    "description": "Retrieves a Connection by its name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "connection_name": {
+          "type": "string",
+          "description": "Name of the connection to filter by."
+        }
+      },
+      "required": [
+        "connection_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.get_connections",
+    "description": "Retrieve all connections.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.get_table_schema",
+    "description": "Retrieves the schema of a table in a specified connection from Data Source.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "connection_name": {
+          "type": "string",
+          "description": "Name of the connection."
+        },
+        "database_name": {
+          "type": "string",
+          "description": "Name of the database."
+        },
+        "schema_name": {
+          "type": "string",
+          "description": "Name of the schema."
+        },
+        "table_name": {
+          "type": "string",
+          "description": "Name of the table."
+        }
+      },
+      "required": [
+        "connection_name",
+        "database_name",
+        "schema_name",
+        "table_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.update_connection",
+    "description": "Update an existing connection.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "connection_id": {
+          "type": "string",
+          "description": "Connection ``oid`` to update."
+        },
+        "connection_data": {
+          "type": "object",
+          "description": "Fields to update (for example ``name``, ``parameters``, ``provider``). Supported keys depend on the Sisense connection type."
+        }
+      },
+      "required": [
+        "connection_id",
+        "connection_data"
+      ]
+    },
+    "mutates": true
+  }
+]

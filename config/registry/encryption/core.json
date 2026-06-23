@@ -1,0 +1,36 @@
+[
+  {
+    "tool_id": "encryption.decrypt",
+    "description": "Decrypt a value using the Sisense encryption service.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "type": "object",
+          "description": "Decryption request body (typically includes a ``value`` field with the ciphertext to decrypt)."
+        }
+      },
+      "required": [
+        "payload"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "encryption.encrypt",
+    "description": "Encrypt a value using the Sisense encryption service.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "type": "object",
+          "description": "Encryption request body (typically includes a ``value`` field with the plaintext to encrypt)."
+        }
+      },
+      "required": [
+        "payload"
+      ]
+    },
+    "mutates": true
+  }
+]

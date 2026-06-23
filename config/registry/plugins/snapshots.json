@@ -1,0 +1,33 @@
+[
+  {
+    "tool_id": "plugins.restore_snapshot",
+    "description": "Restore plugin states to exactly match a previously saved snapshot.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "snapshot": {
+          "type": "object",
+          "description": "A snapshot dict as returned by :meth:`save_snapshot`, containing at minimum a ``\"plugins\"`` key with a list of ``folderName`` values for the plugins that should be enabled. All other plugins will be disabled."
+        },
+        "bulk": {
+          "type": "boolean",
+          "description": "When ``True`` (default), all enable and disable changes are sent in a single PATCH request. When ``False``, one PATCH request is made per plugin change."
+        }
+      },
+      "required": [
+        "snapshot"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "plugins.save_snapshot",
+    "description": "Capture the current plugin enable/disable state as a snapshot.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": true
+  }
+]

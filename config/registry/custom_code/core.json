@@ -1,0 +1,163 @@
+[
+  {
+    "tool_id": "custom_code.create_notebook",
+    "description": "Create a new notebook.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "notebook_data": {
+          "type": "object",
+          "description": "Notebook creation payload (for example ``notebookType``, ``displayName``, manifest fields)."
+        },
+        "use_internal_header": {
+          "type": "boolean",
+          "description": "When ``True`` (default), send ``Internal: true`` header."
+        }
+      },
+      "required": [
+        "notebook_data"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "custom_code.delete_notebook",
+    "description": "Delete a notebook by ID.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "notebook_id": {
+          "type": "string",
+          "description": "Notebook UUID or identifier."
+        }
+      },
+      "required": [
+        "notebook_id"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "custom_code.export_notebook",
+    "description": "Export a notebook definition.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "notebook_id": {
+          "type": "string",
+          "description": "Notebook UUID or identifier."
+        }
+      },
+      "required": [
+        "notebook_id"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "custom_code.get_notebooks",
+    "description": "Retrieve notebooks from Sisense.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "notebook_type": {
+          "type": "string",
+          "description": "When provided, sets ``notebookType`` query parameter (for example ``CustomCodeTransformation``)."
+        },
+        "params": {
+          "type": "object",
+          "description": "Additional query parameters merged with ``notebookType`` when set."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "custom_code.list_notebook_folder_contents",
+    "description": "List contents of a custom-code notebook folder.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "folder_id": {
+          "type": "string",
+          "description": "Folder identifier."
+        }
+      },
+      "required": [
+        "folder_id"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "custom_code.rename_notebook_file",
+    "description": "Rename or update a notebook resource file.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "resource_path": {
+          "type": "string",
+          "description": "Resource path relative to ``/api/resources/`` (for example ``notebooks/custom_code_notebooks/.../file.ipynb``)."
+        },
+        "payload": {
+          "type": "object",
+          "description": "PATCH body with fields to update (for example new name/path)."
+        }
+      },
+      "required": [
+        "resource_path",
+        "payload"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "custom_code.rename_notebook_folder",
+    "description": "Rename a custom-code notebook folder.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "old_id": {
+          "type": "string",
+          "description": "Current folder identifier."
+        },
+        "payload": {
+          "type": "object",
+          "description": "PATCH body (for example new folder name or target id)."
+        }
+      },
+      "required": [
+        "old_id",
+        "payload"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "custom_code.update_notebook",
+    "description": "Update an existing notebook.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "notebook_id": {
+          "type": "string",
+          "description": "Notebook UUID or identifier."
+        },
+        "notebook_data": {
+          "type": "object",
+          "description": "Fields to update."
+        },
+        "use_internal_header": {
+          "type": "boolean",
+          "description": "When ``True`` (default), send ``Internal: true`` header."
+        }
+      },
+      "required": [
+        "notebook_id",
+        "notebook_data"
+      ]
+    },
+    "mutates": true
+  }
+]

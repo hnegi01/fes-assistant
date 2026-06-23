@@ -1,0 +1,31 @@
+[
+  {
+    "tool_id": "wellcheck.run_full_wellcheck",
+    "description": "Run a composite \"full\" wellcheck across dashboards and data models.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more dashboard references to analyze. Each reference can be: - a Sisense dashboard ID, or - a dashboard title (name). At runtime this parameter is tolerant of a single string and will normalize it to a one-element list."
+        },
+        "datamodels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more data model references to analyze. Each reference can be: - a data model ID, or - a data model title (name). At runtime this parameter is tolerant of a single string and will normalize it to a one-element list."
+        },
+        "max_pivot_fields": {
+          "type": "integer",
+          "description": "Threshold used by the pivot-fields check. Any pivot widget with more than this number of fields is flagged."
+        }
+      },
+      "required": []
+    },
+    "mutates": true
+  }
+]

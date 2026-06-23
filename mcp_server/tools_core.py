@@ -728,7 +728,7 @@ def invoke_tool(tool_id: str, arguments: Optional[Dict[str, Any]] = None) -> Dic
 
         payload: Dict[str, Any] = {"tool_id": tool_id, "ok": True, "result": result}
 
-        if tool_id == "access.get_unused_columns":
+        if tool_id == "access_management.get_unused_columns":
             return _add_unused_columns_summary(payload)
 
         return payload
@@ -794,7 +794,7 @@ def invoke_tool_with_emit(
 
         payload: Dict[str, Any] = {"tool_id": tool_id, "ok": True, "result": result}
 
-        if tool_id == "access.get_unused_columns":
+        if tool_id == "access_management.get_unused_columns":
             return _add_unused_columns_summary(payload)
 
         return payload

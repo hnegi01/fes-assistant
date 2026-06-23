@@ -1,0 +1,86 @@
+[
+  {
+    "tool_id": "datamodel.get_datasecurity",
+    "description": "Retrieves datasecurity table and column entries for a given DataModel in flat row format.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the DataModel to retrieve datasecurity for."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.get_datasecurity_detail",
+    "description": "Retrieves detailed datasecurity rules for a specific DataModel, including share-level visibility.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the DataModel to retrieve datasecurity rules for."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "datamodel.set_live_datasecurity_add_many",
+    "description": "Add multiple datasecurity rules to a LIVE datamodel.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Title of the LIVE datamodel to update."
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Datasecurity rules to add in Sisense API format. Each rule typically includes fields such as ``table``, ``column``, ``datatype``, ``members``, ``exclusionary``, and ``shares``."
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "rules"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "datamodel.update_datasecurity",
+    "description": "Replace datasecurity rules on an EXTRACT (Elasticube) datamodel.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Title of the EXTRACT datamodel to update."
+        },
+        "datasecurity": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Complete datasecurity rule list in Sisense API format. Each rule typically includes fields such as ``table``, ``column``, ``datatype``, ``members``, ``exclusionary``, and ``shares``."
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "datasecurity"
+      ]
+    },
+    "mutates": true
+  }
+]

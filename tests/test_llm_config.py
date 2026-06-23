@@ -4,11 +4,15 @@ Unit tests for _build_llm_config() across all LLM providers.
 These tests monkeypatch the module-level LLM_PROVIDER variable and individual
 env vars so _build_llm_config() can be called with different provider configs
 without restarting the process or reloading the module.
+
+After the llm_config.py split, LLM_PROVIDER and _build_llm_config live in
+backend.agent.llm_config. Tests import that module directly so monkeypatching
+LLM_PROVIDER reaches the variable that _build_llm_config() actually reads.
 """
 
 import pytest
 
-import backend.agent.llm_agent as m
+import backend.agent._config as m
 
 
 class TestAzureV1:

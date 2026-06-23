@@ -1,0 +1,19 @@
+[
+  {
+    "tool_id": "dashboard.get_dashboard_columns",
+    "description": "Retrieves columns from a specific dashboard, including both widget and filter-level columns.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_name": {
+          "type": "string",
+          "description": "The name of the dashboard to retrieve columns from."
+        }
+      },
+      "required": [
+        "dashboard_name"
+      ]
+    },
+    "mutates": false
+  }
+]

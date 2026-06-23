@@ -1,0 +1,154 @@
+[
+  {
+    "tool_id": "access_management.change_user_password",
+    "description": "Change a user's password.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "description": "Internal user ID (``_id``) to update."
+        },
+        "password": {
+          "type": "string",
+          "description": "New password for the user. Must not be empty."
+        }
+      },
+      "required": [
+        "user_id",
+        "password"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "access_management.create_user",
+    "description": "Creates a new user by processing the provided user data to replace role",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_data": {
+          "type": "object",
+          "description": "A dictionary containing user details such as email, firstName, lastName, role (role name), groups (list of group names), and preferences."
+        }
+      },
+      "required": [
+        "user_data"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "access_management.delete_user",
+    "description": "Deletes a user by their email (username).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "The email or username of the user to be deleted."
+        }
+      },
+      "required": [
+        "user_name"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "access_management.get_my_user",
+    "description": "Retrieve the currently logged-in user for the API token.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "access_management.get_roles",
+    "description": "Retrieve all Sisense roles.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "access_management.get_user",
+    "description": "Retrieve a user's details by email address, expanding group and role information.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_email": {
+          "type": "string",
+          "description": "Email address of the user to retrieve."
+        }
+      },
+      "required": [
+        "user_email"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "access_management.get_user_with_role_and_group_names",
+    "description": "Retrieves a single user by email/username and returns both role and",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "The email or username of the user to be retrieved."
+        }
+      },
+      "required": [
+        "user_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "access_management.get_users_all",
+    "description": "Retrieves user details along with tenant, group, and role information.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "access_management.get_users_with_role_names_and_group_names",
+    "description": "Retrieves all users from Sisense and enriches them with role names and",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "access_management.update_user",
+    "description": "Update an existing Sisense user identified by their email address.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_email": {
+          "type": "string",
+          "description": "Email address of the user to update (used to locate the user)."
+        },
+        "user_data": {
+          "type": "object",
+          "description": "Dictionary of fields to update. Only include fields you want to change. Supported fields ---------------- - email : str Update the user's email address. - userName : str Update the user's username/login name. - firstName : str Update the user's first name. - lastName : str Update the user's last name. - role : str Role name (e.g., \"viewer\", \"designer\"). This is resolved to ``roleId`` before sending the API request. - groups : list[str] List of group names to apply. Group names are resolved to group IDs before sending the API request. If ``groups`` is explicitly provided as an empty list (``[]``), group memberships are cleared (tenant defaults may still apply)."
+        }
+      },
+      "required": [
+        "user_email",
+        "user_data"
+      ]
+    },
+    "mutates": true
+  }
+]

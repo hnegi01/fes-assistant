@@ -92,7 +92,7 @@ else:
 EXAMPLES_ROOT = Path(os.getenv("PYSISENSE_EXAMPLES_ROOT", "../pysisense/examples"))
 
 EXAMPLE_FILES = {
-    "access": "access_management_example.md",
+    "access_management": "access_management_example.md",
     "blox": "blox_example.md",
     "custom_code": "custom_code_example.md",
     "dashboard": "dashboard_example.md",
@@ -110,7 +110,7 @@ EXAMPLE_FILES = {
 MAIN_DOCS_ROOT = Path(os.getenv("PYSISENSE_DOCS_ROOT", "../pysisense/docs"))
 
 MAIN_DOC_FILES = {
-    "access": "access_management.md",
+    "access_management": "access_management.md",
     "custom_code": "custom_code.md",
     "dashboard": "dashboard.md",
     "datamodel": "datamodel.md",
@@ -598,6 +598,8 @@ def _run_batch(
 
 
 def main() -> None:
+    from .registry_core import build_registry_hierarchical
+
     root_dir = Path(__file__).resolve().parents[1]
     logger.info("Starting; root_dir=%s, LLM_PROVIDER=%s", root_dir, LLM_PROVIDER)
 
@@ -612,6 +614,14 @@ def main() -> None:
     else:
         logger.info("Databricks provider — using sequential LLM calls (no Batch API)")
         _run_sequential(base_tools, existing_by_id, out_path)
+
+    # Regenerate the hierarchical registry now that examples are available.
+    # With 3-level navigation, Level 3 only loads one mixin's tools (~5-10),
+    # so including per-tool examples is affordable and improves tool selection.
+    with out_path.open(encoding="utf-8") as f:
+        enriched = json.load(f)
+    build_registry_hierarchical(enriched)
+    logger.info("Regenerated hierarchical registry with examples (%d tools)", len(enriched))
 
 
 if __name__ == "__main__":

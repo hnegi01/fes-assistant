@@ -1,0 +1,128 @@
+[
+  {
+    "tool_id": "migration.migrate_all_dashboards",
+    "description": "Migrates all dashboards from the source to the target environment in batches.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "Determines how to handle existing dashboards in the target environment. Options: - 'skip': Skip existing dashboards in the target; new dashboards are processed normally, including shares and ownership. - 'overwrite': Overwrite existing dashboards; shares and ownership will not be migrated. If the dashboard already exists, shares will be retained, but the API user will be set as the new owner. - 'duplicate': Create a duplicate of existing dashboards without migrating shares or ownership. Default: None. Existing dashboards are skipped, and only new ones are migrated. Unless existing dashboards are different owners, shares will be migrated. **Note:** If an existing dashboard in the target environment has a different owner than the user's token running the SDK, the dashboard will be migrated with a new ID, and its shares and ownership will be migrated from the original source dashboard.",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ]
+        },
+        "republish": {
+          "type": "boolean",
+          "description": "Whether to republish dashboards after migration. Default: False."
+        },
+        "migrate_share": {
+          "type": "boolean",
+          "description": "Whether to migrate shares for the dashboards. If `True`, shares will be migrated, and ownership migration will be controlled by the `change_ownership` parameter. If `False`, both shares and ownership migration will be skipped. Default: False."
+        },
+        "change_ownership": {
+          "type": "boolean",
+          "description": "Whether to change ownership of the target dashboards. Effective only if `migrate_share` is True. Default: False."
+        },
+        "batch_size": {
+          "type": "integer",
+          "description": "Number of dashboards to process in each batch. Default: 10."
+        },
+        "sleep_time": {
+          "type": "integer",
+          "description": "Time (in seconds) to sleep between batches. Default: 10 seconds."
+        },
+        "emit": {
+          "type": "object",
+          "description": "Optional callback invoked with structured progress events. If not provided, the method emits no events and only returns a final result. Event payloads follow a consistent shape: - ``type``: str (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\") - ``step``: str logical step identifier - ``message``: str human-readable message - Additional fields depending on the step (counts, status_code, etc.)"
+        }
+      },
+      "required": []
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "migration.migrate_dashboard_shares",
+    "description": "Migrates shares for specific dashboards from the source to the target environment.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "source_dashboard_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of dashboard IDs from the source environment to fetch shares from."
+        },
+        "target_dashboard_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of dashboard IDs from the target environment to apply shares to."
+        },
+        "change_ownership": {
+          "type": "boolean",
+          "description": "Whether to change ownership of the target dashboard. Defaults to False."
+        }
+      },
+      "required": [
+        "source_dashboard_ids",
+        "target_dashboard_ids"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "migration.migrate_dashboards",
+    "description": "Migrate dashboards from the source to the target environment using Sisense bulk import.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of dashboard OIDs to migrate. Provide either `dashboard_ids` or `dashboard_names`."
+        },
+        "dashboard_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of dashboard titles to migrate. Provide either `dashboard_ids` or `dashboard_names`."
+        },
+        "action": {
+          "type": "string",
+          "description": "Determines how the target handles conflicts. - None: default Sisense behavior (typically skip existing). - \"skip\": skip if exists. - \"overwrite\": overwrite if exists (shares/ownership migration is skipped). - \"duplicate\": create duplicate (shares/ownership migration is skipped).",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ]
+        },
+        "republish": {
+          "type": "boolean",
+          "description": "Whether to republish dashboards after import."
+        },
+        "migrate_share": {
+          "type": "boolean",
+          "description": "If True, attempts to migrate shares (and optionally ownership) after dashboards are created."
+        },
+        "change_ownership": {
+          "type": "boolean",
+          "description": "If True and `migrate_share=True`, attempts to change ownership on the target dashboards."
+        },
+        "emit": {
+          "type": "string",
+          "description": "emit parameter"
+        }
+      },
+      "required": []
+    },
+    "mutates": true
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "tool_id": "wellcheck.check_datamodel_custom_tables",
+    "description": "Inspect custom tables in one or more data models and flag the use of UNION.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more data model references to analyze. Each reference can be: - a Sisense data model ID, or - a data model title (name). At least one data model reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "wellcheck.check_datamodel_import_queries",
+    "description": "Inspect tables in one or more data models for import queries.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more data model references to analyze. Each reference can be: - a Sisense data model ID, or - a data model title (name). At least one data model reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "wellcheck.check_datamodel_island_tables",
+    "description": "Identify island tables (tables with no relationships) in one or more data models.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more data model references to analyze. Each reference can be: - a Sisense data model ID, or - a data model title (name). At least one data model reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "wellcheck.check_datamodel_m2m_relationships",
+    "description": "Check for potential many-to-many (M2M) relationships between tables",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more data model references to analyze. Each reference can be: - a Sisense data model ID, or - a data model title (name). At least one data model reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "wellcheck.check_datamodel_rls_datatypes",
+    "description": "Inspect row-level security (RLS) rules for one or more data models and",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more data model references to analyze. Each reference can be: - a Sisense data model ID, or - a data model title (name). At least one data model reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  }
+]

@@ -1,0 +1,46 @@
+[
+  {
+    "tool_id": "blox.delete_blox_action",
+    "description": "Delete a custom Blox action from the Sisense instance.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action_type": {
+          "type": "string",
+          "description": "The ``type`` identifier of the Blox action to delete."
+        }
+      },
+      "required": [
+        "action_type"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "blox.get_blox_actions",
+    "description": "Retrieve all custom Blox actions from the Sisense instance.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "blox.save_blox_action",
+    "description": "Save a custom Blox action on the Sisense instance.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "object",
+          "description": "A Blox action object."
+        }
+      },
+      "required": [
+        "action"
+      ]
+    },
+    "mutates": true
+  }
+]

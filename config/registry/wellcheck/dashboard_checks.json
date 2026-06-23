@@ -1,0 +1,60 @@
+[
+  {
+    "tool_id": "wellcheck.check_dashboard_structure",
+    "description": "Analyze the structure of one or more dashboards.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more dashboard references to analyze. Each reference can be: - a Sisense dashboard ID, or - a dashboard title (name). At least one dashboard reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "wellcheck.check_dashboard_widget_counts",
+    "description": "Compute widget counts for one or more dashboards.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more dashboard references to analyze. Each reference can be: - a Sisense dashboard ID, or - a dashboard title (name). At least one dashboard reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "wellcheck.check_pivot_widget_fields",
+    "description": "Analyze pivot widgets on one or more dashboards and report those with many fields.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more dashboard references to analyze. Each reference can be: - a Sisense dashboard ID, or - a dashboard title (name). At least one dashboard reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+        },
+        "max_fields": {
+          "type": "integer",
+          "description": "Threshold for the number of fields on a pivot widget. Only pivot widgets with more than this number of fields are included in the returned data. Defaults to 20."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  }
+]

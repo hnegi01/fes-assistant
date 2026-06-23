@@ -1,0 +1,54 @@
+[
+  {
+    "tool_id": "access_management.get_datamodel_columns",
+    "description": "Retrieves columns from a DataModel by collecting them from its datasets and tables.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "The name of the DataModel from which to extract columns."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "access_management.get_unused_columns",
+    "description": "Identify unused columns in a given DataModel by comparing all available columns against the columns",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "The name of the DataModel to analyze."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "access_management.get_unused_columns_bulk",
+    "description": "Run unused-column analysis for one or more data models and return a",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more data model references to analyze. Each reference can be: - a data model ID, or - a data model title (name). At least one data model reference is required. At runtime this parameter is tolerant of a single string and will normalize it to a one-element list."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  }
+]

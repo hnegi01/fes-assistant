@@ -1,0 +1,65 @@
+[
+  {
+    "tool_id": "dashboard.add_dashboard_shares",
+    "description": "Adds or updates shares for a dashboard, specifying users and groups along with their access rules.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ID of the dashboard to which the shares will be added."
+        },
+        "shares": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of dictionaries, each containing: - \"name\" (str): The username or group name. - \"type\" (str): Either \"user\" or \"group\" to indicate the share type. - \"rule\" (str): The access level (e.g., \"view\", \"edit\")."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "shares"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_share",
+    "description": "Retrieves share details (users and groups) for a specific dashboard by title.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_name": {
+          "type": "string",
+          "description": "The title of the dashboard to retrieve share information for."
+        }
+      },
+      "required": [
+        "dashboard_name"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_shares_v1",
+    "description": "Retrieve share details for a dashboard using the v1 shares endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid``."
+        },
+        "admin_access": {
+          "type": "boolean",
+          "description": "When ``True`` (default), request with ``adminAccess=true``."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false
+  }
+]

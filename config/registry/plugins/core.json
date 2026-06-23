@@ -1,0 +1,111 @@
+[
+  {
+    "tool_id": "plugins.disable_plugin",
+    "description": "Disable a single plugin by name or folder name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "type": "string",
+          "description": "Plugin name or ``folderName`` to disable. The ``\"plugin-\"`` prefix is optional."
+        }
+      },
+      "required": [
+        "plugin"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "plugins.disable_plugins",
+    "description": "Disable one or more plugins by name or folder name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more plugin names or folder names. The ``\"plugin-\"`` prefix is optional and is stripped before matching."
+        },
+        "bulk": {
+          "type": "boolean",
+          "description": "When ``True`` (default), all updates are sent in a single PATCH request. When ``False``, one PATCH request is made per plugin."
+        }
+      },
+      "required": [
+        "plugins"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "plugins.enable_plugin",
+    "description": "Enable a single plugin by name or folder name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "type": "string",
+          "description": "Plugin name or ``folderName`` to enable. The ``\"plugin-\"`` prefix is optional."
+        }
+      },
+      "required": [
+        "plugin"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "plugins.enable_plugins",
+    "description": "Enable one or more plugins by name or folder name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more plugin names or folder names. The ``\"plugin-\"`` prefix is optional and is stripped before matching."
+        },
+        "bulk": {
+          "type": "boolean",
+          "description": "When ``True`` (default), all updates are sent in a single PATCH request. When ``False``, one PATCH request is made per plugin."
+        }
+      },
+      "required": [
+        "plugins"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "plugins.get_all_plugins",
+    "description": "Retrieve all plugins installed on the Sisense instance.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "plugins.get_plugin",
+    "description": "Get a single plugin by its name or folder name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "type": "string",
+          "description": "Plugin name or ``folderName`` to look up. The ``\"plugin-\"`` prefix is optional and is stripped before matching."
+        }
+      },
+      "required": [
+        "plugin"
+      ]
+    },
+    "mutates": false
+  }
+]

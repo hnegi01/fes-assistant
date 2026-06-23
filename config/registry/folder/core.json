@@ -1,0 +1,138 @@
+[
+  {
+    "tool_id": "folder.create_folder",
+    "description": "Create a new Sisense folder.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name for the new folder."
+        },
+        "parent_id": {
+          "type": "string",
+          "description": "OID of the parent folder. When omitted, the folder is created at the root level."
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "folder.delete_folder",
+    "description": "Delete a folder by OID.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "folder_id": {
+          "type": "string",
+          "description": "OID of the folder to delete."
+        }
+      },
+      "required": [
+        "folder_id"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "folder.get_all_folders",
+    "description": "Retrieve the full folder tree.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "folder.get_folder_ancestors",
+    "description": "Retrieve folders by a caller-supplied structure value.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "structure": {
+          "type": "string",
+          "description": "Sisense folder structure type for the request."
+        }
+      },
+      "required": [
+        "structure"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "folder.get_folder_id",
+    "description": "Retrieve a single folder by OID.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "folder_id": {
+          "type": "string",
+          "description": "OID of the folder to retrieve."
+        }
+      },
+      "required": [
+        "folder_id"
+      ]
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "folder.get_folders",
+    "description": "Retrieve folders using a configurable ``structure`` query parameter.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "structure": {
+          "type": "string",
+          "description": "Sisense folder structure type (for example ``\"flat\"`` or ``\"tree\"``). Default is ``\"flat\"``."
+        }
+      },
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "folder.get_navver",
+    "description": "Retrieve the Sisense navigation tree (navver payload).",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false
+  },
+  {
+    "tool_id": "folder.update_folder",
+    "description": "Update an existing folder.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "folder_id": {
+          "type": "string",
+          "description": "OID of the folder to update."
+        },
+        "name": {
+          "type": "string",
+          "description": "New display name for the folder."
+        },
+        "parent_id": {
+          "type": "string",
+          "description": "OID of the new parent folder (moves the folder in the tree)."
+        },
+        "owner": {
+          "type": "string",
+          "description": "User OID of the new folder owner."
+        }
+      },
+      "required": [
+        "folder_id"
+      ]
+    },
+    "mutates": true
+  }
+]

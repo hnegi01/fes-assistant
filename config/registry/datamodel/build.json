@@ -1,0 +1,304 @@
+[
+  {
+    "tool_id": "datamodel.create_datamodel",
+    "description": "Creates a new DataModel in Sisense.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the DataModel."
+        },
+        "datamodel_type": {
+          "type": "string",
+          "description": "Either 'extract' (Elasticube/EC) or 'live'. If user says 'elasticube' or 'ec', normalize to 'extract'.",
+          "enum": [
+            "extract",
+            "live"
+          ],
+          "x-aliases": {
+            "extract": [
+              "ec",
+              "elasticube",
+              "elastic cube",
+              "cube",
+              "elastic-cube"
+            ],
+            "live": [
+              "realtime",
+              "real-time",
+              "live model"
+            ]
+          }
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "datamodel_type"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "datamodel.create_dataset",
+    "description": "Creates a new dataset in the specified DataModel.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the DataModel where the dataset will be created."
+        },
+        "connection_name": {
+          "type": "string",
+          "description": "Name of the connection to use."
+        },
+        "database_name": {
+          "type": "string",
+          "description": "Name of the data source database."
+        },
+        "schema_name": {
+          "type": "string",
+          "description": "Name of the data source schema."
+        },
+        "dataset_name": {
+          "type": "string",
+          "description": "Name of the dataset. Defaults to schema name if not provided."
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "connection_name",
+        "database_name",
+        "schema_name"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "datamodel.create_table",
+    "description": "Create a new table in the specified DataModel.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the DataModel where the table will be created."
+        },
+        "table_name": {
+          "type": "string",
+          "description": "Name of the table to create."
+        },
+        "database_name": {
+          "type": "string",
+          "description": "Name of the data source database. If not provided, will try to infer from the DataModel."
+        },
+        "schema_name": {
+          "type": "string",
+          "description": "Name of the data source schema. If not provided, will try to infer from the DataModel."
+        },
+        "dataset_id": {
+          "type": "string",
+          "description": "ID of the dataset where the table will be created. If not provided, will try to infer from the DataModel."
+        },
+        "import_query": {
+          "type": "string",
+          "description": "SQL statement used as custom import query. Defaults to None."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description for the table. Defaults to an empty string."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of tags to apply to the table. Defaults to None."
+        },
+        "build_behavior_config": {
+          "type": "object",
+          "description": "Configuration for table build behavior."
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "table_name"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "datamodel.deploy_datamodel",
+    "description": "Deploy (build or publish) the specified DataModel based on its type.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the DataModel to deploy."
+        },
+        "build_type": {
+          "type": "string",
+          "description": "Build strategy for extract models. Omit for live/publish.",
+          "enum": [
+            "full",
+            "by_table"
+          ],
+          "x-aliases": {
+            "full": [
+              "build",
+              "rebuild",
+              "start",
+              "run",
+              "execute",
+              "refresh"
+            ],
+            "by_table": [
+              "by-table",
+              "table-wise",
+              "incremental-tables"
+            ]
+          }
+        },
+        "row_limit": {
+          "type": "integer",
+          "description": "Row limit for build. Applicable only for EXTRACT.",
+          "minimum": 1
+        },
+        "schema_origin": {
+          "type": "string",
+          "description": "Schema origin for build. Applicable only for EXTRACT.",
+          "enum": [
+            "latest",
+            "schema_changes"
+          ]
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": true
+  },
+  {
+    "tool_id": "datamodel.setup_datamodel",
+    "description": "Setup a DataModel using existing connection and by creating a datamodel, dataset, and table.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the DataModel."
+        },
+        "datamodel_type": {
+          "type": "string",
+          "description": "Type of DataModel. Should be either \"extract\" (for Elasticube) or \"live\" (for Live).",
+          "enum": [
+            "extract",
+            "live"
+          ],
+          "x-aliases": {
+            "extract": [
+              "ec",
+              "elasticube",
+              "elastic cube",
+              "cube",
+              "elastic-cube"
+            ],
+            "live": [
+              "realtime",
+              "real-time",
+              "live model"
+            ]
+          }
+        },
+        "connection_name": {
+          "type": "string",
+          "description": "Name of the connection to use."
+        },
+        "database_name": {
+          "type": "string",
+          "description": "Name of the data source database."
+        },
+        "schema_name": {
+          "type": "string",
+          "description": "Name of the data source schema."
+        },
+        "tables": {
+          "type": "array",
+          "description": "List of tables to add. For 'live' models, build_behavior_config is ignored. For 'extract' models, set build_behavior_config as needed.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "database_name": {
+                "type": "string",
+                "description": "Optional override of the table's database. Defaults to top-level database_name if omitted."
+              },
+              "schema_name": {
+                "type": "string",
+                "description": "Optional override of the table's schema. Defaults to top-level schema_name if omitted."
+              },
+              "table_name": {
+                "type": "string",
+                "description": "Physical table name to add, or a logical name when using import_query."
+              },
+              "import_query": {
+                "type": "string",
+                "description": "Optional custom SQL (executed as-is). Use fully-qualified tables: schema.table (Databricks: `schema`.`table`)."
+              },
+              "description": {
+                "type": "string",
+                "description": "Optional table description."
+              },
+              "tags": {
+                "type": "array",
+                "description": "Optional list of tags for the table.",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "build_behavior_config": {
+                "type": "object",
+                "description": "Extract models only; omit for 'live'. For 'increment' mode, column_name is required.",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "replace",
+                      "replace_changes",
+                      "append",
+                      "increment"
+                    ],
+                    "description": "Table build behavior for extract models."
+                  },
+                  "column_name": {
+                    "type": "string",
+                    "description": "Required when mode='increment'; ignored otherwise."
+                  }
+                }
+              }
+            },
+            "required": [
+              "table_name"
+            ]
+          },
+          "minItems": 1
+        },
+        "dataset_name": {
+          "type": "string",
+          "description": "Name of the dataset. Defaults to schema name if not provided."
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "datamodel_type",
+        "connection_name",
+        "database_name",
+        "schema_name",
+        "tables"
+      ]
+    },
+    "mutates": true
+  }
+]

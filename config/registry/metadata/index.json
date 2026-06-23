@@ -1,0 +1,7 @@
+{
+  "package": "metadata",
+  "class": "Metadata",
+  "modules": {
+    "core": "Datasource metadata — retrieve saved measures, retrieve dimensions, list available datasources, add a measure, run a metadata query."
+  }
+}
