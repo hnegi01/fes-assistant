@@ -18,7 +18,63 @@
         "notebook_data"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create a new Python notebook for data analysis.",
+        "arguments": {
+          "notebook_data": {
+            "notebookType": "python",
+            "displayName": "Data Analysis Notebook",
+            "manifest": {
+              "description": "Notebook for analyzing sales data",
+              "tags": [
+                "analysis",
+                "sales"
+              ]
+            }
+          },
+          "use_internal_header": true
+        },
+        "notes": "This creates a Python notebook named 'Data Analysis Notebook' with metadata for analyzing sales data. The internal header is included by default."
+      },
+      {
+        "user_query": "Set up a new SQL notebook for querying the database.",
+        "arguments": {
+          "notebook_data": {
+            "notebookType": "sql",
+            "displayName": "Database Query Notebook",
+            "manifest": {
+              "description": "Notebook for running SQL queries on the main database",
+              "tags": [
+                "sql",
+                "database"
+              ]
+            }
+          },
+          "use_internal_header": true
+        },
+        "notes": "This creates a SQL notebook named 'Database Query Notebook' for running queries on the main database. The internal header is included by default."
+      },
+      {
+        "user_query": "Add a new R notebook for statistical modeling without the internal header.",
+        "arguments": {
+          "notebook_data": {
+            "notebookType": "r",
+            "displayName": "Statistical Modeling Notebook",
+            "manifest": {
+              "description": "Notebook for performing statistical modeling and analysis",
+              "tags": [
+                "statistics",
+                "modeling"
+              ]
+            }
+          },
+          "use_internal_header": false
+        },
+        "notes": "This creates an R notebook named 'Statistical Modeling Notebook' for statistical analysis. The internal header is not included in this request."
+      }
+    ]
   },
   {
     "tool_id": "custom_code.delete_notebook",
@@ -35,7 +91,30 @@
         "notebook_id"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How do I delete the notebook with ID 'abc123'?",
+        "arguments": {
+          "notebook_id": "abc123"
+        },
+        "notes": "This call deletes the notebook with the specified ID. Use it when you no longer need the notebook or want to clean up unused resources."
+      },
+      {
+        "user_query": "I need to remove the notebook 'sales_forecast_2023' from the system. How can I do that?",
+        "arguments": {
+          "notebook_id": "sales_forecast_2023"
+        },
+        "notes": "This call removes the notebook identified by 'sales_forecast_2023'. Ensure the ID is correct before executing this operation, as it cannot be undone."
+      },
+      {
+        "user_query": "Can you help me delete the notebook with UUID 'd4f5e6g7-h8i9-j0k1-l2m3-n4o5p6q7r8s9'?",
+        "arguments": {
+          "notebook_id": "d4f5e6g7-h8i9-j0k1-l2m3-n4o5p6q7r8s9"
+        },
+        "notes": "This call deletes the notebook with the given UUID. Use this when you need to remove a specific notebook by its unique identifier."
+      }
+    ]
   },
   {
     "tool_id": "custom_code.export_notebook",
@@ -52,7 +131,30 @@
         "notebook_id"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "How can I export the notebook with ID 'abc123'?",
+        "arguments": {
+          "notebook_id": "abc123"
+        },
+        "notes": "This call exports the notebook definition for the notebook with the specified ID. Use this to retrieve the notebook's configuration or content."
+      },
+      {
+        "user_query": "I need to back up the notebook with UUID 'notebook-456-def'. How can I do that?",
+        "arguments": {
+          "notebook_id": "notebook-456-def"
+        },
+        "notes": "This call retrieves the notebook definition for backup purposes. Useful for saving a copy of the notebook's structure and data."
+      },
+      {
+        "user_query": "Can I get the definition of the notebook identified as 'notebook789xyz'?",
+        "arguments": {
+          "notebook_id": "notebook789xyz"
+        },
+        "notes": "This call fetches the notebook definition for the given ID. It can be used to inspect or replicate the notebook's setup."
+      }
+    ]
   },
   {
     "tool_id": "custom_code.get_notebooks",
@@ -71,7 +173,36 @@
       },
       "required": []
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve all notebooks related to custom code transformations.",
+        "arguments": {
+          "notebook_type": "CustomCodeTransformation"
+        },
+        "notes": "This call retrieves all notebooks of type 'CustomCodeTransformation' from Sisense. Use this when you need to filter notebooks by a specific type."
+      },
+      {
+        "user_query": "Fetch notebooks with additional query parameters for filtering.",
+        "arguments": {
+          "params": {
+            "createdBy": "admin",
+            "status": "active"
+          }
+        },
+        "notes": "This call retrieves notebooks filtered by additional parameters such as 'createdBy' and 'status'. Use this to narrow down results based on specific criteria."
+      },
+      {
+        "user_query": "Get all notebooks of type 'CustomCodeTransformation' created by a specific user.",
+        "arguments": {
+          "notebook_type": "CustomCodeTransformation",
+          "params": {
+            "createdBy": "developer123"
+          }
+        },
+        "notes": "This call retrieves notebooks of type 'CustomCodeTransformation' that were created by the user 'developer123'. Use this to filter notebooks by both type and creator."
+      }
+    ]
   },
   {
     "tool_id": "custom_code.list_notebook_folder_contents",
@@ -88,7 +219,30 @@
         "folder_id"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "What files are stored in the notebook folder with ID 'folder_12345'?",
+        "arguments": {
+          "folder_id": "folder_12345"
+        },
+        "notes": "This call retrieves the list of files and subfolders in the specified notebook folder. Useful for browsing or managing notebook contents."
+      },
+      {
+        "user_query": "Can you show me the contents of the 'analytics_scripts' folder?",
+        "arguments": {
+          "folder_id": "analytics_scripts"
+        },
+        "notes": "This call lists all items in the 'analytics_scripts' folder, which might contain custom analytics scripts or related files."
+      },
+      {
+        "user_query": "I need to check what's inside the 'shared_resources' folder for our team notebooks.",
+        "arguments": {
+          "folder_id": "shared_resources"
+        },
+        "notes": "This call helps to inspect the contents of the 'shared_resources' folder, which could include shared notebooks or templates."
+      }
+    ]
   },
   {
     "tool_id": "custom_code.rename_notebook_file",
@@ -110,7 +264,40 @@
         "payload"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I rename the notebook file 'analysis.ipynb' to 'sales_analysis.ipynb'?",
+        "arguments": {
+          "resource_path": "notebooks/custom_code_notebooks/project123/analysis.ipynb",
+          "payload": {
+            "new_name": "sales_analysis.ipynb"
+          }
+        },
+        "notes": "This call renames the notebook file 'analysis.ipynb' to 'sales_analysis.ipynb' within the specified project folder."
+      },
+      {
+        "user_query": "I need to move the notebook 'data_cleaning.ipynb' to a different folder. How can I do that?",
+        "arguments": {
+          "resource_path": "notebooks/custom_code_notebooks/project456/data_cleaning.ipynb",
+          "payload": {
+            "new_path": "notebooks/custom_code_notebooks/project789/data_cleaning.ipynb"
+          }
+        },
+        "notes": "This call moves the notebook file 'data_cleaning.ipynb' from 'project456' to 'project789'."
+      },
+      {
+        "user_query": "Can I update both the name and path of the notebook 'report.ipynb' at the same time?",
+        "arguments": {
+          "resource_path": "notebooks/custom_code_notebooks/team_reports/report.ipynb",
+          "payload": {
+            "new_name": "final_report.ipynb",
+            "new_path": "notebooks/custom_code_notebooks/archived_reports/final_report.ipynb"
+          }
+        },
+        "notes": "This call updates both the name and path of the notebook file 'report.ipynb', renaming it to 'final_report.ipynb' and moving it to the 'archived_reports' folder."
+      }
+    ]
   },
   {
     "tool_id": "custom_code.rename_notebook_folder",
@@ -132,7 +319,39 @@
         "payload"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I rename the 'DataScienceProjects' notebook folder to 'MLProjects'?",
+        "arguments": {
+          "old_id": "DataScienceProjects",
+          "payload": {
+            "new_name": "MLProjects"
+          }
+        },
+        "notes": "This call renames the 'DataScienceProjects' folder to 'MLProjects'. Use this when you want to update the folder name for better organization."
+      },
+      {
+        "user_query": "I need to move the 'ArchivedNotebooks' folder under the 'OldProjects' folder. How can I do that?",
+        "arguments": {
+          "old_id": "ArchivedNotebooks",
+          "payload": {
+            "target_id": "OldProjects"
+          }
+        },
+        "notes": "This call moves the 'ArchivedNotebooks' folder to be a subfolder under 'OldProjects'. Use this to reorganize your folder hierarchy."
+      },
+      {
+        "user_query": "Can I rename the 'TempFolder123' notebook folder to 'FinalizedReports'?",
+        "arguments": {
+          "old_id": "TempFolder123",
+          "payload": {
+            "new_name": "FinalizedReports"
+          }
+        },
+        "notes": "This call renames the 'TempFolder123' folder to 'FinalizedReports'. Use this to finalize the naming of a temporary folder."
+      }
+    ]
   },
   {
     "tool_id": "custom_code.update_notebook",
@@ -158,6 +377,52 @@
         "notebook_data"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I update the title and description of a notebook?",
+        "arguments": {
+          "notebook_id": "123e4567-e89b-12d3-a456-426614174000",
+          "notebook_data": {
+            "title": "Updated Sales Analysis",
+            "description": "This notebook now includes updated sales data for Q3."
+          },
+          "use_internal_header": true
+        },
+        "notes": "This call updates the title and description of the specified notebook. Use it when you need to modify metadata for an existing notebook."
+      },
+      {
+        "user_query": "I need to change the tags for a notebook. How can I do that?",
+        "arguments": {
+          "notebook_id": "987f6543-b21a-34c5-d678-123456789abc",
+          "notebook_data": {
+            "tags": [
+              "finance",
+              "Q4",
+              "forecast"
+            ]
+          },
+          "use_internal_header": false
+        },
+        "notes": "This call updates the tags for the specified notebook. The `use_internal_header` is set to `false` to exclude the internal header."
+      },
+      {
+        "user_query": "Can I update multiple fields in a notebook at once?",
+        "arguments": {
+          "notebook_id": "abc12345-def6-7890-gh12-ijk345678901",
+          "notebook_data": {
+            "title": "Revenue Report",
+            "description": "Detailed revenue breakdown for FY2023.",
+            "tags": [
+              "revenue",
+              "FY2023",
+              "analysis"
+            ]
+          },
+          "use_internal_header": true
+        },
+        "notes": "This call updates multiple fields (title, description, and tags) for the specified notebook. Use it when you need to make several updates in one request."
+      }
+    ]
   }
 ]

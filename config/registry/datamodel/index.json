@@ -1,5 +1,12 @@
 {
   "package": "datamodel",
   "class": "DataModel",
-  "modules": {}
+  "modules": {
+    "build": "create_datamodel, create_dataset, create_table (+2 more)",
+    "connections": "create_connections, generate_connections_payload, get_connection (+3 more)",
+    "core": "delete_datamodel, describe_datamodel, describe_datamodel_raw (+6 more)",
+    "data": "get_data, get_row_count",
+    "security": "get_datasecurity, get_datasecurity_detail, set_live_datasecurity_add_many (+1 more)",
+    "shares": "add_datamodel_shares, get_datamodel_shares"
+  }
 }

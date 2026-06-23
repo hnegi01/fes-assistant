@@ -14,7 +14,36 @@
         "payload"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I decrypt the encrypted API key stored in my datamodel?",
+        "arguments": {
+          "payload": {
+            "value": "ENCRYPTED_API_KEY_12345"
+          }
+        },
+        "notes": "This call decrypts an encrypted API key retrieved from a datamodel, allowing the user to access the original plaintext key."
+      },
+      {
+        "user_query": "I need to decrypt a database password stored in an exported configuration file. How can I do that?",
+        "arguments": {
+          "payload": {
+            "value": "ENCRYPTED_DB_PASSWORD_67890"
+          }
+        },
+        "notes": "This call decrypts an encrypted database password, enabling the user to use the plaintext password for database connections."
+      },
+      {
+        "user_query": "I have an encrypted token from a Sisense export. How do I decrypt it to use it in my application?",
+        "arguments": {
+          "payload": {
+            "value": "ENCRYPTED_TOKEN_ABCDE"
+          }
+        },
+        "notes": "This call decrypts an encrypted token, making it usable for authentication or other application needs."
+      }
+    ]
   },
   {
     "tool_id": "encryption.encrypt",
@@ -31,6 +60,35 @@
         "payload"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Encrypt a database password before saving it to the Sisense configuration.",
+        "arguments": {
+          "payload": {
+            "value": "my_secure_password_123"
+          }
+        },
+        "notes": "This call encrypts the provided plaintext password so it can be securely stored in Sisense configuration files or used in API requests."
+      },
+      {
+        "user_query": "Securely encrypt an API key for cross-server data model import.",
+        "arguments": {
+          "payload": {
+            "value": "api_key_abc123"
+          }
+        },
+        "notes": "Use this to encrypt sensitive API keys before transferring them between Sisense servers during data model imports."
+      },
+      {
+        "user_query": "Encrypt a connection string for a new database integration.",
+        "arguments": {
+          "payload": {
+            "value": "Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;"
+          }
+        },
+        "notes": "This encrypts the connection string for secure storage and usage in Sisense's database integration settings."
+      }
+    ]
   }
 ]

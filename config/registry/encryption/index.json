@@ -1,7 +1,5 @@
 {
   "package": "encryption",
   "class": "Encryption",
-  "modules": {
-    "core": "Encryption operations — encrypt a plaintext value via the Sisense encryption API; decrypt a previously encrypted value."
-  }
+  "modules": {}
 }

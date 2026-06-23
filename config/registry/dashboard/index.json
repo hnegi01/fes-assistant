@@ -1,5 +1,10 @@
 {
   "package": "dashboard",
   "class": "Dashboard",
-  "modules": {}
+  "modules": {
+    "columns": "get_dashboard_columns",
+    "core": "can_be_owned, export_dashboard, get_all_dashboards (+8 more)",
+    "scripts": "add_dashboard_script, add_widget_script, get_dashboard_script (+1 more)",
+    "shares": "add_dashboard_shares, get_dashboard_share, get_dashboard_shares_v1"
+  }
 }

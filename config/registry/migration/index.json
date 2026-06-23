@@ -1,5 +1,10 @@
 {
   "package": "migration",
   "class": "Migration",
-  "modules": {}
+  "modules": {
+    "dashboards": "migrate_all_dashboards, migrate_dashboard_shares, migrate_dashboards",
+    "datamodels": "migrate_all_datamodels, migrate_datamodels",
+    "groups": "migrate_all_groups, migrate_groups",
+    "users": "migrate_all_users, migrate_users"
+  }
 }

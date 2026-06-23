@@ -221,6 +221,21 @@ def build_registry_hierarchical(
 
         tools_by_pkg_mod.setdefault(pkg, {}).setdefault(mod_stem, []).append(entry)
 
+    # Fill in missing modules descriptions from tool IDs when class has no docstring.
+    # The LLM uses these one-liners at Level 2 to pick the right mixin.
+    for pkg_name, info in pkg_info.items():
+        if not info["modules"]:
+            pkg_tools = tools_by_pkg_mod.get(pkg_name, {})
+            if len(pkg_tools) > 1:  # only worth deriving when multiple mixins exist
+                derived: Dict[str, str] = {}
+                for stem, stem_tools in sorted(pkg_tools.items()):
+                    method_names = [t["tool_id"].split(".", 1)[1] for t in stem_tools[:3]]
+                    summary = ", ".join(method_names)
+                    if len(stem_tools) > 3:
+                        summary += f" (+{len(stem_tools) - 3} more)"
+                    derived[stem] = summary
+                info["modules"] = derived
+
     # Write top-level index.json (Level 1)
     _write_json(reg_dir / "index.json", {
         "sdk_version": sdk_version,

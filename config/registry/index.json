@@ -1,21 +1,49 @@
 {
-  "sdk_version": "0.2.2",
-  "updated_at": "2026-06-23T21:08:35Z",
+  "sdk_version": "1.0.0",
+  "updated_at": "2026-06-23T21:22:46Z",
   "packages": {
     "access_management": {
       "class": "AccessManagement",
+      "description": ""
+    },
+    "blox": {
+      "class": "Blox",
+      "description": ""
+    },
+    "custom_code": {
+      "class": "CustomCode",
       "description": ""
     },
     "datamodel": {
       "class": "DataModel",
       "description": ""
     },
+    "encryption": {
+      "class": "Encryption",
+      "description": ""
+    },
     "dashboard": {
       "class": "Dashboard",
       "description": ""
     },
+    "folder": {
+      "class": "Folder",
+      "description": ""
+    },
+    "metadata": {
+      "class": "Metadata",
+      "description": ""
+    },
     "migration": {
       "class": "Migration",
+      "description": ""
+    },
+    "plugins": {
+      "class": "Plugins",
+      "description": ""
+    },
+    "queries": {
+      "class": "Queries",
       "description": ""
     },
     "wellcheck": {

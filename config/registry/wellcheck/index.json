@@ -1,5 +1,8 @@
 {
   "package": "wellcheck",
   "class": "WellCheck",
-  "modules": {}
+  "modules": {
+    "dashboard_checks": "check_dashboard_structure, check_dashboard_widget_counts, check_pivot_widget_fields",
+    "datamodel_checks": "check_datamodel_custom_tables, check_datamodel_import_queries, check_datamodel_island_tables (+2 more)"
+  }
 }

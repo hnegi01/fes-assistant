@@ -14,7 +14,30 @@
         "plugin"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I disable the plugin named 'custom-theme'?",
+        "arguments": {
+          "plugin": "custom-theme"
+        },
+        "notes": "This call disables the 'custom-theme' plugin, ensuring it is no longer active. Use this when you want to deactivate a specific plugin by its name."
+      },
+      {
+        "user_query": "I need to disable the plugin located in the 'plugin-analytics-enhancer' folder. How can I do that?",
+        "arguments": {
+          "plugin": "plugin-analytics-enhancer"
+        },
+        "notes": "This call disables the plugin located in the 'plugin-analytics-enhancer' folder. Use this when you know the folder name of the plugin you want to deactivate."
+      },
+      {
+        "user_query": "Can I turn off the 'plugin-dashboard-tools' plugin?",
+        "arguments": {
+          "plugin": "plugin-dashboard-tools"
+        },
+        "notes": "This call disables the 'plugin-dashboard-tools' plugin. Use this to deactivate plugins that are no longer needed or causing issues."
+      }
+    ]
   },
   {
     "tool_id": "plugins.disable_plugins",
@@ -38,7 +61,42 @@
         "plugins"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I disable the 'plugin-analytics' and 'plugin-visualization' plugins?",
+        "arguments": {
+          "plugins": [
+            "plugin-analytics",
+            "plugin-visualization"
+          ],
+          "bulk": true
+        },
+        "notes": "This call disables the 'plugin-analytics' and 'plugin-visualization' plugins in a single PATCH request. Use this when you want to disable multiple plugins efficiently."
+      },
+      {
+        "user_query": "I need to disable the 'plugin-export' plugin, but I want to send separate requests for each plugin.",
+        "arguments": {
+          "plugins": [
+            "plugin-export"
+          ],
+          "bulk": false
+        },
+        "notes": "This call disables the 'plugin-export' plugin by sending a separate PATCH request. Use this when you want more granular control over the update process."
+      },
+      {
+        "user_query": "Can I disable a list of plugins like 'analytics', 'export', and 'custom-widget'?",
+        "arguments": {
+          "plugins": [
+            "analytics",
+            "export",
+            "custom-widget"
+          ],
+          "bulk": true
+        },
+        "notes": "This call disables the 'analytics', 'export', and 'custom-widget' plugins in a single PATCH request. The 'plugin-' prefix is optional and will be stripped automatically."
+      }
+    ]
   },
   {
     "tool_id": "plugins.enable_plugin",
@@ -55,7 +113,30 @@
         "plugin"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I enable the plugin for advanced charting?",
+        "arguments": {
+          "plugin": "advanced-charting"
+        },
+        "notes": "This call enables the 'advanced-charting' plugin, allowing users to access additional charting capabilities."
+      },
+      {
+        "user_query": "I need to activate the plugin for custom widgets. How do I do that?",
+        "arguments": {
+          "plugin": "custom-widgets"
+        },
+        "notes": "This call enables the 'custom-widgets' plugin, which is useful for creating and managing custom widgets in Sisense."
+      },
+      {
+        "user_query": "Can you enable the plugin stored in the folder named 'plugin-data-export'?",
+        "arguments": {
+          "plugin": "plugin-data-export"
+        },
+        "notes": "This call enables the 'plugin-data-export' plugin, which facilitates exporting data in custom formats."
+      }
+    ]
   },
   {
     "tool_id": "plugins.enable_plugins",
@@ -79,7 +160,41 @@
         "plugins"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I enable the 'plugin-sample' and 'custom-visualizations' plugins in bulk?",
+        "arguments": {
+          "plugins": [
+            "plugin-sample",
+            "custom-visualizations"
+          ],
+          "bulk": true
+        },
+        "notes": "This call enables the 'plugin-sample' and 'custom-visualizations' plugins in a single PATCH request. Use this when you want to enable multiple plugins efficiently."
+      },
+      {
+        "user_query": "I need to enable the 'advanced-filters' plugin, but I want to send separate requests for each plugin.",
+        "arguments": {
+          "plugins": [
+            "advanced-filters"
+          ],
+          "bulk": false
+        },
+        "notes": "This call enables the 'advanced-filters' plugin by sending a separate PATCH request. Use this when you prefer granular control over each plugin update."
+      },
+      {
+        "user_query": "Can I enable multiple plugins like 'plugin-analytics' and 'plugin-dashboard-tools'?",
+        "arguments": {
+          "plugins": [
+            "plugin-analytics",
+            "plugin-dashboard-tools"
+          ],
+          "bulk": true
+        },
+        "notes": "This call enables the 'plugin-analytics' and 'plugin-dashboard-tools' plugins in a single PATCH request. Ideal for enabling multiple plugins at once."
+      }
+    ]
   },
   {
     "tool_id": "plugins.get_all_plugins",
@@ -89,7 +204,24 @@
       "properties": {},
       "required": []
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "What plugins are currently installed on my Sisense instance?",
+        "arguments": {},
+        "notes": "This call retrieves a complete list of all plugins installed on the Sisense instance, including their names, folder paths, and whether they are enabled."
+      },
+      {
+        "user_query": "Can you show me all the plugins available on the server?",
+        "arguments": {},
+        "notes": "Use this to fetch details about all plugins installed on the Sisense server. Useful for auditing or verifying plugin configurations."
+      },
+      {
+        "user_query": "I need to check which plugins are active on the system.",
+        "arguments": {},
+        "notes": "This retrieves all installed plugins, allowing you to identify which ones are currently enabled."
+      }
+    ]
   },
   {
     "tool_id": "plugins.get_plugin",
@@ -106,6 +238,29 @@
         "plugin"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "How can I fetch details about the 'plugin-sample-chart' plugin?",
+        "arguments": {
+          "plugin": "plugin-sample-chart"
+        },
+        "notes": "This call retrieves the details of the plugin named 'plugin-sample-chart'. Use this to verify if the plugin is installed and to fetch its metadata."
+      },
+      {
+        "user_query": "I need to check if the 'custom-widget' plugin is available on the server.",
+        "arguments": {
+          "plugin": "custom-widget"
+        },
+        "notes": "This call searches for a plugin with the folder name 'custom-widget'. Useful for confirming the availability of a specific custom plugin."
+      },
+      {
+        "user_query": "Can you find the plugin named 'plugin-advanced-analytics' for me?",
+        "arguments": {
+          "plugin": "plugin-advanced-analytics"
+        },
+        "notes": "This call fetches the plugin named 'plugin-advanced-analytics'. It is helpful when you need to retrieve configuration or metadata for this specific plugin."
+      }
+    ]
   }
 ]
