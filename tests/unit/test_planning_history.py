@@ -70,7 +70,7 @@ class TestBuildPlanningHistory:
         latest = _user("now")
         messages = [
             _user("q1"),
-            _assistant(""),       # empty — pending confirmation turn
+            _assistant(""),  # empty — pending confirmation turn
             _assistant("a1"),
             latest,
         ]

@@ -365,7 +365,7 @@ logger.info("pysisense SDK imported successfully. Clients will be created from i
 # Migration is excluded here — it uses a different constructor (source_client/target_client).
 # To add a new module: add ONE line here.
 _MODULE_CLASSES: Dict[str, type] = {
-    "access": AccessManagement,  # noqa: F405, F821
+    "access_management": AccessManagement,  # noqa: F405, F821
     "blox": Blox,  # noqa: F405, F821
     "custom_code": CustomCode,  # noqa: F405, F821
     "dashboard": Dashboard,  # noqa: F405, F821

@@ -9,7 +9,6 @@ Covers:
 """
 
 import json
-from pathlib import Path
 
 import pytest
 
@@ -19,10 +18,10 @@ from scripts.registry_core import (
     build_registry_hierarchical,
 )
 
-
 # ---------------------------------------------------------------------------
 # _parse_class_docstring
 # ---------------------------------------------------------------------------
+
 
 class TestParseClassDocstring:
     def test_parses_first_paragraph_as_description(self):
@@ -155,6 +154,7 @@ class TestParseClassDocstring:
 # build_registry_hierarchical
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def fake_registry():
     return [
@@ -216,6 +216,7 @@ def fake_modules(monkeypatch):
         """
 
     import scripts.registry_core as _core
+
     fake = {"access_management": FakeAccess, "dashboard": FakeDashboard}
     monkeypatch.setattr(_core, "MODULES", fake)
     return fake
@@ -292,9 +293,11 @@ class TestBuildRegistryHierarchical:
 # _discover_facade_classes
 # ---------------------------------------------------------------------------
 
+
 class TestDiscoverFacadeClasses:
     def test_discovers_all_expected_packages(self):
         import inspect as _inspect
+
         import pysisense as _pysisense
 
         modules = _discover_facade_classes()
@@ -304,8 +307,7 @@ class TestDiscoverFacadeClasses:
         expected = {
             getattr(_pysisense, name).__module__.split(".")[1]
             for name in _pysisense.__all__
-            if _inspect.isclass(getattr(_pysisense, name, None))
-            and name != "SisenseClient"
+            if _inspect.isclass(getattr(_pysisense, name, None)) and name != "SisenseClient"
         }
         assert set(modules.keys()) == expected
 
@@ -314,12 +316,12 @@ class TestDiscoverFacadeClasses:
 
         assert "SisenseClient" not in modules
         # also not under a subpackage key
-        import inspect
         for obj in modules.values():
             assert obj.__name__ != "SisenseClient"
 
     def test_all_values_are_classes(self):
         import inspect
+
         modules = _discover_facade_classes()
 
         for obj in modules.values():
@@ -331,6 +333,4 @@ class TestDiscoverFacadeClasses:
         for key, klass in modules.items():
             mod_path = getattr(klass, "__module__", "")
             subpkg = mod_path.split(".")[1] if "." in mod_path else ""
-            assert key == subpkg, (
-                f"{klass.__name__}: expected key '{subpkg}', got '{key}'"
-            )
+            assert key == subpkg, f"{klass.__name__}: expected key '{subpkg}', got '{key}'"

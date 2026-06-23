@@ -43,8 +43,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I transfer ownership of the 'Sales Reports' folder to the user 'john.doe' and ensure all dashboards in the folder are also transferred?",
@@ -112,8 +112,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Update the password for user ID '12345abcde' to 'NewSecureP@ssw0rd'.",
@@ -197,8 +197,8 @@
       "access_management",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I schedule a daily build for the SalesData model at 2:30 AM UTC?",
@@ -266,8 +266,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Create a new user with the email john.doe@example.com and assign them the Admin role.",
@@ -356,8 +356,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Remove the user with the email john.doe@example.com from the system.",
@@ -401,8 +401,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I see all the dashboards shared with users and groups in my organization?",
@@ -447,8 +447,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What are the columns available in the 'SalesAnalytics' DataModel?",
@@ -499,8 +499,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you get the details for the 'Sales Team' group?",
@@ -544,8 +544,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Who am I logged in as using this API token?",
@@ -582,8 +582,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What roles are available in my Sisense instance?",
@@ -627,8 +627,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Which columns in the SalesData DataModel are not being used in any dashboards?",
@@ -679,8 +679,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Which columns are unused in the 'Sales Data' and 'Marketing Analytics' data models?",
@@ -738,8 +738,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Find details for the user with the email john.doe@example.com.",
@@ -791,8 +791,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Find the user with the email john.doe@example.com and get their role and group details.",
@@ -836,8 +836,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you retrieve all user details, including their roles and groups, for our Sisense instance?",
@@ -876,8 +876,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Who are all the users in the system, and what roles and groups are they part of?",
@@ -927,8 +927,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Update the email and role of a user with the email john.doe@example.com.",
@@ -994,8 +994,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Who are the members of the 'Data Analysts' group?",
@@ -1040,8 +1040,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you show me all the groups in the system and the users assigned to each group?",
@@ -1085,8 +1085,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How do I delete the custom Blox action for exporting dashboard data?",
@@ -1129,8 +1129,8 @@
       "blox",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What custom Blox actions are available in my Sisense instance?",
@@ -1174,8 +1174,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I save a new custom action for my dashboard filters?",
@@ -1259,8 +1259,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Create a new Python notebook for data analysis.",
@@ -1343,8 +1343,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How do I delete the notebook with ID 'abc123'?",
@@ -1394,8 +1394,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I export the notebook with ID 'abc123'?",
@@ -1447,8 +1447,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Retrieve all notebooks related to custom code transformations.",
@@ -1504,8 +1504,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What files are stored in the notebook folder with ID 'folder_12345'?",
@@ -1560,8 +1560,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I rename the notebook file 'analysis.ipynb' to 'sales_analysis.ipynb'?",
@@ -1626,8 +1626,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I rename the 'DataScienceProjects' notebook folder to 'MLProjects'?",
@@ -1695,8 +1695,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I update the title and description of a notebook?",
@@ -1777,8 +1777,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Share the 'SalesAnalytics' DataModel with the sales team and give them edit permissions.",
@@ -1849,8 +1849,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Create a new connection for the sales database.",
@@ -1948,8 +1948,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Create a new DataModel named 'Sales Analytics' as an Elasticube.",
@@ -2021,8 +2021,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Create a new dataset called 'sales_data' in the 'SalesModel' DataModel using the 'SalesDB' connection.",
@@ -2119,8 +2119,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Create a new table named 'sales_data' in the 'RetailAnalytics' DataModel.",
@@ -2193,8 +2193,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Delete the 'Sales Analytics' data model hosted on the 'LocalHost' server.",
@@ -2283,8 +2283,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How do I rebuild the 'Sales_Analytics' DataModel from scratch?",
@@ -2339,8 +2339,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you provide the structure of the 'SalesAnalytics' DataModel?",
@@ -2390,8 +2390,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you provide detailed information about the Sales DataModel?",
@@ -2446,8 +2446,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I generate a connections payload for an Athena datasource?",
@@ -2508,8 +2508,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you list all the DataModels available in our Sisense instance?",
@@ -2553,8 +2553,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What are the details of the connection named 'SalesDB'?",
@@ -2597,8 +2597,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I see all the data connections available in my Sisense instance?",
@@ -2651,8 +2651,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Fetch all data from the 'sales_data' table in the 'RetailAnalytics' DataModel.",
@@ -2706,8 +2706,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you fetch the Sales DataModel for me?",
@@ -2757,8 +2757,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Who has access to the Sales DataModel?",
@@ -2808,8 +2808,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What are the data security rules for the SalesAnalytics DataModel?",
@@ -2859,8 +2859,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What are the data security rules for the Sales DataModel?",
@@ -2903,8 +2903,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you list all the ElastiCubes available on my Sisense server?",
@@ -2948,8 +2948,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What is the schema for the SalesAnalytics DataModel?",
@@ -2999,8 +2999,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How many rows are in each table of the Sales DataModel?",
@@ -3065,8 +3065,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What is the schema of the 'sales_data' table in the 'analytics_db' database?",
@@ -3129,8 +3129,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What is the OID for the data model titled 'Sales Analytics'?",
@@ -3183,8 +3183,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What is the ID and title of the data model named 'Sales Analytics'?",
@@ -3242,8 +3242,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I add multiple data security rules to the 'Sales_Live' datamodel?",
@@ -3408,8 +3408,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Create a new live DataModel for our sales data using the 'SalesDB' connection.",
@@ -3541,8 +3541,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I update the name and parameters of an existing connection?",
@@ -3618,8 +3618,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Update the datasecurity rules for the 'SalesData' Elasticube.",
@@ -3681,8 +3681,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I decrypt the encrypted API key stored in my datamodel?",
@@ -3738,8 +3738,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Encrypt a database password before saving it to the Sisense configuration.",
@@ -3805,8 +3805,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I add a script to the dashboard with ID 'dashboard123'?",
@@ -3869,8 +3869,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I share the Sales Dashboard with the sales team and give them view access?",
@@ -3960,8 +3960,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I add a custom script to the sales widget in my dashboard?",
@@ -4020,8 +4020,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can I take ownership of the dashboard with ID '12345abcde'?",
@@ -4072,8 +4072,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I export the definition of the Sales Performance dashboard?",
@@ -4117,8 +4117,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I get a list of all dashboards available on the Sisense server?",
@@ -4163,8 +4163,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you fetch the dashboard with ID 'sales_dashboard_2023'?",
@@ -4215,8 +4215,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you fetch the dashboard named 'Sales Overview'?",
@@ -4267,8 +4267,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What columns are available in the 'Sales Overview' dashboard?",
@@ -4319,8 +4319,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I export the script for the sales dashboard?",
@@ -4371,8 +4371,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Who has access to the 'Sales Overview' dashboard?",
@@ -4427,8 +4427,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Who has access to the sales performance dashboard?",
@@ -4482,8 +4482,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What widgets are included in the dashboard titled 'Sales Overview'?",
@@ -4535,8 +4535,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Show me the dashboards I own with their titles and IDs.",
@@ -4597,8 +4597,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I retrieve the script for the 'Sales Performance' widget in the 'Q3 Dashboard'?",
@@ -4657,8 +4657,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I move the sales dashboard to the marketing folder?",
@@ -4720,8 +4720,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Publish the sales dashboard to make the latest updates available.",
@@ -4783,8 +4783,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I rename the Sales Overview dashboard to Q1 Sales Overview?",
@@ -4838,8 +4838,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What is the ID and title of the dashboard named 'Sales Overview'?",
@@ -4893,8 +4893,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Create a folder named 'Sales Reports' under the 'Q4 2023' folder.",
@@ -4946,8 +4946,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I delete the folder with ID '12345abcde'?",
@@ -4990,8 +4990,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I get the entire folder structure in Sisense?",
@@ -5035,8 +5035,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What are the ancestor folders for the 'sales_data' structure?",
@@ -5086,8 +5086,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you fetch the folder with ID '12345abc'?",
@@ -5135,8 +5135,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Show me all folders in a flat structure.",
@@ -5177,8 +5177,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Can you show me the navigation tree for our Sisense folders?",
@@ -5234,8 +5234,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I rename the folder with ID '12345abcde' to 'Sales Reports'?",
@@ -5288,8 +5288,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Add a new measure to calculate total sales revenue for the 'Sales' datasource.",
@@ -5362,8 +5362,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What dimensions are available for the SalesData datasource?",
@@ -5418,8 +5418,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What are the formula measures available for the SalesData datasource?",
@@ -5463,8 +5463,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What datasources can I access in Sisense?",
@@ -5508,8 +5508,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Fetch all metadata related to the 'sales_dashboard' dataset.",
@@ -5616,8 +5616,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I migrate all dashboards to the target environment, skipping any that already exist?",
@@ -5714,8 +5714,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I migrate all data models, including data security and formulas, to a new environment while overwriting existing models?",
@@ -5789,8 +5789,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I migrate all user groups from the old environment to the new one and track the progress?",
@@ -5845,8 +5845,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I migrate all users from the source environment to the target environment and track the progress?",
@@ -5918,8 +5918,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I migrate shares from dashboards in the source environment to dashboards in the target environment?",
@@ -6027,8 +6027,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I migrate dashboards with IDs 'dash123' and 'dash456' to the target environment, skipping any that already exist?",
@@ -6145,8 +6145,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I migrate the data models with IDs 'dm_123' and 'dm_456' to the target environment, including all dependencies and shares?",
@@ -6227,8 +6227,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I migrate the 'Sales Team' and 'Marketing Team' groups to the new environment?",
@@ -6290,8 +6290,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Migrate the users 'john.doe' and 'jane.smith' to the target environment.",
@@ -6350,8 +6350,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I disable the plugin named 'custom-theme'?",
@@ -6408,8 +6408,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I disable the 'plugin-analytics' and 'plugin-visualization' plugins?",
@@ -6471,8 +6471,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I enable the plugin for advanced charting?",
@@ -6529,8 +6529,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I enable the 'plugin-sample' and 'custom-visualizations' plugins in bulk?",
@@ -6584,8 +6584,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What plugins are currently installed on my Sisense instance?",
@@ -6629,8 +6629,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I fetch details about the 'plugin-sample-chart' plugin?",
@@ -6684,8 +6684,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "I want to restore the plugins to the state they were in last week. How can I do that?",
@@ -6746,8 +6746,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How can I save the current state of enabled plugins as a snapshot?",
@@ -6796,8 +6796,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Fetch total sales by region for the last quarter.",
@@ -6934,8 +6934,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Run a SQL query to fetch sales data for the current year.",
@@ -6999,8 +6999,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Export sales data for Q3 2023 as a CSV file.",
@@ -7105,8 +7105,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Analyze the structure of the dashboard titled 'Sales Overview'.",
@@ -7165,8 +7165,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "How many widgets are on the 'Sales Overview' dashboard?",
@@ -7226,8 +7226,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Check if any custom tables in the 'Sales Analytics' data model use UNION.",
@@ -7287,8 +7287,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Check if the tables in the 'Sales Dashboard' data model have import queries configured.",
@@ -7347,8 +7347,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Find all island tables in the 'Sales Analytics' data model.",
@@ -7407,8 +7407,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Check for many-to-many relationships in the 'Sales Analytics' data model.",
@@ -7467,8 +7467,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "What are the datatypes of the columns used in RLS rules for the 'Sales Dashboard' data model?",
@@ -7531,8 +7531,8 @@
       "wellcheck",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": [
       {
         "user_query": "Find pivot widgets with too many fields on the 'Sales Overview' dashboard.",

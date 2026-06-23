@@ -2,7 +2,7 @@
   "package": "plugins",
   "class": "Plugins",
   "modules": {
-    "core": "disable_plugin, disable_plugins, enable_plugin (+3 more)",
-    "snapshots": "restore_snapshot, save_snapshot"
+    "core": "Plugin lifecycle — list all plugins, get a single plugin by name, enable or disable a plugin individually, enable or disable in bulk.",
+    "snapshots": "Plugin state snapshots — capture the current enabled/disabled state of all plugins; restore a previously captured snapshot."
   }
 }

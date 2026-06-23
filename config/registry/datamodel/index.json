@@ -2,11 +2,11 @@
   "package": "datamodel",
   "class": "DataModel",
   "modules": {
-    "build": "create_datamodel, create_dataset, create_table (+2 more)",
-    "connections": "create_connections, generate_connections_payload, get_connection (+3 more)",
-    "core": "delete_datamodel, describe_datamodel, describe_datamodel_raw (+6 more)",
-    "data": "get_data, get_row_count",
-    "security": "get_datasecurity, get_datasecurity_detail, set_live_datasecurity_add_many (+1 more)",
-    "shares": "add_datamodel_shares, get_datamodel_shares"
+    "core": "Data model schema — get, list, describe, load, and delete data models; resolve by ID or title; list elasticubes.",
+    "connections": "Connection management — get, update, and create data source connections; generate connection payloads for supported providers.",
+    "build": "Schema provisioning — create data models, datasets, and tables; deploy a data model with configurable build behavior.",
+    "security": "Row-level security — get, update, and bulk-add datasecurity rules that restrict data access per user or group.",
+    "shares": "Data model access — get and add share entries (users and groups) with READ, USE, or EDIT permission levels.",
+    "data": "Data retrieval — query table contents via SQL; get row counts for a table within a data model."
   }
 }

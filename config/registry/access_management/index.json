@@ -2,10 +2,10 @@
   "package": "access_management",
   "class": "AccessManagement",
   "modules": {
-    "admin": "create_schedule_build, get_all_dashboard_shares",
-    "columns": "get_datamodel_columns, get_unused_columns, get_unused_columns_bulk",
-    "groups": "get_group, users_per_group, users_per_group_all",
-    "ownership": "change_folder_and_dashboard_ownership",
-    "users": "change_user_password, create_user, delete_user (+7 more)"
+    "users": "User CRUD — get, create, update, and deactivate users; resolve by email or ID; map role and group names to internal IDs.",
+    "groups": "Group membership — list groups by name, list all members per group.",
+    "columns": "Column-level data model security — list all columns in a data model, identify unused columns across one or more data models.",
+    "ownership": "Transfer folder and dashboard ownership — reassign an entire folder tree (including subfolders and dashboards) to a new owner.",
+    "admin": "Administrative reporting — retrieve share entries for every dashboard on the instance; schedule elasticube builds."
   }
 }

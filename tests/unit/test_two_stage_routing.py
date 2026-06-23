@@ -16,8 +16,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-import backend.agent.llm_agent as m
 import backend.agent._routing as routing_m
+import backend.agent.llm_agent as m
 
 
 def run(coro):
@@ -28,6 +28,7 @@ def run(coro):
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(autouse=True)
 def patch_tool_registry(monkeypatch):
@@ -65,6 +66,7 @@ MODULES = {
 # _get_module_tools
 # ---------------------------------------------------------------------------
 
+
 class TestGetModuleTools:
     def test_groups_by_module(self):
         result = m._get_module_tools(ALL_TOOLS)
@@ -90,6 +92,7 @@ class TestGetModuleTools:
 # _parse_module_from_response
 # ---------------------------------------------------------------------------
 
+
 class TestParseModuleFromResponse:
     def test_exact_match(self):
         assert m._parse_module_from_response("datamodel", MODULES) == "datamodel"
@@ -99,9 +102,7 @@ class TestParseModuleFromResponse:
 
     def test_substring_match(self):
         # LLM returned a sentence instead of a single word
-        assert m._parse_module_from_response(
-            "I would choose the datamodel module.", MODULES
-        ) == "datamodel"
+        assert m._parse_module_from_response("I would choose the datamodel module.", MODULES) == "datamodel"
 
     def test_returns_none_for_unknown(self):
         assert m._parse_module_from_response("migration", MODULES) is None
@@ -117,6 +118,7 @@ class TestParseModuleFromResponse:
 # _route_to_module (mocked call_llm_raw on llm_routing — where it is called)
 # ---------------------------------------------------------------------------
 
+
 def _llm_response(content: str) -> dict:
     """Build a minimal OpenAI-style response dict."""
     return {
@@ -128,45 +130,54 @@ def _llm_response(content: str) -> dict:
 class TestRouteToModule:
     def test_returns_correct_module_on_success(self):
         with patch.object(routing_m, "call_llm_raw", new=AsyncMock(return_value=_llm_response("datamodel"))):
-            chosen, latency = run(m._route_to_module(
-                {"role": "user", "content": "show all data models"},
-                [],
-                MODULES,
-                trace_id=None,
-            ))
+            chosen, latency = run(
+                m._route_to_module(
+                    {"role": "user", "content": "show all data models"},
+                    [],
+                    MODULES,
+                    trace_id=None,
+                )
+            )
         assert chosen == "datamodel"
         assert latency >= 0
 
     def test_returns_none_on_llm_failure(self):
         with patch.object(routing_m, "call_llm_raw", new=AsyncMock(side_effect=RuntimeError("timeout"))):
-            chosen, latency = run(m._route_to_module(
-                {"role": "user", "content": "show all data models"},
-                [],
-                MODULES,
-                trace_id=None,
-            ))
+            chosen, latency = run(
+                m._route_to_module(
+                    {"role": "user", "content": "show all data models"},
+                    [],
+                    MODULES,
+                    trace_id=None,
+                )
+            )
         assert chosen is None
         assert latency >= 0
 
     def test_returns_none_for_unrecognised_response(self):
         with patch.object(routing_m, "call_llm_raw", new=AsyncMock(return_value=_llm_response("I don't know"))):
-            chosen, _ = run(m._route_to_module(
-                {"role": "user", "content": "do something"},
-                [],
-                MODULES,
-                trace_id=None,
-            ))
+            chosen, _ = run(
+                m._route_to_module(
+                    {"role": "user", "content": "do something"},
+                    [],
+                    MODULES,
+                    trace_id=None,
+                )
+            )
         assert chosen is None
 
     def test_substring_response_still_resolves(self):
         with patch.object(
-            routing_m, "call_llm_raw",
+            routing_m,
+            "call_llm_raw",
             new=AsyncMock(return_value=_llm_response("The access_management module handles this.")),
         ):
-            chosen, _ = run(m._route_to_module(
-                {"role": "user", "content": "list all users"},
-                [],
-                MODULES,
-                trace_id=None,
-            ))
+            chosen, _ = run(
+                m._route_to_module(
+                    {"role": "user", "content": "list all users"},
+                    [],
+                    MODULES,
+                    trace_id=None,
+                )
+            )
         assert chosen == "access_management"

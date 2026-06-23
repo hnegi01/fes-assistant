@@ -1,5 +1,7 @@
 {
   "package": "blox",
   "class": "Blox",
-  "modules": {}
+  "modules": {
+    "core": "Custom Blox actions — retrieve all actions (OS-routed), save a new action (Linux), and delete an existing action (Linux)."
+  }
 }

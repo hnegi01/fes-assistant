@@ -43,8 +43,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -78,8 +78,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -138,8 +138,8 @@
       "access_management",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -168,8 +168,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -198,8 +198,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -221,8 +221,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -251,8 +251,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -281,8 +281,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -304,8 +304,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -326,8 +326,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -355,8 +355,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -385,8 +385,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -415,8 +415,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -446,8 +446,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -469,8 +469,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -493,8 +493,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -528,8 +528,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -559,8 +559,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -583,8 +583,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -612,8 +612,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -634,8 +634,8 @@
       "blox",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -663,8 +663,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -696,8 +696,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -725,8 +725,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -754,8 +754,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -785,8 +785,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -814,8 +814,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -848,8 +848,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -882,8 +882,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -920,8 +920,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -957,8 +957,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -986,8 +986,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1038,8 +1038,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1086,8 +1086,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1151,8 +1151,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1185,8 +1185,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1250,8 +1250,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1279,8 +1279,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1308,8 +1308,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1342,8 +1342,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1364,8 +1364,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1393,8 +1393,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1415,8 +1415,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1453,8 +1453,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1482,8 +1482,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1511,8 +1511,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1540,8 +1540,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1569,8 +1569,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1591,8 +1591,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1620,8 +1620,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1649,8 +1649,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1693,8 +1693,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1726,8 +1726,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1755,8 +1755,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1792,8 +1792,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1924,8 +1924,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1958,8 +1958,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -1995,8 +1995,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2024,8 +2024,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2053,8 +2053,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2092,8 +2092,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2130,8 +2130,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2173,8 +2173,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2202,8 +2202,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2232,8 +2232,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2255,8 +2255,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2285,8 +2285,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2315,8 +2315,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2345,8 +2345,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2375,8 +2375,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2405,8 +2405,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2439,8 +2439,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2469,8 +2469,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2500,8 +2500,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2534,8 +2534,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2569,8 +2569,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2607,8 +2607,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2642,8 +2642,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2672,8 +2672,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2705,8 +2705,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2734,8 +2734,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2756,8 +2756,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2785,8 +2785,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2814,8 +2814,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2841,8 +2841,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2863,8 +2863,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2904,8 +2904,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2933,8 +2933,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2964,8 +2964,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -2995,8 +2995,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3017,8 +3017,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3046,8 +3046,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3103,8 +3103,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3164,8 +3164,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3192,8 +3192,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3220,8 +3220,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3265,8 +3265,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3328,8 +3328,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3403,8 +3403,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3436,8 +3436,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3469,8 +3469,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3498,8 +3498,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3534,8 +3534,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3563,8 +3563,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3599,8 +3599,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3621,8 +3621,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3650,8 +3650,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3683,8 +3683,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3705,8 +3705,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3739,8 +3739,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3773,8 +3773,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3807,8 +3807,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3838,8 +3838,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3869,8 +3869,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3900,8 +3900,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3931,8 +3931,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3962,8 +3962,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -3993,8 +3993,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -4024,8 +4024,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   },
   {
@@ -4058,8 +4058,8 @@
       "wellcheck",
       "read"
     ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-23T21:22:38Z",
+    "sdk_version": "1.0.1",
+    "updated_at": "2026-06-23T23:00:12Z",
     "examples": []
   }
 ]

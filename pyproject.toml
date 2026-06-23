@@ -16,4 +16,5 @@ ignore = []
 "mcp_server/server.py" = ["E402"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests/unit"]
+markers = ["integration: marks tests as integration tests (require live stack + real creds)"]

@@ -41,6 +41,7 @@ def _llm_response(content: str) -> dict:
 # Shared fixture: minimal fake registry tree
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def fake_registry_dir(tmp_path, monkeypatch):
     """
@@ -58,73 +59,97 @@ def fake_registry_dir(tmp_path, monkeypatch):
     reg_dir = tmp_path / "registry"
     reg_dir.mkdir()
 
-    (reg_dir / "index.json").write_text(json.dumps({
-        "sdk_version": "1.0.0",
-        "updated_at": "2025-01-01T00:00:00Z",
-        "packages": {
-            "access_management": {
-                "class": "AccessManagement",
-                "description": "Manage users, groups, and access control.",
-            },
-            "encryption": {
-                "class": "Encryption",
-                "description": "Manage encryption keys and settings.",
-            },
-        },
-    }))
+    (reg_dir / "index.json").write_text(
+        json.dumps(
+            {
+                "sdk_version": "1.0.0",
+                "updated_at": "2025-01-01T00:00:00Z",
+                "packages": {
+                    "access_management": {
+                        "class": "AccessManagement",
+                        "description": "Manage users, groups, and access control.",
+                    },
+                    "encryption": {
+                        "class": "Encryption",
+                        "description": "Manage encryption keys and settings.",
+                    },
+                },
+            }
+        )
+    )
 
     am_dir = reg_dir / "access_management"
     am_dir.mkdir()
-    (am_dir / "index.json").write_text(json.dumps({
-        "package": "access_management",
-        "class": "AccessManagement",
-        "modules": {
-            "users": "User CRUD — get, create, update, deactivate users.",
-            "groups": "Group membership — list groups, add or remove users.",
-        },
-    }))
-    (am_dir / "users.json").write_text(json.dumps([
-        {
-            "tool_id": "access_management.get_users_all",
-            "description": "Get all users.",
-            "parameters": {"type": "object", "properties": {}, "required": []},
-            "mutates": False,
-        },
-        {
-            "tool_id": "access_management.create_user",
-            "description": "Create a user.",
-            "parameters": {
-                "type": "object",
-                "properties": {"email": {"type": "string"}},
-                "required": ["email"],
-            },
-            "mutates": True,
-        },
-    ]))
-    (am_dir / "groups.json").write_text(json.dumps([
-        {
-            "tool_id": "access_management.get_groups_all",
-            "description": "Get all groups.",
-            "parameters": {"type": "object", "properties": {}, "required": []},
-            "mutates": False,
-        },
-    ]))
+    (am_dir / "index.json").write_text(
+        json.dumps(
+            {
+                "package": "access_management",
+                "class": "AccessManagement",
+                "modules": {
+                    "users": "User CRUD — get, create, update, deactivate users.",
+                    "groups": "Group membership — list groups, add or remove users.",
+                },
+            }
+        )
+    )
+    (am_dir / "users.json").write_text(
+        json.dumps(
+            [
+                {
+                    "tool_id": "access_management.get_users_all",
+                    "description": "Get all users.",
+                    "parameters": {"type": "object", "properties": {}, "required": []},
+                    "mutates": False,
+                },
+                {
+                    "tool_id": "access_management.create_user",
+                    "description": "Create a user.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {"email": {"type": "string"}},
+                        "required": ["email"],
+                    },
+                    "mutates": True,
+                },
+            ]
+        )
+    )
+    (am_dir / "groups.json").write_text(
+        json.dumps(
+            [
+                {
+                    "tool_id": "access_management.get_groups_all",
+                    "description": "Get all groups.",
+                    "parameters": {"type": "object", "properties": {}, "required": []},
+                    "mutates": False,
+                },
+            ]
+        )
+    )
 
     enc_dir = reg_dir / "encryption"
     enc_dir.mkdir()
-    (enc_dir / "index.json").write_text(json.dumps({
-        "package": "encryption",
-        "class": "Encryption",
-        "modules": {"core": "Encryption key management and status checks."},
-    }))
-    (enc_dir / "core.json").write_text(json.dumps([
-        {
-            "tool_id": "encryption.get_encryption_status",
-            "description": "Get encryption status.",
-            "parameters": {"type": "object", "properties": {}, "required": []},
-            "mutates": False,
-        },
-    ]))
+    (enc_dir / "index.json").write_text(
+        json.dumps(
+            {
+                "package": "encryption",
+                "class": "Encryption",
+                "modules": {"core": "Encryption key management and status checks."},
+            }
+        )
+    )
+    (enc_dir / "core.json").write_text(
+        json.dumps(
+            [
+                {
+                    "tool_id": "encryption.get_encryption_status",
+                    "description": "Get encryption status.",
+                    "parameters": {"type": "object", "properties": {}, "required": []},
+                    "mutates": False,
+                },
+            ]
+        )
+    )
 
     monkeypatch.setattr(routing_m, "REGISTRY_DIR", reg_dir)
     return reg_dir
@@ -133,6 +158,7 @@ def fake_registry_dir(tmp_path, monkeypatch):
 # ---------------------------------------------------------------------------
 # _load_mixin_tools
 # ---------------------------------------------------------------------------
+
 
 class TestLoadMixinTools:
     def test_returns_openai_format(self, fake_registry_dir):
@@ -180,6 +206,7 @@ class TestLoadMixinTools:
 # _load_all_package_tools
 # ---------------------------------------------------------------------------
 
+
 class TestLoadAllPackageTools:
     def test_combines_all_mixin_files(self, fake_registry_dir):
         tools = _load_all_package_tools("access_management")
@@ -212,6 +239,7 @@ class TestLoadAllPackageTools:
 # _load_registry_index
 # ---------------------------------------------------------------------------
 
+
 class TestLoadRegistryIndex:
     def test_real_index_has_packages(self):
         result = _load_registry_index()
@@ -241,6 +269,7 @@ class TestLoadRegistryIndex:
 # _load_package_index
 # ---------------------------------------------------------------------------
 
+
 class TestLoadPackageIndex:
     def test_real_access_management_has_modules(self):
         result = _load_package_index("access_management")
@@ -265,16 +294,26 @@ class TestLoadPackageIndex:
 # _navigate_to_tools
 # ---------------------------------------------------------------------------
 
+
 class TestNavigateToTools:
     def test_full_navigation_success(self, fake_registry_dir):
-        with patch.object(routing_m, "call_llm_raw", new=AsyncMock(side_effect=[
-            _llm_response("access_management"),
-            _llm_response("users"),
-        ])):
-            tools, pkg, mixin, ms = run(_navigate_to_tools(
-                {"role": "user", "content": "show all users"},
-                [], None,
-            ))
+        with patch.object(
+            routing_m,
+            "call_llm_raw",
+            new=AsyncMock(
+                side_effect=[
+                    _llm_response("access_management"),
+                    _llm_response("users"),
+                ]
+            ),
+        ):
+            tools, pkg, mixin, ms = run(
+                _navigate_to_tools(
+                    {"role": "user", "content": "show all users"},
+                    [],
+                    None,
+                )
+            )
 
         assert pkg == "access_management"
         assert mixin == "users"
@@ -282,48 +321,65 @@ class TestNavigateToTools:
 
     def test_single_mixin_skips_level2(self, fake_registry_dir):
         with patch.object(
-            routing_m, "call_llm_raw",
+            routing_m,
+            "call_llm_raw",
             new=AsyncMock(return_value=_llm_response("encryption")),
         ) as mock_llm:
-            tools, pkg, mixin, ms = run(_navigate_to_tools(
-                {"role": "user", "content": "check encryption"},
-                [], None,
-            ))
+            tools, pkg, mixin, ms = run(
+                _navigate_to_tools(
+                    {"role": "user", "content": "check encryption"},
+                    [],
+                    None,
+                )
+            )
 
         assert pkg == "encryption"
         assert mixin == "core"
         assert mock_llm.call_count == 1  # Level 2 was skipped
 
     def test_level1_unrecognised_response_returns_empty(self, fake_registry_dir):
-        with patch.object(routing_m, "call_llm_raw",
-                          new=AsyncMock(return_value=_llm_response("unknown_garbage"))):
-            tools, pkg, mixin, ms = run(_navigate_to_tools(
-                {"role": "user", "content": "do something"},
-                [], None,
-            ))
+        with patch.object(routing_m, "call_llm_raw", new=AsyncMock(return_value=_llm_response("unknown_garbage"))):
+            tools, pkg, mixin, ms = run(
+                _navigate_to_tools(
+                    {"role": "user", "content": "do something"},
+                    [],
+                    None,
+                )
+            )
 
         assert tools == []
         assert pkg == ""
 
     def test_level1_llm_error_returns_empty(self, fake_registry_dir):
-        with patch.object(routing_m, "call_llm_raw",
-                          new=AsyncMock(side_effect=RuntimeError("timeout"))):
-            tools, pkg, mixin, ms = run(_navigate_to_tools(
-                {"role": "user", "content": "show users"},
-                [], None,
-            ))
+        with patch.object(routing_m, "call_llm_raw", new=AsyncMock(side_effect=RuntimeError("timeout"))):
+            tools, pkg, mixin, ms = run(
+                _navigate_to_tools(
+                    {"role": "user", "content": "show users"},
+                    [],
+                    None,
+                )
+            )
 
         assert tools == []
 
     def test_level2_unrecognised_response_returns_empty_tools(self, fake_registry_dir):
-        with patch.object(routing_m, "call_llm_raw", new=AsyncMock(side_effect=[
-            _llm_response("access_management"),
-            _llm_response("unknown_mixin"),
-        ])):
-            tools, pkg, mixin, ms = run(_navigate_to_tools(
-                {"role": "user", "content": "show users"},
-                [], None,
-            ))
+        with patch.object(
+            routing_m,
+            "call_llm_raw",
+            new=AsyncMock(
+                side_effect=[
+                    _llm_response("access_management"),
+                    _llm_response("unknown_mixin"),
+                ]
+            ),
+        ):
+            tools, pkg, mixin, ms = run(
+                _navigate_to_tools(
+                    {"role": "user", "content": "show users"},
+                    [],
+                    None,
+                )
+            )
 
         assert tools == []
         assert pkg == "access_management"
@@ -331,35 +387,56 @@ class TestNavigateToTools:
 
     def test_empty_registry_dir_returns_empty(self, monkeypatch, tmp_path):
         monkeypatch.setattr(routing_m, "REGISTRY_DIR", tmp_path / "nonexistent")
-        tools, pkg, mixin, ms = run(_navigate_to_tools(
-            {"role": "user", "content": "show users"},
-            [], None,
-        ))
+        tools, pkg, mixin, ms = run(
+            _navigate_to_tools(
+                {"role": "user", "content": "show users"},
+                [],
+                None,
+            )
+        )
         assert tools == []
         assert pkg == ""
 
     def test_returns_latency_ms_as_int(self, fake_registry_dir):
-        with patch.object(routing_m, "call_llm_raw", new=AsyncMock(side_effect=[
-            _llm_response("access_management"),
-            _llm_response("users"),
-        ])):
-            _, _, _, ms = run(_navigate_to_tools(
-                {"role": "user", "content": "list users"},
-                [], None,
-            ))
+        with patch.object(
+            routing_m,
+            "call_llm_raw",
+            new=AsyncMock(
+                side_effect=[
+                    _llm_response("access_management"),
+                    _llm_response("users"),
+                ]
+            ),
+        ):
+            _, _, _, ms = run(
+                _navigate_to_tools(
+                    {"role": "user", "content": "list users"},
+                    [],
+                    None,
+                )
+            )
 
         assert isinstance(ms, int)
         assert ms >= 0
 
     def test_navigation_tools_are_openai_format(self, fake_registry_dir):
-        with patch.object(routing_m, "call_llm_raw", new=AsyncMock(side_effect=[
-            _llm_response("access_management"),
-            _llm_response("groups"),
-        ])):
-            tools, _, _, _ = run(_navigate_to_tools(
-                {"role": "user", "content": "list all groups"},
-                [], None,
-            ))
+        with patch.object(
+            routing_m,
+            "call_llm_raw",
+            new=AsyncMock(
+                side_effect=[
+                    _llm_response("access_management"),
+                    _llm_response("groups"),
+                ]
+            ),
+        ):
+            tools, _, _, _ = run(
+                _navigate_to_tools(
+                    {"role": "user", "content": "list all groups"},
+                    [],
+                    None,
+                )
+            )
 
         assert len(tools) > 0
         for t in tools:
@@ -380,10 +457,13 @@ class TestNavigateToTools:
             return _llm_response("users")
 
         with patch.object(routing_m, "call_llm_raw", new=mock_llm):
-            run(_navigate_to_tools(
-                {"role": "user", "content": "show users"},
-                history, None,
-            ))
+            run(
+                _navigate_to_tools(
+                    {"role": "user", "content": "show users"},
+                    history,
+                    None,
+                )
+            )
 
         # Both Level 1 and Level 2 calls should include history
         for call_messages in captured_calls:
