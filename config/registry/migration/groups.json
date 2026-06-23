@@ -12,7 +12,36 @@
       },
       "required": []
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I migrate all user groups from the old environment to the new one and track the progress?",
+        "arguments": {
+          "emit": {
+            "type": "progress",
+            "step": "initializing",
+            "message": "Starting group migration process"
+          }
+        },
+        "notes": "This call migrates all user groups from the source environment to the target environment and emits progress updates for tracking."
+      },
+      {
+        "user_query": "I need to migrate groups but don't need progress updates. How can I do that?",
+        "arguments": {},
+        "notes": "This call migrates all user groups without emitting progress updates, returning only the final result once the migration is complete."
+      },
+      {
+        "user_query": "Can I monitor detailed progress while migrating groups between environments?",
+        "arguments": {
+          "emit": {
+            "type": "progress",
+            "step": "migrating",
+            "message": "Processing group migration"
+          }
+        },
+        "notes": "This call migrates all user groups and provides detailed progress updates, which can be used to monitor the migration process in real-time."
+      }
+    ]
   },
   {
     "tool_id": "migration.migrate_groups",
@@ -32,6 +61,37 @@
         "group_name_list"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I migrate the 'Sales Team' and 'Marketing Team' groups to the new environment?",
+        "arguments": {
+          "group_name_list": [
+            "Sales Team",
+            "Marketing Team"
+          ]
+        },
+        "notes": "This call migrates the 'Sales Team' and 'Marketing Team' groups from the source environment to the target environment using the bulk endpoint. Use this when transitioning groups to a new Sisense instance."
+      },
+      {
+        "user_query": "I need to move the 'Admin Group' and 'Support Team' groups to the target environment. How do I do that?",
+        "arguments": {
+          "group_name_list": [
+            "Admin Group",
+            "Support Team"
+          ]
+        },
+        "notes": "This call migrates the 'Admin Group' and 'Support Team' groups to the target environment. Ideal for administrators consolidating environments or migrating specific teams."
+      },
+      {
+        "user_query": "Can I migrate the 'Finance Team' group to the new Sisense environment?",
+        "arguments": {
+          "group_name_list": [
+            "Finance Team"
+          ]
+        },
+        "notes": "This call migrates the 'Finance Team' group from the source environment to the target environment. Use this for single-group migrations during environment transitions."
+      }
+    ]
   }
 ]

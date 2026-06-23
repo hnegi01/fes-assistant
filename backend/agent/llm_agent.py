@@ -64,10 +64,11 @@ from ._routing import (
     PLANNING_SYSTEM_PROMPT,
     SUMMARY_SYSTEM_PROMPT_CHAT,
     SUMMARY_SYSTEM_PROMPT_MIGRATION,
-    _MODULE_DESCRIPTIONS,
     _build_planning_history,  # re-exported: test_planning_history.py calls m._build_planning_history
     _extract_latest_user_message,
     _fallback_direct_tool,
+    _load_all_package_tools,
+    _navigate_to_tools,
     _parse_module_from_response,  # re-exported: test_two_stage_routing.py calls m._parse_module_from_response
     _pick_tool_calls_from_llm_response,
     _route_to_module,  # re-exported: test_two_stage_routing.py calls m._route_to_module
@@ -252,29 +253,36 @@ async def call_llm_with_tools(
     logger.debug("Planning history: %d prior messages (max turns=%d)", len(_history), LLM_PLANNING_HISTORY_TURNS)
 
     # -------------------------------------------------------------------------
-    # 1a) Two-stage routing: pick module first, then narrow tool list
+    # 1a) Tool selection: migration fast-path or 3-level navigation
     # -------------------------------------------------------------------------
-    _tools_by_module = _get_module_tools(tools)
-    if len(_tools_by_module) > 1:
-        _module_descs = {
-            mod: _MODULE_DESCRIPTIONS.get(mod, f"{mod} tools")
-            for mod in _tools_by_module
-        }
-        _chosen_module, _routing_ms = await _route_to_module(
-            latest_user_message, _history, _module_descs, turn_trace_id
+    if mode == "migration":
+        # Migration has ~9 tools — load all directly, no navigation needed.
+        _nav_tools = _load_all_package_tools("migration")
+        _nav_pkg, _nav_mixin, _routing_ms = "migration", "all", 0
+        if _nav_tools:
+            tools = _nav_tools
+            logger.info("Migration fast-path: %d tools loaded directly", len(tools))
+        else:
+            logger.warning("Migration fast-path: registry files missing, using passed tools")
+    else:
+        # Chat mode: 3-level navigation (package → mixin → tools).
+        _nav_tools, _nav_pkg, _nav_mixin, _routing_ms = await _navigate_to_tools(
+            latest_user_message, _history, turn_trace_id
         )
-        _trace["routing_latency_ms"] = _routing_ms
-        if _chosen_module and _chosen_module in _tools_by_module:
-            _trace["routing_module"] = _chosen_module
-            tools = _tools_by_module[_chosen_module]
+        if _nav_tools:
+            tools = _nav_tools
             logger.info(
-                "Router: module=%s → %d tools (was %d)",
-                _chosen_module,
-                len(tools),
-                _trace["tools_available"],
+                "Navigation: %s → %s → %d tools (was %d)",
+                _nav_pkg, _nav_mixin, len(tools), _trace["tools_available"],
             )
         else:
-            logger.warning("Router: no valid module selected, using all %d tools", len(tools))
+            logger.warning(
+                "Navigation failed (%s/%s), falling back to full tool list (%d)",
+                _nav_pkg, _nav_mixin, len(tools),
+            )
+
+    _trace["routing_module"] = f"{_nav_pkg}/{_nav_mixin}" if _nav_mixin else _nav_pkg
+    _trace["routing_latency_ms"] = _routing_ms
 
     planning_messages: List[Dict[str, Any]] = [
         {"role": "system", "content": PLANNING_SYSTEM_PROMPT},

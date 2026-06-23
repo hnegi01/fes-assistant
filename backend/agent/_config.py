@@ -100,6 +100,25 @@ if not any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
 logger.info("llm_agent logger initialized at level %s (env %s)", _log_level_name, LOG_LEVEL_ENV_VAR)
 
 
+def _make_module_logger(name: str, filename: str) -> logging.Logger:
+    """Create a RotatingFileHandler logger for a sub-module (routing, registry, etc.)."""
+    mod_logger = logging.getLogger(name)
+    mod_logger.setLevel(_log_level)
+    mod_logger.propagate = False
+    if not any(isinstance(h, RotatingFileHandler) for h in mod_logger.handlers):
+        _fh = RotatingFileHandler(
+            LOG_DIR / filename,
+            maxBytes=10 * 1024 * 1024,
+            backupCount=5,
+            encoding="utf-8",
+        )
+        _fh.setLevel(_log_level)
+        _fh.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s"))
+        mod_logger.addHandler(_fh)
+    mod_logger.info("%s logger initialized at level %s", name, _log_level_name)
+    return mod_logger
+
+
 # -----------------------------------------------------------------------------
 # Env helpers
 # -----------------------------------------------------------------------------

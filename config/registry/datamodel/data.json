@@ -23,7 +23,34 @@
         "table_name"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Fetch all data from the 'sales_data' table in the 'RetailAnalytics' DataModel.",
+        "arguments": {
+          "datamodel_name": "RetailAnalytics",
+          "table_name": "sales_data"
+        },
+        "notes": "This retrieves all rows from the 'sales_data' table in the 'RetailAnalytics' DataModel without applying any filters."
+      },
+      {
+        "user_query": "Get data from the 'customer_info' table in the 'CustomerInsights' DataModel where the customer is located in California.",
+        "arguments": {
+          "datamodel_name": "CustomerInsights",
+          "table_name": "customer_info",
+          "query": "SELECT * FROM customer_info WHERE state = 'California'"
+        },
+        "notes": "This retrieves rows from the 'customer_info' table in the 'CustomerInsights' DataModel where the 'state' column has the value 'California'."
+      },
+      {
+        "user_query": "Retrieve all records from the 'inventory' table in the 'WarehouseManagement' DataModel.",
+        "arguments": {
+          "datamodel_name": "WarehouseManagement",
+          "table_name": "inventory"
+        },
+        "notes": "This fetches all data from the 'inventory' table in the 'WarehouseManagement' DataModel without any filtering."
+      }
+    ]
   },
   {
     "tool_id": "datamodel.get_row_count",
@@ -40,6 +67,29 @@
         "datamodel_name"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "How many rows are in each table of the Sales DataModel?",
+        "arguments": {
+          "datamodel_name": "Sales"
+        },
+        "notes": "This call retrieves the row count for all tables in the 'Sales' DataModel, including a total row count."
+      },
+      {
+        "user_query": "Can you give me the row counts for the tables in the Marketing DataModel?",
+        "arguments": {
+          "datamodel_name": "Marketing"
+        },
+        "notes": "Use this to get the row counts for each table in the 'Marketing' DataModel, useful for understanding table sizes."
+      },
+      {
+        "user_query": "I need the row counts for the tables in the Finance DataModel for reporting purposes.",
+        "arguments": {
+          "datamodel_name": "Finance"
+        },
+        "notes": "This call is helpful for retrieving table row counts from the 'Finance' DataModel to include in reports or analyses."
+      }
+    ]
   }
 ]

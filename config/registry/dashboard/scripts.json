@@ -23,7 +23,34 @@
         "script"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I add a script to the dashboard with ID 'dashboard123'?",
+        "arguments": {
+          "dashboard_id": "dashboard123",
+          "script": "{\"onLoad\": \"function() { console.log('Dashboard loaded'); }\"}",
+          "executing_user": "admin_user"
+        },
+        "notes": "This call adds a JavaScript script to the dashboard with ID 'dashboard123', temporarily changing ownership to 'admin_user' if necessary."
+      },
+      {
+        "user_query": "I need to overwrite the script on dashboard 'sales_dashboard' with a new one. How do I do that?",
+        "arguments": {
+          "dashboard_id": "sales_dashboard",
+          "script": "\"\"\"function onLoad() { alert('Welcome to the Sales Dashboard!'); }\"\"\""
+        },
+        "notes": "This call overwrites the existing script on the 'sales_dashboard' dashboard with a new script. Ownership change is not required since 'executing_user' is omitted."
+      },
+      {
+        "user_query": "Can I add a script to the dashboard 'marketing_dashboard' without specifying an executing user?",
+        "arguments": {
+          "dashboard_id": "marketing_dashboard",
+          "script": "{\"onLoad\": \"function() { console.log('Marketing dashboard initialized'); }\"}"
+        },
+        "notes": "This call adds a script to the 'marketing_dashboard' dashboard. Since 'executing_user' is not provided, the API assumes the dashboard owner is the same as the API user."
+      }
+    ]
   },
   {
     "tool_id": "dashboard.add_widget_script",
@@ -54,7 +81,39 @@
         "script"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I add a custom script to the sales widget in my dashboard?",
+        "arguments": {
+          "dashboard_id": "dashboard_12345",
+          "widget_id": "widget_67890",
+          "script": "function customizeWidget() { console.log('Custom script executed'); }",
+          "executing_user": "admin_user"
+        },
+        "notes": "This call adds a custom JavaScript script to the widget with ID 'widget_67890' in the dashboard 'dashboard_12345'. The 'executing_user' temporarily takes ownership to perform this action."
+      },
+      {
+        "user_query": "I need to overwrite the script for the revenue chart widget in the financial dashboard.",
+        "arguments": {
+          "dashboard_id": "financial_dashboard_2023",
+          "widget_id": "revenue_chart_001",
+          "script": "function updateChart() { console.log('Revenue chart updated'); }",
+          "executing_user": "finance_manager"
+        },
+        "notes": "This call overwrites the existing script for the widget 'revenue_chart_001' in the 'financial_dashboard_2023'. The 'finance_manager' user temporarily assumes ownership to make this change."
+      },
+      {
+        "user_query": "Can I add a multi-line script to the KPI widget in the executive dashboard?",
+        "arguments": {
+          "dashboard_id": "exec_dashboard_001",
+          "widget_id": "kpi_widget_42",
+          "script": "function kpiUpdate() {\n    console.log('KPI updated');\n    alert('KPI script executed');\n}",
+          "executing_user": "executive_admin"
+        },
+        "notes": "This call adds a multi-line JavaScript script to the widget 'kpi_widget_42' in the 'exec_dashboard_001'. The 'executive_admin' user temporarily assumes ownership to perform this action."
+      }
+    ]
   },
   {
     "tool_id": "dashboard.get_dashboard_script",
@@ -71,7 +130,30 @@
         "dashboard_id"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "How can I export the script for the sales dashboard?",
+        "arguments": {
+          "dashboard_id": "sales_dashboard_2023"
+        },
+        "notes": "This retrieves the script for the 'sales_dashboard_2023' dashboard, which can be used for rendering or exporting."
+      },
+      {
+        "user_query": "I need the script for the marketing performance dashboard to include in a report. How do I get it?",
+        "arguments": {
+          "dashboard_id": "marketing_perf_dash"
+        },
+        "notes": "This call fetches the script for the 'marketing_perf_dash' dashboard, enabling further use in reports or presentations."
+      },
+      {
+        "user_query": "Can I get the script for the executive summary dashboard?",
+        "arguments": {
+          "dashboard_id": "exec_summary_001"
+        },
+        "notes": "This retrieves the script for the 'exec_summary_001' dashboard, useful for generating a formatted output or embedding elsewhere."
+      }
+    ]
   },
   {
     "tool_id": "dashboard.get_widget_script",
@@ -93,6 +175,32 @@
         "widget_id"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "How can I retrieve the script for the 'Sales Performance' widget in the 'Q3 Dashboard'?",
+        "arguments": {
+          "dashboard_id": "dashboard_12345",
+          "widget_id": "widget_sales_perf"
+        },
+        "notes": "This call retrieves the script content for the 'Sales Performance' widget in the 'Q3 Dashboard'. Use this when you need to access or render the widget's script programmatically."
+      },
+      {
+        "user_query": "I need the script for the 'Customer Segmentation' widget in the 'Marketing Insights' dashboard.",
+        "arguments": {
+          "dashboard_id": "dashboard_67890",
+          "widget_id": "widget_cust_seg"
+        },
+        "notes": "This call extracts the script for the 'Customer Segmentation' widget in the 'Marketing Insights' dashboard. Useful for customizing or analyzing the widget's behavior."
+      },
+      {
+        "user_query": "Can I get the script for the 'Revenue Trends' widget in the 'Annual Report' dashboard?",
+        "arguments": {
+          "dashboard_id": "dashboard_54321",
+          "widget_id": "widget_rev_trends"
+        },
+        "notes": "This call retrieves the script for the 'Revenue Trends' widget in the 'Annual Report' dashboard. Ideal for debugging or embedding the widget's functionality elsewhere."
+      }
+    ]
   }
 ]

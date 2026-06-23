@@ -45,7 +45,55 @@
       },
       "required": []
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I migrate all data models, including data security and formulas, to a new environment while overwriting existing models?",
+        "arguments": {
+          "dependencies": [
+            "dataSecurity",
+            "formulas"
+          ],
+          "shares": false,
+          "batch_size": 10,
+          "sleep_time": 5,
+          "action": "overwrite",
+          "emit": null
+        },
+        "notes": "This call migrates all data models with data security and formulas dependencies included. Existing models in the target environment will be overwritten if they already exist."
+      },
+      {
+        "user_query": "I want to migrate all data models with all dependencies and duplicate any existing models in the target environment. How can I do this?",
+        "arguments": {
+          "dependencies": null,
+          "shares": true,
+          "batch_size": 20,
+          "sleep_time": 10,
+          "action": "duplicate",
+          "emit": null
+        },
+        "notes": "This call migrates all data models with all dependencies and includes data model shares. Existing models in the target environment will not be overwritten but duplicated with a new name."
+      },
+      {
+        "user_query": "Can I migrate data models in small batches with a custom progress callback to track the migration process?",
+        "arguments": {
+          "dependencies": [
+            "hierarchies",
+            "perspectives"
+          ],
+          "shares": true,
+          "batch_size": 5,
+          "sleep_time": 2,
+          "action": "overwrite",
+          "emit": {
+            "type": "progress",
+            "step": "migration",
+            "message": "Batch migration in progress"
+          }
+        },
+        "notes": "This call migrates data models with hierarchies and perspectives dependencies in small batches of 5, including data model shares. A custom callback is used to track the migration progress."
+      }
+    ]
   },
   {
     "tool_id": "migration.migrate_datamodels",
@@ -107,6 +155,56 @@
       },
       "required": []
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I migrate the data models with IDs 'dm_123' and 'dm_456' to the target environment, including all dependencies and shares?",
+        "arguments": {
+          "datamodel_ids": [
+            "dm_123",
+            "dm_456"
+          ],
+          "dependencies": [
+            "dataSecurity",
+            "formulas",
+            "hierarchies",
+            "perspectives"
+          ],
+          "shares": true,
+          "action": "overwrite"
+        },
+        "notes": "This call migrates two specific data models by their IDs, including all dependencies and shares, and overwrites any existing models in the target environment."
+      },
+      {
+        "user_query": "I want to migrate data models named 'SalesModel' and 'MarketingModel' to the target environment, but I want to duplicate them with new names.",
+        "arguments": {
+          "datamodel_names": [
+            "SalesModel",
+            "MarketingModel"
+          ],
+          "action": "duplicate",
+          "new_title": "DuplicatedModel"
+        },
+        "notes": "This call migrates two data models by their names and creates duplicates in the target environment with a new title."
+      },
+      {
+        "user_query": "Can I migrate the 'FinanceModel' data model using a specific connection for Databricks and include only formulas and hierarchies?",
+        "arguments": {
+          "datamodel_names": [
+            "FinanceModel"
+          ],
+          "provider_connection_map": {
+            "Databricks": "conn_789"
+          },
+          "dependencies": [
+            "formulas",
+            "hierarchies"
+          ],
+          "shares": false,
+          "action": "overwrite"
+        },
+        "notes": "This call migrates the 'FinanceModel' data model using a specific connection for Databricks, includes only formulas and hierarchies as dependencies, and does not migrate shares."
+      }
+    ]
   }
 ]

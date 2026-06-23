@@ -26,6 +26,45 @@
       },
       "required": []
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Run a full wellcheck on the 'Sales Dashboard' and 'Marketing Dashboard' to identify issues.",
+        "arguments": {
+          "dashboards": [
+            "Sales Dashboard",
+            "Marketing Dashboard"
+          ],
+          "datamodels": [],
+          "max_pivot_fields": 5
+        },
+        "notes": "This call analyzes two dashboards for structural and widget-related issues, flagging pivot widgets with more than 5 fields."
+      },
+      {
+        "user_query": "Check the 'Customer Data Model' for unused columns and other issues.",
+        "arguments": {
+          "dashboards": [],
+          "datamodels": [
+            "Customer Data Model"
+          ],
+          "max_pivot_fields": null
+        },
+        "notes": "This call focuses exclusively on the 'Customer Data Model' to identify issues like unused columns, island tables, and other data model-specific checks."
+      },
+      {
+        "user_query": "Analyze the 'Finance Dashboard' and 'HR Dashboard' along with the 'Employee Data Model' for comprehensive wellcheck results.",
+        "arguments": {
+          "dashboards": [
+            "Finance Dashboard",
+            "HR Dashboard"
+          ],
+          "datamodels": [
+            "Employee Data Model"
+          ],
+          "max_pivot_fields": 10
+        },
+        "notes": "This call performs a full wellcheck across two dashboards and one data model, flagging pivot widgets with more than 10 fields and identifying structural issues in the data model."
+      }
+    ]
   }
 ]

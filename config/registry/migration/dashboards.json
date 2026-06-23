@@ -41,7 +41,45 @@
       },
       "required": []
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I migrate all dashboards to the target environment, skipping any that already exist?",
+        "arguments": {
+          "action": "skip",
+          "republish": false,
+          "migrate_share": false,
+          "change_ownership": false,
+          "batch_size": 10,
+          "sleep_time": 10
+        },
+        "notes": "This call migrates all dashboards from the source to the target environment, skipping any dashboards that already exist in the target. Shares and ownership will not be migrated."
+      },
+      {
+        "user_query": "I want to migrate all dashboards and overwrite any existing ones in the target environment. How can I do that?",
+        "arguments": {
+          "action": "overwrite",
+          "republish": true,
+          "migrate_share": false,
+          "change_ownership": false,
+          "batch_size": 20,
+          "sleep_time": 5
+        },
+        "notes": "This call migrates all dashboards from the source to the target environment, overwriting any existing dashboards in the target. Shares and ownership will not be migrated, and the API user will become the new owner of overwritten dashboards. Dashboards will be republished after migration."
+      },
+      {
+        "user_query": "Can I migrate all dashboards and create duplicates for any that already exist in the target environment?",
+        "arguments": {
+          "action": "duplicate",
+          "republish": false,
+          "migrate_share": true,
+          "change_ownership": true,
+          "batch_size": 15,
+          "sleep_time": 10
+        },
+        "notes": "This call migrates all dashboards from the source to the target environment, creating duplicates for any dashboards that already exist in the target. Shares and ownership will be migrated for the new duplicates."
+      }
+    ]
   },
   {
     "tool_id": "migration.migrate_dashboard_shares",
@@ -73,7 +111,54 @@
         "target_dashboard_ids"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I migrate shares from dashboards in the source environment to dashboards in the target environment?",
+        "arguments": {
+          "source_dashboard_ids": [
+            "dashboard_123",
+            "dashboard_456"
+          ],
+          "target_dashboard_ids": [
+            "dashboard_789",
+            "dashboard_101"
+          ],
+          "change_ownership": false
+        },
+        "notes": "This call migrates shares from two dashboards in the source environment (dashboard_123 and dashboard_456) to corresponding dashboards in the target environment (dashboard_789 and dashboard_101) without changing ownership."
+      },
+      {
+        "user_query": "I need to transfer shares from one dashboard to another and also update ownership in the target environment. How can I do this?",
+        "arguments": {
+          "source_dashboard_ids": [
+            "dashboard_abc"
+          ],
+          "target_dashboard_ids": [
+            "dashboard_xyz"
+          ],
+          "change_ownership": true
+        },
+        "notes": "This call migrates shares from a single source dashboard (dashboard_abc) to a target dashboard (dashboard_xyz) and updates ownership in the target environment."
+      },
+      {
+        "user_query": "Can I migrate shares for multiple dashboards without changing ownership?",
+        "arguments": {
+          "source_dashboard_ids": [
+            "dashboard_001",
+            "dashboard_002",
+            "dashboard_003"
+          ],
+          "target_dashboard_ids": [
+            "dashboard_004",
+            "dashboard_005",
+            "dashboard_006"
+          ],
+          "change_ownership": false
+        },
+        "notes": "This call migrates shares for three dashboards from the source environment to corresponding dashboards in the target environment without altering ownership."
+      }
+    ]
   },
   {
     "tool_id": "migration.migrate_dashboards",
@@ -123,6 +208,50 @@
       },
       "required": []
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I migrate dashboards with IDs 'dash123' and 'dash456' to the target environment, skipping any that already exist?",
+        "arguments": {
+          "dashboard_ids": [
+            "dash123",
+            "dash456"
+          ],
+          "action": "skip",
+          "republish": false,
+          "migrate_share": false,
+          "change_ownership": false
+        },
+        "notes": "This call migrates the specified dashboards by their IDs, skipping any that already exist in the target environment. Shares and ownership are not migrated, and dashboards are not republished after import."
+      },
+      {
+        "user_query": "I want to migrate dashboards named 'Sales Overview' and 'Marketing Insights' to the target environment, overwriting any existing ones. Can I also republish them after migration?",
+        "arguments": {
+          "dashboard_names": [
+            "Sales Overview",
+            "Marketing Insights"
+          ],
+          "action": "overwrite",
+          "republish": true,
+          "migrate_share": false,
+          "change_ownership": false
+        },
+        "notes": "This call migrates the specified dashboards by their names, overwriting any existing dashboards with the same names in the target environment. The dashboards will also be republished after the migration."
+      },
+      {
+        "user_query": "Can I migrate dashboards with IDs 'dash789' and 'dash101' to the target environment, create duplicates if they already exist, and also migrate shares and ownership?",
+        "arguments": {
+          "dashboard_ids": [
+            "dash789",
+            "dash101"
+          ],
+          "action": "duplicate",
+          "republish": false,
+          "migrate_share": true,
+          "change_ownership": true
+        },
+        "notes": "This call migrates the specified dashboards by their IDs, creating duplicates in the target environment if dashboards with the same IDs already exist. Shares and ownership will also be migrated for the newly created dashboards."
+      }
+    ]
   }
 ]

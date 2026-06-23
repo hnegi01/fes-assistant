@@ -14,7 +14,30 @@
         "datamodel_name"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "What are the columns available in the 'SalesAnalytics' DataModel?",
+        "arguments": {
+          "datamodel_name": "SalesAnalytics"
+        },
+        "notes": "This retrieves all columns from the 'SalesAnalytics' DataModel, including those from its datasets and tables."
+      },
+      {
+        "user_query": "Can you list the columns in the 'CustomerInsights' DataModel?",
+        "arguments": {
+          "datamodel_name": "CustomerInsights"
+        },
+        "notes": "This call fetches the columns from the 'CustomerInsights' DataModel, providing details about its structure."
+      },
+      {
+        "user_query": "I need to see the column structure of the 'MarketingCampaigns' DataModel.",
+        "arguments": {
+          "datamodel_name": "MarketingCampaigns"
+        },
+        "notes": "Use this to get a detailed list of columns from the 'MarketingCampaigns' DataModel, useful for understanding its datasets and tables."
+      }
+    ]
   },
   {
     "tool_id": "access_management.get_unused_columns",
@@ -31,7 +54,30 @@
         "datamodel_name"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Which columns in the SalesData DataModel are not being used in any dashboards?",
+        "arguments": {
+          "datamodel_name": "SalesData"
+        },
+        "notes": "This call identifies all unused columns in the 'SalesData' DataModel by analyzing their usage in associated dashboards. Useful for cleaning up unused fields."
+      },
+      {
+        "user_query": "Can you find the unused columns in the CustomerInsights DataModel?",
+        "arguments": {
+          "datamodel_name": "CustomerInsights"
+        },
+        "notes": "This call checks the 'CustomerInsights' DataModel for columns that are not referenced in any dashboards. Ideal for optimizing the DataModel structure."
+      },
+      {
+        "user_query": "I need to know which columns in the MarketingAnalytics DataModel are not being utilized.",
+        "arguments": {
+          "datamodel_name": "MarketingAnalytics"
+        },
+        "notes": "This call analyzes the 'MarketingAnalytics' DataModel to identify columns that are not used in any dashboards. Helps in identifying redundant fields."
+      }
+    ]
   },
   {
     "tool_id": "access_management.get_unused_columns_bulk",
@@ -49,6 +95,36 @@
       },
       "required": []
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Which columns are unused in the 'Sales Data' and 'Marketing Analytics' data models?",
+        "arguments": {
+          "datamodels": [
+            "Sales Data",
+            "Marketing Analytics"
+          ]
+        },
+        "notes": "This call analyzes the unused columns in the 'Sales Data' and 'Marketing Analytics' data models by their titles."
+      },
+      {
+        "user_query": "Find unused columns in the data model with ID 'dm_12345'.",
+        "arguments": {
+          "datamodels": [
+            "dm_12345"
+          ]
+        },
+        "notes": "This call analyzes the unused columns in the data model identified by the ID 'dm_12345'."
+      },
+      {
+        "user_query": "Check for unused columns in the 'Customer Insights' data model.",
+        "arguments": {
+          "datamodels": [
+            "Customer Insights"
+          ]
+        },
+        "notes": "This call analyzes the unused columns in the 'Customer Insights' data model by its title."
+      }
+    ]
   }
 ]

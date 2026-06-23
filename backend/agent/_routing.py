@@ -20,17 +20,24 @@ from __future__ import annotations
 import json
 import os
 import time
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import litellm
 
 from ._config import (
+    ALLOW_MUTATING_TOOLS,
     LLM_CONFIG,
     MAX_LLM_HTTP_RETRIES,
+    ROOT_DIR,
     _log_json_truncated,
-    logger,
+    _make_module_logger,
 )
+
+logger = _make_module_logger("backend.agent.llm_routing", "llm_routing.log")
 from .mcp_client import McpClient
+
+REGISTRY_DIR: Path = ROOT_DIR / "config" / "registry"
 
 
 # -----------------------------------------------------------------------------
@@ -94,17 +101,6 @@ Rules:
 - Base your answer only on the tool results; do NOT invent objects.
 - Prefer counts and a high-level summary. Provide a few examples only if useful.
 """.strip()
-
-# Known module name → one-liner description for the routing prompt.
-# Unknown modules fall back to "{module} tools" in the caller.
-_MODULE_DESCRIPTIONS: Dict[str, str] = {
-    "access": "user and group management, roles, permissions",
-    "dashboard": "dashboard listing, sharing, ownership, and folder operations",
-    "datamodel": "data models, data sources, and data security",
-    "migration": "migrating dashboards, datamodels, and users between Sisense deployments",
-    "connection": "database and data source connections",
-    "settings": "Sisense instance settings and configuration",
-}
 
 ROUTING_SYSTEM_PROMPT = """
 You are a request router for a Sisense administration assistant.
@@ -212,6 +208,136 @@ async def _route_to_module(
     if not chosen:
         logger.warning("Router returned unrecognised response %r. Falling back.", (content or "").strip()[:80])
     return chosen, latency_ms
+
+
+# -----------------------------------------------------------------------------
+# 3-level hierarchical navigation
+# -----------------------------------------------------------------------------
+
+def _load_registry_index() -> Dict[str, Any]:
+    """Load config/registry/index.json — Level 1 package descriptions."""
+    path = REGISTRY_DIR / "index.json"
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.warning("Could not load registry index: %s", exc)
+        return {}
+
+
+def _load_package_index(package: str) -> Dict[str, Any]:
+    """Load config/registry/{package}/index.json — Level 2 mixin descriptions."""
+    path = REGISTRY_DIR / package / "index.json"
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.warning("Could not load package index for %s: %s", package, exc)
+        return {}
+
+
+def _load_mixin_tools(package: str, mixin: str) -> List[Dict[str, Any]]:
+    """
+    Load tools from config/registry/{package}/{mixin}.json and convert to OpenAI format.
+    Filters out mutating tools when ALLOW_MUTATING_TOOLS is False.
+    """
+    path = REGISTRY_DIR / package / f"{mixin}.json"
+    try:
+        rows = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.warning("Could not load mixin tools %s/%s: %s", package, mixin, exc)
+        return []
+
+    tools = []
+    for row in rows:
+        if not ALLOW_MUTATING_TOOLS and row.get("mutates"):
+            continue
+        tools.append({
+            "type": "function",
+            "function": {
+                "name": row["tool_id"],
+                "description": row.get("description", ""),
+                "parameters": row.get("parameters", {"type": "object", "properties": {}}),
+            },
+        })
+    return tools
+
+
+def _load_all_package_tools(package: str) -> List[Dict[str, Any]]:
+    """
+    Load all tools for a package by combining every mixin file.
+    Used for migration mode (all ~9 tools in one shot, no navigation needed).
+    """
+    pkg_dir = REGISTRY_DIR / package
+    if not pkg_dir.is_dir():
+        logger.warning("Package directory not found: %s", pkg_dir)
+        return []
+    tools = []
+    for mixin_file in sorted(pkg_dir.glob("*.json")):
+        if mixin_file.name == "index.json":
+            continue
+        tools.extend(_load_mixin_tools(package, mixin_file.stem))
+    return tools
+
+
+async def _navigate_to_tools(
+    latest_user_message: Dict[str, Any],
+    history: List[Dict[str, Any]],
+    trace_id: Optional[str],
+) -> Tuple[List[Dict[str, Any]], str, str, int]:
+    """
+    3-level navigation: package → mixin → tools.
+
+    Level 1: LLM picks a package from config/registry/index.json descriptions.
+    Level 2: LLM picks a mixin from {package}/index.json (skipped if only 1 mixin).
+    Level 3: tools loaded from {package}/{mixin}.json — returned for the planning call.
+
+    Returns (tools, chosen_package, chosen_mixin, total_routing_ms).
+    Returns ([], "", "", ms) on any failure so the caller can fall back.
+    """
+    total_ms = 0
+
+    # Level 1 — pick package
+    index = _load_registry_index()
+    packages = index.get("packages", {})
+    if not packages:
+        logger.warning("Registry index empty — cannot navigate")
+        return [], "", "", 0
+
+    pkg_descs = {pkg: info.get("description", "") for pkg, info in packages.items()}
+    chosen_pkg, ms1 = await _route_to_module(latest_user_message, history, pkg_descs, trace_id)
+    total_ms += ms1
+
+    if not chosen_pkg:
+        logger.warning("Level 1 navigation: no package selected")
+        return [], "", "", total_ms
+
+    logger.info("Level 1: chose package=%s (%dms)", chosen_pkg, ms1)
+
+    # Level 2 — pick mixin (skip if only 1)
+    pkg_index = _load_package_index(chosen_pkg)
+    modules = pkg_index.get("modules", {})
+
+    if not modules:
+        logger.warning("Package %s has no modules in index", chosen_pkg)
+        return [], chosen_pkg, "", total_ms
+
+    if len(modules) == 1:
+        chosen_mixin = list(modules.keys())[0]
+        logger.info("Level 2 skipped — single mixin in %s: %s", chosen_pkg, chosen_mixin)
+    else:
+        chosen_mixin, ms2 = await _route_to_module(latest_user_message, history, modules, trace_id)
+        total_ms += ms2
+        if not chosen_mixin:
+            logger.warning("Level 2 navigation: no mixin selected in %s", chosen_pkg)
+            return [], chosen_pkg, "", total_ms
+        logger.info("Level 2: chose mixin=%s (%dms)", chosen_mixin, ms2)
+
+    # Load Level 3 tools
+    tools = _load_mixin_tools(chosen_pkg, chosen_mixin)
+    logger.info(
+        "Navigation complete: %s → %s → %d tools (total routing_ms=%d)",
+        chosen_pkg, chosen_mixin, len(tools), total_ms,
+    )
+    return tools, chosen_pkg, chosen_mixin, total_ms
 
 
 # -----------------------------------------------------------------------------

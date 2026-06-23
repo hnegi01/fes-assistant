@@ -12,7 +12,36 @@
       },
       "required": []
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I migrate all users from the source environment to the target environment and track the progress?",
+        "arguments": {
+          "emit": {
+            "type": "progress",
+            "step": "fetch_users",
+            "message": "Fetching users from the source environment"
+          }
+        },
+        "notes": "This call migrates all eligible users from the source environment to the target environment and uses the 'emit' callback to track progress at each step."
+      },
+      {
+        "user_query": "I need to migrate users but don't want to handle progress events. How can I do that?",
+        "arguments": {},
+        "notes": "This call migrates all eligible users without emitting progress events. Use this when you only need the final result."
+      },
+      {
+        "user_query": "Can I monitor warnings and errors during the user migration process?",
+        "arguments": {
+          "emit": {
+            "type": "warning",
+            "step": "mapping_roles",
+            "message": "Some roles could not be mapped to the target environment"
+          }
+        },
+        "notes": "This call migrates users and uses the 'emit' callback to capture warnings and errors, such as unmapped roles or groups."
+      }
+    ]
   },
   {
     "tool_id": "migration.migrate_users",
@@ -32,6 +61,38 @@
         "user_name_list"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate the users 'john.doe' and 'jane.smith' to the target environment.",
+        "arguments": {
+          "user_name_list": [
+            "john.doe",
+            "jane.smith"
+          ]
+        },
+        "notes": "This call migrates the specified users from the source environment to the target environment. Use this when you need to move specific users and their associated data."
+      },
+      {
+        "user_query": "Transfer the users 'admin.user', 'data.analyst', and 'report.viewer' to the new environment.",
+        "arguments": {
+          "user_name_list": [
+            "admin.user",
+            "data.analyst",
+            "report.viewer"
+          ]
+        },
+        "notes": "This operation is useful for migrating a group of users to a new environment, ensuring their roles and permissions are preserved."
+      },
+      {
+        "user_query": "Migrate the user 'team.lead' to the target environment.",
+        "arguments": {
+          "user_name_list": [
+            "team.lead"
+          ]
+        },
+        "notes": "This call is ideal for migrating a single user, such as a team lead, to the target environment while maintaining their configurations."
+      }
+    ]
   }
 ]

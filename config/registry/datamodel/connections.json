@@ -14,7 +14,55 @@
         "connection_payload"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create a new connection for the sales database.",
+        "arguments": {
+          "connection_payload": {
+            "name": "SalesDBConnection",
+            "type": "postgresql",
+            "host": "sales-db.example.com",
+            "port": 5432,
+            "username": "admin",
+            "password": "securepassword",
+            "database": "sales_data"
+          }
+        },
+        "notes": "This call creates a connection to the sales database hosted on a PostgreSQL server. Use this when setting up data sources for analytics."
+      },
+      {
+        "user_query": "Set up a connection to the marketing analytics data warehouse.",
+        "arguments": {
+          "connection_payload": {
+            "name": "MarketingAnalyticsDW",
+            "type": "snowflake",
+            "account": "marketing-account",
+            "warehouse": "analytics_wh",
+            "database": "marketing_data",
+            "schema": "public",
+            "username": "marketing_admin",
+            "password": "securepassword123"
+          }
+        },
+        "notes": "This call establishes a connection to a Snowflake data warehouse for marketing analytics. Use this for querying and analyzing marketing data."
+      },
+      {
+        "user_query": "Add a connection to the customer support database.",
+        "arguments": {
+          "connection_payload": {
+            "name": "CustomerSupportDB",
+            "type": "mysql",
+            "host": "support-db.example.com",
+            "port": 3306,
+            "username": "support_user",
+            "password": "password123",
+            "database": "support_data"
+          }
+        },
+        "notes": "This call sets up a connection to a MySQL database containing customer support data. Use this for integrating support data into dashboards."
+      }
+    ]
   },
   {
     "tool_id": "datamodel.generate_connections_payload",
@@ -36,7 +84,48 @@
         "connection_params"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "How can I generate a connections payload for an Athena datasource?",
+        "arguments": {
+          "datasource_type": "ATHENA",
+          "connection_params": {
+            "region": "us-east-1",
+            "database": "analytics_db",
+            "output_location": "s3://query-results-bucket/"
+          }
+        },
+        "notes": "This call generates a connections payload for an Athena datasource, specifying the AWS region, database name, and S3 output location."
+      },
+      {
+        "user_query": "I need to prepare a connections payload for a Snowflake datasource. How do I do that?",
+        "arguments": {
+          "datasource_type": "SNOWFLAKE",
+          "connection_params": {
+            "account": "mycompany.snowflakecomputing.com",
+            "warehouse": "COMPUTE_WH",
+            "database": "SALES_DB",
+            "schema": "PUBLIC"
+          }
+        },
+        "notes": "This call generates a connections payload for a Snowflake datasource, including details like account URL, warehouse, database, and schema."
+      },
+      {
+        "user_query": "What is the payload for connecting to an Oracle database?",
+        "arguments": {
+          "datasource_type": "ORACLE",
+          "connection_params": {
+            "host": "oracle-db.mycompany.com",
+            "port": 1521,
+            "service_name": "ORCL",
+            "username": "admin",
+            "password": "securepassword123"
+          }
+        },
+        "notes": "This call generates a connections payload for an Oracle database, providing the host, port, service name, and credentials."
+      }
+    ]
   },
   {
     "tool_id": "datamodel.get_connection",
@@ -53,7 +142,30 @@
         "connection_name"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "What are the details of the connection named 'SalesDB'?",
+        "arguments": {
+          "connection_name": "SalesDB"
+        },
+        "notes": "This retrieves the connection details for the 'SalesDB' connection, which might be used to access sales-related data."
+      },
+      {
+        "user_query": "Can you fetch the connection information for 'MarketingDataWarehouse'?",
+        "arguments": {
+          "connection_name": "MarketingDataWarehouse"
+        },
+        "notes": "This call is used to get the connection details for 'MarketingDataWarehouse', which could be a central repository for marketing data."
+      },
+      {
+        "user_query": "I need to check the configuration of the connection named 'FinanceCluster'.",
+        "arguments": {
+          "connection_name": "FinanceCluster"
+        },
+        "notes": "This retrieves the connection details for 'FinanceCluster', which might be used for financial data analysis or reporting."
+      }
+    ]
   },
   {
     "tool_id": "datamodel.get_connections",
@@ -63,7 +175,24 @@
       "properties": {},
       "required": []
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "How can I see all the data connections available in my Sisense instance?",
+        "arguments": {},
+        "notes": "This call retrieves a list of all data connections configured in the Sisense instance. Use it to review available connections."
+      },
+      {
+        "user_query": "I need to check the details of all existing connections in the system. How can I do that?",
+        "arguments": {},
+        "notes": "This call provides the full list of connection objects, which can include details like connection names, types, and configurations."
+      },
+      {
+        "user_query": "Can I get a list of all the connections set up in Sisense?",
+        "arguments": {},
+        "notes": "This call is useful for auditing or managing the connections in your Sisense environment."
+      }
+    ]
   },
   {
     "tool_id": "datamodel.get_table_schema",
@@ -95,7 +224,39 @@
         "table_name"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "What is the schema of the 'sales_data' table in the 'analytics_db' database?",
+        "arguments": {
+          "connection_name": "primary_connection",
+          "database_name": "analytics_db",
+          "schema_name": "public",
+          "table_name": "sales_data"
+        },
+        "notes": "This call retrieves the schema details of the 'sales_data' table from the 'analytics_db' database using the 'primary_connection' connection."
+      },
+      {
+        "user_query": "Can you fetch the schema for the 'customer_info' table in the 'crm_db' database?",
+        "arguments": {
+          "connection_name": "crm_connection",
+          "database_name": "crm_db",
+          "schema_name": "main",
+          "table_name": "customer_info"
+        },
+        "notes": "This call is used to fetch the schema of the 'customer_info' table in the 'crm_db' database under the 'main' schema using the 'crm_connection' connection."
+      },
+      {
+        "user_query": "I need the schema details for the 'inventory' table in the 'warehouse_db' database.",
+        "arguments": {
+          "connection_name": "warehouse_connection",
+          "database_name": "warehouse_db",
+          "schema_name": "inventory_schema",
+          "table_name": "inventory"
+        },
+        "notes": "This call retrieves the schema of the 'inventory' table from the 'warehouse_db' database under the 'inventory_schema' schema using the 'warehouse_connection' connection."
+      }
+    ]
   },
   {
     "tool_id": "datamodel.update_connection",
@@ -117,6 +278,47 @@
         "connection_data"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I update the name and parameters of an existing connection?",
+        "arguments": {
+          "connection_id": "conn_12345",
+          "connection_data": {
+            "name": "Updated Connection Name",
+            "parameters": {
+              "host": "new-database-host.example.com",
+              "port": 5432
+            }
+          }
+        },
+        "notes": "This call updates the name and connection parameters for the specified connection. Use this when migrating to a new database host."
+      },
+      {
+        "user_query": "I need to change the provider of a connection. How do I do that?",
+        "arguments": {
+          "connection_id": "conn_67890",
+          "connection_data": {
+            "provider": "new_provider"
+          }
+        },
+        "notes": "This call changes the provider for the specified connection. Use this when switching to a different data source type."
+      },
+      {
+        "user_query": "Can I update multiple fields of a connection at once?",
+        "arguments": {
+          "connection_id": "conn_54321",
+          "connection_data": {
+            "name": "New Connection Name",
+            "parameters": {
+              "username": "new_user",
+              "password": "new_password"
+            },
+            "provider": "updated_provider"
+          }
+        },
+        "notes": "This call updates multiple fields of the specified connection, including name, parameters, and provider. Use this for comprehensive updates during migrations or reconfigurations."
+      }
+    ]
   }
 ]

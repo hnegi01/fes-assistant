@@ -14,7 +14,30 @@
         "datamodel_name"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "What are the data security rules for the SalesAnalytics DataModel?",
+        "arguments": {
+          "datamodel_name": "SalesAnalytics"
+        },
+        "notes": "Retrieves all table and column-level security rules for the 'SalesAnalytics' DataModel. Use this to audit or review security configurations."
+      },
+      {
+        "user_query": "Can you show me the data security settings for the CustomerInsights model?",
+        "arguments": {
+          "datamodel_name": "CustomerInsights"
+        },
+        "notes": "Fetches the security rules applied to tables and columns in the 'CustomerInsights' DataModel. Useful for ensuring compliance with organizational policies."
+      },
+      {
+        "user_query": "I need to check if there are any security rules applied to the MarketingData DataModel.",
+        "arguments": {
+          "datamodel_name": "MarketingData"
+        },
+        "notes": "Returns the security rules for the 'MarketingData' DataModel. If no rules exist, it will return a single row with empty values and the datamodel name."
+      }
+    ]
   },
   {
     "tool_id": "datamodel.get_datasecurity_detail",
@@ -31,7 +54,30 @@
         "datamodel_name"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "What are the data security rules for the Sales DataModel?",
+        "arguments": {
+          "datamodel_name": "Sales"
+        },
+        "notes": "This call retrieves all column-level data security rules for the 'Sales' DataModel, including visibility rules for different shares."
+      },
+      {
+        "user_query": "Can you show me the data security details for the MarketingAnalytics model?",
+        "arguments": {
+          "datamodel_name": "MarketingAnalytics"
+        },
+        "notes": "This call provides detailed data security rules for the 'MarketingAnalytics' DataModel, showing how data is shared and restricted."
+      },
+      {
+        "user_query": "I need to check the security rules applied to the FinanceModel.",
+        "arguments": {
+          "datamodel_name": "FinanceModel"
+        },
+        "notes": "This call fetches the detailed data security configuration for the 'FinanceModel', including any share-level restrictions."
+      }
+    ]
   },
   {
     "tool_id": "datamodel.set_live_datasecurity_add_many",
@@ -56,7 +102,42 @@
         "rules"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I add multiple data security rules to the 'Sales_Live' datamodel?",
+        "arguments": {
+          "datamodel_name": "Sales_Live",
+          "rules": [
+            "{\"table\": \"Orders\", \"column\": \"Region\", \"datatype\": \"string\", \"members\": [\"North America\", \"Europe\"], \"exclusionary\": false, \"shares\": []}",
+            "{\"table\": \"Customers\", \"column\": \"CustomerType\", \"datatype\": \"string\", \"members\": [\"Enterprise\"], \"exclusionary\": true, \"shares\": []}"
+          ]
+        },
+        "notes": "This call adds two data security rules to the 'Sales_Live' datamodel, restricting access to specific regions and customer types."
+      },
+      {
+        "user_query": "I need to restrict access to sensitive columns in the 'HR_Live' datamodel. How can I do that?",
+        "arguments": {
+          "datamodel_name": "HR_Live",
+          "rules": [
+            "{\"table\": \"EmployeeData\", \"column\": \"Salary\", \"datatype\": \"number\", \"members\": [], \"exclusionary\": true, \"shares\": []}",
+            "{\"table\": \"EmployeeData\", \"column\": \"SSN\", \"datatype\": \"string\", \"members\": [], \"exclusionary\": true, \"shares\": []}"
+          ]
+        },
+        "notes": "This call adds two exclusionary rules to the 'HR_Live' datamodel, restricting access to the 'Salary' and 'SSN' columns for all users."
+      },
+      {
+        "user_query": "How do I add rules to limit access to the 'Finance_Live' datamodel for specific departments?",
+        "arguments": {
+          "datamodel_name": "Finance_Live",
+          "rules": [
+            "{\"table\": \"Transactions\", \"column\": \"Department\", \"datatype\": \"string\", \"members\": [\"Accounting\", \"Finance\"], \"exclusionary\": false, \"shares\": []}",
+            "{\"table\": \"Budget\", \"column\": \"AccessLevel\", \"datatype\": \"string\", \"members\": [\"Manager\"], \"exclusionary\": false, \"shares\": []}"
+          ]
+        },
+        "notes": "This call adds rules to the 'Finance_Live' datamodel, granting access to specific departments and access levels."
+      }
+    ]
   },
   {
     "tool_id": "datamodel.update_datasecurity",
@@ -81,6 +162,41 @@
         "datasecurity"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Update the datasecurity rules for the 'SalesData' Elasticube.",
+        "arguments": {
+          "datamodel_name": "SalesData",
+          "datasecurity": [
+            "{\"table\": \"Orders\", \"column\": \"Region\", \"datatype\": \"string\", \"members\": [\"North America\", \"Europe\"], \"exclusionary\": false, \"shares\": []}",
+            "{\"table\": \"Customers\", \"column\": \"CustomerType\", \"datatype\": \"string\", \"members\": [\"Enterprise\"], \"exclusionary\": true, \"shares\": []}"
+          ]
+        },
+        "notes": "This call replaces all existing datasecurity rules on the 'SalesData' Elasticube with the provided rules."
+      },
+      {
+        "user_query": "Set new datasecurity rules for the 'MarketingAnalytics' datamodel.",
+        "arguments": {
+          "datamodel_name": "MarketingAnalytics",
+          "datasecurity": [
+            "{\"table\": \"Campaigns\", \"column\": \"Budget\", \"datatype\": \"number\", \"members\": [\"10000\", \"20000\"], \"exclusionary\": false, \"shares\": []}",
+            "{\"table\": \"Leads\", \"column\": \"Region\", \"datatype\": \"string\", \"members\": [\"APAC\"], \"exclusionary\": true, \"shares\": []}"
+          ]
+        },
+        "notes": "Use this to enforce new datasecurity rules for the 'MarketingAnalytics' datamodel, replacing any existing rules."
+      },
+      {
+        "user_query": "Apply updated datasecurity rules to the 'HRAnalytics' Elasticube.",
+        "arguments": {
+          "datamodel_name": "HRAnalytics",
+          "datasecurity": [
+            "{\"table\": \"Employees\", \"column\": \"Department\", \"datatype\": \"string\", \"members\": [\"HR\", \"Finance\"], \"exclusionary\": false, \"shares\": []}",
+            "{\"table\": \"Salaries\", \"column\": \"SalaryRange\", \"datatype\": \"number\", \"members\": [\"50000\", \"100000\"], \"exclusionary\": true, \"shares\": []}"
+          ]
+        },
+        "notes": "This replaces the datasecurity rules on the 'HRAnalytics' Elasticube with the specified rules."
+      }
+    ]
   }
 ]

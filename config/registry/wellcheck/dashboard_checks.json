@@ -15,7 +15,37 @@
       },
       "required": []
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Analyze the structure of the dashboard titled 'Sales Overview'.",
+        "arguments": {
+          "dashboards": [
+            "Sales Overview"
+          ]
+        },
+        "notes": "This call analyzes the structure of the 'Sales Overview' dashboard, identifying widget counts and jump-to-dashboard instances."
+      },
+      {
+        "user_query": "Check the structure of dashboards with IDs 'dashboard_123' and 'dashboard_456'.",
+        "arguments": {
+          "dashboards": [
+            "dashboard_123",
+            "dashboard_456"
+          ]
+        },
+        "notes": "This call processes two dashboards by their IDs, providing insights into their structure and complexity."
+      },
+      {
+        "user_query": "Analyze the complexity of the dashboard named 'Marketing Performance'.",
+        "arguments": {
+          "dashboards": [
+            "Marketing Performance"
+          ]
+        },
+        "notes": "This call evaluates the 'Marketing Performance' dashboard, counting widgets and identifying child dashboards linked via jump-to-dashboard functionality."
+      }
+    ]
   },
   {
     "tool_id": "wellcheck.check_dashboard_widget_counts",
@@ -33,7 +63,38 @@
       },
       "required": []
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "How many widgets are on the 'Sales Overview' dashboard?",
+        "arguments": {
+          "dashboards": [
+            "Sales Overview"
+          ]
+        },
+        "notes": "This call analyzes the 'Sales Overview' dashboard by its title and returns the widget count."
+      },
+      {
+        "user_query": "Can you check the widget counts for dashboards with IDs '12345' and '67890'?",
+        "arguments": {
+          "dashboards": [
+            "12345",
+            "67890"
+          ]
+        },
+        "notes": "This call retrieves widget counts for two dashboards using their Sisense IDs."
+      },
+      {
+        "user_query": "I need a summary of widget counts for the 'Marketing Performance' dashboard and the dashboard with ID '54321'.",
+        "arguments": {
+          "dashboards": [
+            "Marketing Performance",
+            "54321"
+          ]
+        },
+        "notes": "This call processes one dashboard by title and another by ID, providing a summary of widget counts for both."
+      }
+    ]
   },
   {
     "tool_id": "wellcheck.check_pivot_widget_fields",
@@ -55,6 +116,39 @@
       },
       "required": []
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Find pivot widgets with too many fields on the 'Sales Overview' dashboard.",
+        "arguments": {
+          "dashboards": [
+            "Sales Overview"
+          ],
+          "max_fields": 25
+        },
+        "notes": "This call analyzes the 'Sales Overview' dashboard and identifies pivot widgets with more than 25 fields."
+      },
+      {
+        "user_query": "Check all pivot widgets on dashboards 'Finance Dashboard' and 'HR Analytics' for excessive fields.",
+        "arguments": {
+          "dashboards": [
+            "Finance Dashboard",
+            "HR Analytics"
+          ],
+          "max_fields": 20
+        },
+        "notes": "This call scans the 'Finance Dashboard' and 'HR Analytics' dashboards for pivot widgets with more than 20 fields, which is the default threshold."
+      },
+      {
+        "user_query": "Analyze pivot widgets on dashboard ID '5f3a8b2c9d1e4a0012345678' and report those with over 30 fields.",
+        "arguments": {
+          "dashboards": [
+            "5f3a8b2c9d1e4a0012345678"
+          ],
+          "max_fields": 30
+        },
+        "notes": "This call targets a specific dashboard by its ID and identifies pivot widgets with more than 30 fields."
+      }
+    ]
   }
 ]

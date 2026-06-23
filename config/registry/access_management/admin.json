@@ -45,7 +45,47 @@
         "datamodel_name"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I schedule a daily build for the SalesData model at 2:30 AM UTC?",
+        "arguments": {
+          "datamodel_name": "SalesData",
+          "build_type": "ACCUMULATE",
+          "days": [
+            "*"
+          ],
+          "hour": 2,
+          "minute": 30
+        },
+        "notes": "This schedules a daily build for the 'SalesData' DataModel at 2:30 AM UTC using the default 'ACCUMULATE' build type."
+      },
+      {
+        "user_query": "I need to set up a full build for the InventoryModel every Monday and Thursday at 6:00 AM UTC.",
+        "arguments": {
+          "datamodel_name": "InventoryModel",
+          "build_type": "FULL",
+          "days": [
+            "MON",
+            "THU"
+          ],
+          "hour": 6,
+          "minute": 0
+        },
+        "notes": "This schedules a full build for the 'InventoryModel' DataModel to run every Monday and Thursday at 6:00 AM UTC."
+      },
+      {
+        "user_query": "Can I schedule an interval-based build for the MarketingData model every 3 days and 4 hours?",
+        "arguments": {
+          "datamodel_name": "MarketingData",
+          "build_type": "SCHEMA_CHANGES",
+          "interval_days": 3,
+          "interval_hours": 4,
+          "interval_minutes": 0
+        },
+        "notes": "This schedules a build for the 'MarketingData' DataModel to run every 3 days and 4 hours, using the 'SCHEMA_CHANGES' build type."
+      }
+    ]
   },
   {
     "tool_id": "access_management.get_all_dashboard_shares",
@@ -55,6 +95,23 @@
       "properties": {},
       "required": []
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "How can I see all the dashboards shared with users and groups in my organization?",
+        "arguments": {},
+        "notes": "This call retrieves a list of all dashboards shared within the organization, including details about the users and groups they are shared with."
+      },
+      {
+        "user_query": "I need to audit all shared dashboards and their associated user and group permissions. How do I do that?",
+        "arguments": {},
+        "notes": "Use this call to get a comprehensive list of all shared dashboards along with the user and group details for auditing purposes."
+      },
+      {
+        "user_query": "Can I get a list of all dashboards and who they are shared with for compliance reporting?",
+        "arguments": {},
+        "notes": "This call provides the necessary data for compliance reporting by listing all shared dashboards and their associated user and group shares."
+      }
+    ]
   }
 ]

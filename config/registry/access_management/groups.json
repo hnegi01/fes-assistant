@@ -14,7 +14,30 @@
         "name"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Can you get the details for the 'Sales Team' group?",
+        "arguments": {
+          "name": "Sales Team"
+        },
+        "notes": "This retrieves the details for the 'Sales Team' group, such as its members and permissions."
+      },
+      {
+        "user_query": "I need information about the 'Admin' group in our system.",
+        "arguments": {
+          "name": "Admin"
+        },
+        "notes": "This fetches the details for the 'Admin' group, which is typically used for system administrators."
+      },
+      {
+        "user_query": "What are the details for the 'Marketing' group?",
+        "arguments": {
+          "name": "Marketing"
+        },
+        "notes": "This call retrieves the details for the 'Marketing' group, which might include users and their access levels."
+      }
+    ]
   },
   {
     "tool_id": "access_management.users_per_group",
@@ -31,7 +54,30 @@
         "group_name"
       ]
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Who are the members of the 'Data Analysts' group?",
+        "arguments": {
+          "group_name": "Data Analysts"
+        },
+        "notes": "This retrieves a list of all users who belong to the 'Data Analysts' group. Use this to audit group membership or manage access."
+      },
+      {
+        "user_query": "List all users in the 'Admins' group.",
+        "arguments": {
+          "group_name": "Admins"
+        },
+        "notes": "This call fetches all users assigned to the 'Admins' group. Useful for verifying administrative access."
+      },
+      {
+        "user_query": "Get the users in the 'Marketing Team' group.",
+        "arguments": {
+          "group_name": "Marketing Team"
+        },
+        "notes": "This retrieves all users who are part of the 'Marketing Team' group. Ideal for reviewing team-specific access permissions."
+      }
+    ]
   },
   {
     "tool_id": "access_management.users_per_group_all",
@@ -41,6 +87,23 @@
       "properties": {},
       "required": []
     },
-    "mutates": false
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Can you show me all the groups in the system and the users assigned to each group?",
+        "arguments": {},
+        "notes": "This call retrieves a complete mapping of all groups to their respective users, excluding system-wide groups like 'Everyone' and 'All users in system'."
+      },
+      {
+        "user_query": "I need a list of all groups, even if they don't have any users, and the users assigned to each group.",
+        "arguments": {},
+        "notes": "Use this call to get a comprehensive list of groups, including empty ones, along with their associated users."
+      },
+      {
+        "user_query": "Who are the users in each group, and how are admins grouped?",
+        "arguments": {},
+        "notes": "This call provides a mapping of groups to users, with admin roles grouped under 'Admins'. Useful for auditing group memberships and admin assignments."
+      }
+    ]
   }
 ]

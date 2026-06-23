@@ -32,6 +32,41 @@
         "new_owner_name"
       ]
     },
-    "mutates": true
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "How can I transfer ownership of the 'Sales Reports' folder to the user 'john.doe' and ensure all dashboards in the folder are also transferred?",
+        "arguments": {
+          "executing_user": "admin.user",
+          "folder_name": "Sales Reports",
+          "new_owner_name": "john.doe",
+          "original_owner_rule": "edit",
+          "change_dashboard_ownership": true
+        },
+        "notes": "This call transfers ownership of the 'Sales Reports' folder and all associated dashboards to 'john.doe'. The original owner will retain 'edit' permissions."
+      },
+      {
+        "user_query": "I need to change the owner of the 'Marketing Data' folder to 'jane.smith' but keep the dashboards under the original owner.",
+        "arguments": {
+          "executing_user": "admin.user",
+          "folder_name": "Marketing Data",
+          "new_owner_name": "jane.smith",
+          "original_owner_rule": "view",
+          "change_dashboard_ownership": false
+        },
+        "notes": "This call transfers ownership of the 'Marketing Data' folder to 'jane.smith' while leaving the dashboards under the original owner's control with 'view' permissions."
+      },
+      {
+        "user_query": "Can I reassign the 'Finance Reports' folder to 'alex.jones' and also transfer all dashboards, while ensuring the original owner retains 'view' access?",
+        "arguments": {
+          "executing_user": "admin.user",
+          "folder_name": "Finance Reports",
+          "new_owner_name": "alex.jones",
+          "original_owner_rule": "view",
+          "change_dashboard_ownership": true
+        },
+        "notes": "This call transfers ownership of the 'Finance Reports' folder and all associated dashboards to 'alex.jones'. The original owner will retain 'view' permissions."
+      }
+    ]
   }
 ]

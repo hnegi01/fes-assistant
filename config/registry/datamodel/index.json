@@ -1,12 +1,5 @@
 {
   "package": "datamodel",
   "class": "DataModel",
-  "modules": {
-    "core": "Data model schema — get, list, describe, load, and delete data models; resolve by ID or title; list elasticubes.",
-    "connections": "Connection management — get, update, and create data source connections; generate connection payloads for supported providers.",
-    "build": "Schema provisioning — create data models, datasets, and tables; deploy a data model with configurable build behavior.",
-    "security": "Row-level security — get, update, and bulk-add datasecurity rules that restrict data access per user or group.",
-    "shares": "Data model access — get and add share entries (users and groups) with READ, USE, or EDIT permission levels.",
-    "data": "Data retrieval — query table contents via SQL; get row counts for a table within a data model."
-  }
+  "modules": {}
 }

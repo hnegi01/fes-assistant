@@ -1,8 +1,8 @@
 [
   {
-    "tool_id": "access.change_folder_and_dashboard_ownership",
-    "module": "access",
-    "sub_module": "access.ownership",
+    "tool_id": "access_management.change_folder_and_dashboard_ownership",
+    "module": "access_management",
+    "sub_module": "access_management.ownership",
     "class": "AccessManagement",
     "method": "change_folder_and_dashboard_ownership",
     "description": "Method to change the ownership of folders and optionally dashboards.",
@@ -39,52 +39,52 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "dashboards",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "How can I transfer ownership of the 'Sales Reports' folder to another user and also update the ownership of all dashboards inside it?",
+        "user_query": "How can I transfer ownership of the 'Sales Reports' folder to the user 'john.doe' and ensure all dashboards in the folder are also transferred?",
         "arguments": {
-          "executing_user": "admin_user",
+          "executing_user": "admin.user",
           "folder_name": "Sales Reports",
-          "new_owner_name": "john_doe",
+          "new_owner_name": "john.doe",
           "original_owner_rule": "edit",
           "change_dashboard_ownership": true
         },
-        "notes": "This call transfers ownership of the 'Sales Reports' folder and all dashboards within it to 'john_doe'. The original owner will retain 'edit' permissions."
+        "notes": "This call transfers ownership of the 'Sales Reports' folder and all associated dashboards to 'john.doe'. The original owner will retain 'edit' permissions."
       },
       {
-        "user_query": "I need to change the owner of the 'Marketing Data' folder to 'jane_smith' but leave the dashboards' ownership unchanged.",
+        "user_query": "I need to change the owner of the 'Marketing Data' folder to 'jane.smith' but keep the dashboards under the original owner.",
         "arguments": {
-          "executing_user": "system_admin",
+          "executing_user": "admin.user",
           "folder_name": "Marketing Data",
-          "new_owner_name": "jane_smith",
+          "new_owner_name": "jane.smith",
           "original_owner_rule": "view",
           "change_dashboard_ownership": false
         },
-        "notes": "This call changes the ownership of the 'Marketing Data' folder to 'jane_smith' without affecting the ownership of dashboards. The original owner will retain 'view' permissions."
+        "notes": "This call transfers ownership of the 'Marketing Data' folder to 'jane.smith' while leaving the dashboards under the original owner's control with 'view' permissions."
       },
       {
-        "user_query": "Can I assign the 'Finance Reports' folder to a new owner and ensure dashboards are also reassigned?",
+        "user_query": "Can I reassign the 'Finance Reports' folder to 'alex.jones' and also transfer all dashboards, while ensuring the original owner retains 'view' access?",
         "arguments": {
-          "executing_user": "finance_admin",
+          "executing_user": "admin.user",
           "folder_name": "Finance Reports",
-          "new_owner_name": "alex_williams",
-          "original_owner_rule": "edit",
+          "new_owner_name": "alex.jones",
+          "original_owner_rule": "view",
           "change_dashboard_ownership": true
         },
-        "notes": "This call reassigns the 'Finance Reports' folder and all associated dashboards to 'alex_williams'. The original owner will retain 'edit' permissions."
+        "notes": "This call transfers ownership of the 'Finance Reports' folder and all associated dashboards to 'alex.jones'. The original owner will retain 'view' permissions."
       }
     ]
   },
   {
-    "tool_id": "access.change_user_password",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.change_user_password",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "change_user_password",
     "description": "Change a user's password.",
@@ -108,43 +108,43 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Update the password for user with ID 'user12345' to 'NewSecureP@ssw0rd'.",
+        "user_query": "Update the password for user ID '12345abcde' to 'NewSecureP@ssw0rd'.",
         "arguments": {
-          "user_id": "user12345",
+          "user_id": "12345abcde",
           "password": "NewSecureP@ssw0rd"
         },
         "notes": "This call updates the password for the specified user. Use this when a user requests a password reset or needs their password changed for security reasons."
       },
       {
-        "user_query": "Reset the password for the user with ID 'admin001' to 'Admin#2023'.",
+        "user_query": "Change the password for user with ID '67890fghij' to 'Another$trongP@ss'.",
         "arguments": {
-          "user_id": "admin001",
-          "password": "Admin#2023"
+          "user_id": "67890fghij",
+          "password": "Another$trongP@ss"
         },
-        "notes": "This call resets the password for an admin user. It is typically used when an admin forgets their password or during routine password updates."
+        "notes": "This is useful for administrators managing user accounts who need to enforce a password change."
       },
       {
-        "user_query": "Change the password for user 'team_lead_789' to 'T3amL3ad!'.",
+        "user_query": "Reset the password for user ID 'abc123xyz' to 'TempP@ssw0rd2023'.",
         "arguments": {
-          "user_id": "team_lead_789",
-          "password": "T3amL3ad!"
+          "user_id": "abc123xyz",
+          "password": "TempP@ssw0rd2023"
         },
-        "notes": "This call changes the password for a team lead. It is useful for enforcing updated password policies or when a user suspects their account has been compromised."
+        "notes": "This is typically used when issuing a temporary password for a user who has forgotten their credentials."
       }
     ]
   },
   {
-    "tool_id": "access.create_schedule_build",
-    "module": "access",
-    "sub_module": "access.admin",
+    "tool_id": "access_management.create_schedule_build",
+    "module": "access_management",
+    "sub_module": "access_management.admin",
     "class": "AccessManagement",
     "method": "create_schedule_build",
     "description": "Method to create a schedule build for a DataModel.",
@@ -194,55 +194,56 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "How can I schedule a full build for the Sales_Data model to run every Monday at 3:00 UTC?",
+        "user_query": "How can I schedule a daily build for the SalesData model at 2:30 AM UTC?",
         "arguments": {
-          "datamodel_name": "Sales_Data",
-          "build_type": "FULL",
-          "days": [
-            "MON"
-          ],
-          "hour": 3,
-          "minute": 0
-        },
-        "notes": "This schedules a full build of the 'Sales_Data' DataModel to run every Monday at 3:00 AM UTC."
-      },
-      {
-        "user_query": "I want to set up an incremental build for the Marketing_Analytics model to run every 2 days, 6 hours, and 30 minutes. How can I do that?",
-        "arguments": {
-          "datamodel_name": "Marketing_Analytics",
+          "datamodel_name": "SalesData",
           "build_type": "ACCUMULATE",
-          "interval_days": 2,
-          "interval_hours": 6,
-          "interval_minutes": 30
-        },
-        "notes": "This schedules an incremental build of the 'Marketing_Analytics' DataModel to run every 2 days, 6 hours, and 30 minutes."
-      },
-      {
-        "user_query": "Can I schedule a schema change build for the Inventory_Tracking model to run daily at 22:15 UTC?",
-        "arguments": {
-          "datamodel_name": "Inventory_Tracking",
-          "build_type": "SCHEMA_CHANGES",
           "days": [
             "*"
           ],
-          "hour": 22,
-          "minute": 15
+          "hour": 2,
+          "minute": 30
         },
-        "notes": "This schedules a schema change build of the 'Inventory_Tracking' DataModel to run daily at 22:15 UTC."
+        "notes": "This schedules a daily build for the 'SalesData' DataModel at 2:30 AM UTC using the default 'ACCUMULATE' build type."
+      },
+      {
+        "user_query": "I need to set up a full build for the InventoryModel every Monday and Thursday at 6:00 AM UTC.",
+        "arguments": {
+          "datamodel_name": "InventoryModel",
+          "build_type": "FULL",
+          "days": [
+            "MON",
+            "THU"
+          ],
+          "hour": 6,
+          "minute": 0
+        },
+        "notes": "This schedules a full build for the 'InventoryModel' DataModel to run every Monday and Thursday at 6:00 AM UTC."
+      },
+      {
+        "user_query": "Can I schedule an interval-based build for the MarketingData model every 3 days and 4 hours?",
+        "arguments": {
+          "datamodel_name": "MarketingData",
+          "build_type": "SCHEMA_CHANGES",
+          "interval_days": 3,
+          "interval_hours": 4,
+          "interval_minutes": 0
+        },
+        "notes": "This schedules a build for the 'MarketingData' DataModel to run every 3 days and 4 hours, using the 'SCHEMA_CHANGES' build type."
       }
     ]
   },
   {
-    "tool_id": "access.create_user",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.create_user",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "create_user",
     "description": "Creates a new user by processing the provided user data to replace role",
@@ -261,23 +262,23 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Add a new user with the role of 'Admin' and assign them to the 'Finance' and 'Analytics' groups.",
+        "user_query": "Create a new user with the email john.doe@example.com and assign them the Admin role.",
         "arguments": {
           "user_data": {
-            "email": "jane.doe@example.com",
-            "firstName": "Jane",
+            "email": "john.doe@example.com",
+            "firstName": "John",
             "lastName": "Doe",
             "role": "Admin",
             "groups": [
-              "Finance",
+              "Team A",
               "Analytics"
             ],
             "preferences": {
@@ -286,14 +287,14 @@
             }
           }
         },
-        "notes": "This call creates a new user with administrative privileges and assigns them to the specified groups. Use this to onboard new admins."
+        "notes": "This call creates a new user with administrative privileges and assigns them to specific groups for access control."
       },
       {
-        "user_query": "Create a user with the 'Viewer' role and add them to the 'Marketing' group.",
+        "user_query": "Add a user named Jane Smith with the Viewer role and include them in the Marketing group.",
         "arguments": {
           "user_data": {
-            "email": "john.smith@example.com",
-            "firstName": "John",
+            "email": "jane.smith@example.com",
+            "firstName": "Jane",
             "lastName": "Smith",
             "role": "Viewer",
             "groups": [
@@ -305,34 +306,34 @@
             }
           }
         },
-        "notes": "This call is useful for adding a new user with read-only access to the Marketing group."
+        "notes": "This call creates a new user with read-only access and assigns them to the Marketing group for targeted permissions."
       },
       {
-        "user_query": "Add a new user with the role of 'Data Analyst' and assign them to the 'Sales' and 'Operations' groups.",
+        "user_query": "Create a user with the email alice.wong@example.com, assign them the Developer role, and add them to the Engineering and QA groups.",
         "arguments": {
           "user_data": {
-            "email": "alex.taylor@example.com",
-            "firstName": "Alex",
-            "lastName": "Taylor",
-            "role": "Data Analyst",
+            "email": "alice.wong@example.com",
+            "firstName": "Alice",
+            "lastName": "Wong",
+            "role": "Developer",
             "groups": [
-              "Sales",
-              "Operations"
+              "Engineering",
+              "QA"
             ],
             "preferences": {
-              "language": "fr",
-              "timezone": "Europe/Paris"
+              "language": "en",
+              "timezone": "Asia/Singapore"
             }
           }
         },
-        "notes": "This call creates a user with data analysis privileges and assigns them to multiple groups for cross-departmental collaboration."
+        "notes": "This call creates a new user with development permissions and assigns them to relevant groups for project collaboration."
       }
     ]
   },
   {
-    "tool_id": "access.delete_user",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.delete_user",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "delete_user",
     "description": "Deletes a user by their email (username).",
@@ -351,40 +352,40 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Remove the user with the email john.doe@example.com from the system.",
         "arguments": {
           "user_name": "john.doe@example.com"
         },
-        "notes": "This call deletes the user identified by the email 'john.doe@example.com'. Use this when you need to revoke access for a specific user permanently."
+        "notes": "This call deletes the user with the specified email address. Use this when you need to permanently remove a user's access."
       },
       {
-        "user_query": "Delete the account associated with admin@sisensecorp.com.",
+        "user_query": "Delete the user with the username admin_user@example.com.",
         "arguments": {
-          "user_name": "admin@sisensecorp.com"
+          "user_name": "admin_user@example.com"
         },
-        "notes": "This call removes the user with the username 'admin@sisensecorp.com'. Ideal for cleaning up unused admin accounts or deactivating access for former employees."
+        "notes": "This operation is useful for removing an admin account that is no longer needed or has been replaced."
       },
       {
-        "user_query": "Remove the user with the email jane.smith@analytics.io from the platform.",
+        "user_query": "Can you remove the user jane.smith@company.com from the system?",
         "arguments": {
-          "user_name": "jane.smith@analytics.io"
+          "user_name": "jane.smith@company.com"
         },
-        "notes": "This operation deletes the user 'jane.smith@analytics.io' from the system. Use this to ensure the user no longer has access to Sisense resources."
+        "notes": "Use this to delete a user who has left the organization or no longer requires access to Sisense."
       }
     ]
   },
   {
-    "tool_id": "access.get_all_dashboard_shares",
-    "module": "access",
-    "sub_module": "access.admin",
+    "tool_id": "access_management.get_all_dashboard_shares",
+    "module": "access_management",
+    "sub_module": "access_management.admin",
     "class": "AccessManagement",
     "method": "get_all_dashboard_shares",
     "description": "Method to retrieve all dashboard shares, including user and group details for each shared dashboard.",
@@ -396,34 +397,34 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "dashboards",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Show me all the dashboards and their sharing details.",
+        "user_query": "How can I see all the dashboards shared with users and groups in my organization?",
         "arguments": {},
-        "notes": "This call retrieves all dashboards along with their sharing information, including user and group details. Use this to audit dashboard access across the organization."
+        "notes": "This call retrieves a list of all dashboards shared within the organization, including details about the users and groups they are shared with."
       },
       {
-        "user_query": "I need to review which users and groups have access to dashboards.",
+        "user_query": "I need to audit all shared dashboards and their associated user and group permissions. How do I do that?",
         "arguments": {},
-        "notes": "Use this call to fetch a complete list of dashboard shares, including the type of share (user or group) and the associated names or emails. Ideal for access management reviews."
+        "notes": "Use this call to get a comprehensive list of all shared dashboards along with the user and group details for auditing purposes."
       },
       {
-        "user_query": "Can I get a list of all shared dashboards and who has access to them?",
+        "user_query": "Can I get a list of all dashboards and who they are shared with for compliance reporting?",
         "arguments": {},
-        "notes": "This call provides a detailed list of all shared dashboards, including the sharing type and corresponding user or group details. Useful for understanding sharing configurations."
+        "notes": "This call provides the necessary data for compliance reporting by listing all shared dashboards and their associated user and group shares."
       }
     ]
   },
   {
-    "tool_id": "access.get_datamodel_columns",
-    "module": "access",
-    "sub_module": "access.columns",
+    "tool_id": "access_management.get_datamodel_columns",
+    "module": "access_management",
+    "sub_module": "access_management.columns",
     "class": "AccessManagement",
     "method": "get_datamodel_columns",
     "description": "Retrieves columns from a DataModel by collecting them from its datasets and tables.",
@@ -442,40 +443,40 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "datamodel",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What are the columns available in the 'SalesAnalytics' DataModel?",
         "arguments": {
           "datamodel_name": "SalesAnalytics"
         },
-        "notes": "This call retrieves all columns from the 'SalesAnalytics' DataModel, including those from its datasets and tables. Use this to understand the structure of the DataModel."
+        "notes": "This retrieves all columns from the 'SalesAnalytics' DataModel, including those from its datasets and tables."
       },
       {
         "user_query": "Can you list the columns in the 'CustomerInsights' DataModel?",
         "arguments": {
           "datamodel_name": "CustomerInsights"
         },
-        "notes": "This call is used to fetch the columns from the 'CustomerInsights' DataModel. It helps in identifying the available fields for analysis or reporting."
+        "notes": "This call fetches the columns from the 'CustomerInsights' DataModel, providing details about its structure."
       },
       {
-        "user_query": "I need to see all the columns in the 'MarketingPerformance' DataModel. Can you provide them?",
+        "user_query": "I need to see the column structure of the 'MarketingCampaigns' DataModel.",
         "arguments": {
-          "datamodel_name": "MarketingPerformance"
+          "datamodel_name": "MarketingCampaigns"
         },
-        "notes": "This call retrieves the columns from the 'MarketingPerformance' DataModel, which can be useful for verifying the data structure or preparing queries."
+        "notes": "Use this to get a detailed list of columns from the 'MarketingCampaigns' DataModel, useful for understanding its datasets and tables."
       }
     ]
   },
   {
-    "tool_id": "access.get_group",
-    "module": "access",
-    "sub_module": "access.groups",
+    "tool_id": "access_management.get_group",
+    "module": "access_management",
+    "sub_module": "access_management.groups",
     "class": "AccessManagement",
     "method": "get_group",
     "description": "Retrieves group details by their name.",
@@ -494,40 +495,40 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "groups",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Can you get the details for the 'Data Analysts' group?",
-        "arguments": {
-          "name": "Data Analysts"
-        },
-        "notes": "This retrieves the details of the 'Data Analysts' group, such as its members and permissions. Use this to verify group configurations or audit access."
-      },
-      {
-        "user_query": "I need to check the permissions for the 'Sales Team' group.",
+        "user_query": "Can you get the details for the 'Sales Team' group?",
         "arguments": {
           "name": "Sales Team"
         },
-        "notes": "This call fetches the details of the 'Sales Team' group, which can include its permissions and associated users. Useful for reviewing access levels."
+        "notes": "This retrieves the details for the 'Sales Team' group, such as its members and permissions."
       },
       {
-        "user_query": "What are the details of the 'Admins' group?",
+        "user_query": "I need information about the 'Admin' group in our system.",
         "arguments": {
-          "name": "Admins"
+          "name": "Admin"
         },
-        "notes": "This retrieves the details of the 'Admins' group, typically used to ensure that administrative permissions are correctly assigned."
+        "notes": "This fetches the details for the 'Admin' group, which is typically used for system administrators."
+      },
+      {
+        "user_query": "What are the details for the 'Marketing' group?",
+        "arguments": {
+          "name": "Marketing"
+        },
+        "notes": "This call retrieves the details for the 'Marketing' group, which might include users and their access levels."
       }
     ]
   },
   {
-    "tool_id": "access.get_my_user",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_my_user",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_my_user",
     "description": "Retrieve the currently logged-in user for the API token.",
@@ -539,34 +540,34 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Who am I logged in as?",
+        "user_query": "Who am I logged in as using this API token?",
         "arguments": {},
-        "notes": "This call retrieves the details of the currently authenticated user based on the API token. Useful for verifying the identity of the logged-in user."
+        "notes": "This call retrieves the details of the currently authenticated user based on the API token provided. Useful for verifying the identity tied to the token."
       },
       {
-        "user_query": "Get the details of the current API token's user.",
+        "user_query": "Can you fetch the user details for the current API session?",
         "arguments": {},
-        "notes": "Use this to fetch the user object associated with the API token, including email, username, and internal ID. Helpful for debugging or user context in migrations."
+        "notes": "This call returns the user object associated with the API token, including email, username, and internal ID. Helpful for debugging or auditing purposes."
       },
       {
-        "user_query": "Check the logged-in user's information for this session.",
+        "user_query": "What is the username and email of the logged-in user for this token?",
         "arguments": {},
-        "notes": "This call is ideal for confirming the user identity tied to the active session, ensuring proper access control and auditing."
+        "notes": "This retrieves the logged-in user's information, allowing administrators to confirm which account is being used for API operations."
       }
     ]
   },
   {
-    "tool_id": "access.get_roles",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_roles",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_roles",
     "description": "Retrieve all Sisense roles.",
@@ -578,33 +579,33 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What roles are available in my Sisense instance?",
         "arguments": {},
-        "notes": "This retrieves a list of all roles defined in the Sisense instance. Useful for understanding the available roles and their details."
+        "notes": "This call retrieves a list of all roles defined in the Sisense instance. Useful for understanding role configurations or preparing for user management tasks."
       },
       {
-        "user_query": "Can you provide me with a list of all roles to help set up permissions for a new user?",
+        "user_query": "Can you show me all the roles so I can map them to my organization's permissions?",
         "arguments": {},
-        "notes": "This call fetches all roles, which can then be used to assign appropriate permissions to new users."
+        "notes": "This call provides the raw list of roles, which can be used to map Sisense roles to organizational roles during setup or migration."
       },
       {
-        "user_query": "I need to see the roles to map them for a multi-tenant migration. How can I get them?",
+        "user_query": "I need to see the roles to check if any custom roles have been added.",
         "arguments": {},
-        "notes": "This retrieves the raw list of roles, which is helpful for mapping role names to IDs during multi-tenant migrations."
+        "notes": "This call helps verify the roles in the system, including any custom roles that might have been created, ensuring alignment with organizational policies."
       }
     ]
   },
   {
-    "tool_id": "access.get_unused_columns",
-    "module": "access",
-    "sub_module": "access.columns",
+    "tool_id": "access_management.get_unused_columns",
+    "module": "access_management",
+    "sub_module": "access_management.columns",
     "class": "AccessManagement",
     "method": "get_unused_columns",
     "description": "Identify unused columns in a given DataModel by comparing all available columns against the columns",
@@ -623,39 +624,39 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Which columns in the SalesDataModel are not being used in any dashboards?",
+        "user_query": "Which columns in the SalesData DataModel are not being used in any dashboards?",
         "arguments": {
-          "datamodel_name": "SalesDataModel"
+          "datamodel_name": "SalesData"
         },
-        "notes": "This call identifies columns in the 'SalesDataModel' that are not referenced in any associated dashboards, filters, or widget panels. Useful for optimizing the DataModel by removing unused columns."
+        "notes": "This call identifies all unused columns in the 'SalesData' DataModel by analyzing their usage in associated dashboards. Useful for cleaning up unused fields."
       },
       {
-        "user_query": "Can you check for unused columns in the MarketingAnalytics model?",
-        "arguments": {
-          "datamodel_name": "MarketingAnalytics"
-        },
-        "notes": "This call analyzes the 'MarketingAnalytics' DataModel to find columns that are not utilized in dashboards or filters. Ideal for cleaning up and improving performance."
-      },
-      {
-        "user_query": "I need to find unused columns in the CustomerInsights DataModel to streamline our dashboards.",
+        "user_query": "Can you find the unused columns in the CustomerInsights DataModel?",
         "arguments": {
           "datamodel_name": "CustomerInsights"
         },
-        "notes": "This call helps identify unused columns in the 'CustomerInsights' DataModel, enabling administrators to streamline dashboards and improve system efficiency."
+        "notes": "This call checks the 'CustomerInsights' DataModel for columns that are not referenced in any dashboards. Ideal for optimizing the DataModel structure."
+      },
+      {
+        "user_query": "I need to know which columns in the MarketingAnalytics DataModel are not being utilized.",
+        "arguments": {
+          "datamodel_name": "MarketingAnalytics"
+        },
+        "notes": "This call analyzes the 'MarketingAnalytics' DataModel to identify columns that are not used in any dashboards. Helps in identifying redundant fields."
       }
     ]
   },
   {
-    "tool_id": "access.get_unused_columns_bulk",
-    "module": "access",
-    "sub_module": "access.columns",
+    "tool_id": "access_management.get_unused_columns_bulk",
+    "module": "access_management",
+    "sub_module": "access_management.columns",
     "class": "AccessManagement",
     "method": "get_unused_columns_bulk",
     "description": "Run unused-column analysis for one or more data models and return a",
@@ -675,46 +676,46 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Find unused columns in the Sales and Marketing data models.",
+        "user_query": "Which columns are unused in the 'Sales Data' and 'Marketing Analytics' data models?",
         "arguments": {
           "datamodels": [
-            "Sales_Model",
-            "Marketing_Model"
+            "Sales Data",
+            "Marketing Analytics"
           ]
         },
-        "notes": "This call analyzes the 'Sales_Model' and 'Marketing_Model' data models to identify columns that are not being used."
+        "notes": "This call analyzes the unused columns in the 'Sales Data' and 'Marketing Analytics' data models by their titles."
       },
       {
-        "user_query": "Check for unused columns in the data model with ID '12345'.",
+        "user_query": "Find unused columns in the data model with ID 'dm_12345'.",
         "arguments": {
           "datamodels": [
-            "12345"
+            "dm_12345"
           ]
         },
-        "notes": "This call analyzes the data model with the ID '12345' to find any unused columns."
+        "notes": "This call analyzes the unused columns in the data model identified by the ID 'dm_12345'."
       },
       {
-        "user_query": "Run an unused-column analysis for the Finance data model.",
+        "user_query": "Check for unused columns in the 'Customer Insights' data model.",
         "arguments": {
           "datamodels": [
-            "Finance_Model"
+            "Customer Insights"
           ]
         },
-        "notes": "This call processes the 'Finance_Model' data model to identify unused columns, returning a list of results."
+        "notes": "This call analyzes the unused columns in the 'Customer Insights' data model by its title."
       }
     ]
   },
   {
-    "tool_id": "access.get_user",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_user",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_user",
     "description": "Retrieve a user's details by email address, expanding group and role information.",
@@ -733,40 +734,40 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Get details for the user with email john.doe@example.com.",
+        "user_query": "Find details for the user with the email john.doe@example.com.",
         "arguments": {
           "user_email": "john.doe@example.com"
         },
-        "notes": "This call retrieves detailed information about the user with the specified email, including their group and role assignments."
+        "notes": "This call retrieves detailed information about the user with the specified email, including their group and role memberships."
       },
       {
-        "user_query": "Who is the user with the email address admin@sisensecorp.com?",
-        "arguments": {
-          "user_email": "admin@sisensecorp.com"
-        },
-        "notes": "Use this to fetch the profile, group memberships, and roles for the user with the given email address."
-      },
-      {
-        "user_query": "Find the user associated with the email address jane.smith@company.com and list their roles.",
+        "user_query": "Get user information for jane.smith@company.com to verify her roles and groups.",
         "arguments": {
           "user_email": "jane.smith@company.com"
         },
-        "notes": "This query is useful for identifying a user's details and understanding their access permissions within the system."
+        "notes": "Use this to confirm the roles and group memberships of a specific user by their email address."
+      },
+      {
+        "user_query": "Check the details of the user with the email admin@organization.org.",
+        "arguments": {
+          "user_email": "admin@organization.org"
+        },
+        "notes": "This is useful for retrieving administrative user details, including their associated roles and groups."
       }
     ]
   },
   {
-    "tool_id": "access.get_user_with_role_and_group_names",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_user_with_role_and_group_names",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_user_with_role_and_group_names",
     "description": "Retrieves a single user by email/username and returns both role and",
@@ -785,41 +786,41 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "groups",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Find the roles and groups for the user with email john.doe@example.com.",
+        "user_query": "Find the user with the email john.doe@example.com and get their role and group details.",
         "arguments": {
           "user_name": "john.doe@example.com"
         },
-        "notes": "This call retrieves detailed information about the user 'john.doe@example.com', including their roles and group memberships."
+        "notes": "This call retrieves detailed information about the user, including their role and associated groups, based on their email."
       },
       {
-        "user_query": "What are the roles and groups associated with the username admin_user?",
+        "user_query": "Get the role and group names for the user with the username admin_user.",
         "arguments": {
           "user_name": "admin_user"
         },
-        "notes": "Use this call to fetch role and group details for the user identified by the username 'admin_user'."
+        "notes": "Use this call to fetch the role and group details for a user identified by their username."
       },
       {
-        "user_query": "Get the role and group details for the user with email jane.smith@company.com.",
+        "user_query": "Retrieve the role and group information for the user jane.smith@company.com.",
         "arguments": {
           "user_name": "jane.smith@company.com"
         },
-        "notes": "This example retrieves the role and group information for the user 'jane.smith@company.com'."
+        "notes": "This call is useful for administrators who need to verify the role and group memberships of a specific user by their email."
       }
     ]
   },
   {
-    "tool_id": "access.get_users_all",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_users_all",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_users_all",
     "description": "Retrieves user details along with tenant, group, and role information.",
@@ -831,34 +832,34 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Get a list of all users in the system with their associated roles and groups.",
+        "user_query": "Can you retrieve all user details, including their roles and groups, for our Sisense instance?",
         "arguments": {},
-        "notes": "This call retrieves detailed information about all users, including their tenant, group, and role associations. Useful for auditing user access or generating reports."
+        "notes": "This call retrieves all user details, including tenant, group, and role information. Useful for auditing user access and group memberships."
       },
       {
-        "user_query": "Fetch user details to verify group memberships and roles across tenants.",
+        "user_query": "I need a list of all users along with their associated roles and groups for reporting purposes.",
         "arguments": {},
-        "notes": "Use this call to ensure users are correctly assigned to groups and roles, especially when managing multi-tenant environments."
+        "notes": "This call provides a comprehensive list of users and their associated metadata, which can be used for reporting or compliance checks."
       },
       {
-        "user_query": "List all users and their roles to check for discrepancies in group assignments.",
+        "user_query": "How can I get a detailed list of all users, excluding the 'Everyone' group if they belong to other groups?",
         "arguments": {},
-        "notes": "Helpful for identifying users who may have incorrect or missing group memberships, ensuring proper access control."
+        "notes": "This call retrieves user details while removing the 'Everyone' group from users who belong to other groups, ensuring a cleaner group association list."
       }
     ]
   },
   {
-    "tool_id": "access.get_users_with_role_names_and_group_names",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.get_users_with_role_names_and_group_names",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_users_with_role_names_and_group_names",
     "description": "Retrieves all users from Sisense and enriches them with role names and",
@@ -870,35 +871,35 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "groups",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Who are all the users in Sisense, and what roles and groups do they belong to?",
+        "user_query": "Who are all the users in the system, and what roles and groups are they part of?",
         "arguments": {},
-        "notes": "This call retrieves all users in Sisense and enriches their data with role names and group names. Use this to get a comprehensive view of user assignments."
+        "notes": "This retrieves all users in Sisense, along with their role names and group names, by resolving raw IDs to human-readable names. Use this to get a comprehensive view of user assignments."
       },
       {
-        "user_query": "Can I get a list of all active users along with their roles and groups?",
+        "user_query": "Can I get a list of all active users along with their roles and group memberships?",
         "arguments": {},
-        "notes": "This call fetches all users, including their active status, roles, and groups. Use this to audit user activity and assignments."
+        "notes": "This fetches all users, including their active status, roles, and group memberships. Useful for auditing active user assignments."
       },
       {
-        "user_query": "I need to see which groups and roles are assigned to each user in Sisense.",
+        "user_query": "I need to audit user roles and group memberships for compliance purposes. How can I get this information?",
         "arguments": {},
-        "notes": "This call provides detailed user information, including group and role assignments. Ideal for role and group management tasks."
+        "notes": "This call provides a detailed list of users, enriched with their roles and group memberships, which is ideal for compliance and auditing tasks."
       }
     ]
   },
   {
-    "tool_id": "access.update_user",
-    "module": "access",
-    "sub_module": "access.users",
+    "tool_id": "access_management.update_user",
+    "module": "access_management",
+    "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "update_user",
     "description": "Update an existing Sisense user identified by their email address.",
@@ -922,52 +923,54 @@
     },
     "mutates": true,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Update the email and role of a user with the email 'jane.doe@example.com'.",
+        "user_query": "Update the email and role of a user with the email john.doe@example.com.",
         "arguments": {
-          "user_email": "jane.doe@example.com",
+          "user_email": "john.doe@example.com",
           "user_data": {
-            "email": "jane.newemail@example.com",
+            "email": "john.doe.new@example.com",
             "role": "designer"
           }
         },
-        "notes": "This call updates the user's email address and assigns them the 'designer' role."
+        "notes": "This call updates the user's email address and changes their role to 'designer'. Use this when a user's email or role needs to be modified."
       },
       {
-        "user_query": "Change the username and clear all group memberships for the user 'john.smith@example.com'.",
+        "user_query": "Change the username and add the user jane.smith@example.com to specific groups.",
         "arguments": {
-          "user_email": "john.smith@example.com",
+          "user_email": "jane.smith@example.com",
           "user_data": {
-            "userName": "john.smith.new",
+            "userName": "jane.smith",
+            "groups": [
+              "Marketing Team",
+              "Analytics Team"
+            ]
+          }
+        },
+        "notes": "This call updates the user's username and assigns them to the specified groups. Use this to manage group memberships and login credentials."
+      },
+      {
+        "user_query": "Clear all group memberships for the user with the email michael.brown@example.com.",
+        "arguments": {
+          "user_email": "michael.brown@example.com",
+          "user_data": {
             "groups": []
           }
         },
-        "notes": "This call updates the user's username and removes all group memberships."
-      },
-      {
-        "user_query": "Update the first and last name of the user 'alice.wonderland@example.com'.",
-        "arguments": {
-          "user_email": "alice.wonderland@example.com",
-          "user_data": {
-            "firstName": "Alice",
-            "lastName": "Wonderland"
-          }
-        },
-        "notes": "This call updates the user's first and last name without modifying other fields."
+        "notes": "This call removes all group memberships for the user. Use this when you want to reset group assignments for a user."
       }
     ]
   },
   {
-    "tool_id": "access.users_per_group",
-    "module": "access",
-    "sub_module": "access.groups",
+    "tool_id": "access_management.users_per_group",
+    "module": "access_management",
+    "sub_module": "access_management.groups",
     "class": "AccessManagement",
     "method": "users_per_group",
     "description": "Retrieves all users within a specific group by name.",
@@ -986,41 +989,41 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "groups",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "Who are the users in the 'Sales Team' group?",
+        "user_query": "Who are the members of the 'Data Analysts' group?",
         "arguments": {
-          "group_name": "Sales Team"
+          "group_name": "Data Analysts"
         },
-        "notes": "This retrieves a list of all users who are part of the 'Sales Team' group. Useful for checking group membership."
+        "notes": "This retrieves a list of all users who belong to the 'Data Analysts' group. Use this to audit group membership or manage access."
       },
       {
         "user_query": "List all users in the 'Admins' group.",
         "arguments": {
           "group_name": "Admins"
         },
-        "notes": "This call fetches all users in the 'Admins' group. Typically used to audit administrative access."
+        "notes": "This call fetches all users assigned to the 'Admins' group. Useful for verifying administrative access."
       },
       {
-        "user_query": "Can you show me the members of the 'Marketing' group?",
+        "user_query": "Get the users in the 'Marketing Team' group.",
         "arguments": {
-          "group_name": "Marketing"
+          "group_name": "Marketing Team"
         },
-        "notes": "This retrieves the list of users in the 'Marketing' group. Useful for verifying group assignments for marketing-related permissions."
+        "notes": "This retrieves all users who are part of the 'Marketing Team' group. Ideal for reviewing team-specific access permissions."
       }
     ]
   },
   {
-    "tool_id": "access.users_per_group_all",
-    "module": "access",
-    "sub_module": "access.groups",
+    "tool_id": "access_management.users_per_group_all",
+    "module": "access_management",
+    "sub_module": "access_management.groups",
     "class": "AccessManagement",
     "method": "users_per_group_all",
     "description": "Retrieves all groups and maps them with the users belonging to those",
@@ -1032,28 +1035,28 @@
     },
     "mutates": false,
     "tags": [
-      "access",
+      "access_management",
       "users",
       "groups",
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
-        "user_query": "List all groups in the system and the users assigned to each group.",
+        "user_query": "Can you show me all the groups in the system and the users assigned to each group?",
         "arguments": {},
-        "notes": "This call retrieves a full mapping of groups to their respective users, excluding system-wide groups like 'Everyone' and 'All users in system'."
+        "notes": "This call retrieves a complete mapping of all groups to their respective users, excluding system-wide groups like 'Everyone' and 'All users in system'."
       },
       {
-        "user_query": "Get a breakdown of all user groups, including empty groups, for auditing purposes.",
+        "user_query": "I need a list of all groups, even if they don't have any users, and the users assigned to each group.",
         "arguments": {},
-        "notes": "Use this to audit group memberships, including groups that currently have no users assigned."
+        "notes": "Use this call to get a comprehensive list of groups, including empty ones, along with their associated users."
       },
       {
-        "user_query": "Fetch all user groups and identify which users are assigned to the 'Admins' group.",
+        "user_query": "Who are the users in each group, and how are admins grouped?",
         "arguments": {},
-        "notes": "This call maps users with admin roles (e.g., 'admin', 'dataAdmin', 'sysAdmin') to the 'Admins' group for easier identification."
+        "notes": "This call provides a mapping of groups to users, with admin roles grouped under 'Admins'. Useful for auditing group memberships and admin assignments."
       }
     ]
   },
@@ -1083,7 +1086,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How do I delete the custom Blox action for exporting dashboard data?",
@@ -1127,7 +1130,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What custom Blox actions are available in my Sisense instance?",
@@ -1172,7 +1175,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I save a new custom action for my dashboard filters?",
@@ -1257,7 +1260,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Create a new Python notebook for data analysis.",
@@ -1341,7 +1344,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How do I delete the notebook with ID 'abc123'?",
@@ -1392,7 +1395,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I export the notebook with ID 'abc123'?",
@@ -1445,7 +1448,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Retrieve all notebooks related to custom code transformations.",
@@ -1502,7 +1505,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What files are stored in the notebook folder with ID 'folder_12345'?",
@@ -1558,7 +1561,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I rename the notebook file 'analysis.ipynb' to 'sales_analysis.ipynb'?",
@@ -1624,7 +1627,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I rename the 'DataScienceProjects' notebook folder to 'MLProjects'?",
@@ -1693,7 +1696,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I update the title and description of a notebook?",
@@ -1742,1100 +1745,6 @@
     ]
   },
   {
-    "tool_id": "dashboard.add_dashboard_script",
-    "module": "dashboard",
-    "sub_module": "dashboard.scripts",
-    "class": "Dashboard",
-    "method": "add_dashboard_script",
-    "description": "Adds or overwrites a script to a dashboard, temporarily changing ownership if required.",
-    "full_doc": "Adds or overwrites a script to a dashboard, temporarily changing ownership if required.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard where the script will be added.\n    script (str): The JavaScript script as either:\n                - A properly formatted JSON string.\n                - A raw Python docstring (multi-line string).\n    executing_user (str, optional): The username of the API user. This is used to temporarily change\n                                the owner of the dashboard, as only the owner can add scripts.\n                                If not provided, assumes the dashboard owner is the same as the API user.\n\nReturns:\n    str: Success message or error details.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The ID of the dashboard where the script will be added."
-        },
-        "script": {
-          "type": "string",
-          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
-        },
-        "executing_user": {
-          "type": "string",
-          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "script"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "How can I add a script to the dashboard with ID 'dashboard123'?",
-        "arguments": {
-          "dashboard_id": "dashboard123",
-          "script": "{\"onLoad\": \"function() { console.log('Dashboard loaded'); }\"}",
-          "executing_user": "admin_user"
-        },
-        "notes": "This call adds a JavaScript script to the dashboard with ID 'dashboard123', temporarily changing ownership to 'admin_user' if necessary."
-      },
-      {
-        "user_query": "I need to overwrite the script on dashboard 'sales_dashboard' with a new one. How do I do that?",
-        "arguments": {
-          "dashboard_id": "sales_dashboard",
-          "script": "\"\"\"function onLoad() { alert('Welcome to the Sales Dashboard!'); }\"\"\""
-        },
-        "notes": "This call overwrites the existing script on the 'sales_dashboard' dashboard with a new script. Ownership change is not required since 'executing_user' is omitted."
-      },
-      {
-        "user_query": "Can I add a script to the dashboard 'marketing_dashboard' without specifying an executing user?",
-        "arguments": {
-          "dashboard_id": "marketing_dashboard",
-          "script": "{\"onLoad\": \"function() { console.log('Marketing dashboard initialized'); }\"}"
-        },
-        "notes": "This call adds a script to the 'marketing_dashboard' dashboard. Since 'executing_user' is not provided, the API assumes the dashboard owner is the same as the API user."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.add_dashboard_shares",
-    "module": "dashboard",
-    "sub_module": "dashboard.shares",
-    "class": "Dashboard",
-    "method": "add_dashboard_shares",
-    "description": "Adds or updates shares for a dashboard, specifying users and groups along with their access rules.",
-    "full_doc": "Adds or updates shares for a dashboard, specifying users and groups along with their access rules.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard to which the shares will be added.\n    shares (list of dicts): A list of dictionaries, each containing:\n        - \"name\" (str): The username or group name.\n        - \"type\" (str): Either \"user\" or \"group\" to indicate the share type.\n        - \"rule\" (str): The access level (e.g., \"view\", \"edit\").\n\nReturns:\n    str: Success message or error details.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The ID of the dashboard to which the shares will be added."
-        },
-        "shares": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "A list of dictionaries, each containing: - \"name\" (str): The username or group name. - \"type\" (str): Either \"user\" or \"group\" to indicate the share type. - \"rule\" (str): The access level (e.g., \"view\", \"edit\")."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "shares"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "How can I share the Sales Dashboard with the sales team and give them view access?",
-        "arguments": {
-          "dashboard_id": "dashboard_12345",
-          "shares": [
-            {
-              "name": "sales_team",
-              "type": "group",
-              "rule": "view"
-            }
-          ]
-        },
-        "notes": "This call shares the Sales Dashboard with the 'sales_team' group, granting them view-only access."
-      },
-      {
-        "user_query": "I need to give John Doe edit access to the Marketing Dashboard. How can I do that?",
-        "arguments": {
-          "dashboard_id": "dashboard_67890",
-          "shares": [
-            {
-              "name": "john.doe",
-              "type": "user",
-              "rule": "edit"
-            }
-          ]
-        },
-        "notes": "This call grants John Doe edit access to the Marketing Dashboard."
-      },
-      {
-        "user_query": "Can I share the Operations Dashboard with both the operations team and Jane Smith, giving them different access levels?",
-        "arguments": {
-          "dashboard_id": "dashboard_11223",
-          "shares": [
-            {
-              "name": "operations_team",
-              "type": "group",
-              "rule": "view"
-            },
-            {
-              "name": "jane.smith",
-              "type": "user",
-              "rule": "edit"
-            }
-          ]
-        },
-        "notes": "This call shares the Operations Dashboard with the 'operations_team' group (view access) and Jane Smith (edit access)."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.add_widget_script",
-    "module": "dashboard",
-    "sub_module": "dashboard.scripts",
-    "class": "Dashboard",
-    "method": "add_widget_script",
-    "description": "Adds or overwrites a script for a specific widget within a dashboard.",
-    "full_doc": "Adds or overwrites a script for a specific widget within a dashboard.\n\nIf required, temporarily changes the dashboard ownership, as only the owner can modify widget scripts.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard containing the widget.\n    widget_id (str): The ID of the widget where the script will be added.\n    script (str): The JavaScript script as either:\n                - A properly formatted JSON string.\n                - A raw Python docstring (multi-line string).\n    executing_user (str, optional): The username of the API user. This is used to temporarily change\n                                the owner of the dashboard, as only the owner can add scripts.\n                                If not provided, assumes the dashboard owner is the same as the API user.\n\nReturns:\n    str: Success message or error details.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The ID of the dashboard containing the widget."
-        },
-        "widget_id": {
-          "type": "string",
-          "description": "The ID of the widget where the script will be added."
-        },
-        "script": {
-          "type": "string",
-          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
-        },
-        "executing_user": {
-          "type": "string",
-          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "widget_id",
-        "script"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "How can I add a custom script to the sales widget in my dashboard?",
-        "arguments": {
-          "dashboard_id": "dashboard_12345",
-          "widget_id": "widget_67890",
-          "script": "function customizeWidget() { console.log('Custom script executed'); }",
-          "executing_user": "admin_user"
-        },
-        "notes": "This call adds a custom JavaScript script to the widget with ID 'widget_67890' in the dashboard 'dashboard_12345'. The 'executing_user' temporarily takes ownership to perform this action."
-      },
-      {
-        "user_query": "I need to overwrite the script for the revenue chart widget in the financial dashboard.",
-        "arguments": {
-          "dashboard_id": "financial_dashboard_2023",
-          "widget_id": "revenue_chart_001",
-          "script": "function updateChart() { console.log('Revenue chart updated'); }",
-          "executing_user": "finance_manager"
-        },
-        "notes": "This call overwrites the existing script for the widget 'revenue_chart_001' in the 'financial_dashboard_2023'. The 'finance_manager' user temporarily assumes ownership to make this change."
-      },
-      {
-        "user_query": "Can I add a multi-line script to the KPI widget in the executive dashboard?",
-        "arguments": {
-          "dashboard_id": "exec_dashboard_001",
-          "widget_id": "kpi_widget_42",
-          "script": "function kpiUpdate() {\n    console.log('KPI updated');\n    alert('KPI script executed');\n}",
-          "executing_user": "executive_admin"
-        },
-        "notes": "This call adds a multi-line JavaScript script to the widget 'kpi_widget_42' in the 'exec_dashboard_001'. The 'executive_admin' user temporarily assumes ownership to perform this action."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.can_be_owned",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "can_be_owned",
-    "description": "Check whether a dashboard can be owned by the current user.",
-    "full_doc": "Check whether a dashboard can be owned by the current user.\n\nSends ``GET /api/v1/dashboards/{dashboard_id}/can_be_owned``.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to check.\n\nReturns\n-------\ndict[str, Any]\n    The API response on success, or ``{\"error\": \"...\"}`` on failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard ``oid`` to check."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "Can I take ownership of the dashboard with ID '12345abcde'?",
-        "arguments": {
-          "dashboard_id": "12345abcde"
-        },
-        "notes": "This checks if the current user can own the dashboard with the specified ID. Useful for determining ownership eligibility before attempting to transfer ownership."
-      },
-      {
-        "user_query": "Am I allowed to own the dashboard with ID '67890fghij'?",
-        "arguments": {
-          "dashboard_id": "67890fghij"
-        },
-        "notes": "This verifies whether the user has the necessary permissions to own the dashboard. Use this to validate ownership rules for a specific dashboard."
-      },
-      {
-        "user_query": "Is it possible for me to own the dashboard 'abcdef12345'?",
-        "arguments": {
-          "dashboard_id": "abcdef12345"
-        },
-        "notes": "This call determines if the current user can take ownership of the dashboard identified by the given ID. Ideal for scenarios where ownership transfer is being considered."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.export_dashboard",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "export_dashboard",
-    "description": "Export a dashboard definition using the Sisense admin export endpoint.",
-    "full_doc": "Export a dashboard definition using the Sisense admin export endpoint.\n\nSends a GET request to ``/api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``. The response is a JSON array;\nthis method returns the first dashboard object, which includes fields such\nas ``title``, ``oid``, ``script``, ``widgets``, ``layout``, and ``filters``.\nOther features (for example ``get_dashboard_script``) use this payload\ninternally.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to export.\n\nReturns\n-------\ndict[str, Any]\n    The exported dashboard object on success, or ``{\"error\": \"<message>\"}``\n    when the HTTP call fails, the body is not valid JSON, or the payload\n    is not a non-empty list as expected.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard ``oid`` to export."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "How can I export the definition of the Sales Performance dashboard?",
-        "arguments": {
-          "dashboard_id": "5f3a8b9c2e8b4a001c8d1234"
-        },
-        "notes": "This call retrieves the full definition of the 'Sales Performance' dashboard, including its widgets, layout, and filters."
-      },
-      {
-        "user_query": "I need to back up the Marketing Overview dashboard. How do I export it?",
-        "arguments": {
-          "dashboard_id": "6a7b9c8d3f4e5a002d9e5678"
-        },
-        "notes": "This call exports the 'Marketing Overview' dashboard definition, which can be saved for backup or migration purposes."
-      },
-      {
-        "user_query": "Can I get the JSON definition for the Customer Insights dashboard?",
-        "arguments": {
-          "dashboard_id": "7b8c9d0e1f2a3b004e5f6789"
-        },
-        "notes": "This call fetches the JSON definition of the 'Customer Insights' dashboard, useful for reviewing or modifying its structure programmatically."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.get_all_dashboards",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "get_all_dashboards",
-    "description": "Retrieves all dashboards from the Sisense server.",
-    "full_doc": "Retrieves all dashboards from the Sisense server.\n\nReturns:\n    list or dict: A list of dashboards if successful,\n                or a dict containing an error message.",
-    "parameters": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "How can I get a list of all dashboards available on the Sisense server?",
-        "arguments": {},
-        "notes": "This call retrieves all dashboards currently available on the Sisense server. Use it to fetch an overview of all dashboards for further analysis or management."
-      },
-      {
-        "user_query": "I need to see all dashboards to check which ones are active.",
-        "arguments": {},
-        "notes": "This call provides a complete list of dashboards. It is useful for auditing or reviewing the available dashboards on the server."
-      },
-      {
-        "user_query": "Can I get all dashboards to display them in a custom application?",
-        "arguments": {},
-        "notes": "This call retrieves all dashboards, which can then be integrated into a custom application for display or further processing."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_by_id",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "get_dashboard_by_id",
-    "description": "Retrieves a specific dashboard by its ID.",
-    "full_doc": "Retrieves a specific dashboard by its ID.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard to retrieve.\n\nReturns:\n    dict: A dictionary containing dashboard details if found,\n        or a dict with an error message if the request fails.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The ID of the dashboard to retrieve."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "Can you fetch the dashboard with ID 'sales_dashboard_2023'?",
-        "arguments": {
-          "dashboard_id": "sales_dashboard_2023"
-        },
-        "notes": "This retrieves the details of the dashboard with the ID 'sales_dashboard_2023'. Use this to access specific dashboard information for reporting or analysis."
-      },
-      {
-        "user_query": "I need to get the dashboard details for the marketing team. The ID is 'marketing_q4_dashboard'.",
-        "arguments": {
-          "dashboard_id": "marketing_q4_dashboard"
-        },
-        "notes": "This call fetches the dashboard with the ID 'marketing_q4_dashboard'. Ideal for retrieving dashboards used by specific teams or departments."
-      },
-      {
-        "user_query": "What are the details of the dashboard with ID 'finance_overview_001'?",
-        "arguments": {
-          "dashboard_id": "finance_overview_001"
-        },
-        "notes": "This retrieves the dashboard identified by 'finance_overview_001'. Useful for accessing financial overview dashboards for review or updates."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_by_name",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "get_dashboard_by_name",
-    "description": "Retrieves a specific dashboard by its name.",
-    "full_doc": "Retrieves a specific dashboard by its name.\n\nParameters:\n    dashboard_name (str): The name of the dashboard to retrieve.\n\nReturns:\n    dict or list: A dictionary containing dashboard details if found,\n                or {'error': 'message'} if not found or failed.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_name": {
-          "type": "string",
-          "description": "The name of the dashboard to retrieve."
-        }
-      },
-      "required": [
-        "dashboard_name"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "Can you fetch the dashboard named 'Sales Overview'?",
-        "arguments": {
-          "dashboard_name": "Sales Overview"
-        },
-        "notes": "This retrieves the 'Sales Overview' dashboard, which might contain key metrics and visualizations for sales performance."
-      },
-      {
-        "user_query": "I need to find the dashboard called 'Marketing Performance'.",
-        "arguments": {
-          "dashboard_name": "Marketing Performance"
-        },
-        "notes": "This call fetches the 'Marketing Performance' dashboard, which could include analytics related to marketing campaigns and performance metrics."
-      },
-      {
-        "user_query": "Get the dashboard titled 'Executive Summary'.",
-        "arguments": {
-          "dashboard_name": "Executive Summary"
-        },
-        "notes": "This retrieves the 'Executive Summary' dashboard, often used for high-level reporting and insights for executives."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_columns",
-    "module": "dashboard",
-    "sub_module": "dashboard.columns",
-    "class": "Dashboard",
-    "method": "get_dashboard_columns",
-    "description": "Retrieves columns from a specific dashboard, including both widget and filter-level columns.",
-    "full_doc": "Retrieves columns from a specific dashboard, including both widget and filter-level columns.\n\nThis method:\n- Uses the `get_dashboard_by_name` method to fetch the dashboard.\n- Extracts columns from widgets and filters.\n- Deduplicates the final column list.\n\nParameters:\n    dashboard_name (str): The name of the dashboard to retrieve columns from.\n\nReturns:\n    list: A list of dictionaries containing distinct table and column information from the dashboard.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_name": {
-          "type": "string",
-          "description": "The name of the dashboard to retrieve columns from."
-        }
-      },
-      "required": [
-        "dashboard_name"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "What columns are available in the 'Sales Overview' dashboard?",
-        "arguments": {
-          "dashboard_name": "Sales Overview"
-        },
-        "notes": "This call retrieves all distinct columns from the 'Sales Overview' dashboard, including widget and filter-level columns. Use this to understand the data structure of the dashboard."
-      },
-      {
-        "user_query": "Can you list the columns in the 'Marketing Performance' dashboard?",
-        "arguments": {
-          "dashboard_name": "Marketing Performance"
-        },
-        "notes": "This call fetches the columns from the 'Marketing Performance' dashboard. Useful for analyzing the data sources used in the dashboard."
-      },
-      {
-        "user_query": "I need the column details for the 'Customer Insights' dashboard.",
-        "arguments": {
-          "dashboard_name": "Customer Insights"
-        },
-        "notes": "This call retrieves all unique columns from the 'Customer Insights' dashboard. Ideal for understanding the data fields used in widgets and filters."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_script",
-    "module": "dashboard",
-    "sub_module": "dashboard.scripts",
-    "class": "Dashboard",
-    "method": "get_dashboard_script",
-    "description": "Build a formatted dashboard script helper object.",
-    "full_doc": "Build a formatted dashboard script helper object.\n\nRetrieves a dashboard export payload and wraps its script content in a\n:class:`SisenseScript` helper that can render plain text, markdown, or file output.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the dashboard is retrieved successfully,\n    or an ``{\"error\": \"...\"}`` dictionary from ``export_dashboard``.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard identifier to export."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "How can I export the script for the sales dashboard?",
-        "arguments": {
-          "dashboard_id": "sales_dashboard_2023"
-        },
-        "notes": "This retrieves the script for the 'sales_dashboard_2023' dashboard, which can be used for rendering or exporting."
-      },
-      {
-        "user_query": "I need the script for the marketing performance dashboard to include in a report. How do I get it?",
-        "arguments": {
-          "dashboard_id": "marketing_perf_dash"
-        },
-        "notes": "This call fetches the script for the 'marketing_perf_dash' dashboard, enabling further use in reports or presentations."
-      },
-      {
-        "user_query": "Can I get the script for the executive summary dashboard?",
-        "arguments": {
-          "dashboard_id": "exec_summary_001"
-        },
-        "notes": "This retrieves the script for the 'exec_summary_001' dashboard, useful for generating a formatted output or embedding elsewhere."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_share",
-    "module": "dashboard",
-    "sub_module": "dashboard.shares",
-    "class": "Dashboard",
-    "method": "get_dashboard_share",
-    "description": "Retrieves share details (users and groups) for a specific dashboard by title.",
-    "full_doc": "Retrieves share details (users and groups) for a specific dashboard by title.\n\nParameters:\n    dashboard_name (str): The title of the dashboard to retrieve share information for.\n\nReturns:\n    list: A list of dictionaries containing share type (user or group), and share name (email or group name),\n        or an empty list if the dashboard is not found or has no shares.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_name": {
-          "type": "string",
-          "description": "The title of the dashboard to retrieve share information for."
-        }
-      },
-      "required": [
-        "dashboard_name"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "Who has access to the 'Sales Overview' dashboard?",
-        "arguments": {
-          "dashboard_name": "Sales Overview"
-        },
-        "notes": "Retrieves the list of users and groups that have access to the 'Sales Overview' dashboard. Use this to audit or review sharing permissions."
-      },
-      {
-        "user_query": "Can you show me the sharing details for the 'Marketing Performance' dashboard?",
-        "arguments": {
-          "dashboard_name": "Marketing Performance"
-        },
-        "notes": "Fetches the sharing details for the 'Marketing Performance' dashboard, including users and groups with access. Useful for understanding who can view this dashboard."
-      },
-      {
-        "user_query": "I need to check the sharing settings for the 'Executive Summary' dashboard.",
-        "arguments": {
-          "dashboard_name": "Executive Summary"
-        },
-        "notes": "Provides the sharing information for the 'Executive Summary' dashboard. This is helpful for verifying or troubleshooting access permissions."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_shares_v1",
-    "module": "dashboard",
-    "sub_module": "dashboard.shares",
-    "class": "Dashboard",
-    "method": "get_dashboard_shares_v1",
-    "description": "Retrieve share details for a dashboard using the v1 shares endpoint.",
-    "full_doc": "Retrieve share details for a dashboard using the v1 shares endpoint.\n\nSends ``GET /api/v1/dashboards/{dashboard_id}/shares``. This returns the\nraw Sisense shares payload (for example ``sharesTo`` and ``owner``),\nunlike ``get_dashboard_share`` which resolves names from the admin list.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid``.\nadmin_access : bool, optional\n    When ``True`` (default), request with ``adminAccess=true``.\n\nReturns\n-------\ndict[str, Any]\n    The shares response from the API, or ``{\"error\": \"...\"}`` on failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard ``oid``."
-        },
-        "admin_access": {
-          "type": "boolean",
-          "description": "When ``True`` (default), request with ``adminAccess=true``."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "Who has access to the sales performance dashboard?",
-        "arguments": {
-          "dashboard_id": "5f7d3a2b9c8e4a0012345678",
-          "admin_access": true
-        },
-        "notes": "This retrieves the share details for the 'sales performance' dashboard, including users and groups with access. Admin access is enabled to include all details."
-      },
-      {
-        "user_query": "Can you show me the sharing settings for the marketing overview dashboard?",
-        "arguments": {
-          "dashboard_id": "63a9f0ea7b8c4b0012345678",
-          "admin_access": false
-        },
-        "notes": "This retrieves the share details for the 'marketing overview' dashboard without admin-level access, showing only the user's accessible share information."
-      },
-      {
-        "user_query": "I need to verify who owns the executive summary dashboard and who it is shared with.",
-        "arguments": {
-          "dashboard_id": "4e5f6a7b8c9d0e0012345678",
-          "admin_access": true
-        },
-        "notes": "This retrieves the share details for the 'executive summary' dashboard, including ownership and all sharing details, with admin access enabled."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.get_dashboard_widgets",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "get_dashboard_widgets",
-    "description": "Retrieve widget definitions from an admin export of the dashboard.",
-    "full_doc": "Retrieve widget definitions from an admin export of the dashboard.\n\nUses ``export_dashboard`` (``GET /api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``), then reads the ``widgets``\nfield from the first exported dashboard object\u2014the same payload shape\nused by ``get_dashboard_script`` and ``get_widget_script``. If\n``widgets`` is missing or empty, an empty list is returned.\n\n``dashboard_ref`` is resolved with ``resolve_dashboard_reference`` so it\nmay be either a 24-character dashboard ``oid`` or a dashboard title.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard ``oid`` or title.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of widget objects on success (possibly empty). On failure,\n    ``{\"error\": \"...\"}`` when the reference cannot be resolved or\n    ``export_dashboard`` fails. If ``widgets`` is present but neither a\n    list nor a mapping of widget objects, returns an error dict.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_ref": {
-          "type": "string",
-          "description": "Dashboard ``oid`` or title."
-        }
-      },
-      "required": [
-        "dashboard_ref"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "What widgets are included in the dashboard titled 'Sales Overview'?",
-        "arguments": {
-          "dashboard_ref": "Sales Overview"
-        },
-        "notes": "This retrieves all widget definitions from the 'Sales Overview' dashboard using its title as a reference."
-      },
-      {
-        "user_query": "Can you list the widgets for the dashboard with ID '63f2a1b4c9e3470012345678'?",
-        "arguments": {
-          "dashboard_ref": "63f2a1b4c9e3470012345678"
-        },
-        "notes": "This fetches widget definitions from the dashboard identified by its unique 24-character ID."
-      },
-      {
-        "user_query": "I need to check the widgets in the dashboard named 'Marketing Performance'.",
-        "arguments": {
-          "dashboard_ref": "Marketing Performance"
-        },
-        "notes": "Use this to retrieve widget details from the 'Marketing Performance' dashboard by specifying its title."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.get_dashboards",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "get_dashboards",
-    "description": "Retrieve dashboards visible to the authenticated user.",
-    "full_doc": "Retrieve dashboards visible to the authenticated user.\n\nSends ``GET /api/v1/dashboards``, which returns dashboards the current\nuser owns or has been shared to \u2014 as opposed to\n``get_all_dashboards``, which uses the admin endpoint and requires\nelevated access.\n\nParameters\n----------\nfields : list[str], optional\n    Subset of fields to include in the response (for example\n    ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are\n    returned.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dashboard objects on success, or ``{\"error\": \"...\"}`` on\n    failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "fields": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Subset of fields to include in the response (for example ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are returned."
-        }
-      },
-      "required": []
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "Show me the dashboards I own with their titles and IDs.",
-        "arguments": {
-          "fields": [
-            "oid",
-            "title"
-          ]
-        },
-        "notes": "This call retrieves only the 'oid' and 'title' fields for dashboards visible to the authenticated user. Use this to quickly fetch basic identifiers for dashboards."
-      },
-      {
-        "user_query": "Get all details for dashboards shared with me.",
-        "arguments": {
-          "fields": []
-        },
-        "notes": "When the 'fields' parameter is omitted or an empty array is provided, all available fields for the dashboards are returned. Use this to access comprehensive dashboard details."
-      },
-      {
-        "user_query": "I need the titles and owners of dashboards I can access.",
-        "arguments": {
-          "fields": [
-            "title",
-            "owner"
-          ]
-        },
-        "notes": "This call retrieves only the 'title' and 'owner' fields for dashboards visible to the authenticated user. Use this to focus on ownership and naming details."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.get_widget_script",
-    "module": "dashboard",
-    "sub_module": "dashboard.scripts",
-    "class": "Dashboard",
-    "method": "get_widget_script",
-    "description": "Build a formatted widget script helper object.",
-    "full_doc": "Build a formatted widget script helper object.\n\nRetrieves a dashboard export payload, selects a widget by index/key, and\nwraps its script content in a :class:`SisenseScript` helper for downstream rendering.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\nwidget_id : str\n    The widget identifier or lookup key used in the exported widget mapping.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the widget is found and has script data,\n    or an ``{\"error\": \"...\"}`` dictionary on failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard identifier to export."
-        },
-        "widget_id": {
-          "type": "string",
-          "description": "The widget identifier or lookup key used in the exported widget mapping."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "widget_id"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "How can I retrieve the script for the 'Sales Performance' widget in the 'Q3 Dashboard'?",
-        "arguments": {
-          "dashboard_id": "dashboard_12345",
-          "widget_id": "widget_sales_perf"
-        },
-        "notes": "This call retrieves the script content for the 'Sales Performance' widget in the 'Q3 Dashboard'. Use this when you need to access or render the widget's script programmatically."
-      },
-      {
-        "user_query": "I need the script for the 'Customer Segmentation' widget in the 'Marketing Insights' dashboard.",
-        "arguments": {
-          "dashboard_id": "dashboard_67890",
-          "widget_id": "widget_cust_seg"
-        },
-        "notes": "This call extracts the script for the 'Customer Segmentation' widget in the 'Marketing Insights' dashboard. Useful for customizing or analyzing the widget's behavior."
-      },
-      {
-        "user_query": "Can I get the script for the 'Revenue Trends' widget in the 'Annual Report' dashboard?",
-        "arguments": {
-          "dashboard_id": "dashboard_54321",
-          "widget_id": "widget_rev_trends"
-        },
-        "notes": "This call retrieves the script for the 'Revenue Trends' widget in the 'Annual Report' dashboard. Ideal for debugging or embedding the widget's functionality elsewhere."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.move_dashboard_to_folder",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "move_dashboard_to_folder",
-    "description": "Move a dashboard into a folder.",
-    "full_doc": "Move a dashboard into a folder.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` with only ``parentFolder``\nin the request body. Other dashboard fields are not modified.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to move.\nfolder_id : str\n    The target folder ``oid`` (``parentFolder`` value).\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object from the API, or ``{\"error\": \"...\"}`` on\n    failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard ``oid`` to move."
-        },
-        "folder_id": {
-          "type": "string",
-          "description": "The target folder ``oid`` (``parentFolder`` value)."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "folder_id"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "How can I move the sales dashboard to the marketing folder?",
-        "arguments": {
-          "dashboard_id": "dashboard_12345",
-          "folder_id": "folder_67890"
-        },
-        "notes": "This moves the dashboard with ID 'dashboard_12345' into the folder with ID 'folder_67890', which is the marketing folder."
-      },
-      {
-        "user_query": "I need to organize my dashboards. Can you help me move the 'Finance Overview' dashboard to the 'Q4 Reports' folder?",
-        "arguments": {
-          "dashboard_id": "finance_overview_001",
-          "folder_id": "q4_reports_2023"
-        },
-        "notes": "This operation relocates the 'Finance Overview' dashboard to the 'Q4 Reports' folder for better organization."
-      },
-      {
-        "user_query": "Can I move the 'Customer Insights' dashboard to the 'Archived Dashboards' folder?",
-        "arguments": {
-          "dashboard_id": "customer_insights_789",
-          "folder_id": "archived_dashboards_456"
-        },
-        "notes": "This moves the 'Customer Insights' dashboard into the 'Archived Dashboards' folder, typically used for storing older dashboards."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.publish_dashboard",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "publish_dashboard",
-    "description": "Publish (republish) a dashboard.",
-    "full_doc": "Publish (republish) a dashboard.\n\nSends ``POST /api/v1/dashboards/{dashboard_id}/publish``. By default\n``adminAccess=true`` is appended so an admin token can republish when the\ncaller already has access but is not the owner. Pass ``force=True`` to\nappend ``force=true`` (used after script updates).\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to publish.\nadmin_access : bool, optional\n    When ``True`` (default), request with ``adminAccess=true``.\nforce : bool, optional\n    When ``True``, request with ``force=true``. Default is ``False``.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` or the JSON response body on success. On failure,\n    ``{\"error\": \"...\"}``.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The dashboard ``oid`` to publish."
-        },
-        "admin_access": {
-          "type": "boolean",
-          "description": "When ``True`` (default), request with ``adminAccess=true``."
-        },
-        "force": {
-          "type": "boolean",
-          "description": "When ``True``, request with ``force=true``. Default is ``False``."
-        }
-      },
-      "required": [
-        "dashboard_id"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "Publish the sales dashboard to make the latest updates available.",
-        "arguments": {
-          "dashboard_id": "sales_dashboard_123",
-          "admin_access": true,
-          "force": false
-        },
-        "notes": "This call republishes the 'sales_dashboard_123' dashboard with admin access enabled. Use this when you want to publish updates without forcing changes."
-      },
-      {
-        "user_query": "Force publish the marketing dashboard after script updates.",
-        "arguments": {
-          "dashboard_id": "marketing_dashboard_456",
-          "admin_access": true,
-          "force": true
-        },
-        "notes": "This call republishes the 'marketing_dashboard_456' dashboard with admin access and forces the update. Use this when changes need to be applied after script modifications."
-      },
-      {
-        "user_query": "Republish the finance dashboard without admin access.",
-        "arguments": {
-          "dashboard_id": "finance_dashboard_789",
-          "admin_access": false,
-          "force": false
-        },
-        "notes": "This call republishes the 'finance_dashboard_789' dashboard without admin access. Use this when the caller has sufficient permissions and no forced updates are required."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.rename_dashboard",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "rename_dashboard",
-    "description": "Rename a dashboard.",
-    "full_doc": "Rename a dashboard.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` with only ``title`` in\nthe request body. Other dashboard fields are not modified.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard to rename.\ntitle : str\n    The new dashboard title.\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object on success, or ``{\"error\": \"...\"}`` on\n    failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_id": {
-          "type": "string",
-          "description": "The ``oid`` of the dashboard to rename."
-        },
-        "title": {
-          "type": "string",
-          "description": "The new dashboard title."
-        }
-      },
-      "required": [
-        "dashboard_id",
-        "title"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "write"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "How can I rename the Sales Overview dashboard to Q1 Sales Overview?",
-        "arguments": {
-          "dashboard_id": "5f7d3a2b6e7a4c001f3e8b9c",
-          "title": "Q1 Sales Overview"
-        },
-        "notes": "This call renames the dashboard with ID '5f7d3a2b6e7a4c001f3e8b9c' to 'Q1 Sales Overview'. Use this when you want to update the title of an existing dashboard."
-      },
-      {
-        "user_query": "I need to change the title of the Marketing Performance dashboard to Monthly Marketing Metrics.",
-        "arguments": {
-          "dashboard_id": "63a9f0ea7b8e4d0021c4d5a1",
-          "title": "Monthly Marketing Metrics"
-        },
-        "notes": "This call updates the title of the dashboard with ID '63a9f0ea7b8e4d0021c4d5a1' to 'Monthly Marketing Metrics'. Useful for keeping dashboard titles aligned with reporting periods."
-      },
-      {
-        "user_query": "Can I rename the Customer Insights dashboard to Customer Analytics?",
-        "arguments": {
-          "dashboard_id": "7e2b4c9f8a6d4f0032b7e1d5",
-          "title": "Customer Analytics"
-        },
-        "notes": "This call changes the name of the dashboard with ID '7e2b4c9f8a6d4f0032b7e1d5' to 'Customer Analytics'. Ideal for rebranding or clarifying the purpose of a dashboard."
-      }
-    ]
-  },
-  {
-    "tool_id": "dashboard.resolve_dashboard_reference",
-    "module": "dashboard",
-    "sub_module": "dashboard.core",
-    "class": "Dashboard",
-    "method": "resolve_dashboard_reference",
-    "description": "Resolve a dashboard reference (ID or name) to a concrete dashboard ID and title.",
-    "full_doc": "Resolve a dashboard reference (ID or name) to a concrete dashboard ID and title.\n\nThis helper accepts a single string that may be either:\n- a Sisense dashboard ID (24-character ID), or\n- a dashboard title (name).\n\nIt first attempts to treat the reference as an ID using\n`get_dashboard_by_id`. If that fails or the reference does not look\nlike an ID, it falls back to `get_dashboard_by_name`. The underlying\nmethods are reused as-is.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard reference to resolve. This can be either an ID or a name.\n\nReturns\n-------\ndict\n    A dictionary with the following keys:\n    - success (bool): True if the reference was resolved to a dashboard.\n    - status_code (int): 200 if resolved successfully, 404 if not found,\n      or 500 if an unexpected error occurred.\n    - dashboard_id (str or None): Resolved dashboard ID (oid) if found,\n      otherwise None.\n    - dashboard_title (str or None): Resolved dashboard title if found,\n      otherwise None.\n    - error (str or None): Error message if success is False, otherwise None.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "dashboard_ref": {
-          "type": "string",
-          "description": "Dashboard reference to resolve. This can be either an ID or a name."
-        }
-      },
-      "required": [
-        "dashboard_ref"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "dashboard",
-      "dashboards",
-      "read"
-    ],
-    "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
-    "examples": [
-      {
-        "user_query": "What is the ID and title of the dashboard named 'Sales Overview'?",
-        "arguments": {
-          "dashboard_ref": "Sales Overview"
-        },
-        "notes": "This resolves the dashboard reference 'Sales Overview' to its corresponding ID and title. Use this when you know the dashboard name but need its ID."
-      },
-      {
-        "user_query": "Can you find the dashboard with the ID '5f7d3a2b4e8b9c0012345678'?",
-        "arguments": {
-          "dashboard_ref": "5f7d3a2b4e8b9c0012345678"
-        },
-        "notes": "This resolves the dashboard reference '5f7d3a2b4e8b9c0012345678' to its corresponding ID and title. Use this when you already have the dashboard ID but want to confirm its existence and retrieve its title."
-      },
-      {
-        "user_query": "I need the details of a dashboard called 'Monthly Performance Report'.",
-        "arguments": {
-          "dashboard_ref": "Monthly Performance Report"
-        },
-        "notes": "This resolves the dashboard reference 'Monthly Performance Report' to its corresponding ID and title. Use this when you know the dashboard name but need its details."
-      }
-    ]
-  },
-  {
     "tool_id": "datamodel.add_datamodel_shares",
     "module": "datamodel",
     "sub_module": "datamodel.shares",
@@ -2869,7 +1778,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Share the 'SalesAnalytics' DataModel with the sales team and give them edit permissions.",
@@ -2941,7 +1850,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Create a new connection for the sales database.",
@@ -3040,7 +1949,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Create a new DataModel named 'Sales Analytics' as an Elasticube.",
@@ -3113,7 +2022,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Create a new dataset called 'sales_data' in the 'SalesModel' DataModel using the 'SalesDB' connection.",
@@ -3211,7 +2120,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Create a new table named 'sales_data' in the 'RetailAnalytics' DataModel.",
@@ -3285,7 +2194,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Delete the 'Sales Analytics' data model hosted on the 'LocalHost' server.",
@@ -3375,7 +2284,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How do I rebuild the 'Sales_Analytics' DataModel from scratch?",
@@ -3431,7 +2340,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Can you provide the structure of the 'SalesAnalytics' DataModel?",
@@ -3482,7 +2391,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Can you provide detailed information about the Sales DataModel?",
@@ -3538,7 +2447,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I generate a connections payload for an Athena datasource?",
@@ -3600,7 +2509,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Can you list all the DataModels available in our Sisense instance?",
@@ -3645,7 +2554,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What are the details of the connection named 'SalesDB'?",
@@ -3689,7 +2598,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I see all the data connections available in my Sisense instance?",
@@ -3743,7 +2652,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Fetch all data from the 'sales_data' table in the 'RetailAnalytics' DataModel.",
@@ -3798,7 +2707,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Can you fetch the Sales DataModel for me?",
@@ -3849,7 +2758,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Who has access to the Sales DataModel?",
@@ -3900,7 +2809,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What are the data security rules for the SalesAnalytics DataModel?",
@@ -3951,7 +2860,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What are the data security rules for the Sales DataModel?",
@@ -3995,7 +2904,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Can you list all the ElastiCubes available on my Sisense server?",
@@ -4040,7 +2949,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What is the schema for the SalesAnalytics DataModel?",
@@ -4091,7 +3000,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How many rows are in each table of the Sales DataModel?",
@@ -4157,7 +3066,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What is the schema of the 'sales_data' table in the 'analytics_db' database?",
@@ -4221,7 +3130,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What is the OID for the data model titled 'Sales Analytics'?",
@@ -4275,7 +3184,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What is the ID and title of the data model named 'Sales Analytics'?",
@@ -4334,7 +3243,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I add multiple data security rules to the 'Sales_Live' datamodel?",
@@ -4500,7 +3409,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Create a new live DataModel for our sales data using the 'SalesDB' connection.",
@@ -4633,7 +3542,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I update the name and parameters of an existing connection?",
@@ -4710,7 +3619,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Update the datasecurity rules for the 'SalesData' Elasticube.",
@@ -4773,7 +3682,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I decrypt the encrypted API key stored in my datamodel?",
@@ -4830,7 +3739,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Encrypt a database password before saving it to the Sisense configuration.",
@@ -4858,6 +3767,1100 @@
           }
         },
         "notes": "This encrypts the connection string for secure storage and usage in Sisense's database integration settings."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.add_dashboard_script",
+    "module": "dashboard",
+    "sub_module": "dashboard.scripts",
+    "class": "Dashboard",
+    "method": "add_dashboard_script",
+    "description": "Adds or overwrites a script to a dashboard, temporarily changing ownership if required.",
+    "full_doc": "Adds or overwrites a script to a dashboard, temporarily changing ownership if required.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard where the script will be added.\n    script (str): The JavaScript script as either:\n                - A properly formatted JSON string.\n                - A raw Python docstring (multi-line string).\n    executing_user (str, optional): The username of the API user. This is used to temporarily change\n                                the owner of the dashboard, as only the owner can add scripts.\n                                If not provided, assumes the dashboard owner is the same as the API user.\n\nReturns:\n    str: Success message or error details.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ID of the dashboard where the script will be added."
+        },
+        "script": {
+          "type": "string",
+          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
+        },
+        "executing_user": {
+          "type": "string",
+          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "script"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "How can I add a script to the dashboard with ID 'dashboard123'?",
+        "arguments": {
+          "dashboard_id": "dashboard123",
+          "script": "{\"onLoad\": \"function() { console.log('Dashboard loaded'); }\"}",
+          "executing_user": "admin_user"
+        },
+        "notes": "This call adds a JavaScript script to the dashboard with ID 'dashboard123', temporarily changing ownership to 'admin_user' if necessary."
+      },
+      {
+        "user_query": "I need to overwrite the script on dashboard 'sales_dashboard' with a new one. How do I do that?",
+        "arguments": {
+          "dashboard_id": "sales_dashboard",
+          "script": "\"\"\"function onLoad() { alert('Welcome to the Sales Dashboard!'); }\"\"\""
+        },
+        "notes": "This call overwrites the existing script on the 'sales_dashboard' dashboard with a new script. Ownership change is not required since 'executing_user' is omitted."
+      },
+      {
+        "user_query": "Can I add a script to the dashboard 'marketing_dashboard' without specifying an executing user?",
+        "arguments": {
+          "dashboard_id": "marketing_dashboard",
+          "script": "{\"onLoad\": \"function() { console.log('Marketing dashboard initialized'); }\"}"
+        },
+        "notes": "This call adds a script to the 'marketing_dashboard' dashboard. Since 'executing_user' is not provided, the API assumes the dashboard owner is the same as the API user."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.add_dashboard_shares",
+    "module": "dashboard",
+    "sub_module": "dashboard.shares",
+    "class": "Dashboard",
+    "method": "add_dashboard_shares",
+    "description": "Adds or updates shares for a dashboard, specifying users and groups along with their access rules.",
+    "full_doc": "Adds or updates shares for a dashboard, specifying users and groups along with their access rules.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard to which the shares will be added.\n    shares (list of dicts): A list of dictionaries, each containing:\n        - \"name\" (str): The username or group name.\n        - \"type\" (str): Either \"user\" or \"group\" to indicate the share type.\n        - \"rule\" (str): The access level (e.g., \"view\", \"edit\").\n\nReturns:\n    str: Success message or error details.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ID of the dashboard to which the shares will be added."
+        },
+        "shares": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of dictionaries, each containing: - \"name\" (str): The username or group name. - \"type\" (str): Either \"user\" or \"group\" to indicate the share type. - \"rule\" (str): The access level (e.g., \"view\", \"edit\")."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "shares"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "How can I share the Sales Dashboard with the sales team and give them view access?",
+        "arguments": {
+          "dashboard_id": "dashboard_12345",
+          "shares": [
+            {
+              "name": "sales_team",
+              "type": "group",
+              "rule": "view"
+            }
+          ]
+        },
+        "notes": "This call shares the Sales Dashboard with the 'sales_team' group, granting them view-only access."
+      },
+      {
+        "user_query": "I need to give John Doe edit access to the Marketing Dashboard. How can I do that?",
+        "arguments": {
+          "dashboard_id": "dashboard_67890",
+          "shares": [
+            {
+              "name": "john.doe",
+              "type": "user",
+              "rule": "edit"
+            }
+          ]
+        },
+        "notes": "This call grants John Doe edit access to the Marketing Dashboard."
+      },
+      {
+        "user_query": "Can I share the Operations Dashboard with both the operations team and Jane Smith, giving them different access levels?",
+        "arguments": {
+          "dashboard_id": "dashboard_11223",
+          "shares": [
+            {
+              "name": "operations_team",
+              "type": "group",
+              "rule": "view"
+            },
+            {
+              "name": "jane.smith",
+              "type": "user",
+              "rule": "edit"
+            }
+          ]
+        },
+        "notes": "This call shares the Operations Dashboard with the 'operations_team' group (view access) and Jane Smith (edit access)."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.add_widget_script",
+    "module": "dashboard",
+    "sub_module": "dashboard.scripts",
+    "class": "Dashboard",
+    "method": "add_widget_script",
+    "description": "Adds or overwrites a script for a specific widget within a dashboard.",
+    "full_doc": "Adds or overwrites a script for a specific widget within a dashboard.\n\nIf required, temporarily changes the dashboard ownership, as only the owner can modify widget scripts.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard containing the widget.\n    widget_id (str): The ID of the widget where the script will be added.\n    script (str): The JavaScript script as either:\n                - A properly formatted JSON string.\n                - A raw Python docstring (multi-line string).\n    executing_user (str, optional): The username of the API user. This is used to temporarily change\n                                the owner of the dashboard, as only the owner can add scripts.\n                                If not provided, assumes the dashboard owner is the same as the API user.\n\nReturns:\n    str: Success message or error details.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ID of the dashboard containing the widget."
+        },
+        "widget_id": {
+          "type": "string",
+          "description": "The ID of the widget where the script will be added."
+        },
+        "script": {
+          "type": "string",
+          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
+        },
+        "executing_user": {
+          "type": "string",
+          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "widget_id",
+        "script"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "How can I add a custom script to the sales widget in my dashboard?",
+        "arguments": {
+          "dashboard_id": "dashboard_12345",
+          "widget_id": "widget_67890",
+          "script": "function customizeWidget() { console.log('Custom script executed'); }",
+          "executing_user": "admin_user"
+        },
+        "notes": "This call adds a custom JavaScript script to the widget with ID 'widget_67890' in the dashboard 'dashboard_12345'. The 'executing_user' temporarily takes ownership to perform this action."
+      },
+      {
+        "user_query": "I need to overwrite the script for the revenue chart widget in the financial dashboard.",
+        "arguments": {
+          "dashboard_id": "financial_dashboard_2023",
+          "widget_id": "revenue_chart_001",
+          "script": "function updateChart() { console.log('Revenue chart updated'); }",
+          "executing_user": "finance_manager"
+        },
+        "notes": "This call overwrites the existing script for the widget 'revenue_chart_001' in the 'financial_dashboard_2023'. The 'finance_manager' user temporarily assumes ownership to make this change."
+      },
+      {
+        "user_query": "Can I add a multi-line script to the KPI widget in the executive dashboard?",
+        "arguments": {
+          "dashboard_id": "exec_dashboard_001",
+          "widget_id": "kpi_widget_42",
+          "script": "function kpiUpdate() {\n    console.log('KPI updated');\n    alert('KPI script executed');\n}",
+          "executing_user": "executive_admin"
+        },
+        "notes": "This call adds a multi-line JavaScript script to the widget 'kpi_widget_42' in the 'exec_dashboard_001'. The 'executive_admin' user temporarily assumes ownership to perform this action."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.can_be_owned",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "can_be_owned",
+    "description": "Check whether a dashboard can be owned by the current user.",
+    "full_doc": "Check whether a dashboard can be owned by the current user.\n\nSends ``GET /api/v1/dashboards/{dashboard_id}/can_be_owned``.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to check.\n\nReturns\n-------\ndict[str, Any]\n    The API response on success, or ``{\"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to check."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "Can I take ownership of the dashboard with ID '12345abcde'?",
+        "arguments": {
+          "dashboard_id": "12345abcde"
+        },
+        "notes": "This checks if the current user can own the dashboard with the specified ID. Useful for determining ownership eligibility before attempting to transfer ownership."
+      },
+      {
+        "user_query": "Am I allowed to own the dashboard with ID '67890fghij'?",
+        "arguments": {
+          "dashboard_id": "67890fghij"
+        },
+        "notes": "This verifies whether the user has the necessary permissions to own the dashboard. Use this to validate ownership rules for a specific dashboard."
+      },
+      {
+        "user_query": "Is it possible for me to own the dashboard 'abcdef12345'?",
+        "arguments": {
+          "dashboard_id": "abcdef12345"
+        },
+        "notes": "This call determines if the current user can take ownership of the dashboard identified by the given ID. Ideal for scenarios where ownership transfer is being considered."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.export_dashboard",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "export_dashboard",
+    "description": "Export a dashboard definition using the Sisense admin export endpoint.",
+    "full_doc": "Export a dashboard definition using the Sisense admin export endpoint.\n\nSends a GET request to ``/api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``. The response is a JSON array;\nthis method returns the first dashboard object, which includes fields such\nas ``title``, ``oid``, ``script``, ``widgets``, ``layout``, and ``filters``.\nOther features (for example ``get_dashboard_script``) use this payload\ninternally.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to export.\n\nReturns\n-------\ndict[str, Any]\n    The exported dashboard object on success, or ``{\"error\": \"<message>\"}``\n    when the HTTP call fails, the body is not valid JSON, or the payload\n    is not a non-empty list as expected.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to export."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "How can I export the definition of the Sales Performance dashboard?",
+        "arguments": {
+          "dashboard_id": "5f3a8b9c2e8b4a001c8d1234"
+        },
+        "notes": "This call retrieves the full definition of the 'Sales Performance' dashboard, including its widgets, layout, and filters."
+      },
+      {
+        "user_query": "I need to back up the Marketing Overview dashboard. How do I export it?",
+        "arguments": {
+          "dashboard_id": "6a7b9c8d3f4e5a002d9e5678"
+        },
+        "notes": "This call exports the 'Marketing Overview' dashboard definition, which can be saved for backup or migration purposes."
+      },
+      {
+        "user_query": "Can I get the JSON definition for the Customer Insights dashboard?",
+        "arguments": {
+          "dashboard_id": "7b8c9d0e1f2a3b004e5f6789"
+        },
+        "notes": "This call fetches the JSON definition of the 'Customer Insights' dashboard, useful for reviewing or modifying its structure programmatically."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.get_all_dashboards",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "get_all_dashboards",
+    "description": "Retrieves all dashboards from the Sisense server.",
+    "full_doc": "Retrieves all dashboards from the Sisense server.\n\nReturns:\n    list or dict: A list of dashboards if successful,\n                or a dict containing an error message.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "How can I get a list of all dashboards available on the Sisense server?",
+        "arguments": {},
+        "notes": "This call retrieves all dashboards currently available on the Sisense server. Use it to fetch an overview of all dashboards for further analysis or management."
+      },
+      {
+        "user_query": "I need to see all dashboards to check which ones are active.",
+        "arguments": {},
+        "notes": "This call provides a complete list of dashboards. It is useful for auditing or reviewing the available dashboards on the server."
+      },
+      {
+        "user_query": "Can I get all dashboards to display them in a custom application?",
+        "arguments": {},
+        "notes": "This call retrieves all dashboards, which can then be integrated into a custom application for display or further processing."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_by_id",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "get_dashboard_by_id",
+    "description": "Retrieves a specific dashboard by its ID.",
+    "full_doc": "Retrieves a specific dashboard by its ID.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard to retrieve.\n\nReturns:\n    dict: A dictionary containing dashboard details if found,\n        or a dict with an error message if the request fails.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ID of the dashboard to retrieve."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "Can you fetch the dashboard with ID 'sales_dashboard_2023'?",
+        "arguments": {
+          "dashboard_id": "sales_dashboard_2023"
+        },
+        "notes": "This retrieves the details of the dashboard with the ID 'sales_dashboard_2023'. Use this to access specific dashboard information for reporting or analysis."
+      },
+      {
+        "user_query": "I need to get the dashboard details for the marketing team. The ID is 'marketing_q4_dashboard'.",
+        "arguments": {
+          "dashboard_id": "marketing_q4_dashboard"
+        },
+        "notes": "This call fetches the dashboard with the ID 'marketing_q4_dashboard'. Ideal for retrieving dashboards used by specific teams or departments."
+      },
+      {
+        "user_query": "What are the details of the dashboard with ID 'finance_overview_001'?",
+        "arguments": {
+          "dashboard_id": "finance_overview_001"
+        },
+        "notes": "This retrieves the dashboard identified by 'finance_overview_001'. Useful for accessing financial overview dashboards for review or updates."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_by_name",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "get_dashboard_by_name",
+    "description": "Retrieves a specific dashboard by its name.",
+    "full_doc": "Retrieves a specific dashboard by its name.\n\nParameters:\n    dashboard_name (str): The name of the dashboard to retrieve.\n\nReturns:\n    dict or list: A dictionary containing dashboard details if found,\n                or {'error': 'message'} if not found or failed.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_name": {
+          "type": "string",
+          "description": "The name of the dashboard to retrieve."
+        }
+      },
+      "required": [
+        "dashboard_name"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "Can you fetch the dashboard named 'Sales Overview'?",
+        "arguments": {
+          "dashboard_name": "Sales Overview"
+        },
+        "notes": "This retrieves the 'Sales Overview' dashboard, which might contain key metrics and visualizations for sales performance."
+      },
+      {
+        "user_query": "I need to find the dashboard called 'Marketing Performance'.",
+        "arguments": {
+          "dashboard_name": "Marketing Performance"
+        },
+        "notes": "This call fetches the 'Marketing Performance' dashboard, which could include analytics related to marketing campaigns and performance metrics."
+      },
+      {
+        "user_query": "Get the dashboard titled 'Executive Summary'.",
+        "arguments": {
+          "dashboard_name": "Executive Summary"
+        },
+        "notes": "This retrieves the 'Executive Summary' dashboard, often used for high-level reporting and insights for executives."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_columns",
+    "module": "dashboard",
+    "sub_module": "dashboard.columns",
+    "class": "Dashboard",
+    "method": "get_dashboard_columns",
+    "description": "Retrieves columns from a specific dashboard, including both widget and filter-level columns.",
+    "full_doc": "Retrieves columns from a specific dashboard, including both widget and filter-level columns.\n\nThis method:\n- Uses the `get_dashboard_by_name` method to fetch the dashboard.\n- Extracts columns from widgets and filters.\n- Deduplicates the final column list.\n\nParameters:\n    dashboard_name (str): The name of the dashboard to retrieve columns from.\n\nReturns:\n    list: A list of dictionaries containing distinct table and column information from the dashboard.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_name": {
+          "type": "string",
+          "description": "The name of the dashboard to retrieve columns from."
+        }
+      },
+      "required": [
+        "dashboard_name"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "What columns are available in the 'Sales Overview' dashboard?",
+        "arguments": {
+          "dashboard_name": "Sales Overview"
+        },
+        "notes": "This call retrieves all distinct columns from the 'Sales Overview' dashboard, including widget and filter-level columns. Use this to understand the data structure of the dashboard."
+      },
+      {
+        "user_query": "Can you list the columns in the 'Marketing Performance' dashboard?",
+        "arguments": {
+          "dashboard_name": "Marketing Performance"
+        },
+        "notes": "This call fetches the columns from the 'Marketing Performance' dashboard. Useful for analyzing the data sources used in the dashboard."
+      },
+      {
+        "user_query": "I need the column details for the 'Customer Insights' dashboard.",
+        "arguments": {
+          "dashboard_name": "Customer Insights"
+        },
+        "notes": "This call retrieves all unique columns from the 'Customer Insights' dashboard. Ideal for understanding the data fields used in widgets and filters."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_script",
+    "module": "dashboard",
+    "sub_module": "dashboard.scripts",
+    "class": "Dashboard",
+    "method": "get_dashboard_script",
+    "description": "Build a formatted dashboard script helper object.",
+    "full_doc": "Build a formatted dashboard script helper object.\n\nRetrieves a dashboard export payload and wraps its script content in a\n:class:`SisenseScript` helper that can render plain text, markdown, or file output.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the dashboard is retrieved successfully,\n    or an ``{\"error\": \"...\"}`` dictionary from ``export_dashboard``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard identifier to export."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "How can I export the script for the sales dashboard?",
+        "arguments": {
+          "dashboard_id": "sales_dashboard_2023"
+        },
+        "notes": "This retrieves the script for the 'sales_dashboard_2023' dashboard, which can be used for rendering or exporting."
+      },
+      {
+        "user_query": "I need the script for the marketing performance dashboard to include in a report. How do I get it?",
+        "arguments": {
+          "dashboard_id": "marketing_perf_dash"
+        },
+        "notes": "This call fetches the script for the 'marketing_perf_dash' dashboard, enabling further use in reports or presentations."
+      },
+      {
+        "user_query": "Can I get the script for the executive summary dashboard?",
+        "arguments": {
+          "dashboard_id": "exec_summary_001"
+        },
+        "notes": "This retrieves the script for the 'exec_summary_001' dashboard, useful for generating a formatted output or embedding elsewhere."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_share",
+    "module": "dashboard",
+    "sub_module": "dashboard.shares",
+    "class": "Dashboard",
+    "method": "get_dashboard_share",
+    "description": "Retrieves share details (users and groups) for a specific dashboard by title.",
+    "full_doc": "Retrieves share details (users and groups) for a specific dashboard by title.\n\nParameters:\n    dashboard_name (str): The title of the dashboard to retrieve share information for.\n\nReturns:\n    list: A list of dictionaries containing share type (user or group), and share name (email or group name),\n        or an empty list if the dashboard is not found or has no shares.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_name": {
+          "type": "string",
+          "description": "The title of the dashboard to retrieve share information for."
+        }
+      },
+      "required": [
+        "dashboard_name"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "Who has access to the 'Sales Overview' dashboard?",
+        "arguments": {
+          "dashboard_name": "Sales Overview"
+        },
+        "notes": "Retrieves the list of users and groups that have access to the 'Sales Overview' dashboard. Use this to audit or review sharing permissions."
+      },
+      {
+        "user_query": "Can you show me the sharing details for the 'Marketing Performance' dashboard?",
+        "arguments": {
+          "dashboard_name": "Marketing Performance"
+        },
+        "notes": "Fetches the sharing details for the 'Marketing Performance' dashboard, including users and groups with access. Useful for understanding who can view this dashboard."
+      },
+      {
+        "user_query": "I need to check the sharing settings for the 'Executive Summary' dashboard.",
+        "arguments": {
+          "dashboard_name": "Executive Summary"
+        },
+        "notes": "Provides the sharing information for the 'Executive Summary' dashboard. This is helpful for verifying or troubleshooting access permissions."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_shares_v1",
+    "module": "dashboard",
+    "sub_module": "dashboard.shares",
+    "class": "Dashboard",
+    "method": "get_dashboard_shares_v1",
+    "description": "Retrieve share details for a dashboard using the v1 shares endpoint.",
+    "full_doc": "Retrieve share details for a dashboard using the v1 shares endpoint.\n\nSends ``GET /api/v1/dashboards/{dashboard_id}/shares``. This returns the\nraw Sisense shares payload (for example ``sharesTo`` and ``owner``),\nunlike ``get_dashboard_share`` which resolves names from the admin list.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid``.\nadmin_access : bool, optional\n    When ``True`` (default), request with ``adminAccess=true``.\n\nReturns\n-------\ndict[str, Any]\n    The shares response from the API, or ``{\"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid``."
+        },
+        "admin_access": {
+          "type": "boolean",
+          "description": "When ``True`` (default), request with ``adminAccess=true``."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "Who has access to the sales performance dashboard?",
+        "arguments": {
+          "dashboard_id": "5f7d3a2b9c8e4a0012345678",
+          "admin_access": true
+        },
+        "notes": "This retrieves the share details for the 'sales performance' dashboard, including users and groups with access. Admin access is enabled to include all details."
+      },
+      {
+        "user_query": "Can you show me the sharing settings for the marketing overview dashboard?",
+        "arguments": {
+          "dashboard_id": "63a9f0ea7b8c4b0012345678",
+          "admin_access": false
+        },
+        "notes": "This retrieves the share details for the 'marketing overview' dashboard without admin-level access, showing only the user's accessible share information."
+      },
+      {
+        "user_query": "I need to verify who owns the executive summary dashboard and who it is shared with.",
+        "arguments": {
+          "dashboard_id": "4e5f6a7b8c9d0e0012345678",
+          "admin_access": true
+        },
+        "notes": "This retrieves the share details for the 'executive summary' dashboard, including ownership and all sharing details, with admin access enabled."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.get_dashboard_widgets",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "get_dashboard_widgets",
+    "description": "Retrieve widget definitions from an admin export of the dashboard.",
+    "full_doc": "Retrieve widget definitions from an admin export of the dashboard.\n\nUses ``export_dashboard`` (``GET /api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``), then reads the ``widgets``\nfield from the first exported dashboard object\u2014the same payload shape\nused by ``get_dashboard_script`` and ``get_widget_script``. If\n``widgets`` is missing or empty, an empty list is returned.\n\n``dashboard_ref`` is resolved with ``resolve_dashboard_reference`` so it\nmay be either a 24-character dashboard ``oid`` or a dashboard title.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard ``oid`` or title.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of widget objects on success (possibly empty). On failure,\n    ``{\"error\": \"...\"}`` when the reference cannot be resolved or\n    ``export_dashboard`` fails. If ``widgets`` is present but neither a\n    list nor a mapping of widget objects, returns an error dict.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_ref": {
+          "type": "string",
+          "description": "Dashboard ``oid`` or title."
+        }
+      },
+      "required": [
+        "dashboard_ref"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "What widgets are included in the dashboard titled 'Sales Overview'?",
+        "arguments": {
+          "dashboard_ref": "Sales Overview"
+        },
+        "notes": "This retrieves all widget definitions from the 'Sales Overview' dashboard using its title as a reference."
+      },
+      {
+        "user_query": "Can you list the widgets for the dashboard with ID '63f2a1b4c9e3470012345678'?",
+        "arguments": {
+          "dashboard_ref": "63f2a1b4c9e3470012345678"
+        },
+        "notes": "This fetches widget definitions from the dashboard identified by its unique 24-character ID."
+      },
+      {
+        "user_query": "I need to check the widgets in the dashboard named 'Marketing Performance'.",
+        "arguments": {
+          "dashboard_ref": "Marketing Performance"
+        },
+        "notes": "Use this to retrieve widget details from the 'Marketing Performance' dashboard by specifying its title."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.get_dashboards",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "get_dashboards",
+    "description": "Retrieve dashboards visible to the authenticated user.",
+    "full_doc": "Retrieve dashboards visible to the authenticated user.\n\nSends ``GET /api/v1/dashboards``, which returns dashboards the current\nuser owns or has been shared to \u2014 as opposed to\n``get_all_dashboards``, which uses the admin endpoint and requires\nelevated access.\n\nParameters\n----------\nfields : list[str], optional\n    Subset of fields to include in the response (for example\n    ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are\n    returned.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dashboard objects on success, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Subset of fields to include in the response (for example ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are returned."
+        }
+      },
+      "required": []
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "Show me the dashboards I own with their titles and IDs.",
+        "arguments": {
+          "fields": [
+            "oid",
+            "title"
+          ]
+        },
+        "notes": "This call retrieves only the 'oid' and 'title' fields for dashboards visible to the authenticated user. Use this to quickly fetch basic identifiers for dashboards."
+      },
+      {
+        "user_query": "Get all details for dashboards shared with me.",
+        "arguments": {
+          "fields": []
+        },
+        "notes": "When the 'fields' parameter is omitted or an empty array is provided, all available fields for the dashboards are returned. Use this to access comprehensive dashboard details."
+      },
+      {
+        "user_query": "I need the titles and owners of dashboards I can access.",
+        "arguments": {
+          "fields": [
+            "title",
+            "owner"
+          ]
+        },
+        "notes": "This call retrieves only the 'title' and 'owner' fields for dashboards visible to the authenticated user. Use this to focus on ownership and naming details."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.get_widget_script",
+    "module": "dashboard",
+    "sub_module": "dashboard.scripts",
+    "class": "Dashboard",
+    "method": "get_widget_script",
+    "description": "Build a formatted widget script helper object.",
+    "full_doc": "Build a formatted widget script helper object.\n\nRetrieves a dashboard export payload, selects a widget by index/key, and\nwraps its script content in a :class:`SisenseScript` helper for downstream rendering.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\nwidget_id : str\n    The widget identifier or lookup key used in the exported widget mapping.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the widget is found and has script data,\n    or an ``{\"error\": \"...\"}`` dictionary on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard identifier to export."
+        },
+        "widget_id": {
+          "type": "string",
+          "description": "The widget identifier or lookup key used in the exported widget mapping."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "widget_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "How can I retrieve the script for the 'Sales Performance' widget in the 'Q3 Dashboard'?",
+        "arguments": {
+          "dashboard_id": "dashboard_12345",
+          "widget_id": "widget_sales_perf"
+        },
+        "notes": "This call retrieves the script content for the 'Sales Performance' widget in the 'Q3 Dashboard'. Use this when you need to access or render the widget's script programmatically."
+      },
+      {
+        "user_query": "I need the script for the 'Customer Segmentation' widget in the 'Marketing Insights' dashboard.",
+        "arguments": {
+          "dashboard_id": "dashboard_67890",
+          "widget_id": "widget_cust_seg"
+        },
+        "notes": "This call extracts the script for the 'Customer Segmentation' widget in the 'Marketing Insights' dashboard. Useful for customizing or analyzing the widget's behavior."
+      },
+      {
+        "user_query": "Can I get the script for the 'Revenue Trends' widget in the 'Annual Report' dashboard?",
+        "arguments": {
+          "dashboard_id": "dashboard_54321",
+          "widget_id": "widget_rev_trends"
+        },
+        "notes": "This call retrieves the script for the 'Revenue Trends' widget in the 'Annual Report' dashboard. Ideal for debugging or embedding the widget's functionality elsewhere."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.move_dashboard_to_folder",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "move_dashboard_to_folder",
+    "description": "Move a dashboard into a folder.",
+    "full_doc": "Move a dashboard into a folder.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` with only ``parentFolder``\nin the request body. Other dashboard fields are not modified.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to move.\nfolder_id : str\n    The target folder ``oid`` (``parentFolder`` value).\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object from the API, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to move."
+        },
+        "folder_id": {
+          "type": "string",
+          "description": "The target folder ``oid`` (``parentFolder`` value)."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "folder_id"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "How can I move the sales dashboard to the marketing folder?",
+        "arguments": {
+          "dashboard_id": "dashboard_12345",
+          "folder_id": "folder_67890"
+        },
+        "notes": "This moves the dashboard with ID 'dashboard_12345' into the folder with ID 'folder_67890', which is the marketing folder."
+      },
+      {
+        "user_query": "I need to organize my dashboards. Can you help me move the 'Finance Overview' dashboard to the 'Q4 Reports' folder?",
+        "arguments": {
+          "dashboard_id": "finance_overview_001",
+          "folder_id": "q4_reports_2023"
+        },
+        "notes": "This operation relocates the 'Finance Overview' dashboard to the 'Q4 Reports' folder for better organization."
+      },
+      {
+        "user_query": "Can I move the 'Customer Insights' dashboard to the 'Archived Dashboards' folder?",
+        "arguments": {
+          "dashboard_id": "customer_insights_789",
+          "folder_id": "archived_dashboards_456"
+        },
+        "notes": "This moves the 'Customer Insights' dashboard into the 'Archived Dashboards' folder, typically used for storing older dashboards."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.publish_dashboard",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "publish_dashboard",
+    "description": "Publish (republish) a dashboard.",
+    "full_doc": "Publish (republish) a dashboard.\n\nSends ``POST /api/v1/dashboards/{dashboard_id}/publish``. By default\n``adminAccess=true`` is appended so an admin token can republish when the\ncaller already has access but is not the owner. Pass ``force=True`` to\nappend ``force=true`` (used after script updates).\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to publish.\nadmin_access : bool, optional\n    When ``True`` (default), request with ``adminAccess=true``.\nforce : bool, optional\n    When ``True``, request with ``force=true``. Default is ``False``.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` or the JSON response body on success. On failure,\n    ``{\"error\": \"...\"}``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard ``oid`` to publish."
+        },
+        "admin_access": {
+          "type": "boolean",
+          "description": "When ``True`` (default), request with ``adminAccess=true``."
+        },
+        "force": {
+          "type": "boolean",
+          "description": "When ``True``, request with ``force=true``. Default is ``False``."
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "Publish the sales dashboard to make the latest updates available.",
+        "arguments": {
+          "dashboard_id": "sales_dashboard_123",
+          "admin_access": true,
+          "force": false
+        },
+        "notes": "This call republishes the 'sales_dashboard_123' dashboard with admin access enabled. Use this when you want to publish updates without forcing changes."
+      },
+      {
+        "user_query": "Force publish the marketing dashboard after script updates.",
+        "arguments": {
+          "dashboard_id": "marketing_dashboard_456",
+          "admin_access": true,
+          "force": true
+        },
+        "notes": "This call republishes the 'marketing_dashboard_456' dashboard with admin access and forces the update. Use this when changes need to be applied after script modifications."
+      },
+      {
+        "user_query": "Republish the finance dashboard without admin access.",
+        "arguments": {
+          "dashboard_id": "finance_dashboard_789",
+          "admin_access": false,
+          "force": false
+        },
+        "notes": "This call republishes the 'finance_dashboard_789' dashboard without admin access. Use this when the caller has sufficient permissions and no forced updates are required."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.rename_dashboard",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "rename_dashboard",
+    "description": "Rename a dashboard.",
+    "full_doc": "Rename a dashboard.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` with only ``title`` in\nthe request body. Other dashboard fields are not modified.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard to rename.\ntitle : str\n    The new dashboard title.\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object on success, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ``oid`` of the dashboard to rename."
+        },
+        "title": {
+          "type": "string",
+          "description": "The new dashboard title."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "title"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "write"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "How can I rename the Sales Overview dashboard to Q1 Sales Overview?",
+        "arguments": {
+          "dashboard_id": "5f7d3a2b6e7a4c001f3e8b9c",
+          "title": "Q1 Sales Overview"
+        },
+        "notes": "This call renames the dashboard with ID '5f7d3a2b6e7a4c001f3e8b9c' to 'Q1 Sales Overview'. Use this when you want to update the title of an existing dashboard."
+      },
+      {
+        "user_query": "I need to change the title of the Marketing Performance dashboard to Monthly Marketing Metrics.",
+        "arguments": {
+          "dashboard_id": "63a9f0ea7b8e4d0021c4d5a1",
+          "title": "Monthly Marketing Metrics"
+        },
+        "notes": "This call updates the title of the dashboard with ID '63a9f0ea7b8e4d0021c4d5a1' to 'Monthly Marketing Metrics'. Useful for keeping dashboard titles aligned with reporting periods."
+      },
+      {
+        "user_query": "Can I rename the Customer Insights dashboard to Customer Analytics?",
+        "arguments": {
+          "dashboard_id": "7e2b4c9f8a6d4f0032b7e1d5",
+          "title": "Customer Analytics"
+        },
+        "notes": "This call changes the name of the dashboard with ID '7e2b4c9f8a6d4f0032b7e1d5' to 'Customer Analytics'. Ideal for rebranding or clarifying the purpose of a dashboard."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.resolve_dashboard_reference",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "resolve_dashboard_reference",
+    "description": "Resolve a dashboard reference (ID or name) to a concrete dashboard ID and title.",
+    "full_doc": "Resolve a dashboard reference (ID or name) to a concrete dashboard ID and title.\n\nThis helper accepts a single string that may be either:\n- a Sisense dashboard ID (24-character ID), or\n- a dashboard title (name).\n\nIt first attempts to treat the reference as an ID using\n`get_dashboard_by_id`. If that fails or the reference does not look\nlike an ID, it falls back to `get_dashboard_by_name`. The underlying\nmethods are reused as-is.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard reference to resolve. This can be either an ID or a name.\n\nReturns\n-------\ndict\n    A dictionary with the following keys:\n    - success (bool): True if the reference was resolved to a dashboard.\n    - status_code (int): 200 if resolved successfully, 404 if not found,\n      or 500 if an unexpected error occurred.\n    - dashboard_id (str or None): Resolved dashboard ID (oid) if found,\n      otherwise None.\n    - dashboard_title (str or None): Resolved dashboard title if found,\n      otherwise None.\n    - error (str or None): Error message if success is False, otherwise None.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_ref": {
+          "type": "string",
+          "description": "Dashboard reference to resolve. This can be either an ID or a name."
+        }
+      },
+      "required": [
+        "dashboard_ref"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "1.0.0",
+    "updated_at": "2026-06-23T17:50:12Z",
+    "examples": [
+      {
+        "user_query": "What is the ID and title of the dashboard named 'Sales Overview'?",
+        "arguments": {
+          "dashboard_ref": "Sales Overview"
+        },
+        "notes": "This resolves the dashboard reference 'Sales Overview' to its corresponding ID and title. Use this when you know the dashboard name but need its ID."
+      },
+      {
+        "user_query": "Can you find the dashboard with the ID '5f7d3a2b4e8b9c0012345678'?",
+        "arguments": {
+          "dashboard_ref": "5f7d3a2b4e8b9c0012345678"
+        },
+        "notes": "This resolves the dashboard reference '5f7d3a2b4e8b9c0012345678' to its corresponding ID and title. Use this when you already have the dashboard ID but want to confirm its existence and retrieve its title."
+      },
+      {
+        "user_query": "I need the details of a dashboard called 'Monthly Performance Report'.",
+        "arguments": {
+          "dashboard_ref": "Monthly Performance Report"
+        },
+        "notes": "This resolves the dashboard reference 'Monthly Performance Report' to its corresponding ID and title. Use this when you know the dashboard name but need its details."
       }
     ]
   },
@@ -4891,7 +4894,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Create a folder named 'Sales Reports' under the 'Q4 2023' folder.",
@@ -4944,7 +4947,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I delete the folder with ID '12345abcde'?",
@@ -4988,7 +4991,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I get the entire folder structure in Sisense?",
@@ -5033,7 +5036,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What are the ancestor folders for the 'sales_data' structure?",
@@ -5084,7 +5087,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Can you fetch the folder with ID '12345abc'?",
@@ -5133,7 +5136,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Show me all folders in a flat structure.",
@@ -5175,7 +5178,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Can you show me the navigation tree for our Sisense folders?",
@@ -5232,7 +5235,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I rename the folder with ID '12345abcde' to 'Sales Reports'?",
@@ -5286,7 +5289,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Add a new measure to calculate total sales revenue for the 'Sales' datasource.",
@@ -5360,7 +5363,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What dimensions are available for the SalesData datasource?",
@@ -5416,7 +5419,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What are the formula measures available for the SalesData datasource?",
@@ -5461,7 +5464,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What datasources can I access in Sisense?",
@@ -5506,7 +5509,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Fetch all metadata related to the 'sales_dashboard' dataset.",
@@ -5614,7 +5617,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I migrate all dashboards to the target environment, skipping any that already exist?",
@@ -5712,7 +5715,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I migrate all data models, including data security and formulas, to a new environment while overwriting existing models?",
@@ -5787,7 +5790,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I migrate all user groups from the old environment to the new one and track the progress?",
@@ -5843,7 +5846,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I migrate all users from the source environment to the target environment and track the progress?",
@@ -5916,7 +5919,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I migrate shares from dashboards in the source environment to dashboards in the target environment?",
@@ -6025,7 +6028,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I migrate dashboards with IDs 'dash123' and 'dash456' to the target environment, skipping any that already exist?",
@@ -6143,7 +6146,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I migrate the data models with IDs 'dm_123' and 'dm_456' to the target environment, including all dependencies and shares?",
@@ -6225,7 +6228,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I migrate the 'Sales Team' and 'Marketing Team' groups to the new environment?",
@@ -6288,7 +6291,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Migrate the users 'john.doe' and 'jane.smith' to the target environment.",
@@ -6348,7 +6351,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I disable the plugin named 'custom-theme'?",
@@ -6406,7 +6409,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I disable the 'plugin-analytics' and 'plugin-visualization' plugins?",
@@ -6469,7 +6472,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I enable the plugin for advanced charting?",
@@ -6527,7 +6530,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I enable the 'plugin-sample' and 'custom-visualizations' plugins in bulk?",
@@ -6582,7 +6585,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What plugins are currently installed on my Sisense instance?",
@@ -6627,7 +6630,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I fetch details about the 'plugin-sample-chart' plugin?",
@@ -6682,7 +6685,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "I want to restore the plugins to the state they were in last week. How can I do that?",
@@ -6744,7 +6747,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How can I save the current state of enabled plugins as a snapshot?",
@@ -6794,7 +6797,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Fetch total sales by region for the last quarter.",
@@ -6932,7 +6935,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Run a SQL query to fetch sales data for the current year.",
@@ -6997,7 +7000,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Export sales data for Q3 2023 as a CSV file.",
@@ -7103,7 +7106,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Analyze the structure of the dashboard titled 'Sales Overview'.",
@@ -7163,7 +7166,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "How many widgets are on the 'Sales Overview' dashboard?",
@@ -7224,7 +7227,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Check if any custom tables in the 'Sales Analytics' data model use UNION.",
@@ -7285,7 +7288,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Check if the tables in the 'Sales Dashboard' data model have import queries configured.",
@@ -7345,7 +7348,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Find all island tables in the 'Sales Analytics' data model.",
@@ -7405,7 +7408,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Check for many-to-many relationships in the 'Sales Analytics' data model.",
@@ -7465,7 +7468,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "What are the datatypes of the columns used in RLS rules for the 'Sales Dashboard' data model?",
@@ -7529,7 +7532,7 @@
       "read"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Find pivot widgets with too many fields on the 'Sales Overview' dashboard.",
@@ -7602,7 +7605,7 @@
       "write"
     ],
     "sdk_version": "1.0.0",
-    "updated_at": "2026-06-21T21:41:08Z",
+    "updated_at": "2026-06-23T17:50:12Z",
     "examples": [
       {
         "user_query": "Run a full wellcheck on the 'Sales Dashboard' and 'Marketing Dashboard' to identify issues.",

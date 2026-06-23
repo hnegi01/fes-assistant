@@ -17,7 +17,9 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ._config import ROOT_DIR, logger
+from ._config import ROOT_DIR, _make_module_logger
+
+logger = _make_module_logger("backend.agent.llm_registry", "llm_registry.log")
 
 _registry_env = os.getenv("PYSISENSE_REGISTRY_PATH")
 REGISTRY_PATH: Path = (
