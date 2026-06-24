@@ -8,7 +8,7 @@ litellm>=1.60,<2
 jsonschema>=4.23,<5
 langsmith>=0.2,<1
 
-streamlit>=1.48,<1.51
+streamlit>=1.52,<1.59
 
 pysisense==1.0.2
 mcp>=1.24,<1.25
