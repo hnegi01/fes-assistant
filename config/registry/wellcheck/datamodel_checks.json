@@ -24,27 +24,26 @@
             "Sales Analytics"
           ]
         },
-        "notes": "This call inspects the 'Sales Analytics' data model by its title and flags any custom tables that use UNION in their SQL expressions."
+        "notes": "This call analyzes the 'Sales Analytics' data model by title and flags any custom tables that use UNION in their SQL expressions."
       },
       {
-        "user_query": "Analyze custom tables in multiple data models for UNION usage.",
+        "user_query": "Inspect the custom tables in multiple data models, including 'Marketing Insights' and '12345'.",
         "arguments": {
           "datamodels": [
-            "12345",
             "Marketing Insights",
+            "12345"
+          ]
+        },
+        "notes": "This call checks both a data model by title ('Marketing Insights') and another by ID ('12345') for UNION usage in their custom tables."
+      },
+      {
+        "user_query": "Analyze the custom tables in the data model with ID '67890' to ensure no UNION is used.",
+        "arguments": {
+          "datamodels": [
             "67890"
           ]
         },
-        "notes": "This call checks three data models: two by their IDs ('12345' and '67890') and one by its title ('Marketing Insights'). It identifies custom tables with UNION in their SQL expressions."
-      },
-      {
-        "user_query": "Inspect the custom tables in the data model with ID 'abc123'.",
-        "arguments": {
-          "datamodels": [
-            "abc123"
-          ]
-        },
-        "notes": "This call analyzes the data model identified by the ID 'abc123' and flags any custom tables that use UNION in their SQL expressions."
+        "notes": "This call inspects the data model identified by ID '67890' and flags any custom tables containing UNION in their SQL expressions."
       }
     ]
   },
@@ -67,32 +66,32 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Check if the tables in the 'Sales Dashboard' data model have import queries configured.",
+        "user_query": "Check if the tables in the 'Sales Analytics' data model have import queries configured.",
         "arguments": {
           "datamodels": [
-            "Sales Dashboard"
+            "Sales Analytics"
           ]
         },
-        "notes": "This call inspects all tables in the 'Sales Dashboard' data model to determine if they have import queries configured."
+        "notes": "This call inspects all tables in the 'Sales Analytics' data model by its title to determine if import queries are configured."
       },
       {
-        "user_query": "Analyze multiple data models, 'Marketing Analytics' and 'Customer Insights', for import queries in their tables.",
+        "user_query": "Analyze the data models with IDs 'dm_12345' and 'dm_67890' for import query configurations.",
         "arguments": {
           "datamodels": [
-            "Marketing Analytics",
-            "Customer Insights"
+            "dm_12345",
+            "dm_67890"
           ]
         },
-        "notes": "This call checks the tables in both the 'Marketing Analytics' and 'Customer Insights' data models for the presence of import queries."
+        "notes": "This call checks the tables in two data models identified by their IDs to see if import queries are present."
       },
       {
-        "user_query": "Verify if the data model with ID 'dm_12345' has import queries set up for its tables.",
+        "user_query": "Inspect the 'Marketing Dashboard' data model for import queries in its tables.",
         "arguments": {
           "datamodels": [
-            "dm_12345"
+            "Marketing Dashboard"
           ]
         },
-        "notes": "This call inspects the tables in the data model identified by the ID 'dm_12345' to check for configured import queries."
+        "notes": "This call evaluates the tables in the 'Marketing Dashboard' data model, identified by its title, to verify the presence of import queries."
       }
     ]
   },
@@ -121,26 +120,26 @@
             "Sales Analytics"
           ]
         },
-        "notes": "This call analyzes the 'Sales Analytics' data model to identify tables that do not have any relationships."
+        "notes": "This call analyzes the 'Sales Analytics' data model to identify any tables that do not have relationships with other tables."
       },
       {
-        "user_query": "Check for island tables in multiple data models: 'Marketing Dashboard' and 'Customer Insights'.",
+        "user_query": "Check for island tables in multiple data models: 'Marketing Dashboard' and 'Finance Data'.",
         "arguments": {
           "datamodels": [
             "Marketing Dashboard",
-            "Customer Insights"
+            "Finance Data"
           ]
         },
-        "notes": "This call inspects the 'Marketing Dashboard' and 'Customer Insights' data models to find tables without relationships."
+        "notes": "This call inspects the 'Marketing Dashboard' and 'Finance Data' data models to find tables that are not connected to any other tables."
       },
       {
-        "user_query": "Analyze the data model with ID '12345' for any island tables.",
+        "user_query": "Identify island tables in the data model with ID '12345'.",
         "arguments": {
           "datamodels": [
             "12345"
           ]
         },
-        "notes": "This call targets the data model identified by the ID '12345' to locate tables that are not part of any relationships."
+        "notes": "This call targets the data model with ID '12345' to locate any tables that lack relationships with other tables."
       }
     ]
   },
@@ -163,23 +162,23 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Check for many-to-many relationships in the 'Sales Analytics' data model.",
+        "user_query": "Check for many-to-many relationships in the 'Sales Data' data model.",
         "arguments": {
           "datamodels": [
-            "Sales Analytics"
+            "Sales Data"
           ]
         },
-        "notes": "This call analyzes the 'Sales Analytics' data model to identify potential many-to-many relationships between tables."
+        "notes": "This call analyzes the 'Sales Data' data model to identify potential many-to-many relationships between tables."
       },
       {
-        "user_query": "Analyze multiple data models for M2M relationships, including 'Finance Dashboard' and 'Customer Insights'.",
+        "user_query": "Analyze multiple data models, 'Marketing Analytics' and 'Customer Insights', for M2M relationships.",
         "arguments": {
           "datamodels": [
-            "Finance Dashboard",
+            "Marketing Analytics",
             "Customer Insights"
           ]
         },
-        "notes": "This call checks for many-to-many relationships in the 'Finance Dashboard' and 'Customer Insights' data models. Use this when you want to analyze multiple models in a single request."
+        "notes": "This call checks both the 'Marketing Analytics' and 'Customer Insights' data models for any many-to-many relationships between their tables."
       },
       {
         "user_query": "Detect M2M relationships in the data model with ID 'dm_12345'.",
@@ -188,7 +187,7 @@
             "dm_12345"
           ]
         },
-        "notes": "This call inspects the data model identified by the ID 'dm_12345' for potential many-to-many relationships. Use this when you know the specific ID of the data model."
+        "notes": "This call inspects the data model identified by the ID 'dm_12345' for potential many-to-many relationships between its tables."
       }
     ]
   },
@@ -217,7 +216,7 @@
             "Sales Dashboard"
           ]
         },
-        "notes": "This call inspects the RLS rules for the 'Sales Dashboard' data model and returns the datatypes of the columns used in those rules."
+        "notes": "This call inspects the RLS rules for the 'Sales Dashboard' data model and returns the datatypes of the columns involved."
       },
       {
         "user_query": "Check the RLS column datatypes for data models with IDs '12345' and '67890'.",
@@ -227,17 +226,16 @@
             "67890"
           ]
         },
-        "notes": "This call analyzes the RLS rules for the specified data models by their IDs and reports the datatypes of the columns involved."
+        "notes": "This call analyzes the RLS rules for two data models identified by their IDs and returns details about the columns and their datatypes."
       },
       {
-        "user_query": "Inspect RLS column datatypes for the 'Marketing Analytics' and 'Customer Insights' data models.",
+        "user_query": "Analyze the RLS rules for the 'Marketing Analytics' data model and report the column datatypes.",
         "arguments": {
           "datamodels": [
-            "Marketing Analytics",
-            "Customer Insights"
+            "Marketing Analytics"
           ]
         },
-        "notes": "This call retrieves the datatypes of columns used in RLS rules for the 'Marketing Analytics' and 'Customer Insights' data models."
+        "notes": "This call retrieves the RLS column datatype information for the 'Marketing Analytics' data model."
       }
     ]
   }

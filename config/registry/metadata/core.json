@@ -17,46 +17,52 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Add a new measure to calculate total sales revenue for the 'Sales' datasource.",
+        "user_query": "Add a new measure to calculate total sales for the 'sales_data' table.",
         "arguments": {
           "measure": {
-            "datasource": "Sales",
-            "table": "Transactions",
-            "column": "Revenue",
-            "expression": "SUM(Revenue)",
-            "name": "Total Sales Revenue",
-            "description": "Calculates the total revenue from all transactions."
+            "datasource": "sales_db",
+            "table": "sales_data",
+            "column": "total_sales",
+            "expression": "SUM(sales_amount)",
+            "fields": {
+              "aggregation": "sum",
+              "type": "measure"
+            }
           }
         },
-        "notes": "This call creates a measure that sums up the 'Revenue' column in the 'Transactions' table of the 'Sales' datasource."
+        "notes": "This call creates a measure that calculates the total sales by summing the 'sales_amount' column in the 'sales_data' table."
       },
       {
-        "user_query": "Create a measure to calculate average order value for the 'Ecommerce' datasource.",
+        "user_query": "Create a measure to calculate average order value for the 'orders' table.",
         "arguments": {
           "measure": {
-            "datasource": "Ecommerce",
-            "table": "Orders",
-            "column": "OrderValue",
-            "expression": "AVG(OrderValue)",
-            "name": "Average Order Value",
-            "description": "Calculates the average value of orders placed in the 'Orders' table."
+            "datasource": "ecommerce_db",
+            "table": "orders",
+            "column": "avg_order_value",
+            "expression": "AVG(order_total)",
+            "fields": {
+              "aggregation": "average",
+              "type": "measure"
+            }
           }
         },
-        "notes": "This call adds a measure to compute the average order value in the 'Orders' table of the 'Ecommerce' datasource."
+        "notes": "This call adds a measure to calculate the average order value using the 'order_total' column in the 'orders' table."
       },
       {
-        "user_query": "Define a measure to count the number of customers in the 'CRM' datasource.",
+        "user_query": "Define a measure to count the number of customers in the 'customer_data' table.",
         "arguments": {
           "measure": {
-            "datasource": "CRM",
-            "table": "Customers",
-            "column": "CustomerID",
-            "expression": "COUNT(CustomerID)",
-            "name": "Customer Count",
-            "description": "Counts the total number of unique customers in the 'Customers' table."
+            "datasource": "crm_db",
+            "table": "customer_data",
+            "column": "customer_count",
+            "expression": "COUNT(customer_id)",
+            "fields": {
+              "aggregation": "count",
+              "type": "measure"
+            }
           }
         },
-        "notes": "This call creates a measure to count the number of unique customers in the 'CRM' datasource."
+        "notes": "This call creates a measure to count the total number of customers based on the 'customer_id' column in the 'customer_data' table."
       }
     ]
   },
@@ -80,28 +86,26 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What dimensions are available for the SalesData datasource?",
+        "user_query": "What dimensions are available for the 'SalesData' datasource?",
         "arguments": {
-          "datasource": "SalesData",
-          "ds_full_name": null
+          "datasource": "SalesData"
         },
-        "notes": "This call retrieves the saved filter dimensions for the datasource identified as 'SalesData'. Use this when you know the datasource title but not the full name."
+        "notes": "This call retrieves the saved filter dimensions for the 'SalesData' datasource. Use this when you need to understand the available dimensions for filtering or analysis."
       },
       {
-        "user_query": "Can you list the dimensions for the datasource hosted at localhost/MyModel?",
+        "user_query": "I need the dimensions for the datasource hosted at 'localhost/FinanceModel'.",
         "arguments": {
-          "datasource": null,
-          "ds_full_name": "localhost/MyModel"
+          "ds_full_name": "localhost/FinanceModel"
         },
-        "notes": "This call fetches dimensions for the datasource using its full name 'localhost/MyModel'. Use this when the full name is available and preferred for identification."
+        "notes": "This call fetches dimensions for the datasource identified by its full name 'localhost/FinanceModel'. Use this when the full name is required to uniquely identify the datasource."
       },
       {
-        "user_query": "I need the dimensions for the datasource named 'MarketingAnalytics' hosted at localhost/MarketingModel.",
+        "user_query": "Can you provide dimensions for the 'MarketingAnalytics' datasource hosted at 'localhost/MarketingModel'?",
         "arguments": {
           "datasource": "MarketingAnalytics",
           "ds_full_name": "localhost/MarketingModel"
         },
-        "notes": "This call retrieves dimensions for the datasource using both its title ('MarketingAnalytics') and full name ('localhost/MarketingModel'). Use this when both identifiers are available for more precise querying."
+        "notes": "This call retrieves dimensions for the 'MarketingAnalytics' datasource while also specifying its full name 'localhost/MarketingModel'. Use this when both identifiers are available and needed for clarity."
       }
     ]
   },
@@ -125,26 +129,28 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What are the formula measures available for the SalesData datasource?",
+        "user_query": "What measures are available in the Sales datasource?",
         "arguments": {
-          "datasource": "SalesData"
+          "datasource": "Sales",
+          "ds_full_name": null
         },
-        "notes": "This retrieves all saved formula measures for the datasource identified as 'SalesData'. Useful for understanding the calculated fields in this specific datamodel."
+        "notes": "This call retrieves all saved formula measures for the 'Sales' datasource using its identifier."
       },
       {
-        "user_query": "Can you list the measures for the datasource hosted at localhost/MyModel?",
+        "user_query": "Can you show me the measures for the datasource hosted at localhost/MyModel?",
         "arguments": {
+          "datasource": null,
           "ds_full_name": "localhost/MyModel"
         },
-        "notes": "This fetches the formula measures for the datasource with the full name 'localhost/MyModel'. Use this when you know the full path to the datasource."
+        "notes": "This call fetches measures for the datasource using its full name 'localhost/MyModel'."
       },
       {
-        "user_query": "I need to see the measures for the datasource named 'FinanceModel' located at 'server123/FinanceModel'.",
+        "user_query": "I need to check the measures for the Marketing datasource hosted at localhost/MarketingModel.",
         "arguments": {
-          "datasource": "FinanceModel",
-          "ds_full_name": "server123/FinanceModel"
+          "datasource": "Marketing",
+          "ds_full_name": "localhost/MarketingModel"
         },
-        "notes": "This retrieves formula measures for a datasource using both its identifier ('FinanceModel') and its full name ('server123/FinanceModel'). Providing both parameters can help ensure the correct datasource is queried."
+        "notes": "This call retrieves measures for the 'Marketing' datasource using both its identifier and full name."
       }
     ]
   },
@@ -159,19 +165,19 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What datasources can I access in Sisense?",
+        "user_query": "What datasources can I access in my Sisense environment?",
         "arguments": {},
-        "notes": "This call retrieves a list of all datasources visible to the authenticated user. Useful for understanding available data connections."
+        "notes": "This call retrieves a list of all datasources visible to the authenticated user. Use it to get an overview of available data connections."
       },
       {
-        "user_query": "Show me all the datasources I have permission to view.",
+        "user_query": "Show me all the datasources I can use to build dashboards.",
         "arguments": {},
-        "notes": "This call returns all datasources the user is authorized to see. Ideal for auditing or exploring data access."
+        "notes": "This call is useful for identifying datasources you have permission to access, which can then be used for creating or updating dashboards."
       },
       {
-        "user_query": "List all datasources available in the system for my account.",
+        "user_query": "List all available datasources for my account.",
         "arguments": {},
-        "notes": "This retrieves the full list of datasources accessible to the current user. Helpful for identifying data sources for dashboard creation."
+        "notes": "This call provides a complete list of datasources accessible to the current user, helping to ensure you are aware of all available data connections."
       }
     ]
   },
@@ -193,54 +199,34 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Fetch all metadata related to the 'sales_dashboard' dataset.",
+        "user_query": "Retrieve metadata for the 'sales_dashboard' object.",
         "arguments": {
           "query_payload": {
-            "filters": [
-              {
-                "field": "dataset",
-                "operator": "equals",
-                "value": "sales_dashboard"
-              }
-            ]
+            "objectType": "dashboard",
+            "objectId": "sales_dashboard"
           }
         },
-        "notes": "This query retrieves metadata for the 'sales_dashboard' dataset, including fields, relationships, and other relevant details."
+        "notes": "This call retrieves metadata for the specified dashboard object, identified by its ID."
       },
       {
-        "user_query": "Find all widgets created by user 'john.doe' in the last 30 days.",
+        "user_query": "Fetch metadata for all widgets in the 'finance_dashboard'.",
         "arguments": {
           "query_payload": {
-            "filters": [
-              {
-                "field": "creator",
-                "operator": "equals",
-                "value": "john.doe"
-              },
-              {
-                "field": "created_at",
-                "operator": "greater_than",
-                "value": "2023-09-01T00:00:00Z"
-              }
-            ]
+            "objectType": "widget",
+            "parentObjectId": "finance_dashboard"
           }
         },
-        "notes": "This query identifies all widgets created by the user 'john.doe' within the specified time range."
+        "notes": "This call retrieves metadata for all widgets associated with the specified dashboard."
       },
       {
-        "user_query": "List all metadata entries where the field type is 'date'.",
+        "user_query": "Get metadata for the 'customer_data_model' data model.",
         "arguments": {
           "query_payload": {
-            "filters": [
-              {
-                "field": "type",
-                "operator": "equals",
-                "value": "date"
-              }
-            ]
+            "objectType": "data_model",
+            "objectId": "customer_data_model"
           }
         },
-        "notes": "This query returns all metadata entries with a field type of 'date', which can be useful for identifying date-related fields across datasets."
+        "notes": "This call retrieves metadata for the specified data model, useful for understanding its structure and properties."
       }
     ]
   }

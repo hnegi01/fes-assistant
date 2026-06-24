@@ -21,21 +21,21 @@
         "arguments": {
           "dashboard_id": "12345abcde"
         },
-        "notes": "This checks if the current user can own the dashboard with the specified ID. Useful for determining ownership eligibility before attempting to transfer ownership."
+        "notes": "This checks if the dashboard with the specified ID can be owned by the current user. Useful for determining ownership eligibility before attempting to claim it."
       },
       {
         "user_query": "Am I allowed to own the dashboard with ID '67890fghij'?",
         "arguments": {
           "dashboard_id": "67890fghij"
         },
-        "notes": "This verifies whether the user has the necessary permissions to own the dashboard. Use this to validate ownership rules for a specific dashboard."
+        "notes": "This verifies whether the user has the ability to own the dashboard with the given ID. Typically used in workflows involving dashboard ownership changes."
       },
       {
-        "user_query": "Is it possible for me to own the dashboard 'abcdef12345'?",
+        "user_query": "Is it possible for me to own the dashboard with ID 'abc123xyz'?",
         "arguments": {
-          "dashboard_id": "abcdef12345"
+          "dashboard_id": "abc123xyz"
         },
-        "notes": "This call determines if the current user can take ownership of the dashboard identified by the given ID. Ideal for scenarios where ownership transfer is being considered."
+        "notes": "This call determines if the current user can take ownership of the specified dashboard. Useful for validating permissions before proceeding with ownership transfer."
       }
     ]
   },
@@ -57,25 +57,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I export the definition of the Sales Performance dashboard?",
+        "user_query": "How can I export the definition of the sales dashboard?",
         "arguments": {
-          "dashboard_id": "5f3a8b9c2e8b4a001c8d1234"
+          "dashboard_id": "5f7d3b2e4c8b9a0012345678"
         },
-        "notes": "This call retrieves the full definition of the 'Sales Performance' dashboard, including its widgets, layout, and filters."
+        "notes": "This call exports the definition of the dashboard with the ID '5f7d3b2e4c8b9a0012345678', which might represent a sales dashboard. Use this to retrieve the dashboard's structure and configuration."
       },
       {
-        "user_query": "I need to back up the Marketing Overview dashboard. How do I export it?",
+        "user_query": "I need to back up the marketing dashboard configuration. How do I do that?",
         "arguments": {
-          "dashboard_id": "6a7b9c8d3f4e5a002d9e5678"
+          "dashboard_id": "6a8e4f9d5b7c2a0098765432"
         },
-        "notes": "This call exports the 'Marketing Overview' dashboard definition, which can be saved for backup or migration purposes."
+        "notes": "This call retrieves the definition of the dashboard with the ID '6a8e4f9d5b7c2a0098765432', which could be a marketing dashboard. This is useful for creating a backup of the dashboard's settings and layout."
       },
       {
-        "user_query": "Can I get the JSON definition for the Customer Insights dashboard?",
+        "user_query": "Can I get the layout and widgets of the executive overview dashboard?",
         "arguments": {
-          "dashboard_id": "7b8c9d0e1f2a3b004e5f6789"
+          "dashboard_id": "7b9f5c1d6e8a3b0043210987"
         },
-        "notes": "This call fetches the JSON definition of the 'Customer Insights' dashboard, useful for reviewing or modifying its structure programmatically."
+        "notes": "This call exports the definition of the dashboard with the ID '7b9f5c1d6e8a3b0043210987', potentially representing an executive overview dashboard. Use this to access details like widgets, layout, and filters."
       }
     ]
   },
@@ -90,19 +90,19 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I get a list of all dashboards available on the Sisense server?",
+        "user_query": "How can I list all dashboards available on the Sisense server?",
         "arguments": {},
-        "notes": "This call retrieves all dashboards currently available on the Sisense server. Use it to fetch an overview of all dashboards for further analysis or management."
+        "notes": "This call retrieves all dashboards accessible to the user, including their metadata."
       },
       {
-        "user_query": "I need to see all dashboards to check which ones are active.",
+        "user_query": "I need to fetch all dashboards to review their configurations.",
         "arguments": {},
-        "notes": "This call provides a complete list of dashboards. It is useful for auditing or reviewing the available dashboards on the server."
+        "notes": "Use this to get a complete list of dashboards for auditing or configuration review purposes."
       },
       {
-        "user_query": "Can I get all dashboards to display them in a custom application?",
+        "user_query": "Can I get a list of all dashboards owned by me?",
         "arguments": {},
-        "notes": "This call retrieves all dashboards, which can then be integrated into a custom application for display or further processing."
+        "notes": "This retrieves all dashboards, including those owned by the user, using the admin endpoint."
       }
     ]
   },
@@ -124,25 +124,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Can you fetch the dashboard with ID 'sales_dashboard_2023'?",
+        "user_query": "How can I retrieve the dashboard with ID '5f7d3a2e4b8c9a0012345678'?",
         "arguments": {
-          "dashboard_id": "sales_dashboard_2023"
+          "dashboard_id": "5f7d3a2e4b8c9a0012345678"
         },
-        "notes": "This retrieves the details of the dashboard with the ID 'sales_dashboard_2023'. Use this to access specific dashboard information for reporting or analysis."
+        "notes": "This call retrieves the dashboard with the specified ID. Use this when you need details about a specific dashboard."
       },
       {
-        "user_query": "I need to get the dashboard details for the marketing team. The ID is 'marketing_q4_dashboard'.",
+        "user_query": "I need to fetch the dashboard with the ID '63a1b2c3d4e5f67890123456'. How do I do that?",
         "arguments": {
-          "dashboard_id": "marketing_q4_dashboard"
+          "dashboard_id": "63a1b2c3d4e5f67890123456"
         },
-        "notes": "This call fetches the dashboard with the ID 'marketing_q4_dashboard'. Ideal for retrieving dashboards used by specific teams or departments."
+        "notes": "This retrieves the dashboard corresponding to the given ID. Useful for accessing dashboard metadata or verifying its existence."
       },
       {
-        "user_query": "What are the details of the dashboard with ID 'finance_overview_001'?",
+        "user_query": "Can you get me the dashboard with ID '7e8f9a0b1c2d3e4f56789012'?",
         "arguments": {
-          "dashboard_id": "finance_overview_001"
+          "dashboard_id": "7e8f9a0b1c2d3e4f56789012"
         },
-        "notes": "This retrieves the dashboard identified by 'finance_overview_001'. Useful for accessing financial overview dashboards for review or updates."
+        "notes": "This call fetches the dashboard identified by the provided ID. Ideal for retrieving specific dashboards for review or updates."
       }
     ]
   },
@@ -164,25 +164,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Can you fetch the dashboard named 'Sales Overview'?",
+        "user_query": "Find the dashboard named 'Sales Performance Overview'.",
         "arguments": {
-          "dashboard_name": "Sales Overview"
+          "dashboard_name": "Sales Performance Overview"
         },
-        "notes": "This retrieves the 'Sales Overview' dashboard, which might contain key metrics and visualizations for sales performance."
+        "notes": "This retrieves the dashboard titled 'Sales Performance Overview', typically used to analyze sales KPIs and trends."
       },
       {
-        "user_query": "I need to find the dashboard called 'Marketing Performance'.",
+        "user_query": "Get the dashboard called 'Marketing Campaign Analysis'.",
         "arguments": {
-          "dashboard_name": "Marketing Performance"
+          "dashboard_name": "Marketing Campaign Analysis"
         },
-        "notes": "This call fetches the 'Marketing Performance' dashboard, which could include analytics related to marketing campaigns and performance metrics."
+        "notes": "Use this to fetch the 'Marketing Campaign Analysis' dashboard, which might contain insights on campaign performance and ROI."
       },
       {
-        "user_query": "Get the dashboard titled 'Executive Summary'.",
+        "user_query": "Retrieve the dashboard with the name 'Executive Summary'.",
         "arguments": {
           "dashboard_name": "Executive Summary"
         },
-        "notes": "This retrieves the 'Executive Summary' dashboard, often used for high-level reporting and insights for executives."
+        "notes": "This call is useful for accessing the 'Executive Summary' dashboard, often used for high-level business reporting."
       }
     ]
   },
@@ -211,18 +211,18 @@
         "notes": "This retrieves all widget definitions from the 'Sales Overview' dashboard using its title as a reference."
       },
       {
-        "user_query": "Can you list the widgets for the dashboard with ID '63f2a1b4c9e3470012345678'?",
+        "user_query": "Can you list the widgets in the dashboard with ID '63a9f0ea7bb9805e7e5e1f7c'?",
         "arguments": {
-          "dashboard_ref": "63f2a1b4c9e3470012345678"
+          "dashboard_ref": "63a9f0ea7bb9805e7e5e1f7c"
         },
         "notes": "This fetches widget definitions from the dashboard identified by its unique 24-character ID."
       },
       {
-        "user_query": "I need to check the widgets in the dashboard named 'Marketing Performance'.",
+        "user_query": "I need to check the widgets in the 'Marketing Performance' dashboard. Can you help?",
         "arguments": {
           "dashboard_ref": "Marketing Performance"
         },
-        "notes": "Use this to retrieve widget details from the 'Marketing Performance' dashboard by specifying its title."
+        "notes": "This retrieves widget definitions from the 'Marketing Performance' dashboard using its title as the reference."
       }
     ]
   },
@@ -252,24 +252,24 @@
             "title"
           ]
         },
-        "notes": "This call retrieves only the 'oid' and 'title' fields for dashboards visible to the authenticated user. Use this to quickly fetch basic identifiers for dashboards."
+        "notes": "This call retrieves only the 'oid' and 'title' fields for dashboards visible to the authenticated user. Use this to get a concise list of dashboard identifiers and names."
       },
       {
-        "user_query": "Get all details for dashboards shared with me.",
-        "arguments": {
-          "fields": []
-        },
-        "notes": "When the 'fields' parameter is omitted or an empty array is provided, all available fields for the dashboards are returned. Use this to access comprehensive dashboard details."
-      },
-      {
-        "user_query": "I need the titles and owners of dashboards I can access.",
+        "user_query": "I need to see all dashboards shared with me, including their owners and titles.",
         "arguments": {
           "fields": [
             "title",
             "owner"
           ]
         },
-        "notes": "This call retrieves only the 'title' and 'owner' fields for dashboards visible to the authenticated user. Use this to focus on ownership and naming details."
+        "notes": "This call fetches the 'title' and 'owner' fields for dashboards accessible to the user. Useful for understanding who owns the dashboards shared with you."
+      },
+      {
+        "user_query": "Get all available details for dashboards I can access.",
+        "arguments": {
+          "fields": []
+        },
+        "notes": "This call retrieves all fields for dashboards visible to the authenticated user. Use this when you need comprehensive dashboard details without filtering specific fields."
       }
     ]
   },
@@ -296,28 +296,28 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I move the sales dashboard to the marketing folder?",
+        "user_query": "How can I move the 'Sales Overview' dashboard into the 'Q4 Reports' folder?",
         "arguments": {
           "dashboard_id": "dashboard_12345",
           "folder_id": "folder_67890"
         },
-        "notes": "This moves the dashboard with ID 'dashboard_12345' into the folder with ID 'folder_67890', which is the marketing folder."
+        "notes": "This moves the 'Sales Overview' dashboard into the 'Q4 Reports' folder. Use this when reorganizing dashboards into specific folders."
       },
       {
-        "user_query": "I need to organize my dashboards. Can you help me move the 'Finance Overview' dashboard to the 'Q4 Reports' folder?",
+        "user_query": "I need to transfer the 'Marketing Performance' dashboard to the 'Archived Dashboards' folder. How do I do that?",
         "arguments": {
-          "dashboard_id": "finance_overview_001",
-          "folder_id": "q4_reports_2023"
+          "dashboard_id": "dashboard_54321",
+          "folder_id": "folder_09876"
         },
-        "notes": "This operation relocates the 'Finance Overview' dashboard to the 'Q4 Reports' folder for better organization."
+        "notes": "This transfers the 'Marketing Performance' dashboard to the 'Archived Dashboards' folder. Useful for archiving older dashboards."
       },
       {
-        "user_query": "Can I move the 'Customer Insights' dashboard to the 'Archived Dashboards' folder?",
+        "user_query": "Can I move the 'Executive Summary' dashboard to the 'Leadership Reports' folder?",
         "arguments": {
-          "dashboard_id": "customer_insights_789",
-          "folder_id": "archived_dashboards_456"
+          "dashboard_id": "dashboard_11223",
+          "folder_id": "folder_44556"
         },
-        "notes": "This moves the 'Customer Insights' dashboard into the 'Archived Dashboards' folder, typically used for storing older dashboards."
+        "notes": "This action relocates the 'Executive Summary' dashboard into the 'Leadership Reports' folder. Ideal for organizing dashboards by audience."
       }
     ]
   },
@@ -347,31 +347,31 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Publish the sales dashboard to make the latest updates available.",
+        "user_query": "Publish the dashboard with ID 'dashboard_12345'.",
         "arguments": {
-          "dashboard_id": "sales_dashboard_123",
+          "dashboard_id": "dashboard_12345",
           "admin_access": true,
           "force": false
         },
-        "notes": "This call republishes the 'sales_dashboard_123' dashboard with admin access enabled. Use this when you want to publish updates without forcing changes."
+        "notes": "This call republishes the specified dashboard with admin access enabled. Use this when the caller has access but is not the owner."
       },
       {
-        "user_query": "Force publish the marketing dashboard after script updates.",
+        "user_query": "Force publish the dashboard 'sales_dashboard_2023' after script updates.",
         "arguments": {
-          "dashboard_id": "marketing_dashboard_456",
+          "dashboard_id": "sales_dashboard_2023",
           "admin_access": true,
           "force": true
         },
-        "notes": "This call republishes the 'marketing_dashboard_456' dashboard with admin access and forces the update. Use this when changes need to be applied after script modifications."
+        "notes": "This call forces the republishing of the dashboard, typically used after updates to scripts or configurations."
       },
       {
-        "user_query": "Republish the finance dashboard without admin access.",
+        "user_query": "Republish the dashboard 'marketing_dashboard' without admin access.",
         "arguments": {
-          "dashboard_id": "finance_dashboard_789",
+          "dashboard_id": "marketing_dashboard",
           "admin_access": false,
           "force": false
         },
-        "notes": "This call republishes the 'finance_dashboard_789' dashboard without admin access. Use this when the caller has sufficient permissions and no forced updates are required."
+        "notes": "This call republishes the dashboard without admin access. Use this when the caller is the owner or already has sufficient permissions."
       }
     ]
   },
@@ -398,28 +398,28 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I rename the Sales Overview dashboard to Q1 Sales Overview?",
+        "user_query": "How do I rename the sales dashboard to 'Q3 Sales Performance'?",
         "arguments": {
-          "dashboard_id": "5f7d3a2b6e7a4c001f3e8b9c",
-          "title": "Q1 Sales Overview"
+          "dashboard_id": "62f1a2b3c4d5e6f7890abc12",
+          "title": "Q3 Sales Performance"
         },
-        "notes": "This call renames the dashboard with ID '5f7d3a2b6e7a4c001f3e8b9c' to 'Q1 Sales Overview'. Use this when you want to update the title of an existing dashboard."
+        "notes": "This renames the dashboard with the specified ID to 'Q3 Sales Performance'. Use this when updating the title to reflect a new reporting period or focus."
       },
       {
-        "user_query": "I need to change the title of the Marketing Performance dashboard to Monthly Marketing Metrics.",
+        "user_query": "Can I change the name of the 'Marketing Overview' dashboard to '2023 Marketing Strategy'?",
         "arguments": {
-          "dashboard_id": "63a9f0ea7b8e4d0021c4d5a1",
-          "title": "Monthly Marketing Metrics"
+          "dashboard_id": "5e4d3c2b1a0f987654321abc",
+          "title": "2023 Marketing Strategy"
         },
-        "notes": "This call updates the title of the dashboard with ID '63a9f0ea7b8e4d0021c4d5a1' to 'Monthly Marketing Metrics'. Useful for keeping dashboard titles aligned with reporting periods."
+        "notes": "This updates the title of the 'Marketing Overview' dashboard to '2023 Marketing Strategy'. Useful for aligning dashboard names with updated organizational goals."
       },
       {
-        "user_query": "Can I rename the Customer Insights dashboard to Customer Analytics?",
+        "user_query": "I need to rename the 'Executive Summary' dashboard to 'Monthly Executive Summary'. How can I do that?",
         "arguments": {
-          "dashboard_id": "7e2b4c9f8a6d4f0032b7e1d5",
-          "title": "Customer Analytics"
+          "dashboard_id": "abc123def456ghi789jkl012",
+          "title": "Monthly Executive Summary"
         },
-        "notes": "This call changes the name of the dashboard with ID '7e2b4c9f8a6d4f0032b7e1d5' to 'Customer Analytics'. Ideal for rebranding or clarifying the purpose of a dashboard."
+        "notes": "This renames the 'Executive Summary' dashboard to 'Monthly Executive Summary'. Ideal for clarifying the dashboard's purpose or frequency."
       }
     ]
   },
@@ -445,21 +445,21 @@
         "arguments": {
           "dashboard_ref": "Sales Overview"
         },
-        "notes": "This resolves the dashboard reference 'Sales Overview' to its corresponding ID and title. Use this when you know the dashboard name but need its ID."
+        "notes": "This resolves the dashboard name 'Sales Overview' to its corresponding ID and title. Use this when you know the dashboard name but need its ID."
       },
       {
-        "user_query": "Can you find the dashboard with the ID '5f7d3a2b4e8b9c0012345678'?",
+        "user_query": "Can you find the dashboard with the ID '5f8d04b2c9a123456789abcd'?",
         "arguments": {
-          "dashboard_ref": "5f7d3a2b4e8b9c0012345678"
+          "dashboard_ref": "5f8d04b2c9a123456789abcd"
         },
-        "notes": "This resolves the dashboard reference '5f7d3a2b4e8b9c0012345678' to its corresponding ID and title. Use this when you already have the dashboard ID but want to confirm its existence and retrieve its title."
+        "notes": "This resolves the dashboard ID '5f8d04b2c9a123456789abcd' to its corresponding title. Use this when you have the ID but want to confirm its title."
       },
       {
-        "user_query": "I need the details of a dashboard called 'Monthly Performance Report'.",
+        "user_query": "I need the details for the dashboard called 'Marketing Performance'.",
         "arguments": {
-          "dashboard_ref": "Monthly Performance Report"
+          "dashboard_ref": "Marketing Performance"
         },
-        "notes": "This resolves the dashboard reference 'Monthly Performance Report' to its corresponding ID and title. Use this when you know the dashboard name but need its details."
+        "notes": "This resolves the dashboard name 'Marketing Performance' to its ID and title. Use this when you know the dashboard name but need its metadata."
       }
     ]
   }

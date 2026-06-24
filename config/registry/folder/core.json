@@ -21,27 +21,27 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Create a folder named 'Sales Reports' under the 'Q4 2023' folder.",
+        "user_query": "Create a folder named 'Sales Reports' under the '2023 Reports' folder.",
         "arguments": {
           "name": "Sales Reports",
-          "parent_id": "645f3a2b9d2e4b1a8c7e1234"
+          "parent_id": "63f2b8c9e4b0a3d2f8e4a123"
         },
-        "notes": "This creates a new folder called 'Sales Reports' as a subfolder of the folder with OID '645f3a2b9d2e4b1a8c7e1234'."
+        "notes": "This creates a new folder called 'Sales Reports' as a subfolder of the folder with OID '63f2b8c9e4b0a3d2f8e4a123'."
       },
       {
-        "user_query": "Add a new root-level folder named 'Marketing Materials'.",
+        "user_query": "Add a new root-level folder called 'Marketing Materials'.",
         "arguments": {
           "name": "Marketing Materials"
         },
-        "notes": "This creates a new folder called 'Marketing Materials' at the root level since no parent_id is provided."
+        "notes": "This creates a new folder named 'Marketing Materials' at the root level since no parent_id is provided."
       },
       {
-        "user_query": "Create a folder named 'Archived Data' under the '2022 Archives' folder.",
+        "user_query": "Create a folder named 'Q4 Analysis' inside the folder with ID '64a1c7e1e4b0b9f3d9f5b456'.",
         "arguments": {
-          "name": "Archived Data",
-          "parent_id": "63a9f1e8c2b3456d9f8e5678"
+          "name": "Q4 Analysis",
+          "parent_id": "64a1c7e1e4b0b9f3d9f5b456"
         },
-        "notes": "This creates a new folder called 'Archived Data' as a subfolder of the folder with OID '63a9f1e8c2b3456d9f8e5678'."
+        "notes": "This creates a new folder named 'Q4 Analysis' under the folder with OID '64a1c7e1e4b0b9f3d9f5b456'."
       }
     ]
   },
@@ -67,21 +67,21 @@
         "arguments": {
           "folder_id": "12345abcde"
         },
-        "notes": "This call deletes the folder with the specified OID. Ensure the folder is empty or meets Sisense's deletion rules before calling this method."
+        "notes": "This call deletes the folder with the specified OID. Ensure the folder is empty or meets the Sisense server's deletion criteria."
       },
       {
-        "user_query": "I need to remove an unused folder with the ID '67890fghij'. How do I do that?",
+        "user_query": "I need to remove an old folder with the ID '67890fghij'. How do I do that?",
         "arguments": {
           "folder_id": "67890fghij"
         },
-        "notes": "Use this call to delete the folder identified by the given OID. Verify that the folder is not in use or contains no critical data."
+        "notes": "Use this to delete the folder identified by the given OID. Verify that the folder is deletable before making this call."
       },
       {
-        "user_query": "Can you help me delete the folder with OID 'abc123xyz' from the system?",
+        "user_query": "Can you help me delete the folder with OID 'abc123xyz'?",
         "arguments": {
           "folder_id": "abc123xyz"
         },
-        "notes": "This operation removes the folder with the specified OID. Make sure the folder complies with Sisense's deletion requirements before proceeding."
+        "notes": "This operation deletes the specified folder. Make sure the folder is empty or satisfies the deletion rules enforced by Sisense."
       }
     ]
   },
@@ -96,19 +96,19 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I get the entire folder structure in Sisense?",
+        "user_query": "Show me the entire folder structure for organizing dashboards.",
         "arguments": {},
-        "notes": "This retrieves the full folder hierarchy, including nested folders and dashboards, to understand the current organization of content."
+        "notes": "This retrieves the full folder hierarchy, including nested folders and dashboards, to help visualize the organization of content in Sisense."
       },
       {
-        "user_query": "I need to fetch all folders and dashboards for a backup process. How do I do that?",
+        "user_query": "I need to fetch all folders to check where a specific dashboard is located.",
         "arguments": {},
-        "notes": "Use this call to obtain the complete folder tree, which can be useful for creating a backup or exporting the folder structure."
+        "notes": "Use this to get a complete list of folders and their nested contents, which can help locate dashboards within the folder structure."
       },
       {
-        "user_query": "Can I see the nested folder structure for dashboards in Sisense?",
+        "user_query": "How can I get a list of all root-level folders and their subfolders?",
         "arguments": {},
-        "notes": "This call provides a detailed view of the folder hierarchy, including subfolders and associated dashboards, for organizational purposes."
+        "notes": "This call provides a detailed tree of all folders, starting from the root level, and includes any nested folders and dashboards."
       }
     ]
   },
@@ -130,25 +130,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What are the ancestor folders for the 'sales_data' structure?",
+        "user_query": "What are the ancestor folders for the 'SalesData' structure?",
         "arguments": {
-          "structure": "sales_data"
+          "structure": "SalesData"
         },
-        "notes": "This retrieves all ancestor folders for the 'sales_data' structure, useful for understanding the hierarchy of folders related to sales data."
+        "notes": "This call retrieves all ancestor folders for the 'SalesData' structure, which can be useful for understanding the folder hierarchy."
       },
       {
-        "user_query": "Can you show me the folder hierarchy for the 'marketing_campaigns' structure?",
+        "user_query": "Can you show me the parent folders for the 'MarketingReports' structure?",
         "arguments": {
-          "structure": "marketing_campaigns"
+          "structure": "MarketingReports"
         },
-        "notes": "This call fetches ancestor folders for the 'marketing_campaigns' structure, helping to visualize the folder organization for marketing-related assets."
+        "notes": "Use this call to fetch the hierarchy of folders leading up to the 'MarketingReports' structure, helping to locate related folders."
       },
       {
-        "user_query": "I need the folder hierarchy for the 'finance_reports' structure to verify permissions.",
+        "user_query": "I need to find the folder hierarchy for the 'FinanceDocs' structure.",
         "arguments": {
-          "structure": "finance_reports"
+          "structure": "FinanceDocs"
         },
-        "notes": "This retrieves ancestor folders for the 'finance_reports' structure, useful for auditing folder permissions and understanding the hierarchy."
+        "notes": "This call is helpful for identifying the ancestor folders associated with the 'FinanceDocs' structure, aiding in navigation or organization."
       }
     ]
   },
@@ -170,25 +170,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Can you fetch the folder with ID '12345abc'?",
+        "user_query": "How can I retrieve the details of the folder with ID '12345abcde'?",
         "arguments": {
-          "folder_id": "12345abc"
+          "folder_id": "12345abcde"
         },
-        "notes": "This retrieves metadata for the folder with the specified OID. Use this to access folder details for further processing or validation."
+        "notes": "This call retrieves metadata for the folder with the specified OID. Use it to fetch details like folder name, permissions, and contents."
       },
       {
-        "user_query": "I need details about the folder with ID '67890xyz'.",
+        "user_query": "I need to check the metadata of the folder with ID '67890fghij'. How do I do that?",
         "arguments": {
-          "folder_id": "67890xyz"
+          "folder_id": "67890fghij"
         },
-        "notes": "This call fetches the folder metadata for the given OID. Useful for checking folder properties or confirming its existence."
+        "notes": "This call is useful for verifying folder properties or ensuring the folder exists before performing other operations."
       },
       {
-        "user_query": "What are the details of the folder with ID 'folder123'?",
+        "user_query": "Can you get the folder information for the folder ID 'abcdef12345'?",
         "arguments": {
-          "folder_id": "folder123"
+          "folder_id": "abcdef12345"
         },
-        "notes": "Use this to retrieve the folder metadata by its unique identifier. Ideal for scenarios where folder-specific information is required."
+        "notes": "This retrieves the folder's metadata, which can include details like its creation date, owner, and associated dashboards."
       }
     ]
   },
@@ -212,19 +212,19 @@
         "arguments": {
           "structure": "flat"
         },
-        "notes": "This retrieves all folders in a flat list format, which is useful for workflows that do not require hierarchical organization."
+        "notes": "This retrieves all folders in a flat list format, which is useful for simpler workflows or pre-migration scenarios."
       },
       {
-        "user_query": "Can I see the folder hierarchy for better organization?",
+        "user_query": "Can I see the folder hierarchy as a tree?",
         "arguments": {
           "structure": "tree"
         },
-        "notes": "This retrieves folders in a hierarchical tree structure, which is helpful for understanding parent-child relationships between folders."
+        "notes": "This retrieves folders in a hierarchical tree structure, which is helpful for visualizing nested relationships between folders."
       },
       {
-        "user_query": "What folders are available if I don't specify a structure?",
+        "user_query": "What folders exist in the default structure?",
         "arguments": {},
-        "notes": "This retrieves folders using the default 'flat' structure, as no specific structure parameter is provided."
+        "notes": "This retrieves folders using the default 'flat' structure since no specific structure parameter is provided."
       }
     ]
   },
@@ -241,17 +241,17 @@
       {
         "user_query": "Can you show me the navigation tree for our Sisense folders?",
         "arguments": {},
-        "notes": "This call retrieves the full navigation tree structure for Sisense folders, useful for understanding the folder hierarchy."
+        "notes": "This call retrieves the entire navigation tree structure (navver payload) for the Sisense folders. Useful for understanding the folder hierarchy."
       },
       {
-        "user_query": "I need to check the folder hierarchy in Sisense for organizing dashboards.",
+        "user_query": "I need to check the folder structure in Sisense for troubleshooting purposes.",
         "arguments": {},
-        "notes": "Use this call to fetch the navigation tree, which includes the folder hierarchy, to plan dashboard organization."
+        "notes": "Use this call to fetch the navigation tree, which can help identify issues or confirm the folder hierarchy during troubleshooting."
       },
       {
-        "user_query": "How can I get the folder structure in Sisense for auditing purposes?",
+        "user_query": "How can I get the folder hierarchy from Sisense?",
         "arguments": {},
-        "notes": "This call provides the navigation tree, which is helpful for auditing and reviewing the folder structure in Sisense."
+        "notes": "This call provides the folder hierarchy in Sisense, allowing users to analyze or document the structure of their navigation tree."
       }
     ]
   },
@@ -290,7 +290,7 @@
           "folder_id": "12345abcde",
           "name": "Sales Reports"
         },
-        "notes": "This call updates the name of the folder with ID '12345abcde' to 'Sales Reports'."
+        "notes": "This call updates the folder's display name to 'Sales Reports' while leaving its parent folder and owner unchanged."
       },
       {
         "user_query": "I need to move the folder '67890fghij' under a new parent folder with ID '11223klmno'. How can I do that?",
@@ -298,15 +298,15 @@
           "folder_id": "67890fghij",
           "parent_id": "11223klmno"
         },
-        "notes": "This call moves the folder with ID '67890fghij' to a new parent folder with ID '11223klmno'."
+        "notes": "This call moves the folder to a new parent folder without changing its name or owner."
       },
       {
-        "user_query": "How do I transfer ownership of the folder 'abcdef1234' to the user with ID 'user5678xyz'?",
+        "user_query": "How do I transfer ownership of the folder 'abcdef12345' to the user with ID 'user67890xyz'?",
         "arguments": {
-          "folder_id": "abcdef1234",
-          "owner": "user5678xyz"
+          "folder_id": "abcdef12345",
+          "owner": "user67890xyz"
         },
-        "notes": "This call changes the owner of the folder with ID 'abcdef1234' to the user with ID 'user5678xyz'."
+        "notes": "This call assigns a new owner to the folder while keeping its name and parent folder unchanged."
       }
     ]
   }

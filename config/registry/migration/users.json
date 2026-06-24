@@ -15,7 +15,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I migrate all users from the source environment to the target environment and track the progress?",
+        "user_query": "How can I migrate all users from the source environment to the target environment and track progress?",
         "arguments": {
           "emit": {
             "type": "progress",
@@ -23,23 +23,23 @@
             "message": "Fetching users from the source environment"
           }
         },
-        "notes": "This call migrates all eligible users from the source environment to the target environment and uses the 'emit' callback to track progress at each step."
+        "notes": "This call migrates all eligible users from the source to the target environment and uses the emit callback to track progress at each step."
       },
       {
-        "user_query": "I need to migrate users but don't want to handle progress events. How can I do that?",
+        "user_query": "I want to migrate users but don't need progress updates. How can I do that?",
         "arguments": {},
-        "notes": "This call migrates all eligible users without emitting progress events. Use this when you only need the final result."
+        "notes": "This call migrates all eligible users without emitting progress events. Use this when you only need the final migration result."
       },
       {
-        "user_query": "Can I monitor warnings and errors during the user migration process?",
+        "user_query": "Can I monitor detailed progress while migrating users to ensure everything is working correctly?",
         "arguments": {
           "emit": {
-            "type": "warning",
-            "step": "mapping_roles",
-            "message": "Some roles could not be mapped to the target environment"
+            "type": "progress",
+            "step": "submit_payload",
+            "message": "Submitting bulk payload to the target environment"
           }
         },
-        "notes": "This call migrates users and uses the 'emit' callback to capture warnings and errors, such as unmapped roles or groups."
+        "notes": "This call migrates users and provides detailed progress updates, including when the bulk payload is submitted to the target environment."
       }
     ]
   },
@@ -65,34 +65,35 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Migrate the users 'john.doe' and 'jane.smith' to the target environment.",
+        "user_query": "Migrate the users john.doe@example.com and jane.smith@example.com to the target environment.",
         "arguments": {
           "user_name_list": [
-            "john.doe",
-            "jane.smith"
+            "john.doe@example.com",
+            "jane.smith@example.com"
           ]
         },
-        "notes": "This call migrates the specified users from the source environment to the target environment. Use this when you need to move specific users and their associated data."
+        "notes": "This call migrates the specified users from the source environment to the target environment, ensuring their roles and group memberships are mapped correctly."
       },
       {
-        "user_query": "Transfer the users 'admin.user', 'data.analyst', and 'report.viewer' to the new environment.",
+        "user_query": "Transfer the users admin@example.com and support@example.com to the new Sisense instance.",
         "arguments": {
           "user_name_list": [
-            "admin.user",
-            "data.analyst",
-            "report.viewer"
+            "admin@example.com",
+            "support@example.com"
           ]
         },
-        "notes": "This operation is useful for migrating a group of users to a new environment, ensuring their roles and permissions are preserved."
+        "notes": "Use this call when moving administrative and support users to a new Sisense environment while preserving their configurations."
       },
       {
-        "user_query": "Migrate the user 'team.lead' to the target environment.",
+        "user_query": "Migrate the users sales.team@example.com, marketing.lead@example.com, and hr.manager@example.com to the target environment.",
         "arguments": {
           "user_name_list": [
-            "team.lead"
+            "sales.team@example.com",
+            "marketing.lead@example.com",
+            "hr.manager@example.com"
           ]
         },
-        "notes": "This call is ideal for migrating a single user, such as a team lead, to the target environment while maintaining their configurations."
+        "notes": "This operation is ideal for migrating multiple department leads to the target environment in one batch."
       }
     ]
   }

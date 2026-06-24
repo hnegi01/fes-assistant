@@ -24,17 +24,17 @@
             "Sales Overview"
           ]
         },
-        "notes": "This call analyzes the structure of the 'Sales Overview' dashboard, identifying widget counts and jump-to-dashboard instances."
+        "notes": "This call analyzes the structure of the 'Sales Overview' dashboard, counting widget types and identifying child dashboards."
       },
       {
-        "user_query": "Check the structure of dashboards with IDs 'dashboard_123' and 'dashboard_456'.",
+        "user_query": "Check the structure of dashboards with IDs 'dashboard123' and 'dashboard456'.",
         "arguments": {
           "dashboards": [
-            "dashboard_123",
-            "dashboard_456"
+            "dashboard123",
+            "dashboard456"
           ]
         },
-        "notes": "This call processes two dashboards by their IDs, providing insights into their structure and complexity."
+        "notes": "This call processes two dashboards by their IDs, providing insights into widget counts and jump-to-dashboard relationships."
       },
       {
         "user_query": "Analyze the complexity of the dashboard named 'Marketing Performance'.",
@@ -43,7 +43,7 @@
             "Marketing Performance"
           ]
         },
-        "notes": "This call evaluates the 'Marketing Performance' dashboard, counting widgets and identifying child dashboards linked via jump-to-dashboard functionality."
+        "notes": "This call evaluates the 'Marketing Performance' dashboard for widget counts and child dashboard references, useful for understanding its structure."
       }
     ]
   },
@@ -66,33 +66,33 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How many widgets are on the 'Sales Overview' dashboard?",
+        "user_query": "How many widgets are on the dashboards 'Sales Overview' and 'Marketing Performance'?",
         "arguments": {
           "dashboards": [
-            "Sales Overview"
+            "Sales Overview",
+            "Marketing Performance"
           ]
         },
-        "notes": "This call analyzes the 'Sales Overview' dashboard by its title and returns the widget count."
+        "notes": "This call analyzes the widget counts for the dashboards titled 'Sales Overview' and 'Marketing Performance'. Use this when you need a quick summary of widget counts for specific dashboards by title."
       },
       {
-        "user_query": "Can you check the widget counts for dashboards with IDs '12345' and '67890'?",
+        "user_query": "Can you check the widget count for the dashboard with ID 'dashboard_12345'?",
         "arguments": {
           "dashboards": [
-            "12345",
-            "67890"
+            "dashboard_12345"
           ]
         },
-        "notes": "This call retrieves widget counts for two dashboards using their Sisense IDs."
+        "notes": "This call retrieves the widget count for the dashboard identified by the Sisense dashboard ID 'dashboard_12345'. Use this when you know the dashboard ID and want to analyze its widget count."
       },
       {
-        "user_query": "I need a summary of widget counts for the 'Marketing Performance' dashboard and the dashboard with ID '54321'.",
+        "user_query": "I need to know the widget counts for dashboards 'dashboard_67890' and 'Executive Summary'.",
         "arguments": {
           "dashboards": [
-            "Marketing Performance",
-            "54321"
+            "dashboard_67890",
+            "Executive Summary"
           ]
         },
-        "notes": "This call processes one dashboard by title and another by ID, providing a summary of widget counts for both."
+        "notes": "This call computes widget counts for a mix of dashboard references: one by ID ('dashboard_67890') and one by title ('Executive Summary'). Use this when you have a combination of IDs and titles to analyze."
       }
     ]
   },
@@ -119,35 +119,37 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Find pivot widgets with too many fields on the 'Sales Overview' dashboard.",
+        "user_query": "Find pivot widgets with too many fields on the Sales and Marketing dashboards.",
         "arguments": {
           "dashboards": [
-            "Sales Overview"
+            "Sales Dashboard",
+            "Marketing Dashboard"
           ],
           "max_fields": 25
         },
-        "notes": "This call analyzes the 'Sales Overview' dashboard and identifies pivot widgets with more than 25 fields."
+        "notes": "This call analyzes the 'Sales Dashboard' and 'Marketing Dashboard' to identify pivot widgets with more than 25 fields. Use this to ensure widgets remain manageable and performant."
       },
       {
-        "user_query": "Check all pivot widgets on dashboards 'Finance Dashboard' and 'HR Analytics' for excessive fields.",
+        "user_query": "Check all pivot widgets on dashboard ID '12345' for excessive fields.",
         "arguments": {
           "dashboards": [
-            "Finance Dashboard",
-            "HR Analytics"
+            "12345"
           ],
           "max_fields": 20
         },
-        "notes": "This call scans the 'Finance Dashboard' and 'HR Analytics' dashboards for pivot widgets with more than 20 fields, which is the default threshold."
+        "notes": "This call checks the dashboard with ID '12345' for pivot widgets that exceed the default threshold of 20 fields. Useful for auditing a specific dashboard by its ID."
       },
       {
-        "user_query": "Analyze pivot widgets on dashboard ID '5f3a8b2c9d1e4a0012345678' and report those with over 30 fields.",
+        "user_query": "Audit pivot widgets on multiple dashboards for field counts above 30.",
         "arguments": {
           "dashboards": [
-            "5f3a8b2c9d1e4a0012345678"
+            "Finance Dashboard",
+            "Operations Dashboard",
+            "HR Dashboard"
           ],
           "max_fields": 30
         },
-        "notes": "This call targets a specific dashboard by its ID and identifies pivot widgets with more than 30 fields."
+        "notes": "This call reviews the 'Finance Dashboard', 'Operations Dashboard', and 'HR Dashboard' for pivot widgets with more than 30 fields. Ideal for a broader audit across multiple dashboards."
       }
     ]
   }

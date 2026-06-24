@@ -25,46 +25,56 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Share the 'SalesAnalytics' DataModel with the sales team and give them edit permissions.",
+        "user_query": "How can I give edit access to the Sales team and read access to John Doe for the 'Revenue Analysis' data model?",
         "arguments": {
-          "datamodel_name": "SalesAnalytics",
+          "datamodel_name": "Revenue Analysis",
           "shares": [
             {
-              "name": "SalesTeam",
+              "name": "Sales Team",
               "type": "group",
               "permission": "EDIT"
-            }
-          ]
-        },
-        "notes": "This call adds a share entry for the 'SalesTeam' group to the 'SalesAnalytics' DataModel with edit permissions."
-      },
-      {
-        "user_query": "Grant read access to the 'MarketingDashboard' DataModel for the user 'jdoe'.",
-        "arguments": {
-          "datamodel_name": "MarketingDashboard",
-          "shares": [
+            },
             {
-              "name": "jdoe",
+              "name": "john.doe@example.com",
               "type": "user",
               "permission": "READ"
             }
           ]
         },
-        "notes": "This call adds a share entry for the user 'jdoe' to the 'MarketingDashboard' DataModel with read permissions."
+        "notes": "This call adds edit access for the Sales team and read access for John Doe to the 'Revenue Analysis' data model."
       },
       {
-        "user_query": "Allow the 'AnalyticsTeam' group to use the 'CustomerInsights' DataModel.",
+        "user_query": "I need to grant usage permissions to the Marketing group for the 'Customer Insights' data model.",
         "arguments": {
-          "datamodel_name": "CustomerInsights",
+          "datamodel_name": "Customer Insights",
           "shares": [
             {
-              "name": "AnalyticsTeam",
+              "name": "Marketing",
               "type": "group",
               "permission": "USE"
             }
           ]
         },
-        "notes": "This call adds a share entry for the 'AnalyticsTeam' group to the 'CustomerInsights' DataModel with use permissions."
+        "notes": "This call grants usage permissions to the Marketing group for the 'Customer Insights' data model."
+      },
+      {
+        "user_query": "Can I add both read access for Jane Smith and edit access for the Admin group to the 'Product Performance' data model?",
+        "arguments": {
+          "datamodel_name": "Product Performance",
+          "shares": [
+            {
+              "name": "jane.smith@example.com",
+              "type": "user",
+              "permission": "READ"
+            },
+            {
+              "name": "Admin Group",
+              "type": "group",
+              "permission": "EDIT"
+            }
+          ]
+        },
+        "notes": "This call adds read access for Jane Smith and edit access for the Admin group to the 'Product Performance' data model."
       }
     ]
   },
@@ -86,25 +96,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Who has access to the Sales DataModel?",
+        "user_query": "Who has access to the 'Sales_Analytics' data model?",
         "arguments": {
-          "datamodel_name": "Sales"
+          "datamodel_name": "Sales_Analytics"
         },
-        "notes": "Retrieves all users and groups that have access to the 'Sales' DataModel, along with their permissions."
+        "notes": "Retrieves all users and groups with access to the 'Sales_Analytics' data model, including their permission levels."
       },
       {
-        "user_query": "Can you list the shares for the MarketingAnalytics DataModel?",
+        "user_query": "List all shares for the 'Marketing_Performance' data model.",
         "arguments": {
-          "datamodel_name": "MarketingAnalytics"
+          "datamodel_name": "Marketing_Performance"
         },
-        "notes": "Fetches a detailed list of all share entries for the 'MarketingAnalytics' DataModel, including users and groups."
+        "notes": "Returns a detailed list of users and groups who can access the 'Marketing_Performance' data model, along with their permissions."
       },
       {
-        "user_query": "I need to see who has permissions for the FinanceModel.",
+        "user_query": "Can you show me the sharing details for the 'Customer_Segmentation' model?",
         "arguments": {
-          "datamodel_name": "FinanceModel"
+          "datamodel_name": "Customer_Segmentation"
         },
-        "notes": "Provides a flat list of all parties (users and groups) with their permissions for the 'FinanceModel' DataModel."
+        "notes": "Provides a breakdown of all share entries for the 'Customer_Segmentation' data model, including resolved user/group names and permission levels."
       }
     ]
   }

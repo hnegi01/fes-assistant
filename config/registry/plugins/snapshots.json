@@ -21,43 +21,43 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "I want to restore the plugins to the state they were in last week. How can I do that?",
+        "user_query": "Restore the plugin configuration to match the snapshot we saved earlier.",
         "arguments": {
           "snapshot": {
             "plugins": [
               "data_connector_v2",
-              "custom_viz_pack",
-              "advanced_filters"
+              "custom_theme_manager",
+              "audit_logger"
             ]
           },
           "bulk": true
         },
-        "notes": "This call restores the plugin states to match the provided snapshot, enabling 'data_connector_v2', 'custom_viz_pack', and 'advanced_filters' while disabling all other plugins. Changes are sent in a single PATCH request for efficiency."
+        "notes": "This call restores the plugin state to match the provided snapshot, enabling 'data_connector_v2', 'custom_theme_manager', and 'audit_logger' while disabling all other plugins. Changes are sent in a single PATCH request for efficiency."
       },
       {
-        "user_query": "I need to restore a snapshot of plugins, but I want to send individual requests for each plugin change. How do I do that?",
+        "user_query": "Apply a snapshot to enable only the 'geo_visualization' plugin and disable everything else, but send changes one at a time.",
         "arguments": {
           "snapshot": {
             "plugins": [
-              "geo_mapping_tool",
-              "kpi_dashboard"
+              "geo_visualization"
             ]
           },
           "bulk": false
         },
-        "notes": "This call restores the plugin states to match the provided snapshot, enabling 'geo_mapping_tool' and 'kpi_dashboard' while disabling all other plugins. Each plugin change is sent as a separate PATCH request, which can be useful for debugging or tracking individual changes."
+        "notes": "This call enables the 'geo_visualization' plugin and disables all others, sending one PATCH request per plugin change. Use this mode if you need granular control or error handling for each change."
       },
       {
-        "user_query": "How can I apply a snapshot to enable only the 'user_activity_tracker' plugin and disable everything else?",
+        "user_query": "Revert the plugins to a snapshot that includes 'data_exporter' and 'advanced_charts', ensuring all other plugins are turned off.",
         "arguments": {
           "snapshot": {
             "plugins": [
-              "user_activity_tracker"
+              "data_exporter",
+              "advanced_charts"
             ]
           },
           "bulk": true
         },
-        "notes": "This call enables only the 'user_activity_tracker' plugin and disables all others, using a single PATCH request for all changes. This is useful for quickly switching to a minimal plugin configuration."
+        "notes": "This call restores the plugin state to enable 'data_exporter' and 'advanced_charts' while disabling all other plugins. Changes are sent in a single PATCH request for faster execution."
       }
     ]
   },
@@ -72,19 +72,19 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I save the current state of enabled plugins as a snapshot?",
+        "user_query": "How can I save the current state of enabled plugins so I can restore it later?",
         "arguments": {},
-        "notes": "This call captures the current state of all enabled plugins and returns a snapshot that can be used to restore this configuration later."
+        "notes": "This call captures the current enable/disable state of all plugins as a snapshot. Use this when you want to save the current plugin configuration for future restoration."
       },
       {
-        "user_query": "I want to back up the current plugin configuration before making changes. How do I do that?",
+        "user_query": "I need to back up the current plugin configuration before making changes. How do I do that?",
         "arguments": {},
-        "notes": "This call creates a snapshot of the current plugin enable/disable state, which can be stored and used to revert changes if needed."
+        "notes": "This call creates a snapshot of the current plugin state. It's useful for creating a backup before enabling or disabling plugins."
       },
       {
-        "user_query": "Can I save the current list of active plugins for future reference?",
+        "user_query": "Can I save the current plugin setup to ensure I can revert to it later if needed?",
         "arguments": {},
-        "notes": "This call generates a snapshot of all currently enabled plugins, including a timestamp, which can be useful for auditing or rollback purposes."
+        "notes": "This call saves the current state of enabled plugins. Use it to ensure you can revert to the same configuration after making changes."
       }
     ]
   }

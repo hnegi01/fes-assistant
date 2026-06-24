@@ -25,51 +25,61 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I share the Sales Dashboard with the sales team and give them view access?",
+        "user_query": "How can I give view access to a dashboard for a specific user and a group?",
         "arguments": {
-          "dashboard_id": "dashboard_12345",
+          "dashboard_id": "63f2c9e4b8a4e2001d3f9a23",
           "shares": [
             {
-              "name": "sales_team",
+              "name": "john.doe@example.com",
+              "type": "user",
+              "rule": "view"
+            },
+            {
+              "name": "sales-team",
               "type": "group",
               "rule": "view"
             }
           ]
         },
-        "notes": "This call shares the Sales Dashboard with the 'sales_team' group, granting them view-only access."
+        "notes": "This call adds view access for a user and a group to the specified dashboard. Use this when you want to share a dashboard with new users or groups."
       },
       {
-        "user_query": "I need to give John Doe edit access to the Marketing Dashboard. How can I do that?",
+        "user_query": "I need to update a user's access level on a dashboard from view to edit. How can I do that?",
         "arguments": {
-          "dashboard_id": "dashboard_67890",
+          "dashboard_id": "63f2c9e4b8a4e2001d3f9a23",
           "shares": [
             {
-              "name": "john.doe",
+              "name": "jane.smith@example.com",
               "type": "user",
               "rule": "edit"
             }
           ]
         },
-        "notes": "This call grants John Doe edit access to the Marketing Dashboard."
+        "notes": "This call updates the access level for a specific user on the given dashboard. Use this when you need to modify an existing share's permissions."
       },
       {
-        "user_query": "Can I share the Operations Dashboard with both the operations team and Jane Smith, giving them different access levels?",
+        "user_query": "How do I share a dashboard with multiple users and groups, giving some edit access and others view access?",
         "arguments": {
-          "dashboard_id": "dashboard_11223",
+          "dashboard_id": "63f2c9e4b8a4e2001d3f9a23",
           "shares": [
             {
-              "name": "operations_team",
+              "name": "alice.wonderland@example.com",
+              "type": "user",
+              "rule": "edit"
+            },
+            {
+              "name": "engineering-team",
               "type": "group",
               "rule": "view"
             },
             {
-              "name": "jane.smith",
+              "name": "bob.builder@example.com",
               "type": "user",
-              "rule": "edit"
+              "rule": "view"
             }
           ]
         },
-        "notes": "This call shares the Operations Dashboard with the 'operations_team' group (view access) and Jane Smith (edit access)."
+        "notes": "This call shares the dashboard with multiple users and groups, assigning different access levels. Use this when you need to set up complex sharing rules for a dashboard."
       }
     ]
   },
@@ -95,21 +105,21 @@
         "arguments": {
           "dashboard_name": "Sales Overview"
         },
-        "notes": "Retrieves the list of users and groups that have access to the 'Sales Overview' dashboard. Use this to audit or review sharing permissions."
+        "notes": "This retrieves the share details for the 'Sales Overview' dashboard, including users and groups with access."
       },
       {
-        "user_query": "Can you show me the sharing details for the 'Marketing Performance' dashboard?",
+        "user_query": "Can you show me the sharing settings for the 'Marketing Performance' dashboard?",
         "arguments": {
           "dashboard_name": "Marketing Performance"
         },
-        "notes": "Fetches the sharing details for the 'Marketing Performance' dashboard, including users and groups with access. Useful for understanding who can view this dashboard."
+        "notes": "This call fetches the sharing information for the 'Marketing Performance' dashboard, listing all users and groups with access."
       },
       {
-        "user_query": "I need to check the sharing settings for the 'Executive Summary' dashboard.",
+        "user_query": "I need to check who can view the 'Executive Summary' dashboard.",
         "arguments": {
           "dashboard_name": "Executive Summary"
         },
-        "notes": "Provides the sharing information for the 'Executive Summary' dashboard. This is helpful for verifying or troubleshooting access permissions."
+        "notes": "Use this to get a list of users and groups that have access to the 'Executive Summary' dashboard."
       }
     ]
   },
@@ -137,26 +147,26 @@
       {
         "user_query": "Who has access to the sales performance dashboard?",
         "arguments": {
-          "dashboard_id": "5f7d3a2b9c8e4a0012345678",
+          "dashboard_id": "5f7d3a2b8e4b0c0012345678",
           "admin_access": true
         },
-        "notes": "This retrieves the share details for the 'sales performance' dashboard, including users and groups with access. Admin access is enabled to include all details."
+        "notes": "This retrieves the share details for the 'Sales Performance' dashboard, including users and groups with access. Admin access is enabled to include all relevant details."
       },
       {
-        "user_query": "Can you show me the sharing settings for the marketing overview dashboard?",
+        "user_query": "Can you show me the share settings for the marketing overview dashboard without admin access?",
         "arguments": {
-          "dashboard_id": "63a9f0ea7b8c4b0012345678",
+          "dashboard_id": "63a9f0ea7b8c9d0012345678",
           "admin_access": false
         },
-        "notes": "This retrieves the share details for the 'marketing overview' dashboard without admin-level access, showing only the user's accessible share information."
+        "notes": "This retrieves the share details for the 'Marketing Overview' dashboard, but without admin access, so the response may exclude some administrative details."
       },
       {
-        "user_query": "I need to verify who owns the executive summary dashboard and who it is shared with.",
+        "user_query": "I need to verify the sharing configuration for the executive summary dashboard.",
         "arguments": {
-          "dashboard_id": "4e5f6a7b8c9d0e0012345678",
+          "dashboard_id": "7e4b2c3d9f0a6b0012345678",
           "admin_access": true
         },
-        "notes": "This retrieves the share details for the 'executive summary' dashboard, including ownership and all sharing details, with admin access enabled."
+        "notes": "This retrieves the share details for the 'Executive Summary' dashboard with admin access enabled, ensuring all sharing configurations are visible."
       }
     ]
   }

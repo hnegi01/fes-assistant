@@ -48,42 +48,40 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I schedule a daily build for the SalesData model at 2:30 AM UTC?",
+        "user_query": "How can I schedule a full build for the 'SalesDataModel' to run every Monday at 3:00 UTC?",
         "arguments": {
-          "datamodel_name": "SalesData",
+          "datamodel_name": "SalesDataModel",
+          "build_type": "FULL",
+          "days": [
+            "MON"
+          ],
+          "hour": 3,
+          "minute": 0
+        },
+        "notes": "This call schedules a full build of the 'SalesDataModel' to run every Monday at 3:00 AM UTC using a cron-based schedule."
+      },
+      {
+        "user_query": "I need to set up an interval-based build for 'MarketingAnalytics' to run every 2 days and 6 hours. How can I do that?",
+        "arguments": {
+          "datamodel_name": "MarketingAnalytics",
           "build_type": "ACCUMULATE",
+          "interval_days": 2,
+          "interval_hours": 6
+        },
+        "notes": "This call creates an interval-based schedule for the 'MarketingAnalytics' DataModel to build every 2 days and 6 hours. The build type defaults to 'ACCUMULATE'."
+      },
+      {
+        "user_query": "Can I create a schema changes build for 'FinanceModel' to run daily at 12:30 UTC?",
+        "arguments": {
+          "datamodel_name": "FinanceModel",
+          "build_type": "SCHEMA_CHANGES",
           "days": [
             "*"
           ],
-          "hour": 2,
+          "hour": 12,
           "minute": 30
         },
-        "notes": "This schedules a daily build for the 'SalesData' DataModel at 2:30 AM UTC using the default 'ACCUMULATE' build type."
-      },
-      {
-        "user_query": "I need to set up a full build for the InventoryModel every Monday and Thursday at 6:00 AM UTC.",
-        "arguments": {
-          "datamodel_name": "InventoryModel",
-          "build_type": "FULL",
-          "days": [
-            "MON",
-            "THU"
-          ],
-          "hour": 6,
-          "minute": 0
-        },
-        "notes": "This schedules a full build for the 'InventoryModel' DataModel to run every Monday and Thursday at 6:00 AM UTC."
-      },
-      {
-        "user_query": "Can I schedule an interval-based build for the MarketingData model every 3 days and 4 hours?",
-        "arguments": {
-          "datamodel_name": "MarketingData",
-          "build_type": "SCHEMA_CHANGES",
-          "interval_days": 3,
-          "interval_hours": 4,
-          "interval_minutes": 0
-        },
-        "notes": "This schedules a build for the 'MarketingData' DataModel to run every 3 days and 4 hours, using the 'SCHEMA_CHANGES' build type."
+        "notes": "This call schedules a schema changes build for the 'FinanceModel' to run daily at 12:30 PM UTC using a cron-based schedule."
       }
     ]
   },
@@ -98,19 +96,19 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I see all the dashboards shared with users and groups in my organization?",
+        "user_query": "Show me all the dashboards and who they are shared with.",
         "arguments": {},
-        "notes": "This call retrieves a list of all dashboards shared within the organization, including details about the users and groups they are shared with."
+        "notes": "This retrieves a list of all dashboards along with details of the users and groups they are shared with. Useful for auditing dashboard sharing settings."
       },
       {
-        "user_query": "I need to audit all shared dashboards and their associated user and group permissions. How do I do that?",
+        "user_query": "I need to see which groups have access to our dashboards.",
         "arguments": {},
-        "notes": "Use this call to get a comprehensive list of all shared dashboards along with the user and group details for auditing purposes."
+        "notes": "This call fetches all dashboards and includes group sharing details, making it helpful for understanding group-level access."
       },
       {
-        "user_query": "Can I get a list of all dashboards and who they are shared with for compliance reporting?",
+        "user_query": "Can I get a list of all users who have access to our dashboards?",
         "arguments": {},
-        "notes": "This call provides the necessary data for compliance reporting by listing all shared dashboards and their associated user and group shares."
+        "notes": "This retrieves all dashboards and their associated user sharing details, which is useful for reviewing individual user access."
       }
     ]
   }

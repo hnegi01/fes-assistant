@@ -17,25 +17,25 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How do I delete the custom Blox action for exporting dashboard data?",
+        "user_query": "How can I remove a custom Blox action called 'export_to_csv' from my Sisense instance?",
         "arguments": {
-          "action_type": "export_dashboard_data"
+          "action_type": "export_to_csv"
         },
-        "notes": "This call deletes the custom Blox action identified by 'export_dashboard_data'. Use this if the action is no longer needed or needs to be replaced."
+        "notes": "This call deletes the 'export_to_csv' custom Blox action from the Sisense instance. Use this when the action is no longer needed or requires replacement."
       },
       {
-        "user_query": "I need to remove the Blox action for sending email notifications. How can I do that?",
+        "user_query": "I need to delete the 'send_email_notification' Blox action. How do I do that?",
         "arguments": {
           "action_type": "send_email_notification"
         },
-        "notes": "This call removes the custom Blox action with the type 'send_email_notification'. Use this to clean up unused or outdated actions."
+        "notes": "This call removes the 'send_email_notification' custom Blox action. Use this to clean up unused or outdated actions."
       },
       {
-        "user_query": "Can I delete the Blox action for generating PDF reports?",
+        "user_query": "Can I delete the 'generate_pdf_report' action from Sisense?",
         "arguments": {
           "action_type": "generate_pdf_report"
         },
-        "notes": "This call deletes the custom Blox action identified as 'generate_pdf_report'. Use this if the action is obsolete or causing issues."
+        "notes": "This call deletes the 'generate_pdf_report' custom Blox action. Use this when the action is no longer relevant or needs to be replaced."
       }
     ]
   },
@@ -52,17 +52,17 @@
       {
         "user_query": "What custom Blox actions are available in my Sisense instance?",
         "arguments": {},
-        "notes": "This call retrieves all custom Blox actions configured in the Sisense instance. Use it to review available actions for automation or customization."
+        "notes": "This call retrieves all custom Blox actions configured in the Sisense instance. Use this to review available actions for dashboards or widgets."
       },
       {
-        "user_query": "Can I get a list of all custom actions created for Blox?",
+        "user_query": "Can you list all the custom actions defined for Blox?",
         "arguments": {},
-        "notes": "This call provides a list of all custom Blox actions. Useful for administrators managing or auditing Blox configurations."
+        "notes": "This call fetches a list of all custom Blox actions. Useful for administrators managing Blox configurations."
       },
       {
-        "user_query": "Show me the custom Blox actions I can use for my dashboards.",
+        "user_query": "Show me the custom Blox actions I can use for my widgets.",
         "arguments": {},
-        "notes": "This call fetches all custom Blox actions, which can be integrated into dashboards for enhanced functionality."
+        "notes": "This call provides a list of custom Blox actions that can be applied to widgets or dashboards in Sisense."
       }
     ]
   },
@@ -84,55 +84,55 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I save a new custom action for my dashboard filters?",
+        "user_query": "How can I save a new custom action for my dashboard's export button?",
         "arguments": {
           "action": {
-            "name": "ApplyFilterAction",
-            "type": "filter",
-            "description": "Applies a predefined filter to the dashboard.",
+            "name": "ExportDashboardAction",
+            "type": "custom",
             "payload": {
-              "filterId": "12345",
-              "dashboardId": "67890"
+              "dashboardId": "dashboard_12345",
+              "actionType": "export",
+              "format": "PDF"
             }
           }
         },
-        "notes": "This call saves a custom action named 'ApplyFilterAction' that applies a specific filter to a dashboard. Use this to streamline repetitive filtering tasks."
+        "notes": "This saves a custom action that allows exporting a specific dashboard to PDF format."
       },
       {
-        "user_query": "I want to create a custom action to export dashboard data to a CSV file. How can I do that?",
+        "user_query": "I want to create a custom action that triggers a webhook when a widget is updated. How do I do that?",
         "arguments": {
           "action": {
-            "name": "ExportToCSV",
-            "type": "export",
-            "description": "Exports dashboard data to a CSV file.",
+            "name": "WidgetUpdateWebhook",
+            "type": "custom",
             "payload": {
-              "dashboardId": "54321",
-              "fileFormat": "csv",
-              "includeFilters": true
+              "widgetId": "widget_67890",
+              "actionType": "webhook",
+              "url": "https://example.com/webhook",
+              "method": "POST"
             }
           }
         },
-        "notes": "This call creates a custom action named 'ExportToCSV' that allows users to export data from a specific dashboard to a CSV file. Useful for sharing data externally."
+        "notes": "This creates a custom action that triggers a POST request to a specified webhook URL whenever the specified widget is updated."
       },
       {
-        "user_query": "Can I save a custom action to send an email notification when a widget is updated?",
+        "user_query": "Can I define a custom action to send an email notification when a data alert is triggered?",
         "arguments": {
           "action": {
-            "name": "NotifyOnWidgetUpdate",
-            "type": "notification",
-            "description": "Sends an email notification when a widget is updated.",
+            "name": "DataAlertEmailNotification",
+            "type": "custom",
             "payload": {
-              "widgetId": "98765",
-              "emailRecipients": [
-                "user1@example.com",
-                "user2@example.com"
+              "alertId": "alert_54321",
+              "actionType": "email",
+              "recipients": [
+                "user@example.com",
+                "admin@example.com"
               ],
-              "subject": "Widget Update Notification",
-              "message": "The widget has been updated. Please review the changes."
+              "subject": "Data Alert Triggered",
+              "body": "The data alert has been triggered. Please review the details."
             }
           }
         },
-        "notes": "This call saves a custom action named 'NotifyOnWidgetUpdate' that sends an email notification to specified recipients whenever a particular widget is updated. Ideal for keeping stakeholders informed."
+        "notes": "This defines a custom action that sends an email notification to specified recipients when a specific data alert is triggered."
       }
     ]
   }

@@ -27,29 +27,42 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I add a script to the dashboard with ID 'dashboard123'?",
+        "user_query": "How can I add a custom script to my sales dashboard to modify its behavior?",
         "arguments": {
-          "dashboard_id": "dashboard123",
-          "script": "{\"onLoad\": \"function() { console.log('Dashboard loaded'); }\"}",
-          "executing_user": "admin_user"
+          "dashboard_id": "dashboard_12345",
+          "script": {
+            "type": "raw",
+            "content": "function customBehavior() { console.log('Custom script executed'); }"
+          },
+          "executing_user": "admin@sisense.com"
         },
-        "notes": "This call adds a JavaScript script to the dashboard with ID 'dashboard123', temporarily changing ownership to 'admin_user' if necessary."
+        "notes": "This call adds a custom JavaScript function to the sales dashboard, allowing for tailored behavior. Use this when you need to enhance dashboard functionality."
       },
       {
-        "user_query": "I need to overwrite the script on dashboard 'sales_dashboard' with a new one. How do I do that?",
+        "user_query": "I need to overwrite the script on the marketing dashboard with a new JSON payload.",
         "arguments": {
-          "dashboard_id": "sales_dashboard",
-          "script": "\"\"\"function onLoad() { alert('Welcome to the Sales Dashboard!'); }\"\"\""
+          "dashboard_id": "dashboard_67890",
+          "script": {
+            "type": "json",
+            "content": "{\"functionName\": \"updateChart\", \"code\": \"function updateChart() { /* logic here */ }\"}"
+          },
+          "executing_user": "marketing.manager@sisense.com"
         },
-        "notes": "This call overwrites the existing script on the 'sales_dashboard' dashboard with a new script. Ownership change is not required since 'executing_user' is omitted."
+        "notes": "This call replaces the existing script on the marketing dashboard with a new JSON-formatted script. Use this when updating or replacing scripts programmatically."
       },
       {
-        "user_query": "Can I add a script to the dashboard 'marketing_dashboard' without specifying an executing user?",
+        "user_query": "Can I add a pre-built script payload to the finance dashboard without changing ownership?",
         "arguments": {
-          "dashboard_id": "marketing_dashboard",
-          "script": "{\"onLoad\": \"function() { console.log('Marketing dashboard initialized'); }\"}"
+          "dashboard_id": "dashboard_54321",
+          "script": {
+            "type": "payload",
+            "content": {
+              "functionName": "calculateTotals",
+              "code": "function calculateTotals() { /* logic for totals */ }"
+            }
+          }
         },
-        "notes": "This call adds a script to the 'marketing_dashboard' dashboard. Since 'executing_user' is not provided, the API assumes the dashboard owner is the same as the API user."
+        "notes": "This call adds a pre-built script payload to the finance dashboard. Use this when you already have a structured script object ready for deployment."
       }
     ]
   },
@@ -86,34 +99,44 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I add a custom script to the sales widget in my dashboard?",
+        "user_query": "How can I add a custom JavaScript script to a widget in my sales dashboard?",
         "arguments": {
           "dashboard_id": "dashboard_12345",
           "widget_id": "widget_67890",
-          "script": "function customizeWidget() { console.log('Custom script executed'); }",
-          "executing_user": "admin_user"
+          "script": {
+            "code": "console.log('Widget script executed');"
+          },
+          "executing_user": "admin@sisense.com"
         },
-        "notes": "This call adds a custom JavaScript script to the widget with ID 'widget_67890' in the dashboard 'dashboard_12345'. The 'executing_user' temporarily takes ownership to perform this action."
+        "notes": "This call adds a simple JavaScript logging script to a widget in the specified sales dashboard. It temporarily changes the dashboard ownership to the admin user to ensure the script can be added."
       },
       {
-        "user_query": "I need to overwrite the script for the revenue chart widget in the financial dashboard.",
+        "user_query": "I need to overwrite the script for a KPI widget in the marketing dashboard. How can I do that?",
         "arguments": {
-          "dashboard_id": "financial_dashboard_2023",
-          "widget_id": "revenue_chart_001",
-          "script": "function updateChart() { console.log('Revenue chart updated'); }",
-          "executing_user": "finance_manager"
+          "dashboard_id": "marketing_dashboard_001",
+          "widget_id": "kpi_widget_002",
+          "script": {
+            "code": "if (value > 100) { alert('High KPI value!'); }"
+          },
+          "executing_user": "marketing_lead@sisense.com"
         },
-        "notes": "This call overwrites the existing script for the widget 'revenue_chart_001' in the 'financial_dashboard_2023'. The 'finance_manager' user temporarily assumes ownership to make this change."
+        "notes": "This call overwrites the existing script for a KPI widget in the marketing dashboard. It uses a conditional JavaScript snippet to alert users when the KPI value exceeds 100."
       },
       {
-        "user_query": "Can I add a multi-line script to the KPI widget in the executive dashboard?",
+        "user_query": "Can I add a pre-built payload script to a widget in the executive summary dashboard?",
         "arguments": {
-          "dashboard_id": "exec_dashboard_001",
-          "widget_id": "kpi_widget_42",
-          "script": "function kpiUpdate() {\n    console.log('KPI updated');\n    alert('KPI script executed');\n}",
-          "executing_user": "executive_admin"
+          "dashboard_id": "exec_summary_2023",
+          "widget_id": "summary_widget_01",
+          "script": {
+            "type": "payload",
+            "data": {
+              "onLoad": "function() { console.log('Widget loaded'); }",
+              "onClick": "function() { alert('Widget clicked'); }"
+            }
+          },
+          "executing_user": "ceo@sisense.com"
         },
-        "notes": "This call adds a multi-line JavaScript script to the widget 'kpi_widget_42' in the 'exec_dashboard_001'. The 'executive_admin' user temporarily assumes ownership to perform this action."
+        "notes": "This call adds a pre-built payload script to a widget in the executive summary dashboard. The script includes both onLoad and onClick event handlers for enhanced interactivity."
       }
     ]
   },
@@ -135,25 +158,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I export the script for the sales dashboard?",
+        "user_query": "How can I get the script for the sales dashboard?",
         "arguments": {
           "dashboard_id": "sales_dashboard_2023"
         },
-        "notes": "This retrieves the script for the 'sales_dashboard_2023' dashboard, which can be used for rendering or exporting."
+        "notes": "This retrieves the script for the 'sales_dashboard_2023' dashboard, which can be used for exporting or rendering the dashboard content."
       },
       {
         "user_query": "I need the script for the marketing performance dashboard to include in a report. How do I get it?",
         "arguments": {
           "dashboard_id": "marketing_perf_dash"
         },
-        "notes": "This call fetches the script for the 'marketing_perf_dash' dashboard, enabling further use in reports or presentations."
+        "notes": "This call fetches the script for the 'marketing_perf_dash' dashboard, enabling you to include its content in reports or other outputs."
       },
       {
-        "user_query": "Can I get the script for the executive summary dashboard?",
+        "user_query": "Can I export the script for the executive summary dashboard?",
         "arguments": {
           "dashboard_id": "exec_summary_001"
         },
-        "notes": "This retrieves the script for the 'exec_summary_001' dashboard, useful for generating a formatted output or embedding elsewhere."
+        "notes": "This retrieves the script for the 'exec_summary_001' dashboard, which can be used for exporting or rendering the executive summary content."
       }
     ]
   },
@@ -180,28 +203,28 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I retrieve the script for the 'Sales Performance' widget in the 'Q3 Dashboard'?",
+        "user_query": "How can I get the script for the 'Sales Overview' widget in the 'Q3_Performance' dashboard?",
         "arguments": {
-          "dashboard_id": "dashboard_12345",
-          "widget_id": "widget_sales_perf"
+          "dashboard_id": "Q3_Performance",
+          "widget_id": "Sales_Overview"
         },
-        "notes": "This call retrieves the script content for the 'Sales Performance' widget in the 'Q3 Dashboard'. Use this when you need to access or render the widget's script programmatically."
+        "notes": "This retrieves the script content for the 'Sales Overview' widget in the 'Q3_Performance' dashboard, useful for customizing or analyzing widget behavior."
       },
       {
-        "user_query": "I need the script for the 'Customer Segmentation' widget in the 'Marketing Insights' dashboard.",
+        "user_query": "I need the script for the widget with ID 'Widget_12345' in the dashboard 'Annual_Report_2023'.",
         "arguments": {
-          "dashboard_id": "dashboard_67890",
-          "widget_id": "widget_cust_seg"
+          "dashboard_id": "Annual_Report_2023",
+          "widget_id": "Widget_12345"
         },
-        "notes": "This call extracts the script for the 'Customer Segmentation' widget in the 'Marketing Insights' dashboard. Useful for customizing or analyzing the widget's behavior."
+        "notes": "Use this call to fetch the script for a specific widget by its ID in the 'Annual_Report_2023' dashboard."
       },
       {
-        "user_query": "Can I get the script for the 'Revenue Trends' widget in the 'Annual Report' dashboard?",
+        "user_query": "Can I extract the script for the 'Revenue_Chart' widget from the 'Financial_Summary' dashboard?",
         "arguments": {
-          "dashboard_id": "dashboard_54321",
-          "widget_id": "widget_rev_trends"
+          "dashboard_id": "Financial_Summary",
+          "widget_id": "Revenue_Chart"
         },
-        "notes": "This call retrieves the script for the 'Revenue Trends' widget in the 'Annual Report' dashboard. Ideal for debugging or embedding the widget's functionality elsewhere."
+        "notes": "This call retrieves the script for the 'Revenue_Chart' widget in the 'Financial_Summary' dashboard, enabling further customization or integration."
       }
     ]
   }

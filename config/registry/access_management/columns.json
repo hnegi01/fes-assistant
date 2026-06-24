@@ -17,25 +17,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What are the columns available in the 'SalesAnalytics' DataModel?",
+        "user_query": "What columns are available in the 'SalesAnalytics' DataModel?",
         "arguments": {
           "datamodel_name": "SalesAnalytics"
         },
-        "notes": "This retrieves all columns from the 'SalesAnalytics' DataModel, including those from its datasets and tables."
+        "notes": "This call retrieves all columns from the 'SalesAnalytics' DataModel, including columns from its datasets and tables. Use this to explore the structure of the DataModel."
       },
       {
         "user_query": "Can you list the columns in the 'CustomerInsights' DataModel?",
         "arguments": {
           "datamodel_name": "CustomerInsights"
         },
-        "notes": "This call fetches the columns from the 'CustomerInsights' DataModel, providing details about its structure."
+        "notes": "This call gathers column information from the 'CustomerInsights' DataModel. Useful for understanding the data available for analysis in this model."
       },
       {
-        "user_query": "I need to see the column structure of the 'MarketingCampaigns' DataModel.",
+        "user_query": "I need to check the columns in the 'MarketingPerformance' DataModel for a report. Can you help?",
         "arguments": {
-          "datamodel_name": "MarketingCampaigns"
+          "datamodel_name": "MarketingPerformance"
         },
-        "notes": "Use this to get a detailed list of columns from the 'MarketingCampaigns' DataModel, useful for understanding its datasets and tables."
+        "notes": "This call extracts all columns from the 'MarketingPerformance' DataModel, enabling you to verify the data structure for reporting purposes."
       }
     ]
   },
@@ -57,25 +57,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Which columns in the SalesData DataModel are not being used in any dashboards?",
+        "user_query": "Which columns in the 'Sales_Analytics' DataModel are not being used in any dashboards?",
         "arguments": {
-          "datamodel_name": "SalesData"
+          "datamodel_name": "Sales_Analytics"
         },
-        "notes": "This call identifies all unused columns in the 'SalesData' DataModel by analyzing their usage in associated dashboards. Useful for cleaning up unused fields."
+        "notes": "This call checks the 'Sales_Analytics' DataModel and identifies columns that are not referenced in any associated dashboards. Useful for cleaning up unused fields."
       },
       {
-        "user_query": "Can you find the unused columns in the CustomerInsights DataModel?",
+        "user_query": "Can you find unused columns in the 'Customer_Insights' DataModel?",
         "arguments": {
-          "datamodel_name": "CustomerInsights"
+          "datamodel_name": "Customer_Insights"
         },
-        "notes": "This call checks the 'CustomerInsights' DataModel for columns that are not referenced in any dashboards. Ideal for optimizing the DataModel structure."
+        "notes": "This call analyzes the 'Customer_Insights' DataModel to determine which columns are not utilized in any dashboards. Ideal for optimizing the DataModel structure."
       },
       {
-        "user_query": "I need to know which columns in the MarketingAnalytics DataModel are not being utilized.",
+        "user_query": "I want to know if there are any unused columns in the 'Marketing_Performance' DataModel.",
         "arguments": {
-          "datamodel_name": "MarketingAnalytics"
+          "datamodel_name": "Marketing_Performance"
         },
-        "notes": "This call analyzes the 'MarketingAnalytics' DataModel to identify columns that are not used in any dashboards. Helps in identifying redundant fields."
+        "notes": "This call identifies unused columns in the 'Marketing_Performance' DataModel by comparing them against dashboard usage. Helps in maintaining a lean and efficient DataModel."
       }
     ]
   },
@@ -105,7 +105,7 @@
             "Marketing Analytics"
           ]
         },
-        "notes": "This call analyzes the unused columns in the 'Sales Data' and 'Marketing Analytics' data models by their titles."
+        "notes": "This call analyzes the 'Sales Data' and 'Marketing Analytics' data models to identify columns that are not being used."
       },
       {
         "user_query": "Find unused columns in the data model with ID 'dm_12345'.",
@@ -114,16 +114,18 @@
             "dm_12345"
           ]
         },
-        "notes": "This call analyzes the unused columns in the data model identified by the ID 'dm_12345'."
+        "notes": "This call checks the data model with ID 'dm_12345' for any unused columns. Useful when you know the specific ID of the data model."
       },
       {
-        "user_query": "Check for unused columns in the 'Customer Insights' data model.",
+        "user_query": "Run unused-column analysis on multiple data models: 'dm_67890', 'Customer Insights', and 'dm_54321'.",
         "arguments": {
           "datamodels": [
-            "Customer Insights"
+            "dm_67890",
+            "Customer Insights",
+            "dm_54321"
           ]
         },
-        "notes": "This call analyzes the unused columns in the 'Customer Insights' data model by its title."
+        "notes": "This call processes three data models—two by ID and one by title—to identify unused columns across all of them."
       }
     ]
   }

@@ -26,29 +26,29 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Fetch all data from the 'sales_data' table in the 'RetailAnalytics' DataModel.",
+        "user_query": "Fetch all rows from the 'sales_data' table in the 'ecommerce_model'.",
         "arguments": {
-          "datamodel_name": "RetailAnalytics",
+          "datamodel_name": "ecommerce_model",
           "table_name": "sales_data"
         },
-        "notes": "This retrieves all rows from the 'sales_data' table in the 'RetailAnalytics' DataModel without applying any filters."
+        "notes": "This call retrieves all rows from the 'sales_data' table without applying any filters. Use this when you need the complete dataset."
       },
       {
-        "user_query": "Get data from the 'customer_info' table in the 'CustomerInsights' DataModel where the customer is located in California.",
+        "user_query": "Get data from the 'customer_info' table in the 'crm_model' where the country is 'USA'.",
         "arguments": {
-          "datamodel_name": "CustomerInsights",
+          "datamodel_name": "crm_model",
           "table_name": "customer_info",
-          "query": "SELECT * FROM customer_info WHERE state = 'California'"
+          "query": "SELECT * FROM customer_info WHERE country = 'USA'"
         },
-        "notes": "This retrieves rows from the 'customer_info' table in the 'CustomerInsights' DataModel where the 'state' column has the value 'California'."
+        "notes": "This call retrieves rows from the 'customer_info' table filtered by the SQL query to include only customers from the USA. Use this for targeted data extraction."
       },
       {
-        "user_query": "Retrieve all records from the 'inventory' table in the 'WarehouseManagement' DataModel.",
+        "user_query": "Retrieve all rows from the 'inventory' table in the 'warehouse_model'.",
         "arguments": {
-          "datamodel_name": "WarehouseManagement",
+          "datamodel_name": "warehouse_model",
           "table_name": "inventory"
         },
-        "notes": "This fetches all data from the 'inventory' table in the 'WarehouseManagement' DataModel without any filtering."
+        "notes": "This call fetches all rows from the 'inventory' table in the 'warehouse_model'. Useful for analyzing the entire inventory dataset."
       }
     ]
   },
@@ -70,25 +70,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How many rows are in each table of the Sales DataModel?",
+        "user_query": "How many rows are in each table of the SalesData model?",
         "arguments": {
-          "datamodel_name": "Sales"
+          "datamodel_name": "SalesData"
         },
-        "notes": "This call retrieves the row count for all tables in the 'Sales' DataModel, including a total row count."
+        "notes": "This retrieves the row count for all tables in the 'SalesData' data model, useful for understanding the size of the dataset."
       },
       {
-        "user_query": "Can you give me the row counts for the tables in the Marketing DataModel?",
+        "user_query": "Can you give me the row counts for all tables in the CustomerAnalytics model?",
         "arguments": {
-          "datamodel_name": "Marketing"
+          "datamodel_name": "CustomerAnalytics"
         },
-        "notes": "Use this to get the row counts for each table in the 'Marketing' DataModel, useful for understanding table sizes."
+        "notes": "This call provides a breakdown of row counts for each table in the 'CustomerAnalytics' data model, helping to analyze its structure."
       },
       {
-        "user_query": "I need the row counts for the tables in the Finance DataModel for reporting purposes.",
+        "user_query": "I need to check the row counts for the tables in the InventoryTracking data model.",
         "arguments": {
-          "datamodel_name": "Finance"
+          "datamodel_name": "InventoryTracking"
         },
-        "notes": "This call is helpful for retrieving table row counts from the 'Finance' DataModel to include in reports or analyses."
+        "notes": "This is used to fetch the row counts for each table in the 'InventoryTracking' data model, which can assist in monitoring data growth."
       }
     ]
   }

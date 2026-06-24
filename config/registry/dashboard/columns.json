@@ -17,25 +17,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What columns are available in the 'Sales Overview' dashboard?",
+        "user_query": "What columns are used in the Sales Performance dashboard?",
         "arguments": {
-          "dashboard_name": "Sales Overview"
+          "dashboard_name": "Sales Performance"
         },
-        "notes": "This call retrieves all distinct columns from the 'Sales Overview' dashboard, including widget and filter-level columns. Use this to understand the data structure of the dashboard."
+        "notes": "This retrieves all columns referenced by the 'Sales Performance' dashboard, including those used in widgets and filters."
       },
       {
-        "user_query": "Can you list the columns in the 'Marketing Performance' dashboard?",
+        "user_query": "Can you list the columns in the Marketing Overview dashboard?",
         "arguments": {
-          "dashboard_name": "Marketing Performance"
+          "dashboard_name": "Marketing Overview"
         },
-        "notes": "This call fetches the columns from the 'Marketing Performance' dashboard. Useful for analyzing the data sources used in the dashboard."
+        "notes": "This call identifies all columns associated with the 'Marketing Overview' dashboard, ensuring a complete view of its data dependencies."
       },
       {
-        "user_query": "I need the column details for the 'Customer Insights' dashboard.",
+        "user_query": "I need to find the columns used in the Executive Summary dashboard for auditing purposes.",
         "arguments": {
-          "dashboard_name": "Customer Insights"
+          "dashboard_name": "Executive Summary"
         },
-        "notes": "This call retrieves all unique columns from the 'Customer Insights' dashboard. Ideal for understanding the data fields used in widgets and filters."
+        "notes": "Use this to extract and review all columns tied to the 'Executive Summary' dashboard, helping with data audits or dependency checks."
       }
     ]
   }

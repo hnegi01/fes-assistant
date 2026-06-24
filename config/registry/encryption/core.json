@@ -17,31 +17,31 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I decrypt the encrypted API key stored in my datamodel?",
+        "user_query": "How can I decrypt the encrypted database password stored in my datamodel?",
         "arguments": {
           "payload": {
-            "value": "ENCRYPTED_API_KEY_12345"
+            "value": "ENCRYPTED_PASSWORD_12345"
           }
         },
-        "notes": "This call decrypts an encrypted API key retrieved from a datamodel, allowing the user to access the original plaintext key."
+        "notes": "This call decrypts the encrypted database password stored in the datamodel, allowing the user to retrieve the plaintext password for further use."
       },
       {
-        "user_query": "I need to decrypt a database password stored in an exported configuration file. How can I do that?",
+        "user_query": "I need to decrypt an API key that was encrypted before saving it to the system. How can I do that?",
         "arguments": {
           "payload": {
-            "value": "ENCRYPTED_DB_PASSWORD_67890"
+            "value": "ENCRYPTED_API_KEY_67890"
           }
         },
-        "notes": "This call decrypts an encrypted database password, enabling the user to use the plaintext password for database connections."
+        "notes": "This call decrypts an encrypted API key, enabling the user to retrieve the original API key for integration purposes."
       },
       {
-        "user_query": "I have an encrypted token from a Sisense export. How do I decrypt it to use it in my application?",
+        "user_query": "How do I decrypt a token stored in the configuration file for my Sisense plugin?",
         "arguments": {
           "payload": {
             "value": "ENCRYPTED_TOKEN_ABCDE"
           }
         },
-        "notes": "This call decrypts an encrypted token, making it usable for authentication or other application needs."
+        "notes": "This call decrypts an encrypted token from a configuration file, allowing the user to access the original token for plugin authentication."
       }
     ]
   },
@@ -63,31 +63,31 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Encrypt a database password before saving it to the Sisense configuration.",
+        "user_query": "How can I encrypt a database password before saving it in Sisense?",
         "arguments": {
           "payload": {
             "value": "my_secure_password_123"
           }
         },
-        "notes": "This call encrypts the provided plaintext password so it can be securely stored in Sisense configuration files or used in API requests."
+        "notes": "This call encrypts the provided database password so it can be securely stored in Sisense configuration."
       },
       {
-        "user_query": "Securely encrypt an API key for cross-server data model import.",
+        "user_query": "I need to encrypt an API key for use in a cross-server data model import. How do I do that?",
         "arguments": {
           "payload": {
-            "value": "api_key_abc123"
+            "value": "api_key_abc123xyz"
           }
         },
-        "notes": "Use this to encrypt sensitive API keys before transferring them between Sisense servers during data model imports."
+        "notes": "This call encrypts the API key, ensuring it is safe to use during cross-server data model imports."
       },
       {
-        "user_query": "Encrypt a connection string for a new database integration.",
+        "user_query": "What is the process to encrypt sensitive connection parameters for a new data source?",
         "arguments": {
           "payload": {
-            "value": "Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;"
+            "value": "connection_string=Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;"
           }
         },
-        "notes": "This encrypts the connection string for secure storage and usage in Sisense's database integration settings."
+        "notes": "This call encrypts a sensitive connection string, preparing it for secure storage or transmission."
       }
     ]
   }

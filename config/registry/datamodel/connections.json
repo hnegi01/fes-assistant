@@ -17,50 +17,75 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Create a new connection for the sales database.",
+        "user_query": "How can I create a new connection for a PostgreSQL database?",
         "arguments": {
           "connection_payload": {
-            "name": "SalesDBConnection",
-            "type": "postgresql",
-            "host": "sales-db.example.com",
-            "port": 5432,
-            "username": "admin",
-            "password": "securepassword",
-            "database": "sales_data"
+            "provider": "postgresql",
+            "name": "SalesDB Connection",
+            "description": "Connection to the Sales database for analytics.",
+            "parameters": {
+              "host": "sales-db.example.com",
+              "port": 5432,
+              "database": "sales",
+              "username": "analytics_user",
+              "password": "securepassword123"
+            },
+            "enabled": true,
+            "createdByUser": "admin_user",
+            "supportedModelTypes": [
+              "live",
+              "elasticube"
+            ]
           }
         },
-        "notes": "This call creates a connection to the sales database hosted on a PostgreSQL server. Use this when setting up data sources for analytics."
+        "notes": "This creates a connection to a PostgreSQL database named 'sales' hosted on 'sales-db.example.com'. Use this when setting up a new data source for analytics."
       },
       {
-        "user_query": "Set up a connection to the marketing analytics data warehouse.",
+        "user_query": "I need to add a connection for a Google BigQuery project. How can I do that?",
         "arguments": {
           "connection_payload": {
-            "name": "MarketingAnalyticsDW",
-            "type": "snowflake",
-            "account": "marketing-account",
-            "warehouse": "analytics_wh",
-            "database": "marketing_data",
-            "schema": "public",
-            "username": "marketing_admin",
-            "password": "securepassword123"
+            "provider": "bigquery",
+            "name": "Marketing Analytics",
+            "description": "BigQuery connection for marketing data.",
+            "parameters": {
+              "projectId": "marketing-project-123",
+              "credentials": {
+                "type": "service_account",
+                "client_email": "service-account@marketing-project-123.iam.gserviceaccount.com",
+                "private_key": "-----BEGIN PRIVATE KEY-----\\nMIIEv...\\n-----END PRIVATE KEY-----\\n"
+              }
+            },
+            "enabled": true,
+            "createdByUser": "data_engineer",
+            "supportedModelTypes": [
+              "live"
+            ]
           }
         },
-        "notes": "This call establishes a connection to a Snowflake data warehouse for marketing analytics. Use this for querying and analyzing marketing data."
+        "notes": "This sets up a connection to a Google BigQuery project for live data analysis. Use this for integrating marketing data stored in BigQuery."
       },
       {
-        "user_query": "Add a connection to the customer support database.",
+        "user_query": "Can I create a connection to an Amazon Redshift cluster?",
         "arguments": {
           "connection_payload": {
-            "name": "CustomerSupportDB",
-            "type": "mysql",
-            "host": "support-db.example.com",
-            "port": 3306,
-            "username": "support_user",
-            "password": "password123",
-            "database": "support_data"
+            "provider": "redshift",
+            "name": "Redshift Cluster Connection",
+            "description": "Connection to the main Redshift cluster for company data.",
+            "parameters": {
+              "host": "redshift-cluster.example.com",
+              "port": 5439,
+              "database": "company_data",
+              "username": "redshift_user",
+              "password": "anothersecurepassword456"
+            },
+            "enabled": false,
+            "createdByUser": "sysadmin",
+            "supportedModelTypes": [
+              "elasticube"
+            ]
           }
         },
-        "notes": "This call sets up a connection to a MySQL database containing customer support data. Use this for integrating support data into dashboards."
+        "notes": "This creates a connection to an Amazon Redshift cluster but keeps it disabled initially. Use this when preparing a connection for future use or testing."
       }
     ]
   },
@@ -87,43 +112,59 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I generate a connections payload for an Athena datasource?",
+        "user_query": "How do I create a connection payload for an Athena data source?",
         "arguments": {
-          "datasource_type": "ATHENA",
+          "datasource_type": "Athena",
           "connection_params": {
-            "region": "us-east-1",
-            "database": "analytics_db",
-            "output_location": "s3://query-results-bucket/"
+            "name": "Athena_Connection_1",
+            "region": "us-west-2",
+            "s3_output_location": "s3://athena-query-results/",
+            "aws_access_key": "AKIAEXAMPLE",
+            "aws_secret_key": "SECRETEXAMPLE",
+            "description": "Connection to Athena for analytics",
+            "schema": "default",
+            "additional_parameters": {
+              "workgroup": "primary"
+            }
           }
         },
-        "notes": "This call generates a connections payload for an Athena datasource, specifying the AWS region, database name, and S3 output location."
+        "notes": "This call generates a connection payload for an Athena data source, specifying the required AWS credentials and S3 output location."
       },
       {
-        "user_query": "I need to prepare a connections payload for a Snowflake datasource. How do I do that?",
+        "user_query": "I need to set up a connection payload for a BigQuery data source. How can I do that?",
         "arguments": {
-          "datasource_type": "SNOWFLAKE",
+          "datasource_type": "BigQuery",
           "connection_params": {
-            "account": "mycompany.snowflakecomputing.com",
-            "warehouse": "COMPUTE_WH",
-            "database": "SALES_DB",
-            "schema": "PUBLIC"
+            "name": "BigQuery_Analytics",
+            "service_account_key_path": "/path/to/service_account.json",
+            "description": "BigQuery connection for marketing data",
+            "use_service_account": true,
+            "use_dynamic_schema": false,
+            "record_field_flattening_level": "none",
+            "unnest_arrays": true,
+            "allow_large_results": true,
+            "database": "marketing_db"
           }
         },
-        "notes": "This call generates a connections payload for a Snowflake datasource, including details like account URL, warehouse, database, and schema."
+        "notes": "This call creates a connection payload for a BigQuery data source, using a service account key and enabling array unnesting for query results."
       },
       {
-        "user_query": "What is the payload for connecting to an Oracle database?",
+        "user_query": "Can you help me generate a connection payload for a RedShift data source?",
         "arguments": {
-          "datasource_type": "ORACLE",
+          "datasource_type": "RedShift",
           "connection_params": {
-            "host": "oracle-db.mycompany.com",
-            "port": 1521,
-            "service_name": "ORCL",
+            "server": "redshift-cluster-1.example.com",
             "username": "admin",
-            "password": "securepassword123"
+            "password": "securepassword123",
+            "name": "RedShift_Cluster_Connection",
+            "description": "Connection to RedShift cluster for sales data",
+            "default_database": "sales_db",
+            "additional_parameters": {
+              "ssl": true
+            }
           }
         },
-        "notes": "This call generates a connections payload for an Oracle database, providing the host, port, service name, and credentials."
+        "notes": "This call generates a connection payload for a RedShift data source, including the server address, credentials, and default database."
       }
     ]
   },
@@ -145,25 +186,25 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What are the details of the connection named 'SalesDB'?",
+        "user_query": "Find the connection details for the 'Salesforce_Prod' data source.",
         "arguments": {
-          "connection_name": "SalesDB"
+          "connection_name": "Salesforce_Prod"
         },
-        "notes": "This retrieves the connection details for the 'SalesDB' connection, which might be used to access sales-related data."
+        "notes": "This call retrieves the connection object for the Salesforce production environment. Use this to confirm the connection details or validate its existence."
       },
       {
-        "user_query": "Can you fetch the connection information for 'MarketingDataWarehouse'?",
+        "user_query": "What connection is configured for the 'GoogleAnalytics_Main' data source?",
         "arguments": {
-          "connection_name": "MarketingDataWarehouse"
+          "connection_name": "GoogleAnalytics_Main"
         },
-        "notes": "This call is used to get the connection details for 'MarketingDataWarehouse', which could be a central repository for marketing data."
+        "notes": "This call checks if a connection named 'GoogleAnalytics_Main' exists and retrieves its details. Useful for troubleshooting or auditing connections."
       },
       {
-        "user_query": "I need to check the configuration of the connection named 'FinanceCluster'.",
+        "user_query": "Get the connection information for 'Redshift_Cluster_A'.",
         "arguments": {
-          "connection_name": "FinanceCluster"
+          "connection_name": "Redshift_Cluster_A"
         },
-        "notes": "This retrieves the connection details for 'FinanceCluster', which might be used for financial data analysis or reporting."
+        "notes": "This call fetches the connection object for the specified Redshift cluster. Use this to verify the connection's configuration or status."
       }
     ]
   },
@@ -178,19 +219,19 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I see all the data connections available in my Sisense instance?",
+        "user_query": "How can I see all the connections available in my Sisense environment?",
         "arguments": {},
-        "notes": "This call retrieves a list of all data connections configured in the Sisense instance. Use it to review available connections."
+        "notes": "This call retrieves a list of all connections configured in the Sisense instance. Use it to review available data sources."
       },
       {
-        "user_query": "I need to check the details of all existing connections in the system. How can I do that?",
+        "user_query": "I need to check which data connections are currently set up in the system.",
         "arguments": {},
-        "notes": "This call provides the full list of connection objects, which can include details like connection names, types, and configurations."
+        "notes": "This call provides a complete list of data connections, useful for auditing or verifying existing configurations."
       },
       {
-        "user_query": "Can I get a list of all the connections set up in Sisense?",
+        "user_query": "Can I get a list of all the data connections in Sisense?",
         "arguments": {},
-        "notes": "This call is useful for auditing or managing the connections in your Sisense environment."
+        "notes": "This call returns all configured connections, helping users understand the data sources linked to their Sisense instance."
       }
     ]
   },
@@ -229,32 +270,32 @@
       {
         "user_query": "What is the schema of the 'sales_data' table in the 'analytics_db' database?",
         "arguments": {
-          "connection_name": "primary_connection",
+          "connection_name": "primary_data_source",
           "database_name": "analytics_db",
           "schema_name": "public",
           "table_name": "sales_data"
         },
-        "notes": "This call retrieves the schema details of the 'sales_data' table from the 'analytics_db' database using the 'primary_connection' connection."
+        "notes": "This call retrieves the schema details for the 'sales_data' table in the 'analytics_db' database using the 'primary_data_source' connection."
       },
       {
-        "user_query": "Can you fetch the schema for the 'customer_info' table in the 'crm_db' database?",
+        "user_query": "Can you show me the schema for the 'customer_info' table in the 'crm_db' database?",
         "arguments": {
           "connection_name": "crm_connection",
           "database_name": "crm_db",
-          "schema_name": "main",
+          "schema_name": "customer_data",
           "table_name": "customer_info"
         },
-        "notes": "This call is used to fetch the schema of the 'customer_info' table in the 'crm_db' database under the 'main' schema using the 'crm_connection' connection."
+        "notes": "This call fetches the schema for the 'customer_info' table located in the 'customer_data' schema of the 'crm_db' database using the 'crm_connection' connection."
       },
       {
-        "user_query": "I need the schema details for the 'inventory' table in the 'warehouse_db' database.",
+        "user_query": "I need the schema for the 'inventory' table in the 'warehouse_db' database.",
         "arguments": {
           "connection_name": "warehouse_connection",
           "database_name": "warehouse_db",
           "schema_name": "inventory_schema",
           "table_name": "inventory"
         },
-        "notes": "This call retrieves the schema of the 'inventory' table from the 'warehouse_db' database under the 'inventory_schema' schema using the 'warehouse_connection' connection."
+        "notes": "This call retrieves the schema details for the 'inventory' table in the 'inventory_schema' schema of the 'warehouse_db' database using the 'warehouse_connection' connection."
       }
     ]
   },
@@ -302,7 +343,7 @@
             "provider": "new_provider"
           }
         },
-        "notes": "This call changes the provider for the specified connection. Use this when switching to a different data source type."
+        "notes": "This call updates the provider for the specified connection. Use this when switching to a different connection provider."
       },
       {
         "user_query": "Can I update multiple fields of a connection at once?",
@@ -311,13 +352,13 @@
           "connection_data": {
             "name": "New Connection Name",
             "parameters": {
-              "username": "new_user",
-              "password": "new_password"
+              "host": "updated-host.example.com",
+              "port": 3306
             },
-            "provider": "updated_provider"
+            "provider": "mysql"
           }
         },
-        "notes": "This call updates multiple fields of the specified connection, including name, parameters, and provider. Use this for comprehensive updates during migrations or reconfigurations."
+        "notes": "This call updates multiple fields (name, parameters, and provider) for the specified connection. Use this for comprehensive updates during a migration or reconfiguration."
       }
     ]
   }

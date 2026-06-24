@@ -40,28 +40,28 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Create a new DataModel named 'Sales Analytics' as an Elasticube.",
+        "user_query": "Create a new data model called 'Sales Analytics' using an Elasticube.",
         "arguments": {
           "datamodel_name": "Sales Analytics",
           "datamodel_type": "extract"
         },
-        "notes": "This call creates a new DataModel named 'Sales Analytics' using the 'extract' type, which corresponds to an Elasticube."
+        "notes": "This call creates a new data model named 'Sales Analytics' using the 'extract' type, which corresponds to an Elasticube."
       },
       {
-        "user_query": "Set up a live DataModel for real-time analysis called 'Customer Insights'.",
+        "user_query": "Set up a live data model for real-time analysis named 'Customer Insights'.",
         "arguments": {
           "datamodel_name": "Customer Insights",
           "datamodel_type": "live"
         },
-        "notes": "This call creates a new DataModel named 'Customer Insights' using the 'live' type for real-time data analysis."
+        "notes": "This call creates a live data model named 'Customer Insights' for real-time data analysis."
       },
       {
-        "user_query": "I need a new DataModel called 'Marketing Performance' as an EC.",
+        "user_query": "I need a new Elasticube data model for 'Marketing Dashboard'.",
         "arguments": {
-          "datamodel_name": "Marketing Performance",
+          "datamodel_name": "Marketing Dashboard",
           "datamodel_type": "extract"
         },
-        "notes": "This call creates a new DataModel named 'Marketing Performance' using the 'extract' type, which is normalized from 'EC' or 'Elasticube'."
+        "notes": "This call creates a new data model named 'Marketing Dashboard' using the 'extract' type for an Elasticube."
       }
     ]
   },
@@ -102,36 +102,36 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Create a new dataset called 'sales_data' in the 'SalesModel' DataModel using the 'SalesDB' connection.",
+        "user_query": "Create a dataset for the sales data model using the 'SalesDB' connection and the 'public' schema.",
         "arguments": {
-          "datamodel_name": "SalesModel",
+          "datamodel_name": "SalesDataModel",
           "connection_name": "SalesDB",
-          "database_name": "corporate_sales",
+          "database_name": "SalesDatabase",
           "schema_name": "public",
-          "dataset_name": "sales_data"
+          "dataset_name": "SalesDataset"
         },
-        "notes": "This call creates a dataset named 'sales_data' in the 'SalesModel' DataModel, using the 'SalesDB' connection and the 'corporate_sales' database."
+        "notes": "This call creates a dataset named 'SalesDataset' in the 'SalesDataModel' data model using the 'public' schema from the 'SalesDB' connection."
       },
       {
-        "user_query": "Add a dataset to the 'MarketingModel' DataModel using the 'MarketingDB' connection and default to the schema name for the dataset name.",
+        "user_query": "Add a dataset to the 'MarketingAnalytics' data model using the 'MarketingDB' connection and default to the schema name.",
         "arguments": {
-          "datamodel_name": "MarketingModel",
+          "datamodel_name": "MarketingAnalytics",
           "connection_name": "MarketingDB",
-          "database_name": "marketing_analytics",
-          "schema_name": "campaign_data"
+          "database_name": "MarketingDatabase",
+          "schema_name": "campaigns"
         },
-        "notes": "This call creates a dataset in the 'MarketingModel' DataModel, using the 'MarketingDB' connection. The dataset name defaults to the schema name 'campaign_data'."
+        "notes": "This call creates a dataset in the 'MarketingAnalytics' data model using the 'campaigns' schema from the 'MarketingDB' connection. The dataset name defaults to the schema name, 'campaigns'."
       },
       {
-        "user_query": "Create a dataset in the 'FinanceModel' DataModel using the 'FinanceDB' connection and specify the dataset name as 'quarterly_reports'.",
+        "user_query": "Create a dataset in the 'FinanceModel' using the 'FinanceConnection' and the 'accounts' schema, but name it 'AccountDataset'.",
         "arguments": {
           "datamodel_name": "FinanceModel",
-          "connection_name": "FinanceDB",
-          "database_name": "financial_data",
-          "schema_name": "reports",
-          "dataset_name": "quarterly_reports"
+          "connection_name": "FinanceConnection",
+          "database_name": "FinanceDB",
+          "schema_name": "accounts",
+          "dataset_name": "AccountDataset"
         },
-        "notes": "This call creates a dataset named 'quarterly_reports' in the 'FinanceModel' DataModel, using the 'FinanceDB' connection and the 'financial_data' database."
+        "notes": "This call creates a dataset named 'AccountDataset' in the 'FinanceModel' data model using the 'accounts' schema from the 'FinanceConnection'."
       }
     ]
   },
@@ -189,43 +189,33 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Create a new table named 'sales_data' in the 'RetailAnalytics' DataModel.",
+        "user_query": "Create a new table named 'sales_summary' in the 'ecommerce_data' data model.",
         "arguments": {
-          "datamodel_name": "RetailAnalytics",
-          "table_name": "sales_data",
-          "database_name": "retail_db",
-          "schema_name": "public",
-          "description": "Table containing sales data for analysis.",
-          "tags": [
-            "sales",
-            "analytics"
-          ]
+          "datamodel_name": "ecommerce_data",
+          "table_name": "sales_summary"
         },
-        "notes": "This call creates a new table named 'sales_data' in the 'RetailAnalytics' DataModel, specifying the database and schema explicitly."
+        "notes": "This call creates a new table named 'sales_summary' in the 'ecommerce_data' data model, inferring the database, schema, and dataset from the data model."
       },
       {
-        "user_query": "Add a table called 'customer_info' to the 'CustomerInsights' DataModel using a custom SQL query.",
+        "user_query": "Add a table named 'customer_orders' to the 'retail_analytics' data model using a custom SQL query.",
         "arguments": {
-          "datamodel_name": "CustomerInsights",
-          "table_name": "customer_info",
-          "import_query": "SELECT * FROM customers WHERE active = TRUE",
-          "description": "Active customer information for insights.",
-          "tags": [
-            "customers",
-            "active"
-          ]
+          "datamodel_name": "retail_analytics",
+          "table_name": "customer_orders",
+          "import_query": "SELECT * FROM orders WHERE order_date >= '2023-01-01'"
         },
-        "notes": "This call creates a table named 'customer_info' in the 'CustomerInsights' DataModel using a custom SQL query to filter active customers."
+        "notes": "This call creates a table named 'customer_orders' in the 'retail_analytics' data model, using a custom SQL query to filter data from the source."
       },
       {
-        "user_query": "Create a table named 'inventory_status' in the 'WarehouseOps' DataModel without specifying database or schema.",
+        "user_query": "Create a table named 'daily_transactions' in the 'finance_data' data model with incremental build behavior.",
         "arguments": {
-          "datamodel_name": "WarehouseOps",
-          "table_name": "inventory_status",
-          "dataset_id": "dataset_12345",
-          "description": "Tracks the current status of inventory items."
+          "datamodel_name": "finance_data",
+          "table_name": "daily_transactions",
+          "build_behavior_config": {
+            "mode": "increment",
+            "column_name": "transaction_date"
+          }
         },
-        "notes": "This call creates a table named 'inventory_status' in the 'WarehouseOps' DataModel and relies on the dataset ID to infer the database and schema."
+        "notes": "This call creates a table named 'daily_transactions' in the 'finance_data' data model and configures it for incremental builds based on the 'transaction_date' column."
       }
     ]
   },
@@ -283,30 +273,30 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How do I rebuild the 'Sales_Analytics' DataModel from scratch?",
+        "user_query": "How can I fully rebuild the 'Sales_Analytics' data model?",
         "arguments": {
           "datamodel_name": "Sales_Analytics",
           "build_type": "full"
         },
-        "notes": "This call rebuilds the entire 'Sales_Analytics' DataModel, typically used for major updates or when the model needs to be refreshed completely."
+        "notes": "This call triggers a full rebuild of the 'Sales_Analytics' data model, which is useful for ensuring all data is refreshed and up-to-date."
       },
       {
-        "user_query": "Can I deploy the 'Customer_Insights' DataModel with a row limit of 100,000 rows?",
+        "user_query": "I want to incrementally build the 'Marketing_Performance' data model with a row limit of 100,000. How can I do that?",
         "arguments": {
-          "datamodel_name": "Customer_Insights",
+          "datamodel_name": "Marketing_Performance",
           "build_type": "by_table",
           "row_limit": 100000
         },
-        "notes": "This call deploys the 'Customer_Insights' DataModel using a table-wise build strategy, limiting the processed rows to 100,000. Useful for incremental builds with large datasets."
+        "notes": "This call performs an incremental build of the 'Marketing_Performance' data model, processing up to 100,000 rows per table. This is ideal for large datasets where a full rebuild is unnecessary."
       },
       {
-        "user_query": "I need to deploy the 'Marketing_Performance' DataModel using the latest schema. How can I do that?",
+        "user_query": "Can I deploy the 'Customer_Insights' data model using the latest schema?",
         "arguments": {
-          "datamodel_name": "Marketing_Performance",
+          "datamodel_name": "Customer_Insights",
           "build_type": "full",
           "schema_origin": "latest"
         },
-        "notes": "This call deploys the 'Marketing_Performance' DataModel using the latest schema and rebuilds the entire model. Ideal for ensuring the schema is up-to-date."
+        "notes": "This call deploys the 'Customer_Insights' data model using the latest schema configuration. It ensures the model reflects the most recent changes made in the Data page."
       }
     ]
   },
@@ -431,17 +421,17 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Create a new live DataModel for our sales data using the 'SalesDB' connection.",
+        "user_query": "Create a new live data model for our sales data using the 'SalesDB' connection.",
         "arguments": {
           "datamodel_name": "Sales_Live_Model",
           "datamodel_type": "live",
           "connection_name": "SalesDB",
-          "database_name": "sales_database",
+          "database_name": "SalesDatabase",
           "schema_name": "public",
           "tables": [
             {
               "table_name": "customers",
-              "description": "Customer details including demographics and contact info.",
+              "description": "Customer details including demographics and contact information.",
               "tags": [
                 "sales",
                 "customers"
@@ -449,72 +439,63 @@
             },
             {
               "table_name": "orders",
-              "description": "Order transactions including product and customer references.",
+              "description": "Order details including products, quantities, and prices.",
               "tags": [
                 "sales",
-                "transactions"
+                "orders"
               ]
             }
           ],
           "dataset_name": "Sales_Live_Dataset"
         },
-        "notes": "This creates a live DataModel for real-time analysis of sales data. Use this when you need up-to-date data from the source."
+        "notes": "This call sets up a live data model for sales data, pulling from the 'SalesDB' connection and including the 'customers' and 'orders' tables."
       },
       {
-        "user_query": "Set up an Elasticube for marketing data with incremental updates for the 'email_campaigns' table.",
+        "user_query": "Set up an Elasticube for our marketing data with incremental builds for the 'campaigns' table.",
         "arguments": {
           "datamodel_name": "Marketing_Elasticube",
           "datamodel_type": "extract",
           "connection_name": "MarketingDB",
-          "database_name": "marketing_data",
-          "schema_name": "campaigns",
+          "database_name": "MarketingDatabase",
+          "schema_name": "analytics",
           "tables": [
             {
-              "table_name": "email_campaigns",
-              "description": "Details of email campaigns including performance metrics.",
+              "table_name": "campaigns",
+              "description": "Marketing campaign performance data.",
               "tags": [
                 "marketing",
-                "email"
+                "campaigns"
               ],
               "build_behavior_config": {
                 "mode": "increment",
-                "column_name": "last_updated"
+                "column_name": "updated_at"
               }
             },
             {
-              "table_name": "social_media_ads",
-              "description": "Performance data for social media advertisements.",
+              "table_name": "leads",
+              "description": "Lead generation data from various campaigns.",
               "tags": [
                 "marketing",
-                "ads"
+                "leads"
               ],
               "build_behavior_config": {
                 "mode": "replace"
               }
             }
           ],
-          "dataset_name": "Marketing_Campaigns_Dataset"
+          "dataset_name": "Marketing_Dataset"
         },
-        "notes": "This creates an Elasticube for marketing data with incremental updates for the 'email_campaigns' table. Use this for periodic data extraction with efficient updates."
+        "notes": "This call creates an Elasticube for marketing data with incremental builds for the 'campaigns' table based on the 'updated_at' column."
       },
       {
-        "user_query": "Create a live DataModel for financial data using a custom SQL query for the transactions table.",
+        "user_query": "Create a live data model for the finance team using the 'FinanceDB' connection and include custom SQL for the 'transactions' table.",
         "arguments": {
           "datamodel_name": "Finance_Live_Model",
           "datamodel_type": "live",
           "connection_name": "FinanceDB",
-          "database_name": "financial_data",
-          "schema_name": "public",
+          "database_name": "FinanceDatabase",
+          "schema_name": "financials",
           "tables": [
-            {
-              "table_name": "transactions",
-              "import_query": "SELECT * FROM public.transactions WHERE transaction_date >= '2023-01-01'",
-              "description": "Filtered transactions starting from 2023.",
-              "tags": [
-                "finance",
-                "transactions"
-              ]
-            },
             {
               "table_name": "accounts",
               "description": "Account details including balances and account types.",
@@ -522,11 +503,20 @@
                 "finance",
                 "accounts"
               ]
+            },
+            {
+              "table_name": "transactions",
+              "import_query": "SELECT account_id, amount, transaction_date FROM financials.transactions WHERE amount > 0",
+              "description": "Filtered transactions with positive amounts.",
+              "tags": [
+                "finance",
+                "transactions"
+              ]
             }
           ],
           "dataset_name": "Finance_Live_Dataset"
         },
-        "notes": "This creates a live DataModel for financial data with a custom SQL query to filter transactions. Use this for real-time analysis with specific data filtering."
+        "notes": "This call sets up a live data model for financial data, including a custom SQL query for the 'transactions' table to filter only positive amounts."
       }
     ]
   }

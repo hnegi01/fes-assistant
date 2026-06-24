@@ -9,8 +9,10 @@ echo
 
 cd "${REPO_ROOT}"
 
-echo "[0/2] Installing pinned pysisense (from requirements.txt)..."
-pip install -r requirements.txt
+echo "[0/2] Installing pinned pysisense (constrained by requirements.txt)..."
+# -c installs ONLY pysisense at the version pinned in requirements.txt without
+# re-resolving every other dependency (which can downgrade unrelated packages).
+pip install -c requirements.txt pysisense
 
 echo "[1/2] Building tool registry from SDK..."
 python -m scripts.01_build_registry_from_sdk
