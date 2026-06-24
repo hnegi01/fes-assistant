@@ -725,7 +725,8 @@
       "properties": {
         "user_email": {
           "type": "string",
-          "description": "Email address of the user to retrieve."
+          "description": "Email address of the user to retrieve.",
+          "format": "email"
         }
       },
       "required": [
@@ -909,7 +910,8 @@
       "properties": {
         "user_email": {
           "type": "string",
-          "description": "Email address of the user to update (used to locate the user)."
+          "description": "Email address of the user to update (used to locate the user).",
+          "format": "email"
         },
         "user_data": {
           "type": "object",
@@ -2229,7 +2231,7 @@
     "class": "DataModel",
     "method": "deploy_datamodel",
     "description": "Deploy (build or publish) the specified DataModel based on its type.",
-    "full_doc": "Deploy (build or publish) the specified DataModel based on its type.\n\nThis method supports both Elasticube (EXTRACT) and Live models.\nThe behavior and required parameters differ based on model type:\n\n- For Elasticube models:\n    - build_type (str): Type of deployment. Options:\n        * \"schema_changes\" — Build only schema changes\n        * \"by_table\" — Build based on each table's config (e.g. incremental, accumulative)\n        * \"full\" — Rebuild the entire model from scratch (default)\n    - row_limit (int): Maximum number of rows to process. Defaults to 0 (no limit).\n    - schema_origin (str): Schema source. Options:\n        * \"latest\" — Build the schema as seen in the Data page (default)\n        * \"running\" — Build from the last successfully built version\n\n- For Live models:\n    - Only the `build_type` parameter is used internally and will be set to \"publish\"\n    - `row_limit` and `schema_origin` are ignored\n\nParameters:\n    datamodel_name (str): Name of the DataModel to deploy.\n    build_type (str): Type of deployment. Required for EXTRACT only.\n    row_limit (int): Row limit for build. Applicable only for EXTRACT.\n    schema_origin (str): Schema origin for build. Applicable only for EXTRACT.\n\nReturns:\n    dict: Deployment result including status, or error details.",
+    "full_doc": "Deploy (build or publish) the specified DataModel based on its type.\n\nThis method supports both Elasticube (EXTRACT) and Live models.\nThe behavior and required parameters differ based on model type:\n\n- For Elasticube models:\n    - build_type (str): Type of deployment. Options:\n        * \"schema_changes\" \u2014 Build only schema changes\n        * \"by_table\" \u2014 Build based on each table's config (e.g. incremental, accumulative)\n        * \"full\" \u2014 Rebuild the entire model from scratch (default)\n    - row_limit (int): Maximum number of rows to process. Defaults to 0 (no limit).\n    - schema_origin (str): Schema source. Options:\n        * \"latest\" \u2014 Build the schema as seen in the Data page (default)\n        * \"running\" \u2014 Build from the last successfully built version\n\n- For Live models:\n    - Only the `build_type` parameter is used internally and will be set to \"publish\"\n    - `row_limit` and `schema_origin` are ignored\n\nParameters:\n    datamodel_name (str): Name of the DataModel to deploy.\n    build_type (str): Type of deployment. Required for EXTRACT only.\n    row_limit (int): Row limit for build. Applicable only for EXTRACT.\n    schema_origin (str): Schema origin for build. Applicable only for EXTRACT.\n\nReturns:\n    dict: Deployment result including status, or error details.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -4463,7 +4465,7 @@
     "class": "Dashboard",
     "method": "get_dashboard_widgets",
     "description": "Retrieve widget definitions from an admin export of the dashboard.",
-    "full_doc": "Retrieve widget definitions from an admin export of the dashboard.\n\nUses ``export_dashboard`` (``GET /api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``), then reads the ``widgets``\nfield from the first exported dashboard object—the same payload shape\nused by ``get_dashboard_script`` and ``get_widget_script``. If\n``widgets`` is missing or empty, an empty list is returned.\n\n``dashboard_ref`` is resolved with ``resolve_dashboard_reference`` so it\nmay be either a 24-character dashboard ``oid`` or a dashboard title.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard ``oid`` or title.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of widget objects on success (possibly empty). On failure,\n    ``{\"error\": \"...\"}`` when the reference cannot be resolved or\n    ``export_dashboard`` fails. If ``widgets`` is present but neither a\n    list nor a mapping of widget objects, returns an error dict.",
+    "full_doc": "Retrieve widget definitions from an admin export of the dashboard.\n\nUses ``export_dashboard`` (``GET /api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``), then reads the ``widgets``\nfield from the first exported dashboard object\u2014the same payload shape\nused by ``get_dashboard_script`` and ``get_widget_script``. If\n``widgets`` is missing or empty, an empty list is returned.\n\n``dashboard_ref`` is resolved with ``resolve_dashboard_reference`` so it\nmay be either a 24-character dashboard ``oid`` or a dashboard title.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard ``oid`` or title.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of widget objects on success (possibly empty). On failure,\n    ``{\"error\": \"...\"}`` when the reference cannot be resolved or\n    ``export_dashboard`` fails. If ``widgets`` is present but neither a\n    list nor a mapping of widget objects, returns an error dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -4515,7 +4517,7 @@
     "class": "Dashboard",
     "method": "get_dashboards",
     "description": "Retrieve dashboards visible to the authenticated user.",
-    "full_doc": "Retrieve dashboards visible to the authenticated user.\n\nSends ``GET /api/v1/dashboards``, which returns dashboards the current\nuser owns or has been shared to — as opposed to\n``get_all_dashboards``, which uses the admin endpoint and requires\nelevated access.\n\nParameters\n----------\nfields : list[str], optional\n    Subset of fields to include in the response (for example\n    ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are\n    returned.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dashboard objects on success, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "full_doc": "Retrieve dashboards visible to the authenticated user.\n\nSends ``GET /api/v1/dashboards``, which returns dashboards the current\nuser owns or has been shared to \u2014 as opposed to\n``get_all_dashboards``, which uses the admin endpoint and requires\nelevated access.\n\nParameters\n----------\nfields : list[str], optional\n    Subset of fields to include in the response (for example\n    ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are\n    returned.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dashboard objects on success, or ``{\"error\": \"...\"}`` on\n    failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -5017,7 +5019,7 @@
     "class": "Folder",
     "method": "get_folder_ancestors",
     "description": "Retrieve folders by a caller-supplied structure value.",
-    "full_doc": "Retrieve folders by a caller-supplied structure value.\n\nThin alias for ``get_folders(structure)`` — passes the ``structure``\nstring through to ``GET /api/v1/folders?structure={structure}``\nunchanged. Provided for compatibility with win2linux workflows that\npass an ancestors-specific structure string.\n\nParameters\n----------\nstructure : str\n    Sisense folder structure type for the request.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    Folder data from the API, or ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Retrieve folders by a caller-supplied structure value.\n\nThin alias for ``get_folders(structure)`` \u2014 passes the ``structure``\nstring through to ``GET /api/v1/folders?structure={structure}``\nunchanged. Provided for compatibility with win2linux workflows that\npass an ancestors-specific structure string.\n\nParameters\n----------\nstructure : str\n    Sisense folder structure type for the request.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    Folder data from the API, or ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -6662,7 +6664,7 @@
     "class": "Plugins",
     "method": "restore_snapshot",
     "description": "Restore plugin states to exactly match a previously saved snapshot.",
-    "full_doc": "Restore plugin states to exactly match a previously saved snapshot.\n\nCompares the snapshot's plugin list against the live instance state and\ncomputes the minimal set of changes needed — enabling plugins that should\nbe on, disabling plugins that should be off. Plugins already in the\ncorrect state are skipped.\n\nParameters\n----------\nsnapshot : dict[str, Any]\n    A snapshot dict as returned by :meth:`save_snapshot`, containing at\n    minimum a ``\"plugins\"`` key with a list of ``folderName`` values for\n    the plugins that should be enabled. All other plugins will be disabled.\nbulk : bool, optional\n    When ``True`` (default), all enable and disable changes are sent in a\n    single PATCH request. When ``False``, one PATCH request is made per\n    plugin change.\n\nReturns\n-------\ndict[str, Any]\n    A summary dict with keys:\n\n    - ``enabled`` (list[str]): ``folderName`` values that were enabled.\n    - ``disabled`` (list[str]): ``folderName`` values that were disabled.\n    - ``already_set`` (int): Count of plugins already in the correct state.\n    - ``not_in_instance`` (list[str]): Snapshot entries with no matching plugin.\n    - ``errors`` (list[str]): ``folderName`` values where the PATCH failed\n      (non-bulk mode only).\n\n    Returns ``{\"error\": \"...\"}`` if the plugin list could not be fetched or\n    the snapshot is missing the ``\"plugins\"`` key.",
+    "full_doc": "Restore plugin states to exactly match a previously saved snapshot.\n\nCompares the snapshot's plugin list against the live instance state and\ncomputes the minimal set of changes needed \u2014 enabling plugins that should\nbe on, disabling plugins that should be off. Plugins already in the\ncorrect state are skipped.\n\nParameters\n----------\nsnapshot : dict[str, Any]\n    A snapshot dict as returned by :meth:`save_snapshot`, containing at\n    minimum a ``\"plugins\"`` key with a list of ``folderName`` values for\n    the plugins that should be enabled. All other plugins will be disabled.\nbulk : bool, optional\n    When ``True`` (default), all enable and disable changes are sent in a\n    single PATCH request. When ``False``, one PATCH request is made per\n    plugin change.\n\nReturns\n-------\ndict[str, Any]\n    A summary dict with keys:\n\n    - ``enabled`` (list[str]): ``folderName`` values that were enabled.\n    - ``disabled`` (list[str]): ``folderName`` values that were disabled.\n    - ``already_set`` (int): Count of plugins already in the correct state.\n    - ``not_in_instance`` (list[str]): Snapshot entries with no matching plugin.\n    - ``errors`` (list[str]): ``folderName`` values where the PATCH failed\n      (non-bulk mode only).\n\n    Returns ``{\"error\": \"...\"}`` if the plugin list could not be fetched or\n    the snapshot is missing the ``\"plugins\"`` key.",
     "parameters": {
       "type": "object",
       "properties": {

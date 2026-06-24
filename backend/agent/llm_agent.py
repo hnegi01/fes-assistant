@@ -385,7 +385,11 @@ async def call_llm_with_tools(
         tool_schema = meta.get("parameters")
         if tool_schema:
             try:
-                jsonschema.validate(instance=args, schema=tool_schema)
+                jsonschema.validate(
+                    instance=args,
+                    schema=tool_schema,
+                    format_checker=jsonschema.FormatChecker(),
+                )
             except jsonschema.ValidationError as _ve:
                 logger.error("Tool %s arg validation failed: %s", tool_id, _ve.message)
                 _trace["outcome"] = "validation_failed"

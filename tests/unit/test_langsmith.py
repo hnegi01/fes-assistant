@@ -8,6 +8,7 @@ Tests cover:
 import litellm
 import pytest
 
+import backend.agent._config as config_m
 import backend.agent.llm_agent as m
 
 
@@ -15,7 +16,7 @@ class TestConfigureLangsmithTracing:
     def test_callbacks_set_when_tracing_enabled(self, monkeypatch):
         monkeypatch.setenv("LANGSMITH_TRACING", "true")
 
-        m._configure_langsmith_tracing()
+        config_m._configure_langsmith_tracing()
 
         assert "langsmith" in litellm.success_callback
         assert "langsmith" in litellm.failure_callback
@@ -27,7 +28,7 @@ class TestConfigureLangsmithTracing:
 
         monkeypatch.setenv("LANGSMITH_TRACING", "false")
 
-        m._configure_langsmith_tracing()
+        config_m._configure_langsmith_tracing()
 
         assert "langsmith" not in litellm.success_callback
         assert "langsmith" not in litellm.failure_callback
@@ -38,7 +39,7 @@ class TestConfigureLangsmithTracing:
 
         monkeypatch.delenv("LANGSMITH_TRACING", raising=False)
 
-        m._configure_langsmith_tracing()
+        config_m._configure_langsmith_tracing()
 
         assert "langsmith" not in litellm.success_callback
         assert "langsmith" not in litellm.failure_callback
@@ -46,7 +47,7 @@ class TestConfigureLangsmithTracing:
     def test_case_insensitive_true(self, monkeypatch):
         monkeypatch.setenv("LANGSMITH_TRACING", "  TRUE  ")
 
-        m._configure_langsmith_tracing()
+        config_m._configure_langsmith_tracing()
 
         assert "langsmith" in litellm.success_callback
 
@@ -57,7 +58,7 @@ class TestConfigureLangsmithTracing:
         monkeypatch.delenv("LANGSMITH_TRACING", raising=False)
         monkeypatch.setenv("LANGCHAIN_TRACING_V2", "true")
 
-        m._configure_langsmith_tracing()
+        config_m._configure_langsmith_tracing()
 
         assert "langsmith" not in litellm.success_callback
 

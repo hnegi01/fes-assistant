@@ -1,6 +1,9 @@
 # Env / secrets
 .env
 
+# Integration test credentials (copy from integration_config.example.yaml)
+tests/integration/integration_config.yaml
+
 # Logs
 logs/
 *.log

@@ -6,9 +6,9 @@ Covers:
   - _parse_module_from_response: exact match, substring match, unknown, empty
   - _route_to_module: mocked call_llm_raw for success, fallback, unknown response
 
-After the llm_config split, _route_to_module and call_llm_raw live in
-backend.agent.llm_routing. Patching call_llm_raw must target that module
-(where _route_to_module's call resolves), not the re-export on llm_agent.
+After the module split, _parse_module_from_response, _route_to_module, and
+call_llm_raw live in backend.agent._routing (imported here as routing_m).
+Call and patch them there — _get_module_tools stays on llm_agent (m).
 """
 
 import asyncio
@@ -95,23 +95,23 @@ class TestGetModuleTools:
 
 class TestParseModuleFromResponse:
     def test_exact_match(self):
-        assert m._parse_module_from_response("datamodel", MODULES) == "datamodel"
+        assert routing_m._parse_module_from_response("datamodel", MODULES) == "datamodel"
 
     def test_case_insensitive_exact(self):
-        assert m._parse_module_from_response("  DataModel  ", MODULES) == "datamodel"
+        assert routing_m._parse_module_from_response("  DataModel  ", MODULES) == "datamodel"
 
     def test_substring_match(self):
         # LLM returned a sentence instead of a single word
-        assert m._parse_module_from_response("I would choose the datamodel module.", MODULES) == "datamodel"
+        assert routing_m._parse_module_from_response("I would choose the datamodel module.", MODULES) == "datamodel"
 
     def test_returns_none_for_unknown(self):
-        assert m._parse_module_from_response("migration", MODULES) is None
+        assert routing_m._parse_module_from_response("migration", MODULES) is None
 
     def test_returns_none_for_empty(self):
-        assert m._parse_module_from_response("", MODULES) is None
+        assert routing_m._parse_module_from_response("", MODULES) is None
 
     def test_returns_none_for_none_content(self):
-        assert m._parse_module_from_response(None, MODULES) is None  # type: ignore[arg-type]
+        assert routing_m._parse_module_from_response(None, MODULES) is None  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------------------
@@ -131,7 +131,7 @@ class TestRouteToModule:
     def test_returns_correct_module_on_success(self):
         with patch.object(routing_m, "call_llm_raw", new=AsyncMock(return_value=_llm_response("datamodel"))):
             chosen, latency = run(
-                m._route_to_module(
+                routing_m._route_to_module(
                     {"role": "user", "content": "show all data models"},
                     [],
                     MODULES,
@@ -144,7 +144,7 @@ class TestRouteToModule:
     def test_returns_none_on_llm_failure(self):
         with patch.object(routing_m, "call_llm_raw", new=AsyncMock(side_effect=RuntimeError("timeout"))):
             chosen, latency = run(
-                m._route_to_module(
+                routing_m._route_to_module(
                     {"role": "user", "content": "show all data models"},
                     [],
                     MODULES,
@@ -157,7 +157,7 @@ class TestRouteToModule:
     def test_returns_none_for_unrecognised_response(self):
         with patch.object(routing_m, "call_llm_raw", new=AsyncMock(return_value=_llm_response("I don't know"))):
             chosen, _ = run(
-                m._route_to_module(
+                routing_m._route_to_module(
                     {"role": "user", "content": "do something"},
                     [],
                     MODULES,
@@ -173,7 +173,7 @@ class TestRouteToModule:
             new=AsyncMock(return_value=_llm_response("The access_management module handles this.")),
         ):
             chosen, _ = run(
-                m._route_to_module(
+                routing_m._route_to_module(
                     {"role": "user", "content": "list all users"},
                     [],
                     MODULES,

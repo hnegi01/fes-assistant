@@ -59,6 +59,10 @@ Global rules:
   - If type is "integer", pass a number, NOT a quoted string.
   - If an enum is defined, the value MUST be one of the allowed enum values.
 - Optional parameters can be omitted if the user did not imply them.
+- Only fill a parameter with a value the user explicitly provided. Do NOT infer or
+  invent a parameter value from descriptive words in the request. If a required
+  parameter's value was not provided, omit it rather than guessing — leaving it
+  missing (so the user can be asked) is better than filling it with a guess.
 - If the user's message is too vague, too short, or contains no recognisable
   intent, respond in natural language asking them to be more specific. DO NOT
   guess a tool.

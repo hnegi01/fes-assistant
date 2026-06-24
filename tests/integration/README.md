@@ -8,43 +8,51 @@ fake credentials, and never touch a real LLM, MCP server, or Sisense instance. T
 module-level imports succeed.
 
 **Integration tests** (this folder) require the full stack to be running and valid
-credentials in `.env`. They are **not** run by CI — run them manually before a release
-or a major behaviour change.
+credentials. They are **not** meant for CI — they skip automatically when no
+credentials are configured, so a CI run that collects them stays green.
+
+## Credentials — one place
+
+All integration credentials live in **`tests/integration/integration_config.yaml`**
+(gitignored). Copy the template and fill it in once:
+
+```bash
+cp tests/integration/integration_config.example.yaml \
+   tests/integration/integration_config.yaml
+# then edit it with a real Sisense domain + token
+```
+
+Tests pull credentials from shared fixtures in `conftest.py` — `backend_url`,
+`tenant_config`, and `migration_config`. If `integration_config.yaml` is missing
+or still holds the example placeholder values, every integration test is
+**skipped** (not failed).
 
 ## What an integration test looks like
 
 An integration test sends a real user prompt to the backend and asserts on the
-observable outcome — not on how the code works internally.
-
-Example (not wired to CI):
+observable outcome — not on how the code works internally. Credentials come in
+through fixtures, never hardcoded:
 
 ```python
-# tests/integration/test_e2e_prompt.py
-
 import httpx, pytest
 
-BACKEND = "http://localhost:8001"
-
 @pytest.mark.integration
-def test_list_dashboards_prompt():
+def test_list_dashboards_prompt(backend_url, tenant_config):
     """A real 'list all dashboards' prompt must call a dashboard tool and return results."""
     resp = httpx.post(
-        f"{BACKEND}/agent/turn",
+        f"{backend_url}/agent/turn",
         json={
             "session_id": "integ-test-session",
-            "message": "show me all dashboards",
+            "messages": [{"role": "user", "content": "show me all dashboards"}],
+            "user_input": "show me all dashboards",
             "mode": "chat",
-            "tenant_config": {
-                "domain": "https://your-sisense-instance.example.com",
-                "token": "your-real-token",
-            },
+            "tenant_config": tenant_config,
         },
         timeout=60,
     )
     assert resp.status_code == 200
     body = resp.json()
-    assert body.get("tool_id", "").startswith("dashboard.")
-    assert body.get("result") is not None
+    assert body.get("tool_result") is not None
 ```
 
 ## How to run
@@ -53,7 +61,9 @@ def test_list_dashboards_prompt():
 # 1. Start all three services (see repo README for full instructions)
 docker compose up --build
 
-# 2. Run only integration tests (requires real .env with Sisense + LLM creds)
+# 2. Configure credentials once (see "Credentials" above)
+
+# 3. Run only integration tests
 pytest tests/integration/ -v -m integration
 ```
 
