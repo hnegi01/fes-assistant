@@ -33,9 +33,9 @@ from ._config import (
     _log_json_truncated,
     _make_module_logger,
 )
+from .mcp_client import McpClient
 
 logger = _make_module_logger("backend.agent.llm_routing", "llm_routing.log")
-from .mcp_client import McpClient
 
 REGISTRY_DIR: Path = ROOT_DIR / "config" / "registry"
 
@@ -59,6 +59,9 @@ Global rules:
   - If type is "integer", pass a number, NOT a quoted string.
   - If an enum is defined, the value MUST be one of the allowed enum values.
 - Optional parameters can be omitted if the user did not imply them.
+- If the user's message is too vague, too short, or contains no recognisable
+  intent, respond in natural language asking them to be more specific. DO NOT
+  guess a tool.
 - If no tool is clearly appropriate, answer the user directly in natural language
   and DO NOT call any tool.
 - Do NOT try to summarise results or explain anything beyond choosing a tool and args.
@@ -114,6 +117,8 @@ Rules:
 - Reply with ONLY the module name — a single word, nothing else.
 - Pick the module whose tools are most likely to fulfil the request.
 - If the request spans multiple modules, pick the primary one.
+- If the message has no recognisable Sisense administration intent (greetings,
+  random words, unrelated questions, gibberish), reply with exactly: none
 """.strip()
 
 
@@ -152,7 +157,7 @@ def _build_planning_history(
 
     if n_turns <= 0:
         return []
-    return history[-(n_turns * 2):]
+    return history[-(n_turns * 2) :]
 
 
 # -----------------------------------------------------------------------------
@@ -204,15 +209,20 @@ async def _route_to_module(
     latency_ms = int((time.perf_counter() - t0) * 1000)
 
     content, _ = _pick_tool_calls_from_llm_response(data)
+    raw = (content or "").strip().lower()
+    if raw == "none":
+        logger.info("Router signalled no Sisense intent for this message.")
+        return "__unclear__", latency_ms
     chosen = _parse_module_from_response(content or "", modules)
     if not chosen:
-        logger.warning("Router returned unrecognised response %r. Falling back.", (content or "").strip()[:80])
+        logger.warning("Router returned unrecognised response %r. Falling back.", raw[:80])
     return chosen, latency_ms
 
 
 # -----------------------------------------------------------------------------
 # 3-level hierarchical navigation
 # -----------------------------------------------------------------------------
+
 
 def _load_registry_index() -> Dict[str, Any]:
     """Load config/registry/index.json — Level 1 package descriptions."""
@@ -250,14 +260,16 @@ def _load_mixin_tools(package: str, mixin: str) -> List[Dict[str, Any]]:
     for row in rows:
         if not ALLOW_MUTATING_TOOLS and row.get("mutates"):
             continue
-        tools.append({
-            "type": "function",
-            "function": {
-                "name": row["tool_id"],
-                "description": row.get("description", ""),
-                "parameters": row.get("parameters", {"type": "object", "properties": {}}),
-            },
-        })
+        tools.append(
+            {
+                "type": "function",
+                "function": {
+                    "name": row["tool_id"],
+                    "description": row.get("description", ""),
+                    "parameters": row.get("parameters", {"type": "object", "properties": {}}),
+                },
+            }
+        )
     return tools
 
 
@@ -306,6 +318,9 @@ async def _navigate_to_tools(
     chosen_pkg, ms1 = await _route_to_module(latest_user_message, history, pkg_descs, trace_id)
     total_ms += ms1
 
+    if chosen_pkg == "__unclear__":
+        return [], "__unclear__", "", total_ms
+
     if not chosen_pkg:
         logger.warning("Level 1 navigation: no package selected")
         return [], "", "", total_ms
@@ -335,7 +350,10 @@ async def _navigate_to_tools(
     tools = _load_mixin_tools(chosen_pkg, chosen_mixin)
     logger.info(
         "Navigation complete: %s → %s → %d tools (total routing_ms=%d)",
-        chosen_pkg, chosen_mixin, len(tools), total_ms,
+        chosen_pkg,
+        chosen_mixin,
+        len(tools),
+        total_ms,
     )
     return tools, chosen_pkg, chosen_mixin, total_ms
 
@@ -422,9 +440,7 @@ async def call_llm_raw(
 # -----------------------------------------------------------------------------
 # Fallback: direct tool (only for when planning fails hard)
 # -----------------------------------------------------------------------------
-async def _fallback_direct_tool(
-    user_text: str, mcp_client: McpClient
-) -> Tuple[str, Dict[str, Any]]:
+async def _fallback_direct_tool(user_text: str, mcp_client: McpClient) -> Tuple[str, Dict[str, Any]]:
     """Run a safe, simple tool based on keywords if planning fails."""
     text = (user_text or "").lower()
 

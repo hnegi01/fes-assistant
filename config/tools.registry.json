@@ -3744,40 +3744,6 @@
     "examples": []
   },
   {
-    "tool_id": "queries.elasticube_run_sql_query",
-    "module": "queries",
-    "sub_module": "queries.core",
-    "class": "Queries",
-    "method": "elasticube_run_sql_query",
-    "description": "Run a SQL query against an elasticube.",
-    "full_doc": "Run a SQL query against an elasticube.\n\nSends ``POST /api/elasticubes/{elasticube_name}/Sql``.\n\nParameters\n----------\nelasticube_name : str\n    Elasticube / datamodel name.\nsql_payload : dict[str, Any]\n    SQL request body (for example ``{\"query\": \"SELECT ...\"}`` or fields\n    required by your Sisense version).\n\nReturns\n-------\ndict[str, Any]\n    Query result from the API, or ``{\"error\": \"...\"}`` on failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "elasticube_name": {
-          "type": "string",
-          "description": "Elasticube / datamodel name."
-        },
-        "sql_payload": {
-          "type": "object",
-          "description": "SQL request body (for example ``{\"query\": \"SELECT ...\"}`` or fields required by your Sisense version)."
-        }
-      },
-      "required": [
-        "elasticube_name",
-        "sql_payload"
-      ]
-    },
-    "mutates": true,
-    "tags": [
-      "queries",
-      "write"
-    ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
-    "examples": []
-  },
-  {
     "tool_id": "queries.elasticubes_run_jaql_csv",
     "module": "queries",
     "sub_module": "queries.core",

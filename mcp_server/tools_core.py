@@ -673,6 +673,17 @@ def _resolve_sdk_callable(
     return func, meta, coerced
 
 
+def _sdk_error_payload(tool_id: str, result: Any) -> Optional[Dict[str, Any]]:
+    """
+    SDK methods that fail return {"error": "..."} instead of raising.
+    Detect that pattern and normalise to ok=False so callers don't have to
+    inspect the result dict themselves.
+    """
+    if isinstance(result, dict) and list(result.keys()) == ["error"]:
+        return {"tool_id": tool_id, "ok": False, "error": result["error"], "error_type": "SDKError"}
+    return None
+
+
 def _add_unused_columns_summary(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     Add summary stats for access.get_unused_columns result payloads.
@@ -725,6 +736,10 @@ def invoke_tool(tool_id: str, arguments: Optional[Dict[str, Any]] = None) -> Dic
 
         result = func(**coerced)
         _log_json_truncated("SDK method result (truncated)", result)
+
+        err = _sdk_error_payload(tool_id, result)
+        if err:
+            return err
 
         payload: Dict[str, Any] = {"tool_id": tool_id, "ok": True, "result": result}
 
@@ -791,6 +806,10 @@ def invoke_tool_with_emit(
 
         result = func(**coerced)
         _log_json_truncated("SDK method result (truncated)", result)
+
+        err = _sdk_error_payload(tool_id, result)
+        if err:
+            return err
 
         payload: Dict[str, Any] = {"tool_id": tool_id, "ok": True, "result": result}
 

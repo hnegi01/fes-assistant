@@ -16,7 +16,7 @@
     },
     "datamodel": {
       "class": "DataModel",
-      "description": "Manage Sisense data models, connections, builds, security, and data.\n\nCovers the full data model lifecycle — schema retrieval, provisioning\nnew models and tables, connection management, row-level security rules,\nuser/group share assignments, and direct table-level data access via SQL."
+      "description": "Manage Sisense data models, connections, builds, security, and data.\n\nCovers the full data model lifecycle — schema retrieval, provisioning\nnew models and tables, connection management, row-level security rules,\nuser/group share assignments, row count statistics per table, and direct\ntable-level data access via SQL."
     },
     "encryption": {
       "class": "Encryption",

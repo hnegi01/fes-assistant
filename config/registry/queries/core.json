@@ -127,60 +127,6 @@
     ]
   },
   {
-    "tool_id": "queries.elasticube_run_sql_query",
-    "description": "Run a SQL query against an elasticube.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "elasticube_name": {
-          "type": "string",
-          "description": "Elasticube / datamodel name."
-        },
-        "sql_payload": {
-          "type": "object",
-          "description": "SQL request body (for example ``{\"query\": \"SELECT ...\"}`` or fields required by your Sisense version)."
-        }
-      },
-      "required": [
-        "elasticube_name",
-        "sql_payload"
-      ]
-    },
-    "mutates": true,
-    "examples": [
-      {
-        "user_query": "Run a SQL query to fetch sales data for the current year.",
-        "arguments": {
-          "elasticube_name": "SalesElasticube",
-          "sql_payload": {
-            "query": "SELECT * FROM sales WHERE year = 2023"
-          }
-        },
-        "notes": "This call retrieves all sales data for the year 2023 from the 'SalesElasticube' datamodel."
-      },
-      {
-        "user_query": "Get the top 10 products by revenue.",
-        "arguments": {
-          "elasticube_name": "ProductAnalytics",
-          "sql_payload": {
-            "query": "SELECT product_name, SUM(revenue) AS total_revenue FROM products GROUP BY product_name ORDER BY total_revenue DESC LIMIT 10"
-          }
-        },
-        "notes": "Use this call to identify the top 10 revenue-generating products from the 'ProductAnalytics' elasticube."
-      },
-      {
-        "user_query": "Find the average order value for the last quarter.",
-        "arguments": {
-          "elasticube_name": "OrdersElasticube",
-          "sql_payload": {
-            "query": "SELECT AVG(order_value) AS avg_order_value FROM orders WHERE order_date >= '2023-07-01' AND order_date <= '2023-09-30'"
-          }
-        },
-        "notes": "This query calculates the average order value for the third quarter of 2023 using the 'OrdersElasticube' datamodel."
-      }
-    ]
-  },
-  {
     "tool_id": "queries.elasticubes_run_jaql_csv",
     "description": "Run a JAQL query and return CSV output.",
     "parameters": {

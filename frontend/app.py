@@ -990,7 +990,7 @@ if mode == MODE_CHAT:
                 st.rerun()
 
     # Chat input (Chat mode)
-    user_input = st.chat_input("Ask something about Sisense...")
+    user_input = (st.chat_input("Ask something about Sisense...") or "").strip() or None
 
     if user_input:
         logger.debug("[CHAT] User question: %s", user_input)
@@ -1003,6 +1003,7 @@ if mode == MODE_CHAT:
 
         with st.chat_message("assistant"):
             # Chat mode: no progress placeholder (JSON path)
+            _call_failed = False
             with st.spinner("Thinking..."):
                 try:
                     reply, tr = call_backend_turn(
@@ -1017,6 +1018,7 @@ if mode == MODE_CHAT:
                         progress_placeholder=None,
                     )
                 except Exception as e:
+                    _call_failed = True
                     logger.exception("LLM+tools call failed: %s", e)
                     st.error("Sorry, something went wrong while calling the agent.")
                     st.exception(e)
@@ -1063,11 +1065,6 @@ if mode == MODE_CHAT:
 
                         st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
 
-                        if tr2:
-                            render_tool_result(tr2)
-                        st.markdown("**Summary**")
-                        st.markdown(reply2)
-
                         st.session_state[CHAT_MESSAGES_KEY].append(
                             {"role": "assistant", "content": reply2, "tool_result": tr2, "run_log": None}
                         )
@@ -1084,15 +1081,11 @@ if mode == MODE_CHAT:
                         )
                         st.rerun()
             else:
-                if tr:
-                    render_tool_result(tr)
-
-                st.markdown("**Summary**")
-                st.markdown(reply)
-
                 st.session_state[CHAT_MESSAGES_KEY].append(
                     {"role": "assistant", "content": reply, "tool_result": tr, "run_log": None}
                 )
+                if not _call_failed:
+                    st.rerun()
 
 
 # =============================================================================

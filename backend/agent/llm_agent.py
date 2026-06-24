@@ -31,8 +31,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import jsonschema
 
-from .mcp_client import McpClient
-
 # --- _config ---
 from ._config import (
     ALLOW_MUTATING_TOOLS,
@@ -41,7 +39,6 @@ from ._config import (
     LLM_PLANNING_HISTORY_TURNS,
     LLM_PROVIDER,
     REQUIRE_MUTATION_CONFIRM,
-    _configure_langsmith_tracing,  # re-exported: test_langsmith.py calls m._configure_langsmith_tracing
     _log_json_truncated,
     _scrub_secrets,
     _write_llm_trace,
@@ -54,7 +51,7 @@ from ._registry import (
     _describe_tool_result,
     _load_registry_rows,
     _safe_json_loads,  # re-exported: test_smoke.py imports from llm_agent
-    _shrink_for_llm,   # re-exported: test_smoke.py imports from llm_agent
+    _shrink_for_llm,  # re-exported: test_smoke.py imports from llm_agent
 )
 
 # --- _routing ---
@@ -69,12 +66,10 @@ from ._routing import (
     _fallback_direct_tool,
     _load_all_package_tools,
     _navigate_to_tools,
-    _parse_module_from_response,  # re-exported: test_two_stage_routing.py calls m._parse_module_from_response
     _pick_tool_calls_from_llm_response,
-    _route_to_module,  # re-exported: test_two_stage_routing.py calls m._route_to_module
     call_llm_raw,
 )
-
+from .mcp_client import McpClient
 
 # -----------------------------------------------------------------------------
 # Mutable globals — must live on this module so api_server.py reads the live value.
@@ -164,6 +159,32 @@ def _infer_mode_from_tools(tools: List[Dict[str, Any]]) -> str:
 def _approval_key(tool_id: str, args: Dict[str, Any]) -> Tuple[str, str]:
     """Stable key for UI approval matching."""
     return tool_id, json.dumps(args or {}, sort_keys=True, ensure_ascii=False)
+
+
+_CREDENTIAL_FIELDS: frozenset = frozenset(
+    {
+        "domain",
+        "token",
+        "ssl",
+        "source_domain",
+        "source_token",
+        "source_ssl",
+        "target_domain",
+        "target_token",
+        "target_ssl",
+    }
+)
+
+
+def _optional_arg_hint(tool_id: str, used_args: Dict[str, Any], tool_meta: Dict[str, Any]) -> str:
+    schema = tool_meta.get("parameters") or {}
+    props = schema.get("properties") or {}
+    required = set(schema.get("required") or [])
+    unused_optional = [k for k in props if k not in required and k not in _CREDENTIAL_FIELDS and k not in used_args]
+    if not unused_optional or len(unused_optional) > 3:
+        return ""
+    params = ", ".join(f"`{k}`" for k in unused_optional)
+    return f"\n\nOptional filters you could also specify: {params}."
 
 
 # -----------------------------------------------------------------------------
@@ -269,16 +290,28 @@ async def call_llm_with_tools(
         _nav_tools, _nav_pkg, _nav_mixin, _routing_ms = await _navigate_to_tools(
             latest_user_message, _history, turn_trace_id
         )
+        if _nav_pkg == "__unclear__":
+            _trace["outcome"] = "unclear_intent"
+            _write_llm_trace(_trace)
+            return (
+                "I didn't quite understand that. What would you like me to help with? "
+                "For example: 'show all users', 'list dashboards', or 'get all datamodels'."
+            )
         if _nav_tools:
             tools = _nav_tools
             logger.info(
                 "Navigation: %s → %s → %d tools (was %d)",
-                _nav_pkg, _nav_mixin, len(tools), _trace["tools_available"],
+                _nav_pkg,
+                _nav_mixin,
+                len(tools),
+                _trace["tools_available"],
             )
         else:
             logger.warning(
                 "Navigation failed (%s/%s), falling back to full tool list (%d)",
-                _nav_pkg, _nav_mixin, len(tools),
+                _nav_pkg,
+                _nav_mixin,
+                len(tools),
             )
 
     _trace["routing_module"] = f"{_nav_pkg}/{_nav_mixin}" if _nav_mixin else _nav_pkg
@@ -348,13 +381,19 @@ async def call_llm_with_tools(
         meta = TOOL_REGISTRY.get(tool_id) or {}
         mutates = bool(meta.get("mutates", False))
 
-        # Validate args against the tool's JSON schema so bad LLM outputs are visible in logs.
+        # Validate args against the tool's JSON schema; block on mismatch rather than proceeding silently.
         tool_schema = meta.get("parameters")
         if tool_schema:
             try:
                 jsonschema.validate(instance=args, schema=tool_schema)
             except jsonschema.ValidationError as _ve:
-                logger.warning("Tool %s arg validation warning: %s", tool_id, _ve.message)
+                logger.error("Tool %s arg validation failed: %s", tool_id, _ve.message)
+                _trace["outcome"] = "validation_failed"
+                _write_llm_trace(_trace)
+                return (
+                    f"I couldn't call `{tool_id}` — a required argument is invalid or missing: "
+                    f"{_ve.message}. Please provide more details."
+                )
 
         logger.info("Tool selected: %s (mutates=%s)", tool_id, mutates)
         _log_json_truncated("Tool args (from planner)", args)
@@ -410,7 +449,7 @@ async def call_llm_with_tools(
         last_name = tool_messages_for_llm[-1].get("name", "unknown")
         _trace["outcome"] = "summarization_disabled"
         _write_llm_trace(_trace)
-        return _describe_tool_result(last_name, LAST_TOOL_RESULT)
+        return _describe_tool_result(last_name, LAST_TOOL_RESULT) + _optional_arg_hint(tool_id, args, meta)
 
     followup_messages: List[Dict[str, Any]] = [
         {"role": "system", "content": summary_system_prompt},
@@ -438,4 +477,4 @@ async def call_llm_with_tools(
     _write_llm_trace(_trace)
 
     final_content, _ = _pick_tool_calls_from_llm_response(followup_data)
-    return final_content or ""
+    return (final_content or "") + _optional_arg_hint(tool_id, args, meta)
