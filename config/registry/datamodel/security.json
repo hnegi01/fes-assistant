@@ -1,13 +1,13 @@
 [
   {
     "tool_id": "datamodel.get_datasecurity",
-    "description": "Retrieves datasecurity table and column entries for a given DataModel in flat row format.",
+    "description": "Retrieve datasecurity table and column entries for a given data model.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to retrieve datasecurity for."
+          "description": "Name of the data model to retrieve datasecurity for."
         }
       },
       "required": [
@@ -41,13 +41,13 @@
   },
   {
     "tool_id": "datamodel.get_datasecurity_detail",
-    "description": "Retrieves detailed datasecurity rules for a specific DataModel, including share-level visibility.",
+    "description": "Retrieve detailed datasecurity rules for a data model, including share-level visibility.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to retrieve datasecurity rules for."
+          "description": "Name of the data model to retrieve datasecurity rules for."
         }
       },
       "required": [

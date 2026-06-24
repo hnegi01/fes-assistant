@@ -1,7 +1,7 @@
 [
   {
     "tool_id": "dashboard.add_dashboard_script",
-    "description": "Adds or overwrites a script to a dashboard, temporarily changing ownership if required.",
+    "description": "Add or overwrite a script on a dashboard.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -10,12 +10,13 @@
           "description": "The ID of the dashboard where the script will be added."
         },
         "script": {
-          "type": "string",
-          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
+          "type": "object",
+          "description": "The JavaScript script to add, provided as either a properly formatted JSON string, a raw multi-line script string, or a pre-built payload dictionary."
         },
         "executing_user": {
           "type": "string",
-          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
+          "description": "The username of the API user, used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user.",
+          "format": "email"
         }
       },
       "required": [
@@ -54,7 +55,7 @@
   },
   {
     "tool_id": "dashboard.add_widget_script",
-    "description": "Adds or overwrites a script for a specific widget within a dashboard.",
+    "description": "Add or overwrite a script for a specific widget within a dashboard.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -67,12 +68,13 @@
           "description": "The ID of the widget where the script will be added."
         },
         "script": {
-          "type": "string",
-          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
+          "type": "object",
+          "description": "The JavaScript script to add, provided as either a properly formatted JSON string, a raw multi-line script string, or a pre-built payload dictionary."
         },
         "executing_user": {
           "type": "string",
-          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
+          "description": "The username of the API user, used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user.",
+          "format": "email"
         }
       },
       "required": [

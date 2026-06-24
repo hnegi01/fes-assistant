@@ -1,13 +1,14 @@
 [
   {
     "tool_id": "access_management.change_folder_and_dashboard_ownership",
-    "description": "Method to change the ownership of folders and optionally dashboards.",
+    "description": "Change the ownership of folders and optionally dashboards.",
     "parameters": {
       "type": "object",
       "properties": {
         "executing_user": {
           "type": "string",
-          "description": "executing_user parameter"
+          "description": "The user running the operation. This is necessary for API access checks.",
+          "format": "email"
         },
         "folder_name": {
           "type": "string",
@@ -15,15 +16,16 @@
         },
         "new_owner_name": {
           "type": "string",
-          "description": "The new owner to whom the folder (and optionally dashboards) ownership will be transferred."
+          "description": "The new owner to whom the folder (and optionally dashboards) ownership will be transferred.",
+          "format": "email"
         },
         "original_owner_rule": {
           "type": "string",
-          "description": "Specifies the ownership rule to set original owner after changing ownership('edit' or 'view'). Default is 'edit'."
+          "description": "The ownership rule to set for the original owner after changing ownership (``\"edit\"`` or ``\"view\"``). Default is ``\"edit\"``."
         },
         "change_dashboard_ownership": {
           "type": "boolean",
-          "description": "Specifies whether to also change the ownership of dashboards in the folder tree. Default is True."
+          "description": "Whether to also change the ownership of dashboards in the folder tree. Default is ``True``."
         }
       },
       "required": [

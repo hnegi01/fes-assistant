@@ -1,13 +1,13 @@
 [
   {
     "tool_id": "datamodel.create_datamodel",
-    "description": "Creates a new DataModel in Sisense.",
+    "description": "Create a new data model in Sisense.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel."
+          "description": "Name of the data model."
         },
         "datamodel_type": {
           "type": "string",
@@ -67,13 +67,13 @@
   },
   {
     "tool_id": "datamodel.create_dataset",
-    "description": "Creates a new dataset in the specified DataModel.",
+    "description": "Create a new dataset in the specified data model.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel where the dataset will be created."
+          "description": "Name of the data model where the dataset will be created."
         },
         "connection_name": {
           "type": "string",
@@ -89,7 +89,7 @@
         },
         "dataset_name": {
           "type": "string",
-          "description": "Name of the dataset. Defaults to schema name if not provided."
+          "description": "Name of the dataset. Defaults to the schema name if not provided."
         }
       },
       "required": [
@@ -137,13 +137,13 @@
   },
   {
     "tool_id": "datamodel.create_table",
-    "description": "Create a new table in the specified DataModel.",
+    "description": "Create a new table in the specified data model.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel where the table will be created."
+          "description": "Name of the data model where the table will be created."
         },
         "table_name": {
           "type": "string",
@@ -151,19 +151,19 @@
         },
         "database_name": {
           "type": "string",
-          "description": "Name of the data source database. If not provided, will try to infer from the DataModel."
+          "description": "Name of the data source database. If not provided, inferred from the data model's dataset."
         },
         "schema_name": {
           "type": "string",
-          "description": "Name of the data source schema. If not provided, will try to infer from the DataModel."
+          "description": "Name of the data source schema. If not provided, inferred from the data model's dataset."
         },
         "dataset_id": {
           "type": "string",
-          "description": "ID of the dataset where the table will be created. If not provided, will try to infer from the DataModel."
+          "description": "ID of the dataset where the table will be created. If not provided, inferred from the data model (requires a single dataset)."
         },
         "import_query": {
           "type": "string",
-          "description": "SQL statement used as custom import query. Defaults to None."
+          "description": "SQL statement used as a custom import query. Defaults to ``None``."
         },
         "description": {
           "type": "string",
@@ -174,11 +174,11 @@
           "items": {
             "type": "string"
           },
-          "description": "List of tags to apply to the table. Defaults to None."
+          "description": "List of tags to apply to the table. Defaults to ``None``."
         },
         "build_behavior_config": {
           "type": "object",
-          "description": "Configuration for table build behavior."
+          "description": "Build behavior configuration applied for EXTRACT models. Supported fields: ``mode`` (one of ``\"replace\"``, ``\"replace_changes\"``, ``\"append\"``, ``\"increment\"``) and, when ``mode`` is ``\"increment\"``, ``column_name`` (the incremental column)."
         }
       },
       "required": [
@@ -231,13 +231,13 @@
   },
   {
     "tool_id": "datamodel.deploy_datamodel",
-    "description": "Deploy (build or publish) the specified DataModel based on its type.",
+    "description": "Deploy (build or publish) the specified data model based on its type.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to deploy."
+          "description": "Name of the data model to deploy."
         },
         "build_type": {
           "type": "string",
@@ -264,12 +264,12 @@
         },
         "row_limit": {
           "type": "integer",
-          "description": "Row limit for build. Applicable only for EXTRACT.",
+          "description": "Maximum number of rows to process for EXTRACT builds. Defaults to ``0`` (no limit). Ignored for LIVE models.",
           "minimum": 1
         },
         "schema_origin": {
           "type": "string",
-          "description": "Schema origin for build. Applicable only for EXTRACT.",
+          "description": "Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen in the Data page, the default) or ``\"running\"`` (last successfully built version). Ignored for LIVE models.",
           "enum": [
             "latest",
             "schema_changes"
@@ -312,17 +312,17 @@
   },
   {
     "tool_id": "datamodel.setup_datamodel",
-    "description": "Setup a DataModel using existing connection and by creating a datamodel, dataset, and table.",
+    "description": "Set up a data model end to end using an existing connection.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel."
+          "description": "Name of the data model."
         },
         "datamodel_type": {
           "type": "string",
-          "description": "Type of DataModel. Should be either \"extract\" (for Elasticube) or \"live\" (for Live).",
+          "description": "Type of the data model. Should be either ``\"extract\"`` (for Elasticube) or ``\"live\"`` (for Live).",
           "enum": [
             "extract",
             "live"
@@ -416,7 +416,7 @@
         },
         "dataset_name": {
           "type": "string",
-          "description": "Name of the dataset. Defaults to schema name if not provided."
+          "description": "Name of the dataset. Defaults to the schema name if not provided."
         }
       },
       "required": [

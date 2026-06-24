@@ -2,6 +2,6 @@
   "package": "queries",
   "class": "Queries",
   "modules": {
-    "core": "Query execution — run a JAQL query against an elasticube, run a JAQL query and return results as CSV, run a SQL query against a datasource."
+    "core": "Query execution — run a JAQL query against an elasticube (``elasticube_run_jaql_query``), run a JAQL query and return results as CSV (``elasticubes_run_jaql_csv``)."
   }
 }

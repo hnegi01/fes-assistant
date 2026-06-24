@@ -45,16 +45,17 @@
   },
   {
     "tool_id": "migration.migrate_users",
-    "description": "Migrates specific users from the source environment to the target environment.",
+    "description": "Migrate specific users from the source environment to the target environment.",
     "parameters": {
       "type": "object",
       "properties": {
         "user_name_list": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "format": "email"
           },
-          "description": "A list of user names to migrate."
+          "description": "The user identifiers (email addresses) to migrate."
         }
       },
       "required": [

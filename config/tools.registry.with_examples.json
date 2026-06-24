@@ -5,14 +5,15 @@
     "sub_module": "access_management.ownership",
     "class": "AccessManagement",
     "method": "change_folder_and_dashboard_ownership",
-    "description": "Method to change the ownership of folders and optionally dashboards.",
-    "full_doc": "Method to change the ownership of folders and optionally dashboards.\nThis method changes the ownership of a target folder and the entire\ntree structure surrounding it, including subfolders, sibling folders,\nand parent folders.\nOptionally, it will also change the ownership of dashboards associated\nwith these folders.\n\nParameters:\n    user_name (str): The user running the tool. This is necessary for\n    API access checks.\n    folder_name (str): The target folder whose ownership needs to be\n    changed.\n    new_owner_name (str): The new owner to whom the folder (and\n    optionally dashboards) ownership will be transferred.\n    original_owner_rule (str, optional): Specifies the ownership rule\n    to set original owner after changing ownership('edit' or 'view').\n    Default is 'edit'.\n    change_dashboard_ownership (bool, optional): Specifies whether to\n    also change the ownership of dashboards in the folder tree. Default\n    is True.",
+    "description": "Change the ownership of folders and optionally dashboards.",
+    "full_doc": "Change the ownership of folders and optionally dashboards.\n\nChanges the ownership of a target folder and the entire tree structure\nsurrounding it, including subfolders, sibling folders, and parent\nfolders. Optionally, it also changes the ownership of dashboards\nassociated with these folders.\n\nParameters\n----------\nexecuting_user : str\n    The user running the operation. This is necessary for API access\n    checks. (format: email)\nfolder_name : str\n    The target folder whose ownership needs to be changed.\nnew_owner_name : str\n    The new owner to whom the folder (and optionally dashboards)\n    ownership will be transferred. (format: email)\noriginal_owner_rule : str, optional\n    The ownership rule to set for the original owner after changing\n    ownership (``\"edit\"`` or ``\"view\"``). Default is ``\"edit\"``.\nchange_dashboard_ownership : bool, optional\n    Whether to also change the ownership of dashboards in the folder\n    tree. Default is ``True``.\n\nReturns\n-------\ndict[str, Any] | None\n    A dictionary with ``total_folders_changed`` and\n    ``total_dashboards_changed`` counts on success, ``{\"error\": \"...\"}``\n    if the executing user or new owner cannot be resolved, or ``None``\n    when there are no folders or dashboards to change.",
     "parameters": {
       "type": "object",
       "properties": {
         "executing_user": {
           "type": "string",
-          "description": "executing_user parameter"
+          "description": "The user running the operation. This is necessary for API access checks.",
+          "format": "email"
         },
         "folder_name": {
           "type": "string",
@@ -20,15 +21,16 @@
         },
         "new_owner_name": {
           "type": "string",
-          "description": "The new owner to whom the folder (and optionally dashboards) ownership will be transferred."
+          "description": "The new owner to whom the folder (and optionally dashboards) ownership will be transferred.",
+          "format": "email"
         },
         "original_owner_rule": {
           "type": "string",
-          "description": "Specifies the ownership rule to set original owner after changing ownership('edit' or 'view'). Default is 'edit'."
+          "description": "The ownership rule to set for the original owner after changing ownership (``\"edit\"`` or ``\"view\"``). Default is ``\"edit\"``."
         },
         "change_dashboard_ownership": {
           "type": "boolean",
-          "description": "Specifies whether to also change the ownership of dashboards in the folder tree. Default is True."
+          "description": "Whether to also change the ownership of dashboards in the folder tree. Default is ``True``."
         }
       },
       "required": [
@@ -43,8 +45,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I transfer ownership of the 'Sales Reports' folder to the user 'john.doe' and ensure all dashboards in the folder are also transferred?",
@@ -112,8 +114,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Update the password for user ID '12345abcde' to 'NewSecureP@ssw0rd'.",
@@ -147,8 +149,8 @@
     "sub_module": "access_management.admin",
     "class": "AccessManagement",
     "method": "create_schedule_build",
-    "description": "Method to create a schedule build for a DataModel.",
-    "full_doc": "Method to create a schedule build for a DataModel.\n\nSupports both cron-based schedules (e.g., every Monday at 9:00 UTC)\nand interval-based schedules (e.g., every 2 days, 1 hour, 30 minutes).\n\nParameters:\n    datamodel_name (str): The name of the DataModel.\n    build_type (str): Optional. Type of the build (e.g., \"ACCUMULATE\", \"FULL\",\n    \"SCHEMA_CHANGES\"). Defaults to \"ACCUMULATE\".\n    days (list, optional): List of days for cron schedule. Eg.: [\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\",\n    \"SAT\"] or [\"*\"] for all days.\n    hour (int, optional): Hour in 24-hour format (UTC).\n    minute (int, optional): Minute of the hour (UTC).\n    interval_days (int, optional): Interval in days.\n    interval_hours (int, optional): Interval in hours.\n    interval_minutes (int, optional): Interval in minutes.\n\nReturns:\n    dict: API response or error.",
+    "description": "Create a schedule build for a DataModel.",
+    "full_doc": "Create a schedule build for a DataModel.\n\nSupports both cron-based schedules (e.g. every Monday at 9:00 UTC) and\ninterval-based schedules (e.g. every 2 days, 1 hour, 30 minutes). An\ninterval-based schedule is created when any of the ``interval_*``\nparameters are provided; otherwise a cron-based schedule is created from\n``days``, ``hour``, and ``minute``.\n\nParameters\n----------\ndatamodel_name : str\n    The name of the DataModel.\nbuild_type : str, optional\n    Type of the build, one of ``\"ACCUMULATE\"``, ``\"FULL\"``, or\n    ``\"SCHEMA_CHANGES\"``. Defaults to ``\"ACCUMULATE\"``.\ndays : list[str] | None, optional\n    Keyword-only. List of days for a cron schedule, e.g.\n    ``[\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"]`` or ``[\"*\"]``\n    for all days.\nhour : int | None, optional\n    Keyword-only. Hour in 24-hour format (UTC) for a cron schedule.\nminute : int | None, optional\n    Keyword-only. Minute of the hour (UTC) for a cron schedule.\ninterval_days : int | None, optional\n    Keyword-only. Interval in days for an interval-based schedule.\ninterval_hours : int | None, optional\n    Keyword-only. Interval in hours for an interval-based schedule.\ninterval_minutes : int | None, optional\n    Keyword-only. Interval in minutes for an interval-based schedule.\n\nReturns\n-------\ndict[str, Any]\n    The API response on success, or ``{\"error\": \"...\"}`` on failure or\n    invalid schedule configuration.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -158,34 +160,34 @@
         },
         "build_type": {
           "type": "string",
-          "description": "Optional. Type of the build (e.g., \"ACCUMULATE\", \"FULL\", \"SCHEMA_CHANGES\"). Defaults to \"ACCUMULATE\"."
+          "description": "Type of the build, one of ``\"ACCUMULATE\"``, ``\"FULL\"``, or ``\"SCHEMA_CHANGES\"``. Defaults to ``\"ACCUMULATE\"``."
         },
         "days": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "List of days for cron schedule. Eg.: [\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"] or [\"*\"] for all days."
+          "description": "Keyword-only. List of days for a cron schedule, e.g. ``[\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"]`` or ``[\"*\"]`` for all days."
         },
         "hour": {
           "type": "integer",
-          "description": "Hour in 24-hour format (UTC)."
+          "description": "Keyword-only. Hour in 24-hour format (UTC) for a cron schedule."
         },
         "minute": {
           "type": "integer",
-          "description": "Minute of the hour (UTC)."
+          "description": "Keyword-only. Minute of the hour (UTC) for a cron schedule."
         },
         "interval_days": {
           "type": "integer",
-          "description": "Interval in days."
+          "description": "Keyword-only. Interval in days for an interval-based schedule."
         },
         "interval_hours": {
           "type": "integer",
-          "description": "Interval in hours."
+          "description": "Keyword-only. Interval in hours for an interval-based schedule."
         },
         "interval_minutes": {
           "type": "integer",
-          "description": "Interval in minutes."
+          "description": "Keyword-only. Interval in minutes for an interval-based schedule."
         }
       },
       "required": [
@@ -197,8 +199,8 @@
       "access_management",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I schedule a daily build for the SalesData model at 2:30 AM UTC?",
@@ -246,14 +248,14 @@
     "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "create_user",
-    "description": "Creates a new user by processing the provided user data to replace role",
-    "full_doc": "Creates a new user by processing the provided user data to replace role\nnames and group names with their corresponding IDs, then sends a POST\nrequest to create the user.\n\nParameters:\n    user_data (dict): A dictionary containing user details such as\n    email, firstName, lastName, role (role name), groups (list of group\n    names), and preferences.\n\nReturns:\n    dict: The response from the API if successful,\n        or a dictionary with an 'error' key if the operation fails.",
+    "description": "Create a new user in Sisense.",
+    "full_doc": "Create a new user in Sisense.\n\nProcesses the provided user data to resolve the role name and group\nnames to their corresponding IDs, then sends a POST request to create\nthe user. The ``role`` field is matched case-insensitively (with\n``\"VIEWER\"`` mapped to ``\"CONSUMER\"`` and ``\"DESIGNER\"`` to\n``\"CONTRIBUTOR\"``) and replaced with the resolved ``roleId``; group\nnames in ``groups`` are resolved to group IDs.\n\nParameters\n----------\nuser_data : dict[str, Any]\n    Dictionary containing the user details. Supported fields use\n    canonical Sisense payload field names:\n\n    - ``email`` : str \u2014 the user's email address.\n    - ``firstName`` : str \u2014 the user's first name.\n    - ``lastName`` : str \u2014 the user's last name.\n    - ``role`` : str \u2014 role name to assign (resolved to ``roleId``).\n    - ``groups`` : list[str] \u2014 group names to assign (resolved to IDs).\n    - ``preferences`` : dict \u2014 user preference settings.\n\nReturns\n-------\ndict[str, Any]\n    The created user object returned by the API if successful, or a\n    dictionary with an ``error`` key if the operation fails.",
     "parameters": {
       "type": "object",
       "properties": {
         "user_data": {
           "type": "object",
-          "description": "A dictionary containing user details such as email, firstName, lastName, role (role name), groups (list of group names), and preferences."
+          "description": "Dictionary containing the user details. Supported fields use canonical Sisense payload field names: - ``email`` : str \u2014 the user's email address. - ``firstName`` : str \u2014 the user's first name. - ``lastName`` : str \u2014 the user's last name. - ``role`` : str \u2014 role name to assign (resolved to ``roleId``). - ``groups`` : list[str] \u2014 group names to assign (resolved to IDs). - ``preferences`` : dict \u2014 user preference settings."
         }
       },
       "required": [
@@ -266,8 +268,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Create a new user with the email john.doe@example.com and assign them the Admin role.",
@@ -336,14 +338,15 @@
     "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "delete_user",
-    "description": "Deletes a user by their email (username).",
-    "full_doc": "Deletes a user by their email (username).\n\nParameters:\n    user_name (str): The email or username of the user to be deleted.\n\nReturns:\n    dict: Response from the API if successful,\n        or an error message dict.",
+    "description": "Delete a user by their email (username).",
+    "full_doc": "Delete a user by their email (username).\n\nResolves the user by email/username and sends a DELETE request to remove\nthe account.\n\nParameters\n----------\nuser_name : str\n    The email or username of the user to be deleted. (format: email)\n\nReturns\n-------\ndict[str, Any]\n    A success message dict from the API if successful, or an\n    ``{\"error\": \"...\"}`` dict on failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "user_name": {
           "type": "string",
-          "description": "The email or username of the user to be deleted."
+          "description": "The email or username of the user to be deleted.",
+          "format": "email"
         }
       },
       "required": [
@@ -356,8 +359,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Remove the user with the email john.doe@example.com from the system.",
@@ -388,8 +391,8 @@
     "sub_module": "access_management.admin",
     "class": "AccessManagement",
     "method": "get_all_dashboard_shares",
-    "description": "Method to retrieve all dashboard shares, including user and group details for each shared dashboard.",
-    "full_doc": "Method to retrieve all dashboard shares, including user and group details for each shared dashboard.\n\nThis method uses pagination to retrieve all dashboards and their share information, and it collects\ncorresponding user and group details for each share.\n\nReturns:\n    list: A list of dictionaries containing the dashboard title, share type (user or group),\n    and share name (email or group name).",
+    "description": "Retrieve all dashboard shares, including user and group details for each shared dashboard.",
+    "full_doc": "Retrieve all dashboard shares, including user and group details for each shared dashboard.\n\nUses pagination to retrieve all dashboards and their share information,\nand collects the corresponding user and group details for each share.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of dictionaries containing the dashboard title, share type\n    (``user`` or ``group``), and share name (email or group name). An\n    empty list is returned if users or groups cannot be fetched.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -401,8 +404,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I see all the dashboards shared with users and groups in my organization?",
@@ -427,8 +430,8 @@
     "sub_module": "access_management.columns",
     "class": "AccessManagement",
     "method": "get_datamodel_columns",
-    "description": "Retrieves columns from a DataModel by collecting them from its datasets and tables.",
-    "full_doc": "Retrieves columns from a DataModel by collecting them from its datasets and tables.\n\nParameters:\n    datamodel_name (str): The name of the DataModel from which to extract columns.\n\nReturns:\n    list: A list of dictionaries where each dictionary contains DataModel ID, DataModel name,\n    table name, and column name.",
+    "description": "Retrieve columns from a DataModel by collecting them from its datasets and tables.",
+    "full_doc": "Retrieve columns from a DataModel by collecting them from its datasets and tables.\n\nResolves the DataModel ID by title, then walks its datasets and tables\nto gather every column.\n\nParameters\n----------\ndatamodel_name : str\n    The name of the DataModel from which to extract columns.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of dictionaries, each containing ``datamodel_id``,\n    ``datamodel_name``, ``table``, and ``column``. An empty list is\n    returned if the DataModel cannot be found or has no columns.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -447,8 +450,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What are the columns available in the 'SalesAnalytics' DataModel?",
@@ -479,8 +482,8 @@
     "sub_module": "access_management.groups",
     "class": "AccessManagement",
     "method": "get_group",
-    "description": "Retrieves group details by their name.",
-    "full_doc": "Retrieves group details by their name.\n\nParameters:\n    name (str): The name of the group to be retrieved.\n\nReturns:\n    dict: Group details, or {'error': ...} if retrieval fails or not\n    found.",
+    "description": "Retrieve group details by name.",
+    "full_doc": "Retrieve group details by name.\n\nLooks up a group by its name and returns its ID, name, and default\nrole.\n\nParameters\n----------\nname : str\n    The name of the group to be retrieved.\n\nReturns\n-------\ndict[str, Any]\n    A dictionary with ``GROUP_ID``, ``GROUP_NAME``, and ``defaultRole``,\n    or ``{\"error\": \"...\"}`` if retrieval fails or the group is not found.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -499,8 +502,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you get the details for the 'Sales Team' group?",
@@ -544,8 +547,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Who am I logged in as using this API token?",
@@ -582,8 +585,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What roles are available in my Sisense instance?",
@@ -608,8 +611,8 @@
     "sub_module": "access_management.columns",
     "class": "AccessManagement",
     "method": "get_unused_columns",
-    "description": "Identify unused columns in a given DataModel by comparing all available columns against the columns",
-    "full_doc": "Identify unused columns in a given DataModel by comparing all available columns against the columns\nreferenced in associated dashboards.\n\nCovers:\n- Dashboard Filters: Dashboard-level filters, Widget filters, Dependent Filters.\n- Widget Panels: Includes Row, Values, Column panels, and Measured Filters.\n\nParameters:\n    datamodel_name (str): The name of the DataModel to analyze.\n\nReturns:\n    list: A list of dictionaries containing unused column details with a \"used\" field set to True or False.\n\nRaises:\n    ValueError: If no columns are found for the given DataModel (for example, if it does not exist\n                or is not accessible).",
+    "description": "Identify unused columns in a DataModel by comparing all columns against dashboard usage.",
+    "full_doc": "Identify unused columns in a DataModel by comparing all columns against dashboard usage.\n\nCompares every available column against the columns referenced in the\ndashboards associated with the DataModel. Coverage includes dashboard\nfilters (dashboard-level, widget, and dependent filters) and widget\npanels (row, values, column panels, and measured filters).\n\nParameters\n----------\ndatamodel_name : str\n    The name of the DataModel to analyze.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of column dictionaries, each with a ``used`` field set to\n    ``True`` or ``False``. An empty list is returned if dashboards\n    cannot be fetched.\n\nRaises\n------\nValueError\n    If no columns are found for the given DataModel (for example, if it\n    does not exist or is not accessible).",
     "parameters": {
       "type": "object",
       "properties": {
@@ -627,8 +630,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Which columns in the SalesData DataModel are not being used in any dashboards?",
@@ -679,8 +682,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Which columns are unused in the 'Sales Data' and 'Marketing Analytics' data models?",
@@ -719,7 +722,7 @@
     "class": "AccessManagement",
     "method": "get_user",
     "description": "Retrieve a user's details by email address, expanding group and role information.",
-    "full_doc": "Retrieve a user's details by email address, expanding group and role information.\n\nThis method fetches users with expanded ``groups`` and ``role`` data and then\nreturns the record matching the provided email address.\n\nParameters\n----------\nuser_email : str\n    Email address of the user to retrieve.\n\nReturns\n-------\ndict[str, Any]\n    User details on success. If the operation fails, returns a dictionary with an\n    ``error`` key.",
+    "full_doc": "Retrieve a user's details by email address, expanding group and role information.\n\nThis method fetches users with expanded ``groups`` and ``role`` data and then\nreturns the record matching the provided email address.\n\nParameters\n----------\nuser_email : str\n    Email address of the user to retrieve. (format: email)\n\nReturns\n-------\ndict[str, Any]\n    User details on success. If the operation fails, returns a dictionary with an\n    ``error`` key.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -739,8 +742,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Find details for the user with the email john.doe@example.com.",
@@ -771,14 +774,15 @@
     "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_user_with_role_and_group_names",
-    "description": "Retrieves a single user by email/username and returns both role and",
-    "full_doc": "Retrieves a single user by email/username and returns both role and\ngroup IDs and names.\n\nParameters:\n    user_name (str): The email or username of the user to be retrieved.\n\nReturns:\n    dict: User details including:\n        - USER_ID\n        - USER_NAME\n        - FIRST_NAME\n        - LAST_NAME\n        - EMAIL\n        - IS_ACTIVE\n        - ROLE_ID\n        - ROLE_NAME\n        - GROUP_IDS (list of group IDs)\n        - GROUP_NAMES (list of group names)\n    or {\"error\": \"...\"} on failure.",
+    "description": "Retrieve a single user by email/username with role and group details.",
+    "full_doc": "Retrieve a single user by email/username with role and group details.\n\nFetches the expanded users list and returns the matching user enriched\nwith both the role and group IDs and their resolved names.\n\nParameters\n----------\nuser_name : str\n    The email or username of the user to be retrieved. (format: email)\n\nReturns\n-------\ndict[str, Any]\n    User details including ``USER_ID``, ``USER_NAME``, ``FIRST_NAME``,\n    ``LAST_NAME``, ``EMAIL``, ``IS_ACTIVE``, ``ROLE_ID``, ``ROLE_NAME``,\n    ``GROUP_IDS`` (list of group IDs), and ``GROUP_NAMES`` (list of group\n    names), or ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "user_name": {
           "type": "string",
-          "description": "The email or username of the user to be retrieved."
+          "description": "The email or username of the user to be retrieved.",
+          "format": "email"
         }
       },
       "required": [
@@ -792,8 +796,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Find the user with the email john.doe@example.com and get their role and group details.",
@@ -824,8 +828,8 @@
     "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_users_all",
-    "description": "Retrieves user details along with tenant, group, and role information.",
-    "full_doc": "Retrieves user details along with tenant, group, and role information.\nRemoves \"Everyone\" group from users if they belong to other groups, but\nkeeps the \"Everyone\" group if it's the only group the user belongs to.\n\nReturns:\n    list: List of user details dicts, or [{'error': ...}] if retrieval\n    fails.",
+    "description": "Retrieve all users with group and role information.",
+    "full_doc": "Retrieve all users with group and role information.\n\nRetrieves user details along with group and role information. Removes\nthe \"Everyone\" group from users if they belong to other groups, but\nkeeps the \"Everyone\" group if it is the only group the user belongs to.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of user details dicts, or ``[{\"error\": \"...\"}]`` if retrieval\n    fails.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -837,8 +841,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you retrieve all user details, including their roles and groups, for our Sisense instance?",
@@ -863,8 +867,8 @@
     "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_users_with_role_names_and_group_names",
-    "description": "Retrieves all users from Sisense and enriches them with role names and",
-    "full_doc": "Retrieves all users from Sisense and enriches them with role names and\ngroup names by resolving the raw role and group IDs via the roles and\ngroups APIs.\n\nThis uses the users API (with raw IDs), then looks up:\n  - role names from `/api/roles`\n  - group names from `/api/v1/groups`\n\nReturns:\n    list[dict]: A list where each entry contains:\n        - USER_ID\n        - USER_NAME\n        - FIRST_NAME\n        - LAST_NAME\n        - EMAIL\n        - IS_ACTIVE\n        - ROLE_ID\n        - ROLE_NAME\n        - GROUP_IDS\n        - GROUP_NAMES\n    If any API call fails, a single-item list with an ``error`` key is returned.",
+    "description": "Retrieve all users enriched with role names and group names.",
+    "full_doc": "Retrieve all users enriched with role names and group names.\n\nFetches users from the users API (with raw IDs), then resolves role\nnames from ``/api/roles`` and group names from ``/api/v1/groups`` to\nenrich each user entry.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list where each entry contains ``USER_ID``, ``USER_NAME``,\n    ``FIRST_NAME``, ``LAST_NAME``, ``EMAIL``, ``IS_ACTIVE``, ``ROLE_ID``,\n    ``ROLE_NAME``, ``GROUP_IDS``, and ``GROUP_NAMES``. If any API call\n    fails, a single-item list with an ``error`` key is returned.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -877,8 +881,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Who are all the users in the system, and what roles and groups are they part of?",
@@ -904,7 +908,7 @@
     "class": "AccessManagement",
     "method": "update_user",
     "description": "Update an existing Sisense user identified by their email address.",
-    "full_doc": "Update an existing Sisense user identified by their email address.\n\nThis method finds the user by email and performs a partial update (PATCH).\nAll update fields MUST be provided inside the ``user_data`` dictionary. Do not\npass update fields at the top level.\n\nParameters\n----------\nuser_email : str\n    Email address of the user to update (used to locate the user).\nuser_data : dict[str, Any]\n    Dictionary of fields to update. Only include fields you want to change.\n\n    Supported fields\n    ----------------\n    - email : str\n        Update the user's email address.\n    - userName : str\n        Update the user's username/login name.\n    - firstName : str\n        Update the user's first name.\n    - lastName : str\n        Update the user's last name.\n    - role : str\n        Role name (e.g., \"viewer\", \"designer\"). This is resolved to ``roleId`` before\n        sending the API request.\n    - groups : list[str]\n        List of group names to apply. Group names are resolved to group IDs before\n        sending the API request. If ``groups`` is explicitly provided as an empty\n        list (``[]``), group memberships are cleared (tenant defaults may still apply).\n\nReturns\n-------\ndict[str, Any]\n    The updated user payload when successful. If the operation fails, returns a\n    dictionary with an ``error`` key.",
+    "full_doc": "Update an existing Sisense user identified by their email address.\n\nThis method finds the user by email and performs a partial update (PATCH).\nAll update fields MUST be provided inside the ``user_data`` dictionary. Do not\npass update fields at the top level.\n\nParameters\n----------\nuser_email : str\n    Email address of the user to update (used to locate the user). (format: email)\nuser_data : dict[str, Any]\n    Dictionary of fields to update. Only include fields you want to change.\n\n    Supported fields\n    ----------------\n    - email : str\n        Update the user's email address.\n    - userName : str\n        Update the user's username/login name.\n    - firstName : str\n        Update the user's first name.\n    - lastName : str\n        Update the user's last name.\n    - role : str\n        Role name (e.g., \"viewer\", \"designer\"). This is resolved to ``roleId`` before\n        sending the API request.\n    - groups : list[str]\n        List of group names to apply. Group names are resolved to group IDs before\n        sending the API request. If ``groups`` is explicitly provided as an empty\n        list (``[]``), group memberships are cleared (tenant defaults may still apply).\n\nReturns\n-------\ndict[str, Any]\n    The updated user payload when successful. If the operation fails, returns a\n    dictionary with an ``error`` key.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -929,8 +933,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Update the email and role of a user with the email john.doe@example.com.",
@@ -975,14 +979,14 @@
     "sub_module": "access_management.groups",
     "class": "AccessManagement",
     "method": "users_per_group",
-    "description": "Retrieves all users within a specific group by name.",
-    "full_doc": "Retrieves all users within a specific group by name.\n\nParameters:\n    group_name (str): The name of the group.\n\nReturns:\n    list or dict: A list of users in the group if successful, or a\n    dictionary containing an 'error' key if the operation fails.",
+    "description": "Retrieve all users within a specific group by name.",
+    "full_doc": "Retrieve all users within a specific group by name.\n\nResolves the group by name and then fetches the user objects that\nbelong to it.\n\nParameters\n----------\ngroup_name : str\n    The name of the group whose members to list.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of user objects in the group, or ``{\"error\": \"...\"}`` if\n    the operation fails.",
     "parameters": {
       "type": "object",
       "properties": {
         "group_name": {
           "type": "string",
-          "description": "The name of the group."
+          "description": "The name of the group whose members to list."
         }
       },
       "required": [
@@ -996,8 +1000,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Who are the members of the 'Data Analysts' group?",
@@ -1028,8 +1032,8 @@
     "sub_module": "access_management.groups",
     "class": "AccessManagement",
     "method": "users_per_group_all",
-    "description": "Retrieves all groups and maps them with the users belonging to those",
-    "full_doc": "Retrieves all groups and maps them with the users belonging to those\ngroups.\nGroups like 'Everyone' and 'All users in system' are excluded.\nUsers with roles like 'admin', 'dataAdmin', and 'sysAdmin' are mapped\nto the existing 'Admins' group.\nGroups with no users are also included in the final result.\n\nReturns:\n    list: A list of dictionaries, where each dictionary contains a\n    group name and the list of usernames in that group.",
+    "description": "Retrieve all groups mapped to the users belonging to them.",
+    "full_doc": "Retrieve all groups mapped to the users belonging to them.\n\nGroups like ``Everyone`` and ``All users in system`` are excluded.\nUsers with roles like ``admin``, ``dataAdmin``, and ``sysAdmin`` are\nmapped to the existing ``Admins`` group. Groups with no users are also\nincluded in the final result.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of dictionaries, where each dictionary contains a group name\n    and the list of usernames in that group. An empty list is returned\n    on failure.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -1042,8 +1046,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you show me all the groups in the system and the users assigned to each group?",
@@ -1087,8 +1091,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How do I delete the custom Blox action for exporting dashboard data?",
@@ -1131,8 +1135,8 @@
       "blox",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What custom Blox actions are available in my Sisense instance?",
@@ -1176,8 +1180,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I save a new custom action for my dashboard filters?",
@@ -1261,8 +1265,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Create a new Python notebook for data analysis.",
@@ -1345,8 +1349,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How do I delete the notebook with ID 'abc123'?",
@@ -1396,8 +1400,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I export the notebook with ID 'abc123'?",
@@ -1449,8 +1453,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Retrieve all notebooks related to custom code transformations.",
@@ -1506,8 +1510,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What files are stored in the notebook folder with ID 'folder_12345'?",
@@ -1562,8 +1566,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I rename the notebook file 'analysis.ipynb' to 'sales_analysis.ipynb'?",
@@ -1628,8 +1632,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I rename the 'DataScienceProjects' notebook folder to 'MLProjects'?",
@@ -1697,8 +1701,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I update the title and description of a notebook?",
@@ -1752,21 +1756,21 @@
     "sub_module": "datamodel.shares",
     "class": "DataModel",
     "method": "add_datamodel_shares",
-    "description": "Adds share entries (users and groups) to a DataModel.",
-    "full_doc": "Adds share entries (users and groups) to a DataModel.\n\nParameters:\n    datamodel_name (str): Name of the DataModel to add shares to.\n    shares (list): List of dictionaries containing share details. Each dictionary should have:\n        - name: Name of the user or group\n        - type: Type of the party (user or group)\n        - permission: Permission level (EDIT, READ, USE)\n\nReturns:\n    dict: Result of the share addition operation.",
+    "description": "Add share entries (users and groups) to a data model.",
+    "full_doc": "Add share entries (users and groups) to a data model.\n\nResolves each share's user email or group name to its identifier, merges\nthe new shares with the existing ones, and submits the combined share list.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to add shares to.\nshares : list[dict[str, Any]]\n    List of share definitions to add. Each dictionary should include:\n    ``name`` (user email or group name), ``type`` (``\"user\"`` or\n    ``\"group\"``), and ``permission`` (one of ``\"EDIT\"``, ``\"READ\"``,\n    ``\"USE\"``).\n\nReturns\n-------\ndict[str, Any]\n    API response on success, or ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to add shares to."
+          "description": "Name of the data model to add shares to."
         },
         "shares": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "List of dictionaries containing share details. Each dictionary should have: - name: Name of the user or group - type: Type of the party (user or group) - permission: Permission level (EDIT, READ, USE)"
+          "description": "List of share definitions to add. Each dictionary should include: ``name`` (user email or group name), ``type`` (``\"user\"`` or ``\"group\"``), and ``permission`` (one of ``\"EDIT\"``, ``\"READ\"``, ``\"USE\"``)."
         }
       },
       "required": [
@@ -1779,8 +1783,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Share the 'SalesAnalytics' DataModel with the sales team and give them edit permissions.",
@@ -1832,14 +1836,14 @@
     "sub_module": "datamodel.connections",
     "class": "DataModel",
     "method": "create_connections",
-    "description": "Creates a new connection using the provided payload.",
-    "full_doc": "Creates a new connection using the provided payload.\n\nParameters:\n    connection_payload (dict): The configuration payload for the connection.\n\nReturns:\n    dict or None: JSON response with connection details if successful, otherwise None.",
+    "description": "Create a new connection using the provided payload.",
+    "full_doc": "Create a new connection using the provided payload.\n\nSends ``POST /api/v2/connections`` with the given payload, which is\ntypically produced by ``generate_connections_payload``.\n\nParameters\n----------\nconnection_payload : dict[str, Any]\n    The configuration payload for the connection. Canonical fields\n    include ``provider``, ``name``, ``description``, ``parameters``,\n    ``enabled``, ``createdByUser``, and ``supportedModelTypes``.\n\nReturns\n-------\ndict[str, Any] | None\n    JSON response with the created connection details on success\n    (HTTP 201), otherwise ``None``.",
     "parameters": {
       "type": "object",
       "properties": {
         "connection_payload": {
           "type": "object",
-          "description": "The configuration payload for the connection."
+          "description": "The configuration payload for the connection. Canonical fields include ``provider``, ``name``, ``description``, ``parameters``, ``enabled``, ``createdByUser``, and ``supportedModelTypes``."
         }
       },
       "required": [
@@ -1851,8 +1855,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Create a new connection for the sales database.",
@@ -1908,14 +1912,14 @@
     "sub_module": "datamodel.build",
     "class": "DataModel",
     "method": "create_datamodel",
-    "description": "Creates a new DataModel in Sisense.",
-    "full_doc": "Creates a new DataModel in Sisense.\n\nParameters:\n    datamodel_name (str): Name of the DataModel.\n    datamodel_type (str): Type of the DataModel. Should be either \"extract\" (for Elasticube)\n        or \"live\" (for Live).\n\nReturns:\n    dict: Dictionary with the DataModel ID if created successfully, or an error message.",
+    "description": "Create a new data model in Sisense.",
+    "full_doc": "Create a new data model in Sisense.\n\nNormalizes and validates the model type, then sends a request to create\nthe data model and returns its assigned ID.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model.\ndatamodel_type : str\n    Type of the data model. Should be either ``\"extract\"`` (for Elasticube)\n    or ``\"live\"`` (for Live).\n\nReturns\n-------\ndict[str, Any]\n    Dictionary with the data model ID under ``\"datamodel_id\"`` on success,\n    or ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel."
+          "description": "Name of the data model."
         },
         "datamodel_type": {
           "type": "string",
@@ -1950,8 +1954,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Create a new DataModel named 'Sales Analytics' as an Elasticube.",
@@ -1985,14 +1989,14 @@
     "sub_module": "datamodel.build",
     "class": "DataModel",
     "method": "create_dataset",
-    "description": "Creates a new dataset in the specified DataModel.",
-    "full_doc": "Creates a new dataset in the specified DataModel.\n\nParameters:\n    datamodel_name (str): Name of the DataModel where the dataset will be created.\n    connection_name (str): Name of the connection to use.\n    database_name (str): Name of the data source database.\n    schema_name (str): Name of the data source schema.\n    dataset_name (str, optional): Name of the dataset. Defaults to schema name if not provided.\n\nReturns:\n    dict: A dictionary containing the full dataset object on success, or an error message on failure.",
+    "description": "Create a new dataset in the specified data model.",
+    "full_doc": "Create a new dataset in the specified data model.\n\nResolves the data model and connection by name, then sends a request to\ncreate a dataset. When ``dataset_name`` is omitted, the schema name is used.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model where the dataset will be created.\nconnection_name : str\n    Name of the connection to use.\ndatabase_name : str\n    Name of the data source database.\nschema_name : str\n    Name of the data source schema.\ndataset_name : str | None, optional\n    Name of the dataset. Defaults to the schema name if not provided.\n\nReturns\n-------\ndict[str, Any]\n    The full dataset object on success, or ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel where the dataset will be created."
+          "description": "Name of the data model where the dataset will be created."
         },
         "connection_name": {
           "type": "string",
@@ -2008,7 +2012,7 @@
         },
         "dataset_name": {
           "type": "string",
-          "description": "Name of the dataset. Defaults to schema name if not provided."
+          "description": "Name of the dataset. Defaults to the schema name if not provided."
         }
       },
       "required": [
@@ -2023,8 +2027,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Create a new dataset called 'sales_data' in the 'SalesModel' DataModel using the 'SalesDB' connection.",
@@ -2066,14 +2070,14 @@
     "sub_module": "datamodel.build",
     "class": "DataModel",
     "method": "create_table",
-    "description": "Create a new table in the specified DataModel.",
-    "full_doc": "Create a new table in the specified DataModel.\n\nParameters:\n    datamodel_name (str): Name of the DataModel where the table will be created.\n    table_name (str): Name of the table to create.\n    database_name (str, optional): Name of the data source database.\n        If not provided, will try to infer from the DataModel.\n    schema_name (str, optional): Name of the data source schema.\n        If not provided, will try to infer from the DataModel.\n    dataset_id (str, optional): ID of the dataset where the table will be created.\n        If not provided, will try to infer from the DataModel.\n    import_query (str, optional): SQL statement used as custom import query. Defaults to None.\n    description (str, optional): Description for the table. Defaults to an empty string.\n    tags (list, optional): List of tags to apply to the table. Defaults to None.\n    build_behavior_config (dict, optional): Configuration for table build behavior.\n\nReturns:\n    dict: Table object if created successfully or an error message.",
+    "description": "Create a new table in the specified data model.",
+    "full_doc": "Create a new table in the specified data model.\n\nResolves the data model and dataset (inferring database, schema, and\nconnection when not provided), fetches the table schema, and creates the\ntable. For EXTRACT models, applies an optional build behavior configuration.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model where the table will be created.\ntable_name : str\n    Name of the table to create.\ndatabase_name : str | None, optional\n    Name of the data source database. If not provided, inferred from the\n    data model's dataset.\nschema_name : str | None, optional\n    Name of the data source schema. If not provided, inferred from the\n    data model's dataset.\ndataset_id : str | None, optional\n    ID of the dataset where the table will be created. If not provided,\n    inferred from the data model (requires a single dataset).\nimport_query : str | None, optional\n    SQL statement used as a custom import query. Defaults to ``None``.\ndescription : str, optional\n    Description for the table. Defaults to an empty string.\ntags : list[str] | None, optional\n    List of tags to apply to the table. Defaults to ``None``.\nbuild_behavior_config : dict[str, Any] | None, optional\n    Build behavior configuration applied for EXTRACT models. Supported fields:\n    ``mode`` (one of ``\"replace\"``, ``\"replace_changes\"``, ``\"append\"``,\n    ``\"increment\"``) and, when ``mode`` is ``\"increment\"``, ``column_name``\n    (the incremental column).\n\nReturns\n-------\ndict[str, Any]\n    The created (or build-behavior-updated) table object on success, or\n    ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel where the table will be created."
+          "description": "Name of the data model where the table will be created."
         },
         "table_name": {
           "type": "string",
@@ -2081,19 +2085,19 @@
         },
         "database_name": {
           "type": "string",
-          "description": "Name of the data source database. If not provided, will try to infer from the DataModel."
+          "description": "Name of the data source database. If not provided, inferred from the data model's dataset."
         },
         "schema_name": {
           "type": "string",
-          "description": "Name of the data source schema. If not provided, will try to infer from the DataModel."
+          "description": "Name of the data source schema. If not provided, inferred from the data model's dataset."
         },
         "dataset_id": {
           "type": "string",
-          "description": "ID of the dataset where the table will be created. If not provided, will try to infer from the DataModel."
+          "description": "ID of the dataset where the table will be created. If not provided, inferred from the data model (requires a single dataset)."
         },
         "import_query": {
           "type": "string",
-          "description": "SQL statement used as custom import query. Defaults to None."
+          "description": "SQL statement used as a custom import query. Defaults to ``None``."
         },
         "description": {
           "type": "string",
@@ -2104,11 +2108,11 @@
           "items": {
             "type": "string"
           },
-          "description": "List of tags to apply to the table. Defaults to None."
+          "description": "List of tags to apply to the table. Defaults to ``None``."
         },
         "build_behavior_config": {
           "type": "object",
-          "description": "Configuration for table build behavior."
+          "description": "Build behavior configuration applied for EXTRACT models. Supported fields: ``mode`` (one of ``\"replace\"``, ``\"replace_changes\"``, ``\"append\"``, ``\"increment\"``) and, when ``mode`` is ``\"increment\"``, ``column_name`` (the incremental column)."
         }
       },
       "required": [
@@ -2121,8 +2125,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Create a new table named 'sales_data' in the 'RetailAnalytics' DataModel.",
@@ -2195,8 +2199,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Delete the 'Sales Analytics' data model hosted on the 'LocalHost' server.",
@@ -2230,14 +2234,14 @@
     "sub_module": "datamodel.build",
     "class": "DataModel",
     "method": "deploy_datamodel",
-    "description": "Deploy (build or publish) the specified DataModel based on its type.",
-    "full_doc": "Deploy (build or publish) the specified DataModel based on its type.\n\nThis method supports both Elasticube (EXTRACT) and Live models.\nThe behavior and required parameters differ based on model type:\n\n- For Elasticube models:\n    - build_type (str): Type of deployment. Options:\n        * \"schema_changes\" \u2014 Build only schema changes\n        * \"by_table\" \u2014 Build based on each table's config (e.g. incremental, accumulative)\n        * \"full\" \u2014 Rebuild the entire model from scratch (default)\n    - row_limit (int): Maximum number of rows to process. Defaults to 0 (no limit).\n    - schema_origin (str): Schema source. Options:\n        * \"latest\" \u2014 Build the schema as seen in the Data page (default)\n        * \"running\" \u2014 Build from the last successfully built version\n\n- For Live models:\n    - Only the `build_type` parameter is used internally and will be set to \"publish\"\n    - `row_limit` and `schema_origin` are ignored\n\nParameters:\n    datamodel_name (str): Name of the DataModel to deploy.\n    build_type (str): Type of deployment. Required for EXTRACT only.\n    row_limit (int): Row limit for build. Applicable only for EXTRACT.\n    schema_origin (str): Schema origin for build. Applicable only for EXTRACT.\n\nReturns:\n    dict: Deployment result including status, or error details.",
+    "description": "Deploy (build or publish) the specified data model based on its type.",
+    "full_doc": "Deploy (build or publish) the specified data model based on its type.\n\nSupports both Elasticube (EXTRACT) and Live models. For EXTRACT models a\nbuild is triggered using ``build_type``, ``row_limit``, and ``schema_origin``.\nFor LIVE models a publish is triggered and ``row_limit`` and\n``schema_origin`` are ignored.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to deploy.\nbuild_type : str, optional\n    Type of deployment for EXTRACT models. One of ``\"schema_changes\"``\n    (build only schema changes), ``\"by_table\"`` (build per each table's\n    config, e.g. incremental/accumulative), or ``\"full\"`` (rebuild the\n    entire model, the default). For LIVE models this is overridden to\n    ``\"publish\"``.\nrow_limit : int, optional\n    Maximum number of rows to process for EXTRACT builds. Defaults to ``0``\n    (no limit). Ignored for LIVE models.\nschema_origin : str, optional\n    Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen\n    in the Data page, the default) or ``\"running\"`` (last successfully built\n    version). Ignored for LIVE models.\n\nReturns\n-------\ndict[str, Any]\n    Deployment result including status on success, or ``{\"error\": \"...\"}``\n    on failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to deploy."
+          "description": "Name of the data model to deploy."
         },
         "build_type": {
           "type": "string",
@@ -2264,12 +2268,12 @@
         },
         "row_limit": {
           "type": "integer",
-          "description": "Row limit for build. Applicable only for EXTRACT.",
+          "description": "Maximum number of rows to process for EXTRACT builds. Defaults to ``0`` (no limit). Ignored for LIVE models.",
           "minimum": 1
         },
         "schema_origin": {
           "type": "string",
-          "description": "Schema origin for build. Applicable only for EXTRACT.",
+          "description": "Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen in the Data page, the default) or ``\"running\"`` (last successfully built version). Ignored for LIVE models.",
           "enum": [
             "latest",
             "schema_changes"
@@ -2285,8 +2289,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How do I rebuild the 'Sales_Analytics' DataModel from scratch?",
@@ -2322,14 +2326,14 @@
     "sub_module": "datamodel.core",
     "class": "DataModel",
     "method": "describe_datamodel",
-    "description": "Retrieve detailed datamodel structure in a flat, row-based format suitable for DataFrame or CSV export.",
-    "full_doc": "Retrieve detailed datamodel structure in a flat, row-based format suitable for DataFrame or CSV export.\n\nParameters:\n    datamodel_name (str): Name of the DataModel to describe.\n\nReturns:\n    list: List of dictionaries, each representing a single table row with context (datamodel, dataset, table).",
+    "description": "Retrieve data model structure in a flat, row-based format.",
+    "full_doc": "Retrieve data model structure in a flat, row-based format.\n\nResolves the data model by name and flattens its datasets and tables\ninto one row per table, suitable for DataFrame or CSV export.\n\nParameters\n----------\ndatamodel_name : str\n    Name (title) of the data model to describe.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of row dicts, each representing a single table with model,\n    dataset, connection, and table context. Returns an empty list if\n    the data model is not found.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to describe."
+          "description": "Name (title) of the data model to describe."
         }
       },
       "required": [
@@ -2341,8 +2345,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you provide the structure of the 'SalesAnalytics' DataModel?",
@@ -2373,14 +2377,14 @@
     "sub_module": "datamodel.core",
     "class": "DataModel",
     "method": "describe_datamodel_raw",
-    "description": "Retrieve detailed information about a specific DataModel, including share details.",
-    "full_doc": "Retrieve detailed information about a specific DataModel, including share details.\n\nParameters:\n    datamodel_name (str): Name of the DataModel to describe.\n\nReturns:\n    dict: Detailed information about the DataModel, or an error message if not found.",
+    "description": "Retrieve detailed information about a specific data model.",
+    "full_doc": "Retrieve detailed information about a specific data model.\n\nResolves the data model by name, then builds a nested structure\ncontaining model metadata along with its datasets, connections, and\ntables.\n\nParameters\n----------\ndatamodel_name : str\n    Name (title) of the data model to describe.\n\nReturns\n-------\ndict[str, Any]\n    A nested dict with keys ``name``, ``id``, ``type``,\n    ``datamodel_last_build_publish``, ``datamodel_last_updated``, and\n    ``datasets`` on success, or ``{\"error\": \"...\"}`` if not found.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to describe."
+          "description": "Name (title) of the data model to describe."
         }
       },
       "required": [
@@ -2392,8 +2396,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you provide detailed information about the Sales DataModel?",
@@ -2424,18 +2428,18 @@
     "sub_module": "datamodel.connections",
     "class": "DataModel",
     "method": "generate_connections_payload",
-    "description": "Generates the appropriate connections payload based on the datasource type.",
-    "full_doc": "Generates the appropriate connections payload based on the datasource type.\n\nParameters:\n    datasource_type (str): Type of datasource (e.g., \"ATHENA\", \"SNOWFLAKE\", \"ORACLE\").\n    connection_params (dict): Connection details for the datasource.\n\nReturns:\n    dict: Connections payload.",
+    "description": "Generate a connection payload for a given data source type.",
+    "full_doc": "Generate a connection payload for a given data source type.\n\nBuilds the provider-specific request body consumed by\n``create_connections``. The ``datasource_type`` is matched\ncase-insensitively. Supported types are ``\"Athena\"``, ``\"RedShift\"``,\n``\"BigQuery\"``, and ``\"DataBricks\"``.\n\nParameters\n----------\ndatasource_type : str\n    Type of data source. One of ``\"Athena\"``, ``\"RedShift\"``,\n    ``\"BigQuery\"``, ``\"DataBricks\"`` (case-insensitive).\nconnection_params : dict[str, Any]\n    Connection details. Supported keys depend on ``datasource_type``:\n\n    - Athena: ``name`` (required), ``region`` (required),\n      ``s3_output_location`` (required), ``aws_access_key`` (required),\n      ``aws_secret_key`` (required), ``description``, ``schema``,\n      ``additional_parameters``.\n    - DataBricks: ``name`` (required), ``connection_string`` (required),\n      ``token`` (required), ``description``, ``use_dynamic_schema``,\n      ``schema``.\n    - BigQuery: ``name`` (required), ``service_account_key_path``\n      (required), ``description``, ``use_service_account``,\n      ``use_proxy_server``, ``use_dynamic_schema``,\n      ``record_field_flattening_level``, ``unnest_arrays``,\n      ``allow_large_results``, ``use_storage_api``,\n      ``additional_parameters``, ``database``.\n    - RedShift: ``server`` (required), ``username`` (required),\n      ``password`` (required), ``name``, ``description``,\n      ``default_database``, ``additional_parameters``.\n\nReturns\n-------\ndict[str, Any]\n    The provider-specific connection payload.\n\nRaises\n------\nKeyError\n    If a required connection parameter is missing.\nValueError\n    If ``datasource_type`` is not supported.",
     "parameters": {
       "type": "object",
       "properties": {
         "datasource_type": {
           "type": "string",
-          "description": "Type of datasource (e.g., \"ATHENA\", \"SNOWFLAKE\", \"ORACLE\")."
+          "description": "Type of data source. One of ``\"Athena\"``, ``\"RedShift\"``, ``\"BigQuery\"``, ``\"DataBricks\"`` (case-insensitive)."
         },
         "connection_params": {
           "type": "object",
-          "description": "Connection details for the datasource."
+          "description": "Connection details. Supported keys depend on ``datasource_type``: - Athena: ``name`` (required), ``region`` (required), ``s3_output_location`` (required), ``aws_access_key`` (required), ``aws_secret_key`` (required), ``description``, ``schema``, ``additional_parameters``. - DataBricks: ``name`` (required), ``connection_string`` (required), ``token`` (required), ``description``, ``use_dynamic_schema``, ``schema``. - BigQuery: ``name`` (required), ``service_account_key_path`` (required), ``description``, ``use_service_account``, ``use_proxy_server``, ``use_dynamic_schema``, ``record_field_flattening_level``, ``unnest_arrays``, ``allow_large_results``, ``use_storage_api``, ``additional_parameters``, ``database``. - RedShift: ``server`` (required), ``username`` (required), ``password`` (required), ``name``, ``description``, ``default_database``, ``additional_parameters``."
         }
       },
       "required": [
@@ -2443,13 +2447,13 @@
         "connection_params"
       ]
     },
-    "mutates": false,
+    "mutates": true,
     "tags": [
       "datamodel",
-      "read"
+      "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I generate a connections payload for an Athena datasource?",
@@ -2498,8 +2502,8 @@
     "sub_module": "datamodel.core",
     "class": "DataModel",
     "method": "get_all_datamodel",
-    "description": "Retrieves metadata details of all DataModels using an undocumented internal API.",
-    "full_doc": "Retrieves metadata details of all DataModels using an undocumented internal API.\nThis includes additional fields like build status, size, and timestamps that may\nnot be available through the standard public endpoints.\n\nReturns:\n    dict: Parsed metadata details of all DataModels, or a dictionary with an error message.",
+    "description": "Retrieve metadata for all data models using an internal API.",
+    "full_doc": "Retrieve metadata for all data models using an internal API.\n\nSends a ``POST /api/v2/ecm/`` GraphQL query (``elasticubesMetadata``).\nThis includes additional fields such as build status, size, and\ntimestamps that may not be available through the standard public\nendpoints.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of data model metadata objects (each with ``oid``, ``title``,\n    ``type``, ``status``, ``sizeInMb``) on success, or\n    ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -2510,8 +2514,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you list all the DataModels available in our Sisense instance?",
@@ -2536,8 +2540,8 @@
     "sub_module": "datamodel.connections",
     "class": "DataModel",
     "method": "get_connection",
-    "description": "Retrieves a Connection by its name.",
-    "full_doc": "Retrieves a Connection by its name.\n\nParameters:\n    connection_name (str): Name of the connection to filter by.\n\nReturns:\n    List: Connection details if found, or a dictionary with an error message.",
+    "description": "Retrieve connections matching a name.",
+    "full_doc": "Retrieve connections matching a name.\n\nSends ``GET /api/v2/connections?name=<connection_name>`` and returns the\nmatching connection list.\n\nParameters\n----------\nconnection_name : str\n    Name of the connection to filter by.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of matching connection objects if found, or\n    ``{\"error\": \"...\"}`` on failure or when no match is found.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2555,8 +2559,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What are the details of the connection named 'SalesDB'?",
@@ -2599,8 +2603,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I see all the data connections available in my Sisense instance?",
@@ -2625,14 +2629,14 @@
     "sub_module": "datamodel.data",
     "class": "DataModel",
     "method": "get_data",
-    "description": "Retrieves data from a specific table in a DataModel and returns it as a list of dicts",
-    "full_doc": "Retrieves data from a specific table in a DataModel and returns it as a list of dicts\n(row-based format) compatible with to_dataframe.\n\nParameters:\n    datamodel_name (str): Name of the DataModel.\n    table_name (str): Name of the table to retrieve data from.\n    query (str): Optional SQL query to filter the data.\n\nReturns:\n    list: List of dictionaries where each dict represents a row.",
+    "description": "Retrieve data from a specific table in a data model.",
+    "full_doc": "Retrieve data from a specific table in a data model.\n\nRuns a SQL query against the data model and returns the rows in a\nrow-based format (a list of dicts) compatible with ``to_dataframe``.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model.\ntable_name : str\n    Name of the table to retrieve data from.\nquery : str | None, optional\n    Optional SQL query to filter the data. When omitted, all rows of the\n    table are selected.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of dictionaries where each dict represents a row. Returns an empty\n    list on failure or when no data is available.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel."
+          "description": "Name of the data model."
         },
         "table_name": {
           "type": "string",
@@ -2640,7 +2644,7 @@
         },
         "query": {
           "type": "string",
-          "description": "Optional SQL query to filter the data."
+          "description": "Optional SQL query to filter the data. When omitted, all rows of the table are selected."
         }
       },
       "required": [
@@ -2653,8 +2657,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Fetch all data from the 'sales_data' table in the 'RetailAnalytics' DataModel.",
@@ -2689,14 +2693,14 @@
     "sub_module": "datamodel.core",
     "class": "DataModel",
     "method": "get_datamodel",
-    "description": "Retrieves a DataModel by its name.",
-    "full_doc": "Retrieves a DataModel by its name.\n\nParameters:\n    datamodel_name (str): Name of the DataModel to retrieve.\n\nReturns:\n    dict: DataModel details if found, or a dictionary with an error message.",
+    "description": "Retrieve a data model by its title.",
+    "full_doc": "Retrieve a data model by its title.\n\nSends ``GET /api/v2/datamodels/schema?title=<name>`` and returns the\nmatching data model schema object.\n\nParameters\n----------\ndatamodel_name : str\n    Name (title) of the data model to retrieve.\n\nReturns\n-------\ndict[str, Any]\n    The data model schema object if found, or ``{\"error\": \"...\"}`` on\n    failure or when no match is found.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to retrieve."
+          "description": "Name (title) of the data model to retrieve."
         }
       },
       "required": [
@@ -2708,8 +2712,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you fetch the Sales DataModel for me?",
@@ -2740,14 +2744,14 @@
     "sub_module": "datamodel.shares",
     "class": "DataModel",
     "method": "get_datamodel_shares",
-    "description": "Retrieves all share entries (users and groups) for a given DataModel in flat row format.",
-    "full_doc": "Retrieves all share entries (users and groups) for a given DataModel in flat row format.\n\nParameters:\n    datamodel_name (str): Name of the DataModel to retrieve shares for.\n\nReturns:\n    list: List of dicts with datamodel name, party name, type, and permission.",
+    "description": "Retrieve all share entries (users and groups) for a given data model.",
+    "full_doc": "Retrieve all share entries (users and groups) for a given data model.\n\nResolves user and group identifiers to names/emails and returns the shares\nin a flat row format. Permission codes are mapped to ``\"EDIT\"``, ``\"READ\"``,\nor ``\"USE\"``.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to retrieve shares for.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of dicts, each with ``\"datamodel_name\"``, ``\"datamodel_id\"``,\n    ``\"party_name\"``, ``\"party_type\"``, and ``\"permission\"``. Returns an\n    empty list on failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to retrieve shares for."
+          "description": "Name of the data model to retrieve shares for."
         }
       },
       "required": [
@@ -2759,8 +2763,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Who has access to the Sales DataModel?",
@@ -2791,14 +2795,14 @@
     "sub_module": "datamodel.security",
     "class": "DataModel",
     "method": "get_datasecurity",
-    "description": "Retrieves datasecurity table and column entries for a given DataModel in flat row format.",
-    "full_doc": "Retrieves datasecurity table and column entries for a given DataModel in flat row format.\n\nParameters:\n    datamodel_name (str): Name of the DataModel to retrieve datasecurity for.\n\nReturns:\n    list: List of dicts with datamodel name, table name, column name, and security type.\n        If no rules exist, a single row is returned with empty values and the datamodel name.",
+    "description": "Retrieve datasecurity table and column entries for a given data model.",
+    "full_doc": "Retrieve datasecurity table and column entries for a given data model.\n\nResolves the data model, fetches its datasecurity rules, and returns the\nunique table/column entries in a flat row format.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to retrieve datasecurity for.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of dicts, each with ``\"datamodel_name\"``, ``\"table_name\"``,\n    ``\"column_name\"``, and ``\"data_type\"``. If no rules exist, a single row\n    is returned with empty values and the data model name.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to retrieve datasecurity for."
+          "description": "Name of the data model to retrieve datasecurity for."
         }
       },
       "required": [
@@ -2810,8 +2814,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What are the data security rules for the SalesAnalytics DataModel?",
@@ -2842,14 +2846,14 @@
     "sub_module": "datamodel.security",
     "class": "DataModel",
     "method": "get_datasecurity_detail",
-    "description": "Retrieves detailed datasecurity rules for a specific DataModel, including share-level visibility.",
-    "full_doc": "Retrieves detailed datasecurity rules for a specific DataModel, including share-level visibility.\nEach row represents a unique column-level rule and is repeated per share for clarity.\n\nSpecial handling is applied to interpret member values:\n- If \"members\" is an empty list and \"exclusionary\" is missing/null => interpreted as \"Nothing\"\n- If \"members\" is empty and \"exclusionary\" is False => interpreted as \"Everything\"\n- If values exist and \"exclusionary\" is True => treated as restricted subset\n\nParameters:\n    datamodel_name (str): Name of the DataModel to retrieve datasecurity rules for.\n\nReturns:\n    list: A list of dictionaries representing datasecurity rules in flat, share-resolved format.",
+    "description": "Retrieve detailed datasecurity rules for a data model, including share-level visibility.",
+    "full_doc": "Retrieve detailed datasecurity rules for a data model, including share-level visibility.\n\nEach row represents a unique column-level rule and is repeated per share for\nclarity. Special handling is applied to interpret member values:\n\n- If ``members`` is an empty list and ``exclusionary`` is missing/null, it is\n  interpreted as \"Nothing\".\n- If ``members`` is empty and ``exclusionary`` is ``False``, it is interpreted\n  as \"Everything\".\n- If values exist and ``exclusionary`` is ``True``, it is treated as a\n  restricted subset.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to retrieve datasecurity rules for.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of dicts representing datasecurity rules in flat, share-resolved\n    format, each with ``\"datamodel_name\"``, ``\"table_name\"``,\n    ``\"column_name\"``, ``\"data_type\"``, ``\"value\"``, ``\"exclusionary\"``,\n    ``\"share_type\"``, ``\"share_name\"``, and ``\"rule_description\"``. Returns a\n    single default row when no rules exist or on failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to retrieve datasecurity rules for."
+          "description": "Name of the data model to retrieve datasecurity rules for."
         }
       },
       "required": [
@@ -2861,8 +2865,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What are the data security rules for the Sales DataModel?",
@@ -2905,8 +2909,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you list all the ElastiCubes available on my Sisense server?",
@@ -2931,14 +2935,14 @@
     "sub_module": "datamodel.core",
     "class": "DataModel",
     "method": "get_model_schema",
-    "description": "Retrieves the schema of a DataModel, including tables and columns.",
-    "full_doc": "Retrieves the schema of a DataModel, including tables and columns.\n\nParameters:\n    datamodel_name (str): Name of the DataModel to retrieve the schema for.\n\nReturns:\n    list: A list of dictionaries containing schema information (one per column),\n        or an error message if not found.",
+    "description": "Retrieve the schema of a data model, including tables and columns.",
+    "full_doc": "Retrieve the schema of a data model, including tables and columns.\n\nResolves the data model by name and emits one row per column, mapping\nSisense numeric column type codes to readable type names.\n\nParameters\n----------\ndatamodel_name : str\n    Name (title) of the data model to retrieve the schema for.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of dicts (one per column) with ``datamodel_name``,\n    ``datamodel_type``, ``dataset_name``, ``table_name``,\n    ``column_name``, and ``column_type`` on success, or\n    ``{\"error\": \"...\"}`` if the data model is not found.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to retrieve the schema for."
+          "description": "Name (title) of the data model to retrieve the schema for."
         }
       },
       "required": [
@@ -2950,8 +2954,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What is the schema for the SalesAnalytics DataModel?",
@@ -2982,14 +2986,14 @@
     "sub_module": "datamodel.data",
     "class": "DataModel",
     "method": "get_row_count",
-    "description": "Retrieves the row count for each table in a specific DataModel",
-    "full_doc": "Retrieves the row count for each table in a specific DataModel\nand returns it in a flat row-based structure suitable for tabular representation.\n\nParameters:\n    datamodel_name (str): Name of the DataModel.\n\nReturns:\n    list: List of dictionaries, each with 'table_name' and 'row_count'.\n        Includes an additional row for total row count.",
+    "description": "Retrieve the row count for each table in a specific data model.",
+    "full_doc": "Retrieve the row count for each table in a specific data model.\n\nResolves the data model's tables, counts rows per table, and returns the\nresults in a flat row-based structure suitable for tabular representation.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of dictionaries, each with ``\"table_name\"`` and ``\"row_count\"``,\n    plus a final entry with the total row count. Returns an empty list on\n    failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel."
+          "description": "Name of the data model."
         }
       },
       "required": [
@@ -3001,8 +3005,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How many rows are in each table of the Sales DataModel?",
@@ -3033,8 +3037,8 @@
     "sub_module": "datamodel.connections",
     "class": "DataModel",
     "method": "get_table_schema",
-    "description": "Retrieves the schema of a table in a specified connection from Data Source.",
-    "full_doc": "Retrieves the schema of a table in a specified connection from Data Source.\nThis method uses an undocumented Sisense API endpoint to fetch the table schema details.\nNOTE: This endpoint is undocumented and may change in future versions of Sisense.\nIt is recommended to use this method with caution.\n\nParameters:\n    connection_name (str): Name of the connection.\n    database_name (str): Name of the database.\n    schema_name (str): Name of the schema.\n    table_name (str): Name of the table.\n\nReturns:\n    dict: Table schema details if found, or a dictionary with an error message.",
+    "description": "Retrieve the schema of a table within a connection's data source.",
+    "full_doc": "Retrieve the schema of a table within a connection's data source.\n\nResolves the connection by name to obtain its ``oid`` and ``provider``,\nthen sends ``POST /api/v1/connection/{id}/table_schema_details``.\n\nParameters\n----------\nconnection_name : str\n    Name of the connection.\ndatabase_name : str\n    Name of the database (sent as ``Database``).\nschema_name : str\n    Name of the schema (sent as ``schema``).\ntable_name : str\n    Name of the table (sent as ``table``).\n\nReturns\n-------\ndict[str, Any]\n    Table schema details if found, or ``{\"error\": \"...\"}`` on failure or\n    when no schema is found.\n\nNotes\n-----\nThis endpoint is undocumented and may change in future Sisense versions.\nUse with caution.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3044,15 +3048,15 @@
         },
         "database_name": {
           "type": "string",
-          "description": "Name of the database."
+          "description": "Name of the database (sent as ``Database``)."
         },
         "schema_name": {
           "type": "string",
-          "description": "Name of the schema."
+          "description": "Name of the schema (sent as ``schema``)."
         },
         "table_name": {
           "type": "string",
-          "description": "Name of the table."
+          "description": "Name of the table (sent as ``table``)."
         }
       },
       "required": [
@@ -3067,8 +3071,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What is the schema of the 'sales_data' table in the 'analytics_db' database?",
@@ -3131,8 +3135,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What is the OID for the data model titled 'Sales Analytics'?",
@@ -3185,8 +3189,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What is the ID and title of the data model named 'Sales Analytics'?",
@@ -3244,8 +3248,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I add multiple data security rules to the 'Sales_Live' datamodel?",
@@ -3288,18 +3292,18 @@
     "sub_module": "datamodel.build",
     "class": "DataModel",
     "method": "setup_datamodel",
-    "description": "Setup a DataModel using existing connection and by creating a datamodel, dataset, and table.",
-    "full_doc": "Setup a DataModel using existing connection and by creating a datamodel, dataset, and table.\n\nParameters:\n    datamodel_name (str): Name of the DataModel.\n    datamodel_type (str): Type of DataModel. Should be either \"extract\" (for Elasticube) or \"live\" (for Live).\n    connection_name (str): Name of the connection to use.\n    database_name (str): Name of the data source database.\n    schema_name (str): Name of the data source schema.\n    dataset_name (str, optional): Name of the dataset. Defaults to schema name if not provided.\n    tables (list): List of tables to create in the DataModel.\n        Each table should be a dictionary with keys:\n        \"table_name\", \"import_query\", \"description\", \"tags\", and \"build_behavior_config\".\n        import_query (str, optional): SQL statement used as custom import query. Defaults to None.\n        description (str, optional): Description for the table. Defaults to an empty string.\n        tags (list, optional): List of tags to apply to the table. Defaults to None.\n        build_behavior_config (dict, optional): Configuration for table build behavior.\n\nReturns:\n    dict: A dictionary containing the full DataModel object on success or an error message on failure.",
+    "description": "Set up a data model end to end using an existing connection.",
+    "full_doc": "Set up a data model end to end using an existing connection.\n\nCreates the data model, a dataset, and the requested tables in sequence,\nreusing the supplied connection.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model.\ndatamodel_type : str\n    Type of the data model. Should be either ``\"extract\"`` (for Elasticube)\n    or ``\"live\"`` (for Live).\nconnection_name : str\n    Name of the connection to use.\ndatabase_name : str\n    Name of the data source database.\nschema_name : str\n    Name of the data source schema.\ntables : list[dict[str, Any]]\n    List of table definitions to create in the data model. Each table is a\n    dictionary that may include the fields: ``table_name``, ``schema_name``,\n    ``database_name``, ``import_query`` (SQL custom import query),\n    ``description``, ``tags`` (list of tags), and ``build_behavior_config``\n    (build behavior configuration).\ndataset_name : str | None, optional\n    Name of the dataset. Defaults to the schema name if not provided.\n\nReturns\n-------\ndict[str, Any]\n    Dictionary with ``\"datamodel_id\"``, ``\"dataset_id\"``, and ``\"tables\"``\n    (list of created table names) on success, or ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel."
+          "description": "Name of the data model."
         },
         "datamodel_type": {
           "type": "string",
-          "description": "Type of DataModel. Should be either \"extract\" (for Elasticube) or \"live\" (for Live).",
+          "description": "Type of the data model. Should be either ``\"extract\"`` (for Elasticube) or ``\"live\"`` (for Live).",
           "enum": [
             "extract",
             "live"
@@ -3393,7 +3397,7 @@
         },
         "dataset_name": {
           "type": "string",
-          "description": "Name of the dataset. Defaults to schema name if not provided."
+          "description": "Name of the dataset. Defaults to the schema name if not provided."
         }
       },
       "required": [
@@ -3410,8 +3414,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Create a new live DataModel for our sales data using the 'SalesDB' connection.",
@@ -3543,8 +3547,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I update the name and parameters of an existing connection?",
@@ -3620,8 +3624,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Update the datasecurity rules for the 'SalesData' Elasticube.",
@@ -3683,8 +3687,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I decrypt the encrypted API key stored in my datamodel?",
@@ -3740,8 +3744,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Encrypt a database password before saving it to the Sisense configuration.",
@@ -3778,8 +3782,8 @@
     "sub_module": "dashboard.scripts",
     "class": "Dashboard",
     "method": "add_dashboard_script",
-    "description": "Adds or overwrites a script to a dashboard, temporarily changing ownership if required.",
-    "full_doc": "Adds or overwrites a script to a dashboard, temporarily changing ownership if required.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard where the script will be added.\n    script (str): The JavaScript script as either:\n                - A properly formatted JSON string.\n                - A raw Python docstring (multi-line string).\n    executing_user (str, optional): The username of the API user. This is used to temporarily change\n                                the owner of the dashboard, as only the owner can add scripts.\n                                If not provided, assumes the dashboard owner is the same as the API user.\n\nReturns:\n    str: Success message or error details.",
+    "description": "Add or overwrite a script on a dashboard.",
+    "full_doc": "Add or overwrite a script on a dashboard.\n\nAdds or overwrites a script on a dashboard, temporarily changing\nownership to the executing user and restoring it (along with the\noriginal shares) afterwards when required, as only the dashboard owner\ncan modify scripts.\n\nParameters\n----------\ndashboard_id : str\n    The ID of the dashboard where the script will be added.\nscript : str | dict[str, Any]\n    The JavaScript script to add, provided as either a properly\n    formatted JSON string, a raw multi-line script string, or a\n    pre-built payload dictionary.\nexecuting_user : str | None, optional\n    The username of the API user, used to temporarily change the owner\n    of the dashboard, as only the owner can add scripts. If not\n    provided, assumes the dashboard owner is the same as the API user.\n    (format: email)\n\nReturns\n-------\nstr\n    A success message on success, or an error message string describing\n    the failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3788,12 +3792,13 @@
           "description": "The ID of the dashboard where the script will be added."
         },
         "script": {
-          "type": "string",
-          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
+          "type": "object",
+          "description": "The JavaScript script to add, provided as either a properly formatted JSON string, a raw multi-line script string, or a pre-built payload dictionary."
         },
         "executing_user": {
           "type": "string",
-          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
+          "description": "The username of the API user, used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user.",
+          "format": "email"
         }
       },
       "required": [
@@ -3807,8 +3812,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I add a script to the dashboard with ID 'dashboard123'?",
@@ -3843,21 +3848,21 @@
     "sub_module": "dashboard.shares",
     "class": "Dashboard",
     "method": "add_dashboard_shares",
-    "description": "Adds or updates shares for a dashboard, specifying users and groups along with their access rules.",
-    "full_doc": "Adds or updates shares for a dashboard, specifying users and groups along with their access rules.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard to which the shares will be added.\n    shares (list of dicts): A list of dictionaries, each containing:\n        - \"name\" (str): The username or group name.\n        - \"type\" (str): Either \"user\" or \"group\" to indicate the share type.\n        - \"rule\" (str): The access level (e.g., \"view\", \"edit\").\n\nReturns:\n    str: Success message or error details.",
+    "description": "Add or update shares for a dashboard for the given users and groups.",
+    "full_doc": "Add or update shares for a dashboard for the given users and groups.\n\nResolves each share's ``name`` to its user or group ``shareId``, compares\nagainst the dashboard's existing shares, and posts only new shares and\nshares whose ``rule`` changed. Existing shares that are unaffected are\npreserved in the payload.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard to which the shares will be applied.\nshares : list[dict[str, Any]]\n    A list of share entries. Each entry must contain:\n\n    - ``name`` (str): The username (email) or group name.\n    - ``type`` (str): Either ``\"user\"`` or ``\"group\"``.\n    - ``rule`` (str): The access level (for example ``\"view\"`` or\n      ``\"edit\"``).\n\n    The ``name`` is resolved to ``shareId`` internally; entries that\n    cannot be resolved are skipped.\n\nReturns\n-------\nstr\n    A success message summarizing the new and updated shares, a message\n    indicating no changes were needed, or an error description on\n    failure.",
     "parameters": {
       "type": "object",
       "properties": {
         "dashboard_id": {
           "type": "string",
-          "description": "The ID of the dashboard to which the shares will be added."
+          "description": "The ``oid`` of the dashboard to which the shares will be applied."
         },
         "shares": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "A list of dictionaries, each containing: - \"name\" (str): The username or group name. - \"type\" (str): Either \"user\" or \"group\" to indicate the share type. - \"rule\" (str): The access level (e.g., \"view\", \"edit\")."
+          "description": "A list of share entries. Each entry must contain: - ``name`` (str): The username (email) or group name. - ``type`` (str): Either ``\"user\"`` or ``\"group\"``. - ``rule`` (str): The access level (for example ``\"view\"`` or ``\"edit\"``). The ``name`` is resolved to ``shareId`` internally; entries that cannot be resolved are skipped."
         }
       },
       "required": [
@@ -3871,8 +3876,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I share the Sales Dashboard with the sales team and give them view access?",
@@ -3929,8 +3934,8 @@
     "sub_module": "dashboard.scripts",
     "class": "Dashboard",
     "method": "add_widget_script",
-    "description": "Adds or overwrites a script for a specific widget within a dashboard.",
-    "full_doc": "Adds or overwrites a script for a specific widget within a dashboard.\n\nIf required, temporarily changes the dashboard ownership, as only the owner can modify widget scripts.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard containing the widget.\n    widget_id (str): The ID of the widget where the script will be added.\n    script (str): The JavaScript script as either:\n                - A properly formatted JSON string.\n                - A raw Python docstring (multi-line string).\n    executing_user (str, optional): The username of the API user. This is used to temporarily change\n                                the owner of the dashboard, as only the owner can add scripts.\n                                If not provided, assumes the dashboard owner is the same as the API user.\n\nReturns:\n    str: Success message or error details.",
+    "description": "Add or overwrite a script for a specific widget within a dashboard.",
+    "full_doc": "Add or overwrite a script for a specific widget within a dashboard.\n\nAdds or overwrites a script for a specific widget, republishing the\ndashboard to apply the changes. If required, it temporarily changes the\ndashboard ownership to the executing user and restores it (along with\nthe original shares) afterwards, as only the owner can modify widget\nscripts.\n\nParameters\n----------\ndashboard_id : str\n    The ID of the dashboard containing the widget.\nwidget_id : str\n    The ID of the widget where the script will be added.\nscript : str | dict[str, Any]\n    The JavaScript script to add, provided as either a properly\n    formatted JSON string, a raw multi-line script string, or a\n    pre-built payload dictionary.\nexecuting_user : str | None, optional\n    The username of the API user, used to temporarily change the owner\n    of the dashboard, as only the owner can add scripts. If not\n    provided, assumes the dashboard owner is the same as the API user.\n    (format: email)\n\nReturns\n-------\nstr\n    A success message on success, or an error message string describing\n    the failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3943,12 +3948,13 @@
           "description": "The ID of the widget where the script will be added."
         },
         "script": {
-          "type": "string",
-          "description": "The JavaScript script as either: - A properly formatted JSON string. - A raw Python docstring (multi-line string)."
+          "type": "object",
+          "description": "The JavaScript script to add, provided as either a properly formatted JSON string, a raw multi-line script string, or a pre-built payload dictionary."
         },
         "executing_user": {
           "type": "string",
-          "description": "The username of the API user. This is used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user."
+          "description": "The username of the API user, used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user.",
+          "format": "email"
         }
       },
       "required": [
@@ -3962,8 +3968,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I add a custom script to the sales widget in my dashboard?",
@@ -4022,8 +4028,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can I take ownership of the dashboard with ID '12345abcde'?",
@@ -4074,8 +4080,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I export the definition of the Sales Performance dashboard?",
@@ -4106,8 +4112,8 @@
     "sub_module": "dashboard.core",
     "class": "Dashboard",
     "method": "get_all_dashboards",
-    "description": "Retrieves all dashboards from the Sisense server.",
-    "full_doc": "Retrieves all dashboards from the Sisense server.\n\nReturns:\n    list or dict: A list of dashboards if successful,\n                or a dict containing an error message.",
+    "description": "Retrieve all dashboards from the Sisense server.",
+    "full_doc": "Retrieve all dashboards from the Sisense server.\n\nSends ``GET /api/v1/dashboards/admin?dashboardType=owner`` using the\nadmin endpoint, which requires elevated access.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of dashboard objects on success, or ``{\"error\": \"...\"}`` on\n    failure.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -4119,8 +4125,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I get a list of all dashboards available on the Sisense server?",
@@ -4145,14 +4151,14 @@
     "sub_module": "dashboard.core",
     "class": "Dashboard",
     "method": "get_dashboard_by_id",
-    "description": "Retrieves a specific dashboard by its ID.",
-    "full_doc": "Retrieves a specific dashboard by its ID.\n\nParameters:\n    dashboard_id (str): The ID of the dashboard to retrieve.\n\nReturns:\n    dict: A dictionary containing dashboard details if found,\n        or a dict with an error message if the request fails.",
+    "description": "Retrieve a specific dashboard by its ID.",
+    "full_doc": "Retrieve a specific dashboard by its ID.\n\nSends ``GET /api/v1/dashboards/admin?dashboardType=owner&id={dashboard_id}``\nagainst the admin endpoint.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard to retrieve.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    The matching dashboard objects on success, or ``{\"error\": \"...\"}``\n    when the request fails or no dashboard is found.",
     "parameters": {
       "type": "object",
       "properties": {
         "dashboard_id": {
           "type": "string",
-          "description": "The ID of the dashboard to retrieve."
+          "description": "The ``oid`` of the dashboard to retrieve."
         }
       },
       "required": [
@@ -4165,8 +4171,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you fetch the dashboard with ID 'sales_dashboard_2023'?",
@@ -4197,14 +4203,14 @@
     "sub_module": "dashboard.core",
     "class": "Dashboard",
     "method": "get_dashboard_by_name",
-    "description": "Retrieves a specific dashboard by its name.",
-    "full_doc": "Retrieves a specific dashboard by its name.\n\nParameters:\n    dashboard_name (str): The name of the dashboard to retrieve.\n\nReturns:\n    dict or list: A dictionary containing dashboard details if found,\n                or {'error': 'message'} if not found or failed.",
+    "description": "Retrieve a specific dashboard by its name.",
+    "full_doc": "Retrieve a specific dashboard by its name.\n\nSends ``GET /api/v1/dashboards/admin?dashboardType=owner&name={dashboard_name}``\nagainst the admin endpoint.\n\nParameters\n----------\ndashboard_name : str\n    Title of the dashboard to retrieve.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    The matching dashboard objects on success, or ``{\"error\": \"...\"}``\n    when the request fails or no dashboard is found.",
     "parameters": {
       "type": "object",
       "properties": {
         "dashboard_name": {
           "type": "string",
-          "description": "The name of the dashboard to retrieve."
+          "description": "Title of the dashboard to retrieve."
         }
       },
       "required": [
@@ -4217,8 +4223,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you fetch the dashboard named 'Sales Overview'?",
@@ -4249,14 +4255,14 @@
     "sub_module": "dashboard.columns",
     "class": "Dashboard",
     "method": "get_dashboard_columns",
-    "description": "Retrieves columns from a specific dashboard, including both widget and filter-level columns.",
-    "full_doc": "Retrieves columns from a specific dashboard, including both widget and filter-level columns.\n\nThis method:\n- Uses the `get_dashboard_by_name` method to fetch the dashboard.\n- Extracts columns from widgets and filters.\n- Deduplicates the final column list.\n\nParameters:\n    dashboard_name (str): The name of the dashboard to retrieve columns from.\n\nReturns:\n    list: A list of dictionaries containing distinct table and column information from the dashboard.",
+    "description": "Retrieve columns referenced by a dashboard, including widget and filter columns.",
+    "full_doc": "Retrieve columns referenced by a dashboard, including widget and filter columns.\n\nResolves the dashboard by title with ``get_dashboard_by_name``, exports\nits full metadata, then extracts column references from both filters and\nwidgets. The final list is deduplicated by ``table`` and ``column``.\n\nParameters\n----------\ndashboard_name : str\n    Title of the dashboard to retrieve columns from.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of distinct column entries. Each entry contains\n    ``dashboard_name``, ``source`` (``\"filter\"`` or ``\"widget\"``),\n    ``widget_id``, ``table``, and ``column``. Returns an empty list when\n    the dashboard is not found or its metadata cannot be retrieved.",
     "parameters": {
       "type": "object",
       "properties": {
         "dashboard_name": {
           "type": "string",
-          "description": "The name of the dashboard to retrieve columns from."
+          "description": "Title of the dashboard to retrieve columns from."
         }
       },
       "required": [
@@ -4269,8 +4275,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What columns are available in the 'Sales Overview' dashboard?",
@@ -4321,8 +4327,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I export the script for the sales dashboard?",
@@ -4353,14 +4359,14 @@
     "sub_module": "dashboard.shares",
     "class": "Dashboard",
     "method": "get_dashboard_share",
-    "description": "Retrieves share details (users and groups) for a specific dashboard by title.",
-    "full_doc": "Retrieves share details (users and groups) for a specific dashboard by title.\n\nParameters:\n    dashboard_name (str): The title of the dashboard to retrieve share information for.\n\nReturns:\n    list: A list of dictionaries containing share type (user or group), and share name (email or group name),\n        or an empty list if the dashboard is not found or has no shares.",
+    "description": "Retrieve share details (users and groups) for a dashboard by title.",
+    "full_doc": "Retrieve share details (users and groups) for a dashboard by title.\n\nResolves the dashboard by title, then maps each share's ``shareId`` to a\nreadable name using the users and groups lists: user shares resolve to\nthe user's ``email`` and group shares to the group ``name``.\n\nParameters\n----------\ndashboard_name : str\n    Title of the dashboard to retrieve share information for.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of share entries, each containing ``type`` (``\"user\"`` or\n    ``\"group\"``) and ``name`` (email or group name). Returns an empty\n    list when the dashboard is not found, has no shares, or the users or\n    groups lookup fails.",
     "parameters": {
       "type": "object",
       "properties": {
         "dashboard_name": {
           "type": "string",
-          "description": "The title of the dashboard to retrieve share information for."
+          "description": "Title of the dashboard to retrieve share information for."
         }
       },
       "required": [
@@ -4373,8 +4379,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Who has access to the 'Sales Overview' dashboard?",
@@ -4429,8 +4435,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Who has access to the sales performance dashboard?",
@@ -4484,8 +4490,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What widgets are included in the dashboard titled 'Sales Overview'?",
@@ -4537,8 +4543,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Show me the dashboards I own with their titles and IDs.",
@@ -4599,8 +4605,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I retrieve the script for the 'Sales Performance' widget in the 'Q3 Dashboard'?",
@@ -4659,8 +4665,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I move the sales dashboard to the marketing folder?",
@@ -4722,8 +4728,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Publish the sales dashboard to make the latest updates available.",
@@ -4785,8 +4791,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I rename the Sales Overview dashboard to Q1 Sales Overview?",
@@ -4840,8 +4846,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What is the ID and title of the dashboard named 'Sales Overview'?",
@@ -4895,8 +4901,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Create a folder named 'Sales Reports' under the 'Q4 2023' folder.",
@@ -4948,8 +4954,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I delete the folder with ID '12345abcde'?",
@@ -4992,8 +4998,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I get the entire folder structure in Sisense?",
@@ -5037,8 +5043,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What are the ancestor folders for the 'sales_data' structure?",
@@ -5088,8 +5094,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you fetch the folder with ID '12345abc'?",
@@ -5137,8 +5143,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Show me all folders in a flat structure.",
@@ -5179,8 +5185,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Can you show me the navigation tree for our Sisense folders?",
@@ -5236,8 +5242,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I rename the folder with ID '12345abcde' to 'Sales Reports'?",
@@ -5290,8 +5296,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Add a new measure to calculate total sales revenue for the 'Sales' datasource.",
@@ -5364,8 +5370,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What dimensions are available for the SalesData datasource?",
@@ -5420,8 +5426,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What are the formula measures available for the SalesData datasource?",
@@ -5465,8 +5471,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What datasources can I access in Sisense?",
@@ -5510,8 +5516,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Fetch all metadata related to the 'sales_dashboard' dataset.",
@@ -5618,8 +5624,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I migrate all dashboards to the target environment, skipping any that already exist?",
@@ -5716,8 +5722,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I migrate all data models, including data security and formulas, to a new environment while overwriting existing models?",
@@ -5774,7 +5780,7 @@
     "class": "Migration",
     "method": "migrate_all_groups",
     "description": "Migrate groups from the source environment to the target environment using the bulk endpoint.",
-    "full_doc": "Migrate groups from the source environment to the target environment using the bulk endpoint.\n\nThis method supports optional progress emission via the ``emit`` callback. If provided,\nthe method will publish structured progress events at key milestones so a caller (for\nexample an MCP server) can stream updates to a UI while the migration is running.\n\nParameters\n----------\nemit : Callable[[Dict[str, Any]], None], optional\n    Optional callback invoked with structured progress events. If not provided, the\n    method behaves like a standard synchronous call and only returns a final result.\n\n    Each emitted event is a dictionary that typically includes:\n    - ``type``: str, event type (e.g., \"started\", \"progress\", \"completed\", \"error\")\n    - ``step``: str, logical step name\n    - ``message``: str, human-readable message\n    - Additional fields depending on the event (counts, status_code, etc.)\n\nReturns\n-------\nDict[str, Any]\n    Structured result payload with:\n    - ``ok``: bool\n    - ``status``: str (\"success\" | \"failed\" | \"noop\")\n    - ``results``: List[Dict[str, str]] per-group statuses\n    - ``source_count``: int\n    - ``eligible_count``: int\n    - ``success_count``: int\n    - ``failed_count``: int\n    - ``raw_error``: Any\n    - ``warnings``: List[str]",
+    "full_doc": "Migrate groups from the source environment to the target environment using the bulk endpoint.\n\nThis method supports optional progress emission via the ``emit`` callback. If provided,\nthe method will publish structured progress events at key milestones so a caller can\nstream updates to a user interface while the migration is running.\n\nParameters\n----------\nemit : Callable[[Dict[str, Any]], None], optional\n    Optional callback invoked with structured progress events. If not provided, the\n    method behaves like a standard synchronous call and only returns a final result.\n\n    Each emitted event is a dictionary that typically includes:\n    - ``type``: str, event type (e.g., \"started\", \"progress\", \"completed\", \"error\")\n    - ``step``: str, logical step name\n    - ``message``: str, human-readable message\n    - Additional fields depending on the event (counts, status_code, etc.)\n\nReturns\n-------\nDict[str, Any]\n    Structured result payload with:\n    - ``ok``: bool\n    - ``status``: str (\"success\" | \"failed\" | \"noop\")\n    - ``results``: List[Dict[str, str]] per-group statuses\n    - ``source_count``: int\n    - ``eligible_count``: int\n    - ``success_count``: int\n    - ``failed_count``: int\n    - ``raw_error``: Any\n    - ``warnings``: List[str]",
     "parameters": {
       "type": "object",
       "properties": {
@@ -5791,8 +5797,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I migrate all user groups from the old environment to the new one and track the progress?",
@@ -5830,7 +5836,7 @@
     "class": "Migration",
     "method": "migrate_all_users",
     "description": "Migrate all eligible users from the source environment to the target environment using the bulk endpoint.",
-    "full_doc": "Migrate all eligible users from the source environment to the target environment using the bulk endpoint.\n\nThis method is designed to support MCP-style streaming by optionally emitting structured\nprogress events via the ``emit`` callback. It remains synchronous, but callers can run it\nin a worker thread and forward events to an event stream.\n\nThe migration performs the following steps:\n1) Fetch users from the source environment (expanded with groups and role).\n2) Fetch roles and groups from the target environment for ID mapping.\n3) Build a bulk payload by mapping role names to role IDs and group names to group IDs.\n4) Submit the payload to the target bulk endpoint.\n5) Return a structured summary and per-user status list.\n\nParameters\n----------\nemit : Callable[[Dict[str, Any]], None], optional\n    Optional callback invoked with structured progress events. If not provided, the method\n    emits no events and only returns a final result.\n\n    Event payloads follow a consistent shape:\n    - ``type``: str (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\")\n    - ``step``: str logical step identifier\n    - ``message``: str human-readable message\n    - Additional fields depending on the step (counts, status_code, etc.)\n\nReturns\n-------\nDict[str, Any]\n    Structured result payload:\n    - ``ok``: bool\n    - ``status``: str (\"success\" | \"failed\" | \"noop\")\n    - ``results``: List[Dict[str, str]] per-user statuses (name=email, status)\n    - ``source_count``: int number of users retrieved from source\n    - ``eligible_count``: int number of users included in the bulk payload\n    - ``skipped_super_count``: int number of sysadmin users skipped\n    - ``missing_role_mappings_count``: int number of users with unresolved role mapping\n    - ``missing_group_mappings_count``: int number of group memberships not found in target\n    - ``success_count``: int\n    - ``failed_count``: int\n    - ``raw_error``: Any error payload if the bulk request fails, else None\n    - ``warnings``: List[str]",
+    "full_doc": "Migrate all eligible users from the source environment to the target environment using the bulk endpoint.\n\nThis method supports streaming progress by optionally emitting structured\nprogress events via the ``emit`` callback. It remains synchronous, but callers can run it\nin a worker thread and forward events to an event stream.\n\nThe migration performs the following steps:\n1) Fetch users from the source environment (expanded with groups and role).\n2) Fetch roles and groups from the target environment for ID mapping.\n3) Build a bulk payload by mapping role names to role IDs and group names to group IDs.\n4) Submit the payload to the target bulk endpoint.\n5) Return a structured summary and per-user status list.\n\nParameters\n----------\nemit : Callable[[Dict[str, Any]], None], optional\n    Optional callback invoked with structured progress events. If not provided, the method\n    emits no events and only returns a final result.\n\n    Event payloads follow a consistent shape:\n    - ``type``: str (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\")\n    - ``step``: str logical step identifier\n    - ``message``: str human-readable message\n    - Additional fields depending on the step (counts, status_code, etc.)\n\nReturns\n-------\nDict[str, Any]\n    Structured result payload:\n    - ``ok``: bool\n    - ``status``: str (\"success\" | \"failed\" | \"noop\")\n    - ``results``: List[Dict[str, str]] per-user statuses (name=email, status)\n    - ``source_count``: int number of users retrieved from source\n    - ``eligible_count``: int number of users included in the bulk payload\n    - ``skipped_super_count``: int number of sysadmin users skipped\n    - ``missing_role_mappings_count``: int number of users with unresolved role mapping\n    - ``missing_group_mappings_count``: int number of group memberships not found in target\n    - ``success_count``: int\n    - ``failed_count``: int\n    - ``raw_error``: Any error payload if the bulk request fails, else None\n    - ``warnings``: List[str]",
     "parameters": {
       "type": "object",
       "properties": {
@@ -5847,8 +5853,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I migrate all users from the source environment to the target environment and track the progress?",
@@ -5885,8 +5891,8 @@
     "sub_module": "migration.dashboards",
     "class": "Migration",
     "method": "migrate_dashboard_shares",
-    "description": "Migrates shares for specific dashboards from the source to the target environment.",
-    "full_doc": "Migrates shares for specific dashboards from the source to the target environment.\n\nParameters:\n    source_dashboard_ids (list): A list of dashboard IDs from the source environment to fetch shares from.\n    target_dashboard_ids (list): A list of dashboard IDs from the target environment to apply shares to.\n    change_ownership (bool, optional): Whether to change ownership of the target dashboard. Defaults to False.\n\nReturns:\n    dict: A summary of the share migration process with counts of succeeded and failed shares,\n        and details of failed dashboards.\n\nRaises:\n    ValueError: If `source_dashboard_ids` or `target_dashboard_ids` are not provided,\n                or if their lengths do not match.",
+    "description": "Migrate shares for specific dashboards from the source to the target environment.",
+    "full_doc": "Migrate shares for specific dashboards from the source to the target environment.\n\nPairs source and target dashboard IDs positionally, maps source users\nand groups to their target equivalents, and applies the resulting\nshares to each target dashboard. Optionally transfers ownership.\n\nParameters\n----------\nsource_dashboard_ids : list[str]\n    Dashboard IDs from the source environment to fetch shares from.\ntarget_dashboard_ids : list[str]\n    Dashboard IDs from the target environment to apply shares to,\n    paired positionally with ``source_dashboard_ids``.\nchange_ownership : bool, optional\n    Whether to change ownership of the target dashboard. Defaults to\n    ``False``.\n\nReturns\n-------\ndict[str, Any]\n    A summary of the share migration with a ``summary`` block (counts of\n    succeeded and failed shares) and ``dashboard_results`` (per-dashboard\n    outcomes).\n\nRaises\n------\nValueError\n    If ``source_dashboard_ids`` or ``target_dashboard_ids`` are not\n    provided, or if their lengths do not match.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -5895,18 +5901,18 @@
           "items": {
             "type": "string"
           },
-          "description": "A list of dashboard IDs from the source environment to fetch shares from."
+          "description": "Dashboard IDs from the source environment to fetch shares from."
         },
         "target_dashboard_ids": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "A list of dashboard IDs from the target environment to apply shares to."
+          "description": "Dashboard IDs from the target environment to apply shares to, paired positionally with ``source_dashboard_ids``."
         },
         "change_ownership": {
           "type": "boolean",
-          "description": "Whether to change ownership of the target dashboard. Defaults to False."
+          "description": "Whether to change ownership of the target dashboard. Defaults to ``False``."
         }
       },
       "required": [
@@ -5920,8 +5926,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I migrate shares from dashboards in the source environment to dashboards in the target environment?",
@@ -5977,7 +5983,7 @@
     "class": "Migration",
     "method": "migrate_dashboards",
     "description": "Migrate dashboards from the source to the target environment using Sisense bulk import.",
-    "full_doc": "Migrate dashboards from the source to the target environment using Sisense bulk import.\n\nThis method exports dashboards from the source and imports them into the target in a single\nbulk request. It then parses the bulk import response to determine which dashboards were\nsucceeded, skipped, and failed. Finally, it optionally migrates shares/ownership for\ndashboards that were actually created in the target (depending on `migrate_share`, `action`).\n\nParameters\n----------\ndashboard_ids : list[str] or None, default None\n    List of dashboard OIDs to migrate. Provide either `dashboard_ids` or `dashboard_names`.\ndashboard_names : list[str] or None, default None\n    List of dashboard titles to migrate. Provide either `dashboard_ids` or `dashboard_names`.\naction : {\"skip\", \"overwrite\", \"duplicate\"} or None, default None\n    Determines how the target handles conflicts.\n    - None: default Sisense behavior (typically skip existing).\n    - \"skip\": skip if exists.\n    - \"overwrite\": overwrite if exists (shares/ownership migration is skipped).\n    - \"duplicate\": create duplicate (shares/ownership migration is skipped).\nrepublish : bool, default False\n    Whether to republish dashboards after import.\nmigrate_share : bool, default False\n    If True, attempts to migrate shares (and optionally ownership) after dashboards are created.\nchange_ownership : bool, default False\n    If True and `migrate_share=True`, attempts to change ownership on the target dashboards.\n\nReturns\n-------\ndict\n    Migration summary with the following keys:\n    - \"succeeded\": list[dict]\n        Each item includes: {\"title\": str, \"source_id\": str | None, \"target_id\": str | None}\n    - \"skipped\": list[dict]\n        Each item includes: {\"title\": str, \"source_id\": str | None, \"target_id\": str | None, \"reason\": str | None}\n    - \"failed\": list[dict]\n        Each item includes: {\"title\": str | None, \"source_id\": str | None, \"reason\": str}\n    - \"meta\": dict\n        Helpful metadata about request-level status.\n\nNotes\n-----\nResponse parsing strategy:\n1) Primary (source of truth): when bulk import returns a success status (typically 201),\nparse the structured response fields:\n- \"succeded\" / \"succeeded\" (Sisense sometimes uses the misspelling)\n- \"skipped\"\n- \"failed\" (often grouped by error category)\n2) Fallbacks (old failsafes): if the response is missing expected fields, not JSON,\nor indicates a request-level error via keys like \"message\" / \"error\", we treat the\nentire batch as failed and attach the best-available reason from:\n- response JSON \"message\" / \"error\" / \"error.message\"\n- response.text (truncated)",
+    "full_doc": "Migrate dashboards from the source to the target environment using Sisense bulk import.\n\nThis method exports dashboards from the source and imports them into the target in a single\nbulk request. It then parses the bulk import response to determine which dashboards were\nsucceeded, skipped, and failed. Finally, it optionally migrates shares/ownership for\ndashboards that were actually created in the target (depending on `migrate_share`, `action`).\n\nParameters\n----------\ndashboard_ids : list[str] or None, default None\n    List of dashboard OIDs to migrate. Provide either `dashboard_ids` or `dashboard_names`.\ndashboard_names : list[str] or None, default None\n    List of dashboard titles to migrate. Provide either `dashboard_ids` or `dashboard_names`.\naction : {\"skip\", \"overwrite\", \"duplicate\"} or None, default None\n    Determines how the target handles conflicts.\n    - None: default Sisense behavior (typically skip existing).\n    - \"skip\": skip if exists.\n    - \"overwrite\": overwrite if exists (shares/ownership migration is skipped).\n    - \"duplicate\": create duplicate (shares/ownership migration is skipped).\nrepublish : bool, default False\n    Whether to republish dashboards after import.\nmigrate_share : bool, default False\n    If True, attempts to migrate shares (and optionally ownership) after dashboards are created.\nchange_ownership : bool, default False\n    If True and `migrate_share=True`, attempts to change ownership on the target dashboards.\nemit : Callable[[dict[str, Any]], None] or None, default None\n    Optional callback invoked with structured progress events. If not provided, no events\n    are emitted and only the final result is returned. Event payloads carry a ``type``\n    (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\"), a ``step`` identifier,\n    a human-readable ``message``, and additional step-specific fields.\n\nReturns\n-------\ndict\n    Migration summary with the following keys:\n    - \"succeeded\": list[dict]\n        Each item includes: {\"title\": str, \"source_id\": str | None, \"target_id\": str | None}\n    - \"skipped\": list[dict]\n        Each item includes: {\"title\": str, \"source_id\": str | None, \"target_id\": str | None, \"reason\": str | None}\n    - \"failed\": list[dict]\n        Each item includes: {\"title\": str | None, \"source_id\": str | None, \"reason\": str}\n    - \"meta\": dict\n        Helpful metadata about request-level status.\n\nNotes\n-----\nResponse parsing strategy:\n1) Primary (source of truth): when bulk import returns a success status (typically 201),\nparse the structured response fields:\n- \"succeded\" / \"succeeded\" (Sisense sometimes uses the misspelling)\n- \"skipped\"\n- \"failed\" (often grouped by error category)\n2) Fallbacks (old failsafes): if the response is missing expected fields, not JSON,\nor indicates a request-level error via keys like \"message\" / \"error\", we treat the\nentire batch as failed and attach the best-available reason from:\n- response JSON \"message\" / \"error\" / \"error.message\"\n- response.text (truncated)",
     "parameters": {
       "type": "object",
       "properties": {
@@ -6017,8 +6023,8 @@
           "description": "If True and `migrate_share=True`, attempts to change ownership on the target dashboards."
         },
         "emit": {
-          "type": "string",
-          "description": "emit parameter"
+          "type": "object",
+          "description": "Optional callback invoked with structured progress events. If not provided, no events are emitted and only the final result is returned. Event payloads carry a ``type`` (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\"), a ``step`` identifier, a human-readable ``message``, and additional step-specific fields."
         }
       },
       "required": []
@@ -6029,8 +6035,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I migrate dashboards with IDs 'dash123' and 'dash456' to the target environment, skipping any that already exist?",
@@ -6147,8 +6153,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I migrate the data models with IDs 'dm_123' and 'dm_456' to the target environment, including all dependencies and shares?",
@@ -6206,8 +6212,8 @@
     "sub_module": "migration.groups",
     "class": "Migration",
     "method": "migrate_groups",
-    "description": "Migrates specific groups from the source environment to the target environment using the bulk endpoint.",
-    "full_doc": "Migrates specific groups from the source environment to the target environment using the bulk endpoint.\n\nParameters:\n    group_name_list (list): A list of group names to migrate.\n\nReturns:\n    list: A list of group migration results, including any errors encountered during the process.",
+    "description": "Migrate specific groups from the source environment to the target environment.",
+    "full_doc": "Migrate specific groups from the source environment to the target environment.\n\nFetches groups from the source environment, filters to the requested\nnames, and submits them to the target environment's bulk endpoint.\n\nParameters\n----------\ngroup_name_list : list[str]\n    The group names to migrate.\n\nReturns\n-------\ndict[str, Any] | list[dict[str, Any]]\n    A result payload with per-group migration statuses and any raw error\n    encountered, or a list with an informational message when no groups\n    match the requested names.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -6216,7 +6222,7 @@
           "items": {
             "type": "string"
           },
-          "description": "A list of group names to migrate."
+          "description": "The group names to migrate."
         }
       },
       "required": [
@@ -6229,8 +6235,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I migrate the 'Sales Team' and 'Marketing Team' groups to the new environment?",
@@ -6269,17 +6275,18 @@
     "sub_module": "migration.users",
     "class": "Migration",
     "method": "migrate_users",
-    "description": "Migrates specific users from the source environment to the target environment.",
-    "full_doc": "Migrates specific users from the source environment to the target environment.\n\nParameters:\n    user_name_list (list): A list of user names to migrate.\n\nReturns:\n    list: A list of user migration results, including any errors encountered during the process.",
+    "description": "Migrate specific users from the source environment to the target environment.",
+    "full_doc": "Migrate specific users from the source environment to the target environment.\n\nFetches users from the source environment, maps their role and group\nnames to target environment IDs, and creates them in the target.\n\nParameters\n----------\nuser_name_list : list[str]\n    The user identifiers (email addresses) to migrate. (format: email)\n\nReturns\n-------\ndict[str, Any] | list[dict[str, Any]]\n    A result payload with per-user migration statuses and any raw error\n    encountered, or a list with an informational message when there are\n    no users to migrate.",
     "parameters": {
       "type": "object",
       "properties": {
         "user_name_list": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "format": "email"
           },
-          "description": "A list of user names to migrate."
+          "description": "The user identifiers (email addresses) to migrate."
         }
       },
       "required": [
@@ -6292,8 +6299,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Migrate the users 'john.doe' and 'jane.smith' to the target environment.",
@@ -6352,8 +6359,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I disable the plugin named 'custom-theme'?",
@@ -6410,8 +6417,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I disable the 'plugin-analytics' and 'plugin-visualization' plugins?",
@@ -6473,8 +6480,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I enable the plugin for advanced charting?",
@@ -6531,8 +6538,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I enable the 'plugin-sample' and 'custom-visualizations' plugins in bulk?",
@@ -6586,8 +6593,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What plugins are currently installed on my Sisense instance?",
@@ -6631,8 +6638,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I fetch details about the 'plugin-sample-chart' plugin?",
@@ -6686,8 +6693,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "I want to restore the plugins to the state they were in last week. How can I do that?",
@@ -6748,8 +6755,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How can I save the current state of enabled plugins as a snapshot?",
@@ -6798,8 +6805,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Fetch total sales by region for the last quarter.",
@@ -6936,8 +6943,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Export sales data for Q3 2023 as a CSV file.",
@@ -7042,8 +7049,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Analyze the structure of the dashboard titled 'Sales Overview'.",
@@ -7102,8 +7109,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "How many widgets are on the 'Sales Overview' dashboard?",
@@ -7163,8 +7170,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Check if any custom tables in the 'Sales Analytics' data model use UNION.",
@@ -7224,8 +7231,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Check if the tables in the 'Sales Dashboard' data model have import queries configured.",
@@ -7284,8 +7291,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Find all island tables in the 'Sales Analytics' data model.",
@@ -7344,8 +7351,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Check for many-to-many relationships in the 'Sales Analytics' data model.",
@@ -7404,8 +7411,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "What are the datatypes of the columns used in RLS rules for the 'Sales Dashboard' data model?",
@@ -7468,8 +7475,8 @@
       "wellcheck",
       "read"
     ],
-    "sdk_version": "1.0.1",
-    "updated_at": "2026-06-23T23:00:12Z",
+    "sdk_version": "1.0.2",
+    "updated_at": "2026-06-24T16:58:17Z",
     "examples": [
       {
         "user_query": "Find pivot widgets with too many fields on the 'Sales Overview' dashboard.",

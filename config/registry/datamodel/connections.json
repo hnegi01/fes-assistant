@@ -1,13 +1,13 @@
 [
   {
     "tool_id": "datamodel.create_connections",
-    "description": "Creates a new connection using the provided payload.",
+    "description": "Create a new connection using the provided payload.",
     "parameters": {
       "type": "object",
       "properties": {
         "connection_payload": {
           "type": "object",
-          "description": "The configuration payload for the connection."
+          "description": "The configuration payload for the connection. Canonical fields include ``provider``, ``name``, ``description``, ``parameters``, ``enabled``, ``createdByUser``, and ``supportedModelTypes``."
         }
       },
       "required": [
@@ -66,17 +66,17 @@
   },
   {
     "tool_id": "datamodel.generate_connections_payload",
-    "description": "Generates the appropriate connections payload based on the datasource type.",
+    "description": "Generate a connection payload for a given data source type.",
     "parameters": {
       "type": "object",
       "properties": {
         "datasource_type": {
           "type": "string",
-          "description": "Type of datasource (e.g., \"ATHENA\", \"SNOWFLAKE\", \"ORACLE\")."
+          "description": "Type of data source. One of ``\"Athena\"``, ``\"RedShift\"``, ``\"BigQuery\"``, ``\"DataBricks\"`` (case-insensitive)."
         },
         "connection_params": {
           "type": "object",
-          "description": "Connection details for the datasource."
+          "description": "Connection details. Supported keys depend on ``datasource_type``: - Athena: ``name`` (required), ``region`` (required), ``s3_output_location`` (required), ``aws_access_key`` (required), ``aws_secret_key`` (required), ``description``, ``schema``, ``additional_parameters``. - DataBricks: ``name`` (required), ``connection_string`` (required), ``token`` (required), ``description``, ``use_dynamic_schema``, ``schema``. - BigQuery: ``name`` (required), ``service_account_key_path`` (required), ``description``, ``use_service_account``, ``use_proxy_server``, ``use_dynamic_schema``, ``record_field_flattening_level``, ``unnest_arrays``, ``allow_large_results``, ``use_storage_api``, ``additional_parameters``, ``database``. - RedShift: ``server`` (required), ``username`` (required), ``password`` (required), ``name``, ``description``, ``default_database``, ``additional_parameters``."
         }
       },
       "required": [
@@ -84,7 +84,7 @@
         "connection_params"
       ]
     },
-    "mutates": false,
+    "mutates": true,
     "examples": [
       {
         "user_query": "How can I generate a connections payload for an Athena datasource?",
@@ -129,7 +129,7 @@
   },
   {
     "tool_id": "datamodel.get_connection",
-    "description": "Retrieves a Connection by its name.",
+    "description": "Retrieve connections matching a name.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -196,7 +196,7 @@
   },
   {
     "tool_id": "datamodel.get_table_schema",
-    "description": "Retrieves the schema of a table in a specified connection from Data Source.",
+    "description": "Retrieve the schema of a table within a connection's data source.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -206,15 +206,15 @@
         },
         "database_name": {
           "type": "string",
-          "description": "Name of the database."
+          "description": "Name of the database (sent as ``Database``)."
         },
         "schema_name": {
           "type": "string",
-          "description": "Name of the schema."
+          "description": "Name of the schema (sent as ``schema``)."
         },
         "table_name": {
           "type": "string",
-          "description": "Name of the table."
+          "description": "Name of the table (sent as ``table``)."
         }
       },
       "required": [

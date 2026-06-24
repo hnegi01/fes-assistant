@@ -83,7 +83,7 @@
   },
   {
     "tool_id": "migration.migrate_dashboard_shares",
-    "description": "Migrates shares for specific dashboards from the source to the target environment.",
+    "description": "Migrate shares for specific dashboards from the source to the target environment.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -92,18 +92,18 @@
           "items": {
             "type": "string"
           },
-          "description": "A list of dashboard IDs from the source environment to fetch shares from."
+          "description": "Dashboard IDs from the source environment to fetch shares from."
         },
         "target_dashboard_ids": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "A list of dashboard IDs from the target environment to apply shares to."
+          "description": "Dashboard IDs from the target environment to apply shares to, paired positionally with ``source_dashboard_ids``."
         },
         "change_ownership": {
           "type": "boolean",
-          "description": "Whether to change ownership of the target dashboard. Defaults to False."
+          "description": "Whether to change ownership of the target dashboard. Defaults to ``False``."
         }
       },
       "required": [
@@ -202,8 +202,8 @@
           "description": "If True and `migrate_share=True`, attempts to change ownership on the target dashboards."
         },
         "emit": {
-          "type": "string",
-          "description": "emit parameter"
+          "type": "object",
+          "description": "Optional callback invoked with structured progress events. If not provided, no events are emitted and only the final result is returned. Event payloads carry a ``type`` (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\"), a ``step`` identifier, a human-readable ``message``, and additional step-specific fields."
         }
       },
       "required": []

@@ -45,7 +45,7 @@
   },
   {
     "tool_id": "migration.migrate_groups",
-    "description": "Migrates specific groups from the source environment to the target environment using the bulk endpoint.",
+    "description": "Migrate specific groups from the source environment to the target environment.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -54,7 +54,7 @@
           "items": {
             "type": "string"
           },
-          "description": "A list of group names to migrate."
+          "description": "The group names to migrate."
         }
       },
       "required": [

@@ -1,7 +1,7 @@
 [
   {
     "tool_id": "access_management.create_schedule_build",
-    "description": "Method to create a schedule build for a DataModel.",
+    "description": "Create a schedule build for a DataModel.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -11,34 +11,34 @@
         },
         "build_type": {
           "type": "string",
-          "description": "Optional. Type of the build (e.g., \"ACCUMULATE\", \"FULL\", \"SCHEMA_CHANGES\"). Defaults to \"ACCUMULATE\"."
+          "description": "Type of the build, one of ``\"ACCUMULATE\"``, ``\"FULL\"``, or ``\"SCHEMA_CHANGES\"``. Defaults to ``\"ACCUMULATE\"``."
         },
         "days": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "List of days for cron schedule. Eg.: [\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"] or [\"*\"] for all days."
+          "description": "Keyword-only. List of days for a cron schedule, e.g. ``[\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"]`` or ``[\"*\"]`` for all days."
         },
         "hour": {
           "type": "integer",
-          "description": "Hour in 24-hour format (UTC)."
+          "description": "Keyword-only. Hour in 24-hour format (UTC) for a cron schedule."
         },
         "minute": {
           "type": "integer",
-          "description": "Minute of the hour (UTC)."
+          "description": "Keyword-only. Minute of the hour (UTC) for a cron schedule."
         },
         "interval_days": {
           "type": "integer",
-          "description": "Interval in days."
+          "description": "Keyword-only. Interval in days for an interval-based schedule."
         },
         "interval_hours": {
           "type": "integer",
-          "description": "Interval in hours."
+          "description": "Keyword-only. Interval in hours for an interval-based schedule."
         },
         "interval_minutes": {
           "type": "integer",
-          "description": "Interval in minutes."
+          "description": "Keyword-only. Interval in minutes for an interval-based schedule."
         }
       },
       "required": [
@@ -89,7 +89,7 @@
   },
   {
     "tool_id": "access_management.get_all_dashboard_shares",
-    "description": "Method to retrieve all dashboard shares, including user and group details for each shared dashboard.",
+    "description": "Retrieve all dashboard shares, including user and group details for each shared dashboard.",
     "parameters": {
       "type": "object",
       "properties": {},

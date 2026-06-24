@@ -1,7 +1,7 @@
 [
   {
     "tool_id": "access_management.get_group",
-    "description": "Retrieves group details by their name.",
+    "description": "Retrieve group details by name.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -41,13 +41,13 @@
   },
   {
     "tool_id": "access_management.users_per_group",
-    "description": "Retrieves all users within a specific group by name.",
+    "description": "Retrieve all users within a specific group by name.",
     "parameters": {
       "type": "object",
       "properties": {
         "group_name": {
           "type": "string",
-          "description": "The name of the group."
+          "description": "The name of the group whose members to list."
         }
       },
       "required": [
@@ -81,7 +81,7 @@
   },
   {
     "tool_id": "access_management.users_per_group_all",
-    "description": "Retrieves all groups and maps them with the users belonging to those",
+    "description": "Retrieve all groups mapped to the users belonging to them.",
     "parameters": {
       "type": "object",
       "properties": {},

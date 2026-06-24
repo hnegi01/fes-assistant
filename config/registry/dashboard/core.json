@@ -81,7 +81,7 @@
   },
   {
     "tool_id": "dashboard.get_all_dashboards",
-    "description": "Retrieves all dashboards from the Sisense server.",
+    "description": "Retrieve all dashboards from the Sisense server.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -108,13 +108,13 @@
   },
   {
     "tool_id": "dashboard.get_dashboard_by_id",
-    "description": "Retrieves a specific dashboard by its ID.",
+    "description": "Retrieve a specific dashboard by its ID.",
     "parameters": {
       "type": "object",
       "properties": {
         "dashboard_id": {
           "type": "string",
-          "description": "The ID of the dashboard to retrieve."
+          "description": "The ``oid`` of the dashboard to retrieve."
         }
       },
       "required": [
@@ -148,13 +148,13 @@
   },
   {
     "tool_id": "dashboard.get_dashboard_by_name",
-    "description": "Retrieves a specific dashboard by its name.",
+    "description": "Retrieve a specific dashboard by its name.",
     "parameters": {
       "type": "object",
       "properties": {
         "dashboard_name": {
           "type": "string",
-          "description": "The name of the dashboard to retrieve."
+          "description": "Title of the dashboard to retrieve."
         }
       },
       "required": [

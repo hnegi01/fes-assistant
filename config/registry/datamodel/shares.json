@@ -1,20 +1,20 @@
 [
   {
     "tool_id": "datamodel.add_datamodel_shares",
-    "description": "Adds share entries (users and groups) to a DataModel.",
+    "description": "Add share entries (users and groups) to a data model.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to add shares to."
+          "description": "Name of the data model to add shares to."
         },
         "shares": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "List of dictionaries containing share details. Each dictionary should have: - name: Name of the user or group - type: Type of the party (user or group) - permission: Permission level (EDIT, READ, USE)"
+          "description": "List of share definitions to add. Each dictionary should include: ``name`` (user email or group name), ``type`` (``\"user\"`` or ``\"group\"``), and ``permission`` (one of ``\"EDIT\"``, ``\"READ\"``, ``\"USE\"``)."
         }
       },
       "required": [
@@ -70,13 +70,13 @@
   },
   {
     "tool_id": "datamodel.get_datamodel_shares",
-    "description": "Retrieves all share entries (users and groups) for a given DataModel in flat row format.",
+    "description": "Retrieve all share entries (users and groups) for a given data model.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to retrieve shares for."
+          "description": "Name of the data model to retrieve shares for."
         }
       },
       "required": [

@@ -49,13 +49,13 @@
   },
   {
     "tool_id": "datamodel.describe_datamodel",
-    "description": "Retrieve detailed datamodel structure in a flat, row-based format suitable for DataFrame or CSV export.",
+    "description": "Retrieve data model structure in a flat, row-based format.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to describe."
+          "description": "Name (title) of the data model to describe."
         }
       },
       "required": [
@@ -89,13 +89,13 @@
   },
   {
     "tool_id": "datamodel.describe_datamodel_raw",
-    "description": "Retrieve detailed information about a specific DataModel, including share details.",
+    "description": "Retrieve detailed information about a specific data model.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to describe."
+          "description": "Name (title) of the data model to describe."
         }
       },
       "required": [
@@ -129,7 +129,7 @@
   },
   {
     "tool_id": "datamodel.get_all_datamodel",
-    "description": "Retrieves metadata details of all DataModels using an undocumented internal API.",
+    "description": "Retrieve metadata for all data models using an internal API.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -156,13 +156,13 @@
   },
   {
     "tool_id": "datamodel.get_datamodel",
-    "description": "Retrieves a DataModel by its name.",
+    "description": "Retrieve a data model by its title.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to retrieve."
+          "description": "Name (title) of the data model to retrieve."
         }
       },
       "required": [
@@ -223,13 +223,13 @@
   },
   {
     "tool_id": "datamodel.get_model_schema",
-    "description": "Retrieves the schema of a DataModel, including tables and columns.",
+    "description": "Retrieve the schema of a data model, including tables and columns.",
     "parameters": {
       "type": "object",
       "properties": {
         "datamodel_name": {
           "type": "string",
-          "description": "Name of the DataModel to retrieve the schema for."
+          "description": "Name (title) of the data model to retrieve the schema for."
         }
       },
       "required": [

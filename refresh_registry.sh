@@ -9,8 +9,8 @@ echo
 
 cd "${REPO_ROOT}"
 
-echo "[0/2] Upgrading pysisense to latest..."
-pip install --upgrade pysisense
+echo "[0/2] Installing pinned pysisense (from requirements.txt)..."
+pip install -r requirements.txt
 
 echo "[1/2] Building tool registry from SDK..."
 python -m scripts.01_build_registry_from_sdk

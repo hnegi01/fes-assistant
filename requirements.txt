@@ -10,7 +10,7 @@ langsmith>=0.2,<1
 
 streamlit>=1.48,<1.51
 
-pysisense
+pysisense==1.0.2
 mcp>=1.24,<1.25
 
 python-dotenv>=1.0,<2

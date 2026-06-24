@@ -1,5 +1,4 @@
 import inspect
-import json
 import re
 from datetime import datetime
 from pathlib import Path
@@ -318,6 +317,30 @@ def _apply_name_heuristics(param_name: str, schema_piece: Dict[str, Any]) -> Dic
 
 
 # ---------------------------------------------------------------------------
+# Inline format marker → JSON Schema "format"
+# ---------------------------------------------------------------------------
+
+# A trailing "(format: <name>)" marker in a parameter description, e.g.
+#   "Email address of the user to retrieve. (format: email)"
+# The marker is translated into a JSON Schema `format` keyword and stripped
+# from the visible description. The name is passed through verbatim (no
+# allow-list) so the SDK docstring remains the single source of truth.
+_FORMAT_MARKER_RE = re.compile(r"\s*\(format:\s*([a-zA-Z0-9_-]+)\s*\)\s*$")
+
+
+def _split_format_marker(description: str) -> tuple:
+    """Return (clean_description, format_or_None) for a parameter description."""
+    if not description:
+        return description, None
+    m = _FORMAT_MARKER_RE.search(description)
+    if not m:
+        return description, None
+    fmt = m.group(1).strip()
+    clean = description[: m.start()].rstrip()
+    return clean, fmt
+
+
+# ---------------------------------------------------------------------------
 # JSON schema builder from signature + docstring (generic only)
 # ---------------------------------------------------------------------------
 
@@ -359,9 +382,17 @@ def json_schema_from_signature(
         # Apply generic name-based heuristics (no per-tool logic)
         schema_piece = _apply_name_heuristics(name, schema_piece)
 
-        # Param-level description: prefer docstring text if available
+        # Param-level description: prefer docstring text if available.
+        # Extract any trailing "(format: <name>)" marker into a schema `format`.
         if meta and meta.get("description"):
-            schema_piece["description"] = meta["description"]
+            desc, fmt = _split_format_marker(meta["description"])
+            schema_piece["description"] = desc
+            if fmt:
+                # For array params the format applies per element → put it on items.
+                if schema_piece.get("type") == "array":
+                    schema_piece.setdefault("items", {"type": "string"})["format"] = fmt
+                else:
+                    schema_piece["format"] = fmt
         elif "description" not in schema_piece:
             schema_piece["description"] = f"{name} parameter"
 
@@ -697,9 +728,11 @@ def _mixin_to_sub_module(module_key: str, mixin_class: type) -> str:
 
 # Tool IDs excluded from the registry entirely.
 # Add here when a method's output is incompatible with the app's rendering pipeline.
-_EXCLUDED_TOOL_IDS: frozenset = frozenset({
-    "wellcheck.run_full_wellcheck",  # nested multi-section output; use individual checks instead
-})
+_EXCLUDED_TOOL_IDS: frozenset = frozenset(
+    {
+        "wellcheck.run_full_wellcheck",  # nested multi-section output; use individual checks instead
+    }
+)
 
 
 def build_registry() -> list:
