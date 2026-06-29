@@ -1,10 +1,10 @@
 """
 backend/agent/_routing.py
 
-LLM prompts, two-stage module routing, conversation history, and raw LLM call.
+Two-stage module routing, conversation history, and raw LLM call.
 
 What lives here:
-  - System prompts: planning, context, summarization, routing
+  - System prompts re-exported from _prompts.py (edit prompts there, not here)
   - _MODULE_DESCRIPTIONS — module name → one-liner for the routing prompt
   - _build_planning_history() — last-N-turns context extraction
   - _parse_module_from_response() — extract module name from LLM response
@@ -33,97 +33,14 @@ from ._config import (
     _log_json_truncated,
     _make_module_logger,
 )
+from ._prompts import (
+    ROUTING_SYSTEM_PROMPT,
+)
 from .mcp_client import McpClient
 
 logger = _make_module_logger("backend.agent.llm_routing", "llm_routing.log")
 
 REGISTRY_DIR: Path = ROOT_DIR / "config" / "registry"
-
-
-# -----------------------------------------------------------------------------
-# System prompts
-# -----------------------------------------------------------------------------
-PLANNING_SYSTEM_PROMPT = """
-You are a planning assistant for a Sisense tool-calling agent.
-
-Your ONLY job is to decide which function tool to call and with what JSON arguments.
-You are given:
-- A natural-language user request.
-- A list of tools (functions) with names and JSON parameter schemas.
-
-Global rules:
-- Prefer calling a single tool that best matches the request.
-- The arguments MUST match the tool's JSON Schema:
-  - If type is "array", pass a JSON array (e.g. ["Sales","Marketing"]), NOT a comma-separated string.
-  - If type is "boolean", use true or false, NOT "true" or "false".
-  - If type is "integer", pass a number, NOT a quoted string.
-  - If an enum is defined, the value MUST be one of the allowed enum values.
-- Optional parameters can be omitted if the user did not imply them.
-- Only fill a parameter with a value the user explicitly provided. Do NOT infer or
-  invent a parameter value from descriptive words in the request. If a required
-  parameter's value was not provided, omit it rather than guessing — leaving it
-  missing (so the user can be asked) is better than filling it with a guess.
-- If the user's message is too vague, too short, or contains no recognisable
-  intent, respond in natural language asking them to be more specific. DO NOT
-  guess a tool.
-- If no tool is clearly appropriate, answer the user directly in natural language
-  and DO NOT call any tool.
-- Do NOT try to summarise results or explain anything beyond choosing a tool and args.
-
-Strict rules for list parameters (e.g. group_name_list, user_name_list,
-dashboard_names, dashboard_ids, datamodel_names, datamodel_ids, dependencies):
-- Always pass these as JSON arrays.
-- Only include items that the user has explicitly mentioned in their latest message.
-- Treat the user's message as the complete list. DO NOT add extra items.
-
-Additional guidance for dependencies:
-- If the user explicitly says "all dependencies" or similar, map that to:
-  ["dataSecurity", "formulas", "hierarchies", "perspectives"].
-- Otherwise, only include the dependency types the user mentions.
-""".strip()
-
-CHAT_PLANNING_CONTEXT_PROMPT = """
-The user is working with a single Sisense deployment (chat mode).
-When selecting tools, assume there is exactly one active deployment configured.
-""".strip()
-
-MIGRATION_PLANNING_CONTEXT_PROMPT = """
-The user is working in migration mode with a configured source and target
-Sisense deployment. Prefer tools that migrate users, groups, datamodels, and dashboards.
-""".strip()
-
-SUMMARY_SYSTEM_PROMPT_CHAT = """
-You are a Sisense analytics assistant. Summarise tool results for the user.
-
-Rules:
-- Base your answer only on the tool results; do NOT invent objects.
-- If many rows are returned, do NOT list everything. Provide counts and a few examples.
-- If few rows are returned (roughly <= 20), it is usually OK to list them when helpful.
-""".strip()
-
-SUMMARY_SYSTEM_PROMPT_MIGRATION = """
-You are a Sisense migration assistant. Summarise tool results for the user.
-
-Rules:
-- Base your answer only on the tool results; do NOT invent objects.
-- Prefer counts and a high-level summary. Provide a few examples only if useful.
-""".strip()
-
-ROUTING_SYSTEM_PROMPT = """
-You are a request router for a Sisense administration assistant.
-
-Your ONLY job is to identify which module best matches the user's request.
-
-Available modules:
-{module_list}
-
-Rules:
-- Reply with ONLY the module name — a single word, nothing else.
-- Pick the module whose tools are most likely to fulfil the request.
-- If the request spans multiple modules, pick the primary one.
-- If the message has no recognisable Sisense administration intent (greetings,
-  random words, unrelated questions, gibberish), reply with exactly: none
-""".strip()
 
 
 # -----------------------------------------------------------------------------
@@ -398,13 +315,16 @@ async def call_llm_raw(
     messages: List[Dict[str, Any]],
     tools: Optional[List[Dict[str, Any]]] = None,
     trace_id: Optional[str] = None,
+    tool_choice: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Make a single LLM call via LiteLLM and return the response as a plain dict.
 
-    Uses tool_choice="required" when tools are provided so the planner always
-    selects a tool rather than answering in free text. Providers: azure, databricks,
-    huggingface.
+    When tools are provided, tool_choice defaults to "required" so the planner
+    always selects a tool rather than answering in free text. Pass tool_choice
+    explicitly (e.g. "auto") to let the planner decline — used on the
+    clarification-resume turn, where a decline signals the user changed topic.
+    Providers: azure, databricks, huggingface.
     """
     kwargs: Dict[str, Any] = {
         "model": LLM_CONFIG.model,
@@ -423,9 +343,10 @@ async def call_llm_raw(
 
     if tools:
         kwargs["tools"] = tools
-        # "required" forces the planner to always emit a tool_call.
-        # litellm.drop_params=True silently drops this for providers that don't support it.
-        kwargs["tool_choice"] = "required"
+        # "required" forces the planner to always emit a tool_call; "auto" lets it
+        # decline (return plain text). litellm.drop_params=True silently drops this
+        # for providers that don't support it.
+        kwargs["tool_choice"] = tool_choice or "required"
 
     if trace_id:
         # Groups the planning and summarization calls for one turn into a single

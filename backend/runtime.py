@@ -33,6 +33,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional, Set, Tuple
 
+from backend.agent import llm_agent
 from backend.agent.llm_agent import call_llm_with_tools
 from backend.agent.mcp_client import McpClient
 
@@ -264,6 +265,9 @@ class SessionEntry:
     tenant_config: Optional[Dict[str, Any]]
     migration_config: Optional[Dict[str, Any]]
     last_used: datetime
+    # Step 7: carried-over clarification state when a turn paused for a missing
+    # required arg. {tool_id, missing_fields, filled_args, attempts} or None.
+    pending_clarification: Optional[Dict[str, Any]] = None
 
 
 # session_id -> SessionEntry
@@ -460,6 +464,18 @@ async def _run_turn_once(
         migration_config=migration_config,
     )
 
+    # Step 7: restore any clarification state saved on the previous turn so the
+    # LLM layer can skip routing and resume the pinned tool.
+    entry = SESSION_POOL.get(session_id)
+    prior_clarification = entry.pending_clarification if entry else None
+    if prior_clarification:
+        logger.info(
+            "Resuming clarification for session %s: tool=%s attempt=%s",
+            session_id,
+            prior_clarification.get("tool_id"),
+            prior_clarification.get("attempts"),
+        )
+
     try:
         async with _progress_context(progress_cb):
             reply = await call_llm_with_tools(
@@ -468,7 +484,14 @@ async def _run_turn_once(
                 mcp_client=mcp_client,
                 approved_mutations=approved_keys,
                 allow_summarization=allow_summarization,
+                pending_clarification=prior_clarification,
             )
+
+        # Persist or clear clarification state for the next turn. The LLM layer sets
+        # llm_agent.LAST_PENDING_CLARIFICATION only when it paused to ask; any other
+        # outcome (executed, gave up, topic change) leaves it None → cleared.
+        if entry is not None:
+            entry.pending_clarification = getattr(llm_agent, "LAST_PENDING_CLARIFICATION", None)
 
         logger.info("call_llm_with_tools completed successfully for session %s.", session_id)
         logger.debug("Agent reply (truncated): %s", reply[:500] if isinstance(reply, str) else repr(reply))

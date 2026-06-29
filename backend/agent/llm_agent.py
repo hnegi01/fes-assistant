@@ -35,6 +35,7 @@ import jsonschema
 from ._config import (
     ALLOW_MUTATING_TOOLS,
     ALLOW_SUMMARIZATION,
+    CLARIFY_MAX_ATTEMPTS,
     LLM_CONFIG,
     LLM_PLANNING_HISTORY_TURNS,
     LLM_PROVIDER,
@@ -44,6 +45,17 @@ from ._config import (
     _write_llm_trace,
     audit_logger,
     logger,
+)
+
+# --- _prompts ---
+from ._prompts import (
+    CHAT_PLANNING_CONTEXT_PROMPT,
+    CLARIFY_QUESTION_SYSTEM_PROMPT,
+    MIGRATION_PLANNING_CONTEXT_PROMPT,
+    MUTATION_EXPLAIN_SYSTEM_PROMPT,
+    PLANNING_SYSTEM_PROMPT,
+    SUMMARY_SYSTEM_PROMPT_CHAT,
+    SUMMARY_SYSTEM_PROMPT_MIGRATION,
 )
 
 # --- _registry ---
@@ -56,11 +68,6 @@ from ._registry import (
 
 # --- _routing ---
 from ._routing import (
-    CHAT_PLANNING_CONTEXT_PROMPT,
-    MIGRATION_PLANNING_CONTEXT_PROMPT,
-    PLANNING_SYSTEM_PROMPT,
-    SUMMARY_SYSTEM_PROMPT_CHAT,
-    SUMMARY_SYSTEM_PROMPT_MIGRATION,
     _build_planning_history,  # re-exported: test_planning_history.py calls m._build_planning_history
     _extract_latest_user_message,
     _fallback_direct_tool,
@@ -77,6 +84,14 @@ from .mcp_client import McpClient
 # -----------------------------------------------------------------------------
 TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {}
 LAST_TOOL_RESULT: Optional[Dict[str, Any]] = None
+
+# Set when a turn pauses to ask the user for a missing required argument.
+# runtime.py reads this after each turn to persist/clear per-session clarification
+# state. Kept separate from LAST_TOOL_RESULT so the API layer does not surface it
+# as a tool payload — the clarifying question is delivered as the plain reply.
+LAST_PENDING_CLARIFICATION: Optional[Dict[str, Any]] = None
+
+# CLARIFY_MAX_ATTEMPTS imported from _config (env: FES_CLARIFY_MAX_ATTEMPTS, default 2)
 
 
 # -----------------------------------------------------------------------------
@@ -188,6 +203,129 @@ def _optional_arg_hint(tool_id: str, used_args: Dict[str, Any], tool_meta: Dict[
 
 
 # -----------------------------------------------------------------------------
+# Clarification loop (Step 7) — ask for missing required args, resume next turn
+# -----------------------------------------------------------------------------
+def _missing_required_fields(args: Dict[str, Any], schema: Dict[str, Any]) -> List[str]:
+    """Required schema fields absent from args, excluding injected credential fields."""
+    required = schema.get("required") or []
+    return [f for f in required if f not in _CREDENTIAL_FIELDS and f not in args]
+
+
+def _curated_optionals(schema: Dict[str, Any], filled_args: Dict[str, Any], limit: int = 3) -> List[str]:
+    """Up to `limit` optional, non-credential, currently-unfilled params (same selection as the hint)."""
+    props = schema.get("properties") or {}
+    required = set(schema.get("required") or [])
+    optionals = [k for k in props if k not in required and k not in _CREDENTIAL_FIELDS and k not in filled_args]
+    return optionals[:limit]
+
+
+def _tool_def_for(tool_id: str) -> Optional[Dict[str, Any]]:
+    """Build a single OpenAI-style tool definition from the registry, for resume planning."""
+    meta = TOOL_REGISTRY.get(tool_id)
+    if not meta:
+        return None
+    return {
+        "type": "function",
+        "function": {
+            "name": tool_id,
+            "description": meta.get("description") or "",
+            "parameters": meta.get("parameters") or {},
+        },
+    }
+
+
+async def _generate_clarification_question(
+    tool_id: str,
+    meta: Dict[str, Any],
+    missing_fields: List[str],
+    filled_args: Dict[str, Any],
+    trace_id: Optional[str],
+) -> str:
+    """Ask the LLM for one friendly question covering the missing required fields
+    (and curated optionals). Falls back to a deterministic template on any failure."""
+    schema = meta.get("parameters") or {}
+    props = schema.get("properties") or {}
+    optionals = _curated_optionals(schema, filled_args)
+
+    def _desc(field: str) -> str:
+        return (props.get(field) or {}).get("description") or field
+
+    req_lines = "\n".join(f"- {_desc(f)}" for f in missing_fields)
+    user_parts = [f"Operation purpose: {meta.get('description', '')}", "Required information still needed:", req_lines]
+    if optionals:
+        opt_lines = "\n".join(f"- {_desc(o)}" for o in optionals)
+        user_parts += ["Optional extras the user could also provide:", opt_lines]
+    user_msg = "\n".join(user_parts)
+
+    try:
+        data = await call_llm_raw(
+            [
+                {"role": "system", "content": CLARIFY_QUESTION_SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg},
+            ],
+            tools=None,
+            trace_id=trace_id,
+        )
+        content, _ = _pick_tool_calls_from_llm_response(data)
+        if content and content.strip():
+            return content.strip()
+    except Exception as exc:  # noqa: BLE001 — any LLM failure falls back to the template
+        logger.warning("Clarification question generation failed (%s); using template.", exc)
+
+    # Deterministic fallback — describes the missing fields in plain words.
+    req_part = "; ".join(_desc(f) for f in missing_fields)
+    msg = f"I need a bit more information to do that: {req_part}."
+    if optionals:
+        msg += f" You can optionally also provide: {', '.join(_desc(o) for o in optionals)}."
+    return msg
+
+
+def _clarification_giveup_message(tool_id: str, meta: Dict[str, Any], missing_fields: List[str]) -> str:
+    """Terminal message after the clarification attempt cap is exhausted."""
+    props = (meta.get("parameters") or {}).get("properties") or {}
+    fields = "; ".join((props.get(f) or {}).get("description") or f for f in missing_fields)
+    return (
+        "I still don't have everything I need to do that. "
+        f"The required information is: {fields}. "
+        "Please send a new request with those details included."
+    )
+
+
+async def _generate_mutation_explanation(
+    tool_id: str,
+    meta: Dict[str, Any],
+    args: Dict[str, Any],
+    trace_id: Optional[str],
+) -> str:
+    """Plain-English description of what a mutating tool will do, for the approval
+    dialog. One LLM call; falls back to a generic-but-safe template on failure.
+    Credential fields are stripped before the args reach the LLM."""
+    safe_args = {k: v for k, v in (args or {}).items() if k not in _CREDENTIAL_FIELDS}
+    user_msg = (
+        f"Operation purpose: {meta.get('description', '')}\n"
+        f"It will run with these details: {json.dumps(safe_args, ensure_ascii=False)}"
+    )
+    try:
+        data = await call_llm_raw(
+            [
+                {"role": "system", "content": MUTATION_EXPLAIN_SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg},
+            ],
+            tools=None,
+            trace_id=trace_id,
+        )
+        content, _ = _pick_tool_calls_from_llm_response(data)
+        if content and content.strip():
+            return content.strip()
+    except Exception as exc:  # noqa: BLE001 — any LLM failure falls back to the template
+        logger.warning("Mutation explanation generation failed (%s); using template.", exc)
+
+    purpose = (meta.get("description") or "").rstrip(".")
+    base = purpose or "This will modify your Sisense deployment"
+    return f"{base}. Review the details below before approving."
+
+
+# -----------------------------------------------------------------------------
 # Main orchestration
 # -----------------------------------------------------------------------------
 async def call_llm_with_tools(
@@ -196,6 +334,7 @@ async def call_llm_with_tools(
     mcp_client: McpClient,
     approved_mutations: Optional[Set[Tuple[str, str]]] = None,
     allow_summarization: Optional[bool] = None,
+    pending_clarification: Optional[Dict[str, Any]] = None,
 ) -> str:
     """
     Run a single agent turn: planning -> tool execution -> optional summarization.
@@ -213,8 +352,12 @@ async def call_llm_with_tools(
     allow_summarization:
         Per-turn override from the API layer.
         Global env ALLOW_SUMMARIZATION is still a hard cap.
+    pending_clarification:
+        Carried-over clarification state from the previous turn (Step 7). When set,
+        the router is skipped and the planner re-runs constrained to the pinned tool
+        to merge the user's answer. Shape: {tool_id, missing_fields, filled_args, attempts}.
     """
-    global LAST_TOOL_RESULT
+    global LAST_TOOL_RESULT, LAST_PENDING_CLARIFICATION
 
     approved_mutations = approved_mutations or set()
 
@@ -225,6 +368,8 @@ async def call_llm_with_tools(
         allow_summarization_flag = ALLOW_SUMMARIZATION and bool(allow_summarization)
 
     LAST_TOOL_RESULT = None
+    # Cleared each turn; set again only if this turn pauses for clarification.
+    LAST_PENDING_CLARIFICATION = None
 
     latest_user_message = _extract_latest_user_message(messages)
     user_text = str(latest_user_message.get("content", ""))
@@ -274,77 +419,123 @@ async def call_llm_with_tools(
     logger.debug("Planning history: %d prior messages (max turns=%d)", len(_history), LLM_PLANNING_HISTORY_TURNS)
 
     # -------------------------------------------------------------------------
+    # 1b) Clarification resume (Step 7): skip routing, re-plan the pinned tool.
+    # On the resume turn the latest user message is the answer to a prior
+    # clarifying question, so routing on it alone would be unreliable. Instead we
+    # re-run the planner constrained to the one tool we were resolving, with
+    # tool_choice="auto" so a decline (the answer wasn't really an answer →
+    # topic change) cleanly falls back to fresh routing.
+    # -------------------------------------------------------------------------
+    clarify_attempts_base = 0
+    planning_content: Optional[str] = None
+    tool_calls: List[Dict[str, Any]] = []
+    _resumed = False
+
+    if pending_clarification:
+        _pc_tool_id = pending_clarification.get("tool_id")
+        _pc_def = _tool_def_for(_pc_tool_id) if _pc_tool_id else None
+        if _pc_def is None:
+            logger.warning("Resume: pending tool %s not in registry — dropping clarification.", _pc_tool_id)
+        else:
+            clarify_attempts_base = int(pending_clarification.get("attempts", 1))
+            _resume_messages = [
+                {"role": "system", "content": PLANNING_SYSTEM_PROMPT},
+                {"role": "system", "content": planning_context},
+                *_history,
+                latest_user_message,
+            ]
+            logger.info("Resume: re-planning pinned tool %s (attempt base=%d).", _pc_tool_id, clarify_attempts_base)
+            try:
+                _rdata = await call_llm_raw(
+                    _resume_messages, tools=[_pc_def], trace_id=turn_trace_id, tool_choice="auto"
+                )
+                planning_content, tool_calls = _pick_tool_calls_from_llm_response(_rdata)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Resume planning failed (%s); falling back to fresh routing.", exc)
+                tool_calls = []
+            if tool_calls:
+                _resumed = True
+                tools = [_pc_def]
+                _trace["routing_module"] = "resume"
+                _trace["tool_selected"] = (tool_calls[0].get("function") or {}).get("name", "")
+            else:
+                # Planner declined the pinned tool → treat as a topic change.
+                logger.info("Resume: planner declined %s — topic change, routing fresh.", _pc_tool_id)
+                clarify_attempts_base = 0
+
+    # -------------------------------------------------------------------------
     # 1a) Tool selection: migration fast-path or 3-level navigation
     # -------------------------------------------------------------------------
-    if mode == "migration":
-        # Migration has ~9 tools — load all directly, no navigation needed.
-        _nav_tools = _load_all_package_tools("migration")
-        _nav_pkg, _nav_mixin, _routing_ms = "migration", "all", 0
-        if _nav_tools:
-            tools = _nav_tools
-            logger.info("Migration fast-path: %d tools loaded directly", len(tools))
+    if not _resumed:
+        if mode == "migration":
+            # Migration has ~9 tools — load all directly, no navigation needed.
+            _nav_tools = _load_all_package_tools("migration")
+            _nav_pkg, _nav_mixin, _routing_ms = "migration", "all", 0
+            if _nav_tools:
+                tools = _nav_tools
+                logger.info("Migration fast-path: %d tools loaded directly", len(tools))
+            else:
+                logger.warning("Migration fast-path: registry files missing, using passed tools")
         else:
-            logger.warning("Migration fast-path: registry files missing, using passed tools")
-    else:
-        # Chat mode: 3-level navigation (package → mixin → tools).
-        _nav_tools, _nav_pkg, _nav_mixin, _routing_ms = await _navigate_to_tools(
-            latest_user_message, _history, turn_trace_id
-        )
-        if _nav_pkg == "__unclear__":
-            _trace["outcome"] = "unclear_intent"
+            # Chat mode: 3-level navigation (package → mixin → tools).
+            _nav_tools, _nav_pkg, _nav_mixin, _routing_ms = await _navigate_to_tools(
+                latest_user_message, _history, turn_trace_id
+            )
+            if _nav_pkg == "__unclear__":
+                _trace["outcome"] = "unclear_intent"
+                _write_llm_trace(_trace)
+                return (
+                    "I didn't quite understand that. What would you like me to help with? "
+                    "For example: 'show all users', 'list dashboards', or 'get all datamodels'."
+                )
+            if _nav_tools:
+                tools = _nav_tools
+                logger.info(
+                    "Navigation: %s → %s → %d tools (was %d)",
+                    _nav_pkg,
+                    _nav_mixin,
+                    len(tools),
+                    _trace["tools_available"],
+                )
+            else:
+                logger.warning(
+                    "Navigation failed (%s/%s), falling back to full tool list (%d)",
+                    _nav_pkg,
+                    _nav_mixin,
+                    len(tools),
+                )
+
+        _trace["routing_module"] = f"{_nav_pkg}/{_nav_mixin}" if _nav_mixin else _nav_pkg
+        _trace["routing_latency_ms"] = _routing_ms
+
+        planning_messages: List[Dict[str, Any]] = [
+            {"role": "system", "content": PLANNING_SYSTEM_PROMPT},
+            {"role": "system", "content": planning_context},
+            *_history,
+            latest_user_message,
+        ]
+
+        # ---------------------------------------------------------------------
+        # 2) Planning call
+        # ---------------------------------------------------------------------
+        _plan_t0 = time.perf_counter()
+        try:
+            planning_data = await call_llm_raw(planning_messages, tools=tools, trace_id=turn_trace_id)
+        except Exception as exc:
+            _trace["planning_latency_ms"] = int((time.perf_counter() - _plan_t0) * 1000)
+            _trace["outcome"] = "fallback"
+            logger.warning("Planning LLM call failed (%s). Using fallback direct tool.", exc)
+            summary, result = await _fallback_direct_tool(user_text, mcp_client)
+            LAST_TOOL_RESULT = result
             _write_llm_trace(_trace)
-            return (
-                "I didn't quite understand that. What would you like me to help with? "
-                "For example: 'show all users', 'list dashboards', or 'get all datamodels'."
-            )
-        if _nav_tools:
-            tools = _nav_tools
-            logger.info(
-                "Navigation: %s → %s → %d tools (was %d)",
-                _nav_pkg,
-                _nav_mixin,
-                len(tools),
-                _trace["tools_available"],
-            )
-        else:
-            logger.warning(
-                "Navigation failed (%s/%s), falling back to full tool list (%d)",
-                _nav_pkg,
-                _nav_mixin,
-                len(tools),
-            )
+            return summary
 
-    _trace["routing_module"] = f"{_nav_pkg}/{_nav_mixin}" if _nav_mixin else _nav_pkg
-    _trace["routing_latency_ms"] = _routing_ms
-
-    planning_messages: List[Dict[str, Any]] = [
-        {"role": "system", "content": PLANNING_SYSTEM_PROMPT},
-        {"role": "system", "content": planning_context},
-        *_history,
-        latest_user_message,
-    ]
-
-    # -------------------------------------------------------------------------
-    # 2) Planning call
-    # -------------------------------------------------------------------------
-    _plan_t0 = time.perf_counter()
-    try:
-        planning_data = await call_llm_raw(planning_messages, tools=tools, trace_id=turn_trace_id)
-    except Exception as exc:
         _trace["planning_latency_ms"] = int((time.perf_counter() - _plan_t0) * 1000)
-        _trace["outcome"] = "fallback"
-        logger.warning("Planning LLM call failed (%s). Using fallback direct tool.", exc)
-        summary, result = await _fallback_direct_tool(user_text, mcp_client)
-        LAST_TOOL_RESULT = result
-        _write_llm_trace(_trace)
-        return summary
+        _plan_usage = planning_data.get("usage") or {}
+        _trace["planning_tokens_in"] = _plan_usage.get("prompt_tokens", 0)
+        _trace["planning_tokens_out"] = _plan_usage.get("completion_tokens", 0)
 
-    _trace["planning_latency_ms"] = int((time.perf_counter() - _plan_t0) * 1000)
-    _plan_usage = planning_data.get("usage") or {}
-    _trace["planning_tokens_in"] = _plan_usage.get("prompt_tokens", 0)
-    _trace["planning_tokens_out"] = _plan_usage.get("completion_tokens", 0)
-
-    planning_content, tool_calls = _pick_tool_calls_from_llm_response(planning_data)
+        planning_content, tool_calls = _pick_tool_calls_from_llm_response(planning_data)
 
     if tool_calls:
         _trace["tool_selected"] = (tool_calls[0].get("function") or {}).get("name", "")
@@ -391,6 +582,34 @@ async def call_llm_with_tools(
                     format_checker=jsonschema.FormatChecker(),
                 )
             except jsonschema.ValidationError as _ve:
+                missing = _missing_required_fields(args, tool_schema)
+                if missing:
+                    # Missing required arg → clarification loop (Step 7), not a dead end.
+                    attempts = clarify_attempts_base + 1
+                    if attempts > CLARIFY_MAX_ATTEMPTS:
+                        logger.info(
+                            "Clarification cap (%d) reached for %s; giving up. missing=%s",
+                            CLARIFY_MAX_ATTEMPTS,
+                            tool_id,
+                            missing,
+                        )
+                        _trace["outcome"] = "clarification_exhausted"
+                        _write_llm_trace(_trace)
+                        return _clarification_giveup_message(tool_id, meta, missing)
+
+                    question = await _generate_clarification_question(tool_id, meta, missing, args, turn_trace_id)
+                    LAST_PENDING_CLARIFICATION = {
+                        "tool_id": tool_id,
+                        "missing_fields": missing,
+                        "filled_args": args,
+                        "attempts": attempts,
+                    }
+                    logger.info("Clarification needed: tool=%s missing=%s attempt=%d", tool_id, missing, attempts)
+                    _trace["outcome"] = "awaiting_clarification"
+                    _write_llm_trace(_trace)
+                    return question
+
+                # Value present but wrong (format/type/enum) → hard block, no loop.
                 logger.error("Tool %s arg validation failed: %s", tool_id, _ve.message)
                 _trace["outcome"] = "validation_failed"
                 _write_llm_trace(_trace)
@@ -405,10 +624,12 @@ async def call_llm_with_tools(
         if mutates and REQUIRE_MUTATION_CONFIRM:
             key = _approval_key(tool_id, args)
             if key not in approved_mutations:
+                # Plain-English description of what will change, for the approval dialog.
+                explanation = await _generate_mutation_explanation(tool_id, meta, args, turn_trace_id)
                 pending = {
                     "tool_id": tool_id,
                     "arguments": args,
-                    "reason": "Tool is mutating and requires confirmation in the UI.",
+                    "reason": explanation,
                 }
                 LAST_TOOL_RESULT = {"ok": False, "pending_confirmation": pending}
                 logger.info(
@@ -418,7 +639,7 @@ async def call_llm_with_tools(
                 )
                 _trace["outcome"] = "pending_mutation"
                 _write_llm_trace(_trace)
-                return "This action requires confirmation in the UI before proceeding."
+                return explanation
 
         if mutates:
             audit_logger.info(

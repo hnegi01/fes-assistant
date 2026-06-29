@@ -939,7 +939,10 @@ if mode == MODE_CHAT:
     # Pending mutation approval UX (Chat)
     pending = st.session_state[CHAT_PENDING_KEY]
     if pending and isinstance(pending, dict):
-        st.info("This action requires approval before it can make changes to your Sisense deployment.")
+        st.info(
+            pending.get("reason")
+            or "This action requires approval before it can make changes to your Sisense deployment."
+        )
         with st.expander("View operation details", expanded=True):
             st.markdown("**Tool:** `{}`".format(pending.get("tool_id", "")))
             st.code(json.dumps(pending.get("arguments", {}), indent=2), language="json")
@@ -1031,7 +1034,10 @@ if mode == MODE_CHAT:
             if isinstance(tr, dict) and tr.get("pending_confirmation"):
                 st.session_state[CHAT_PENDING_KEY] = tr["pending_confirmation"]
 
-                st.info("This action requires approval before it can make changes to your Sisense deployment.")
+                st.info(
+                    tr["pending_confirmation"].get("reason")
+                    or "This action requires approval before it can make changes to your Sisense deployment."
+                )
                 with st.expander("View operation details", expanded=True):
                     pc = tr["pending_confirmation"]
                     st.markdown("**Tool:** `{}`".format(pc.get("tool_id", "")))
@@ -1321,7 +1327,10 @@ if mode == MODE_MIGRATION:
 
     pending_mig = st.session_state[MIG_PENDING_KEY]
     if pending_mig and isinstance(pending_mig, dict):
-        st.info("This migration action requires approval before it can make changes to your Sisense deployments.")
+        st.info(
+            pending_mig.get("reason")
+            or "This migration action requires approval before it can make changes to your Sisense deployments."
+        )
         with st.expander("View operation details", expanded=True):
             st.markdown("**Tool:** `{}`".format(pending_mig.get("tool_id", "")))
             st.code(json.dumps(pending_mig.get("arguments", {}), indent=2), language="json")

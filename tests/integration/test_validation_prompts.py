@@ -61,6 +61,22 @@ def test_non_email_value_is_blocked(backend_url, tenant_config):
 
 
 @pytest.mark.integration
+def test_off_topic_short_circuits(backend_url, tenant_config):
+    """A clearly off-topic message returns the hardcoded short-circuit reply cheaply.
+
+    The L1 router returns 'none' → the planner is never reached → the backend
+    returns the 'I didn't quite understand' message. No tool_result is set.
+    """
+    body = _turn(backend_url, tenant_config, "what's the capital of France?")
+    reply = (body.get("reply") or "").lower()
+
+    assert (
+        "understand" in reply or "help with" in reply
+    ), f"expected the off-topic short-circuit message, got: {reply!r}"
+    assert body.get("tool_result") in (None, {}), "off-topic short-circuit must not execute any tool"
+
+
+@pytest.mark.integration
 def test_missing_identifier_is_not_hallucinated(backend_url, tenant_config):
     """
     'get datamodel datasecurity rule' — the user named NO datamodel. With the

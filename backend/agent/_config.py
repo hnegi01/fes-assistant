@@ -18,7 +18,6 @@ What lives here:
 from __future__ import annotations
 
 import csv
-import datetime
 import json
 import logging
 import os
@@ -233,6 +232,7 @@ if not any(isinstance(h, logging.FileHandler) for h in audit_logger.handlers):
 MAX_LLM_HTTP_RETRIES: int = int(os.getenv("LLM_HTTP_MAX_RETRIES", "3"))
 LLM_HTTP_RETRY_BASE_DELAY: float = float(os.getenv("LLM_HTTP_RETRY_BASE_DELAY", "0.5"))
 LLM_PLANNING_HISTORY_TURNS: int = int(os.getenv("LLM_PLANNING_HISTORY_TURNS", "5"))
+CLARIFY_MAX_ATTEMPTS: int = int(os.getenv("FES_CLARIFY_MAX_ATTEMPTS", "2"))
 
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "databricks").strip().lower()
 logger.info("Using LLM_PROVIDER=%s", LLM_PROVIDER)
@@ -343,9 +343,19 @@ def _scrub_secrets(obj: Any) -> Any:
         for k, v in obj.items():
             key_l = str(k).lower()
             if key_l in (
-                "token", "api_key", "api-key", "apikey", "authorization", "auth",
-                "password", "passwd", "secret", "access_token", "refresh_token",
-                "id_token", "bearer_token",
+                "token",
+                "api_key",
+                "api-key",
+                "apikey",
+                "authorization",
+                "auth",
+                "password",
+                "passwd",
+                "secret",
+                "access_token",
+                "refresh_token",
+                "id_token",
+                "bearer_token",
             ):
                 cleaned[k] = "***REDACTED***"
             else:

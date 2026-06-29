@@ -55,9 +55,9 @@ class TestRegistryEmailFormat:
     def test_user_email_declares_email_format(self, tool_id):
         registry = self._load_registry()
         props = registry[tool_id]["parameters"]["properties"]
-        assert props["user_email"]["format"] == "email", (
-            f"{tool_id}.user_email must declare format: email so a non-email " f"value is blocked before execution"
-        )
+        assert (
+            props["user_email"]["format"] == "email"
+        ), f"{tool_id}.user_email must declare format: email so a non-email value is blocked before execution"
 
 
 # ---------------------------------------------------------------------------
@@ -152,13 +152,23 @@ class TestBlockingValidationWiring:
         assert "access_management.get_user" in reply
         client.invoke_tool.assert_not_called()
 
-    def test_missing_required_arg_is_blocked_and_not_executed(self):
-        """No user_email at all → required-field block, MCP never called."""
+    def test_missing_required_arg_triggers_clarification_not_execution(self):
+        """No user_email → Step 7 clarification: ask, don't execute, don't hard-block.
+
+        (A missing required arg used to be a dead-end block; it now pauses for
+        clarification. The not-executed guarantee is unchanged.)
+        """
         client = _fake_mcp_client()
         reply = _call("access_management.get_user", json.dumps({}), client)
 
-        assert "couldn't call" in reply.lower()
+        # Tool must NOT run while a required arg is missing.
         client.invoke_tool.assert_not_called()
+        # Pending clarification recorded for the next turn.
+        assert m.LAST_PENDING_CLARIFICATION is not None
+        assert m.LAST_PENDING_CLARIFICATION["tool_id"] == "access_management.get_user"
+        assert "user_email" in m.LAST_PENDING_CLARIFICATION["missing_fields"]
+        # This is a question, not the wrong-value hard block.
+        assert "couldn't call" not in reply.lower()
 
     def test_valid_email_is_executed(self):
         """A real email passes validation → tool actually runs (no over-blocking)."""
