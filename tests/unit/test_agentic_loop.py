@@ -17,6 +17,7 @@ another loop step; any other text is the final answer.
 """
 
 import asyncio
+import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -295,21 +296,93 @@ def test_loop_resume_executes_approved_and_continues():
 
 
 # ---------------------------------------------------------------------------
-# 6) ALLOW_SUMMARIZATION=false → single-shot, no decide call
+# 6) ALLOW_SUMMARIZATION=false → still loops, but on metadata; final answer is
+#    rendered locally (no result data ever sent to the LLM).
 # ---------------------------------------------------------------------------
 
 
-def test_summarization_disabled_degrades_to_single_shot(monkeypatch):
-    client = _fake_client()
-    messages = [{"role": "user", "content": "get user a@b.com"}]
-    nav = AsyncMock(return_value=(GET_USER_TOOLS, "access_management", "users", 0))
-    raw = AsyncMock(side_effect=[_plan_resp("access_management.get_user", '{"user_email":"a@b.com"}')])
-    with patch.object(m, "_navigate_to_tools", new=nav), patch.object(m, "call_llm_raw", new=raw):
+def test_summarization_off_runs_metadata_loop(monkeypatch):
+    """Two-step chain with summ off: independent steps still run; the decide call
+    sees metadata (nodata prompt), replies DONE, and the answer is local."""
+    sent_to_llm = []
+
+    client = _fake_client(
+        results=[{"ok": True, "result": [{"secretcol": 1}]}, {"ok": True, "result": [{"othercol": 2}]}]
+    )
+    messages = [{"role": "user", "content": "list users and list dashboards"}]
+    nav = AsyncMock(
+        side_effect=[
+            (GET_USER_TOOLS, "access_management", "users", 0),
+            (DASHBOARD_TOOLS, "dashboard", "core", 0),
+        ]
+    )
+
+    async def _capturing_raw(msgs, **kw):
+        sent_to_llm.append(msgs)
+        # planning step 1 → nodata decide CONTINUE → planning step 2 → nodata decide DONE
+        seq = [
+            _plan_resp("access_management.get_user", '{"user_email":"a@b.com"}'),
+            _text_resp("CONTINUE: list dashboards"),
+            _plan_resp("dashboard.get_dashboards", "{}", call_id="c2"),
+            _text_resp("DONE"),
+        ]
+        return seq[len(sent_to_llm) - 1]
+
+    async def _identity(user_text, trace_id):
+        return user_text
+
+    with (
+        patch.object(m, "_navigate_to_tools", new=nav),
+        patch.object(m, "call_llm_raw", new=_capturing_raw),
+        patch.object(m, "_decompose_first_step", new=_identity),
+    ):
         reply = run(m.call_llm_with_tools(messages, GET_USER_TOOLS, client, allow_summarization=False))
 
-    client.invoke_tool.assert_awaited_once()
-    assert raw.await_count == 1  # planning only — no decide call ever happened
-    assert isinstance(reply, str) and reply  # local description, not an LLM answer
+    # Both independent steps executed (summ off is no longer single-shot).
+    assert client.invoke_tool.await_count == 2
+
+    # Inspect every tool-role message that reached the LLM.
+    tool_msgs = [msg for call in sent_to_llm for msg in call if msg.get("role") == "tool"]
+    assert tool_msgs, "expected tool results in the LLM context"
+    for tm in tool_msgs:
+        payload = json.loads(tm["content"])
+        # Privacy: metadata only — the actual column data never left the process.
+        assert set(payload.keys()) <= {"tool", "ok", "count", "error"}, f"data leaked to LLM: {payload}"
+        assert "secretcol" not in tm["content"] and "othercol" not in tm["content"]
+
+    assert isinstance(reply, str) and reply
+
+
+# ---------------------------------------------------------------------------
+# 6b) Summ off + adaptive: the decide call says BLOCKED (needs a value it can't
+#     see); the loop stops gracefully and explains, no data leaked.
+# ---------------------------------------------------------------------------
+
+
+def test_summarization_off_adaptive_blocks_gracefully():
+    client = _fake_client(results=[{"ok": True, "result": [{"id": "hidden"}]}])
+    messages = [{"role": "user", "content": "find the datamodels owned by john"}]
+    nav = AsyncMock(return_value=(GET_USER_TOOLS, "access_management", "users", 0))
+
+    async def _identity(user_text, trace_id):
+        return user_text
+
+    raw = AsyncMock(
+        side_effect=[
+            _plan_resp("access_management.get_user", '{"user_email":"john@acme.com"}'),  # step 1
+            _text_resp("BLOCKED: need john's user id from step 1 to list his datamodels"),  # nodata decide
+        ]
+    )
+    with (
+        patch.object(m, "_navigate_to_tools", new=nav),
+        patch.object(m, "call_llm_raw", new=raw),
+        patch.object(m, "_decompose_first_step", new=_identity),
+    ):
+        reply = run(m.call_llm_with_tools(messages, GET_USER_TOOLS, client, allow_summarization=False))
+
+    client.invoke_tool.assert_awaited_once()  # step 1 ran; the blocked step did not
+    low = reply.lower()
+    assert "summarization" in low and ("can't" in low or "cannot" in low or "turn summarization on" in low)
 
 
 # ---------------------------------------------------------------------------

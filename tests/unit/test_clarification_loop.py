@@ -86,8 +86,22 @@ def patch_registry(monkeypatch):
 @pytest.fixture(autouse=True)
 def reset_pending():
     m.LAST_PENDING_CLARIFICATION = None
+    m.LAST_PENDING_LOOP = None
     yield
     m.LAST_PENDING_CLARIFICATION = None
+    m.LAST_PENDING_LOOP = None
+
+
+@pytest.fixture(autouse=True)
+def no_decompose(monkeypatch):
+    """Step-1 decomposition is an extra LLM call on every chat turn now (both
+    summ modes). Neutralise it (identity, no call_llm_raw) so tests drive
+    call_llm_raw with fixed side-effect lists."""
+
+    async def _identity(user_text, trace_id):
+        return user_text
+
+    monkeypatch.setattr(m, "_decompose_first_step", _identity)
 
 
 def _tool_def(name, schema):

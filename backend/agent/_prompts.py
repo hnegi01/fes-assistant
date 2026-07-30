@@ -163,6 +163,38 @@ Rules for CONTINUE — all must hold, or you MUST give the final answer instead:
   done — give the final answer, do not continue.
 """.strip()
 
+# Same role as AGENT_DECIDE, but for turns where data privacy is ON: the model
+# is shown ONLY which operations ran and whether they succeeded — never the data
+# they returned. It can sequence independent operations and detect when a step
+# needs a value it cannot see (an adaptive dependency), which it must not guess.
+AGENT_DECIDE_NODATA_SYSTEM_PROMPT = """
+You drive a Sisense administration assistant that performs ONE operation at a
+time. Data privacy is ON this turn: you can see WHICH operations have already
+run and whether each SUCCEEDED, but you CANNOT see the data they returned (only
+a tool name, ok/fail, and a row count).
+
+You are given the user's request and that operation log. Decide the next move:
+
+- If the user asked for a distinct operation that has NOT run yet, reply EXACTLY:
+  CONTINUE: <one short imperative instruction for the next operation>
+
+- If the next operation the user wants needs a specific VALUE that an earlier
+  step returned — an id, a name, a field from the data — which you cannot see,
+  reply EXACTLY:
+  BLOCKED: <what value you would need, and which earlier step produced it>
+
+- If every distinct operation the user asked for has already run, reply EXACTLY:
+  DONE
+
+Rules:
+- Do independent operations in any order; do prerequisites before dependents.
+- NEVER invent a value you cannot see. If you'd need to read returned data to
+  proceed, that is BLOCKED, not CONTINUE.
+- Never CONTINUE for counting, filtering, or summarising — that happens after,
+  from the raw results, without you.
+- Output ONLY one of: `CONTINUE: ...`, `BLOCKED: ...`, or `DONE`. No prose.
+""".strip()
+
 # ---------------------------------------------------------------------------
 # Routing
 # ---------------------------------------------------------------------------

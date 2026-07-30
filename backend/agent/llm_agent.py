@@ -50,6 +50,7 @@ from ._config import (
 
 # --- _prompts ---
 from ._prompts import (
+    AGENT_DECIDE_NODATA_SYSTEM_PROMPT,
     AGENT_DECIDE_SYSTEM_PROMPT,
     AGENT_FIRST_STEP_SYSTEM_PROMPT,
     CHAT_PLANNING_CONTEXT_PROMPT,
@@ -376,6 +377,45 @@ async def _decompose_first_step(user_text: str, trace_id: str) -> str:
         return user_text
 
 
+def _metadata_record(tool_id: str, result: Any) -> Dict[str, Any]:
+    """The privacy-safe view of a tool result for summarization-OFF turns: what
+    ran and whether it worked — never the data itself. This is what goes into the
+    LLM's history when data must not reach the model."""
+    rec: Dict[str, Any] = {"tool": tool_id, "ok": bool(result.get("ok")) if isinstance(result, dict) else False}
+    if isinstance(result, dict):
+        payload = result.get("result")
+        if isinstance(payload, list):
+            rec["count"] = len(payload)
+        if not result.get("ok"):
+            rec["error"] = result.get("error")
+    return rec
+
+
+def _describe_results_local(raw_results: List[Tuple[str, Any]]) -> str:
+    """Render collected results locally (no LLM) for summarization-OFF final
+    answers — the raw data never leaves the process."""
+    if not raw_results:
+        return "No results."
+    return "\n\n".join(_describe_tool_result(tid, res) for tid, res in raw_results)
+
+
+def _transcript_step(call: Dict[str, Any], tool_id: str, result: Any, summ_on: bool) -> List[Dict[str, Any]]:
+    """The two messages (assistant tool_call + tool result) appended to the
+    LLM-visible history for one executed step. Content is the full result when
+    summarization is on, metadata only when off — this is the single point where
+    the privacy boundary is enforced in code."""
+    content = _shrink_for_llm(result) if summ_on else _metadata_record(tool_id, result)
+    return [
+        {"role": "assistant", "content": "", "tool_calls": [call]},
+        {
+            "role": "tool",
+            "tool_call_id": call.get("id"),
+            "name": tool_id,
+            "content": json.dumps(content, ensure_ascii=False, default=str),
+        },
+    ]
+
+
 async def _emit_agent_progress(event: Dict[str, Any]) -> None:
     """Publish a loop progress event to the turn's SSE stream (best-effort)."""
     try:
@@ -401,11 +441,19 @@ async def _finalize_from_transcript(
     latest_user_message: Dict[str, Any],
     history: List[Dict[str, Any]],
     transcript: List[Dict[str, Any]],
+    raw_results: List[Tuple[str, Any]],
+    summ_on: bool,
     turn_trace_id: str,
 ) -> str:
     """Force a final answer from the results gathered so far — used when the loop
     must stop (e.g. a continued step overreached into a tool needing info the user
-    never gave). One LLM call; falls back to describing the last result."""
+    never gave).
+
+    Summarization off: render the raw results locally — data must not reach the
+    LLM. Summarization on: one LLM call to summarise; fall back to a local
+    description on failure."""
+    if not summ_on:
+        return _describe_results_local(raw_results)
     messages = [
         {"role": "system", "content": AGENT_DECIDE_SYSTEM_PROMPT},
         {
@@ -425,9 +473,8 @@ async def _finalize_from_transcript(
         if text and not text.upper().startswith("CONTINUE:"):
             return text
     except Exception as exc:  # noqa: BLE001
-        logger.warning("Loop finalize call failed (%s); describing last result.", exc)
-    last_name = next((m.get("name", "unknown") for m in reversed(transcript) if m.get("role") == "tool"), "unknown")
-    return _describe_tool_result(last_name, LAST_TOOL_RESULT)
+        logger.warning("Loop finalize call failed (%s); describing results locally.", exc)
+    return _describe_results_local(raw_results)
 
 
 async def _agent_continuation_loop(
@@ -436,33 +483,50 @@ async def _agent_continuation_loop(
     history: List[Dict[str, Any]],
     planning_context: str,
     transcript: List[Dict[str, Any]],
+    raw_results: List[Tuple[str, Any]],
     steps_executed: int,
     mcp_client: McpClient,
     approved_mutations: Set[Tuple[str, str]],
+    summ_on: bool,
     turn_trace_id: str,
     trace: Dict[str, Any],
     first_tool_hint: Optional[Tuple[str, Dict[str, Any], Dict[str, Any]]] = None,
 ) -> str:
     """
-    Continue an agent turn after at least one tool has executed.
+    Continue an agent turn after at least one tool has executed. Runs in BOTH
+    summarization modes — the flag only controls what the reactive planner sees.
 
-    Each iteration: a decide call checks the goal against the transcript — a
-    plain reply is the final answer; "CONTINUE: <next thing>" drives one more
-    route → plan → execute step. The CONTINUE sentence (not the original
-    compound message) is what gets routed, so each step's routing input is a
-    clean single intent.
+    Each iteration a decide call ("what's next?") reads the goal + history:
+      - `summ_on` True  → history holds full results; the reply is `CONTINUE:
+        <next op>` or the final prose answer.
+      - `summ_on` False → history holds action metadata only (never data); the
+        reply is `CONTINUE:`, `BLOCKED:` (a step needs a value it can't see), or
+        `DONE`. The final answer is rendered locally from `raw_results` so data
+        never reaches the model.
 
-    Exits: final answer, step cap, mutation pause (state saved for Option A
-    resume), missing-arg clarification, or a routing/planning dead end — every
-    exit returns something readable, never a silent stop.
+    Exits: final answer, blocked (adaptive step, summ off), step cap, mutation
+    pause (state saved for resume), or a routing/planning dead end — every exit
+    returns readable text, never a silent stop.
     """
     global LAST_TOOL_RESULT, LAST_PENDING_CLARIFICATION, LAST_PENDING_LOOP
+
+    def _done(answer: str) -> str:
+        trace["outcome"] = "ok"
+        trace["summarization_used"] = summ_on
+        trace["agent_steps"] = steps_executed
+        _write_llm_trace(trace)
+        hint = ""
+        if steps_executed == 1 and first_tool_hint:
+            _ht, _ha, _hm = first_tool_hint
+            hint = _optional_arg_hint(_ht, _ha, _hm)
+        return answer + hint
 
     while True:
         # ------------------------------------------------------------------ decide
         await _emit_agent_progress({"phase": "deciding", "step": steps_executed, "max_steps": MAX_AGENT_STEPS})
+        decide_prompt = AGENT_DECIDE_SYSTEM_PROMPT if summ_on else AGENT_DECIDE_NODATA_SYSTEM_PROMPT
         decide_messages: List[Dict[str, Any]] = [
-            {"role": "system", "content": AGENT_DECIDE_SYSTEM_PROMPT},
+            {"role": "system", "content": decide_prompt},
             *history,
             latest_user_message,
             *transcript,
@@ -472,37 +536,37 @@ async def _agent_continuation_loop(
             decide_text, _ = _pick_tool_calls_from_llm_response(decide_data)
             decide_text = (decide_text or "").strip()
         except Exception as exc:  # noqa: BLE001
-            logger.warning("Agent decide call failed (%s); describing last result.", exc)
+            logger.warning("Agent decide call failed (%s); rendering results locally.", exc)
             trace["outcome"] = "decide_failed"
             trace["agent_steps"] = steps_executed
             _write_llm_trace(trace)
-            last_name = next(
-                (m.get("name", "unknown") for m in reversed(transcript) if m.get("role") == "tool"),
-                "unknown",
-            )
-            return _describe_tool_result(last_name, LAST_TOOL_RESULT)
+            return _describe_results_local(raw_results)
 
-        # Models sometimes hedge — a partial answer AND a trailing "CONTINUE:"
-        # line. If any line signals CONTINUE, more work is wanted: continue wins
-        # and none of the hedged text leaks to the user.
-        _continue_line = next(
-            (ln.strip() for ln in decide_text.splitlines() if ln.strip().upper().startswith("CONTINUE:")),
-            None,
-        )
+        # Hedge handling: if the model mixes an answer with a CONTINUE line,
+        # continue wins and the hedged text never leaks.
+        lines = [ln.strip() for ln in decide_text.splitlines() if ln.strip()]
+        continue_line = next((ln for ln in lines if ln.upper().startswith("CONTINUE:")), None)
+        blocked_line = next((ln for ln in lines if ln.upper().startswith("BLOCKED:")), None)
 
-        if _continue_line is None:
-            # Goal satisfied — the decide reply IS the final answer.
-            trace["outcome"] = "ok"
-            trace["summarization_used"] = True
-            trace["agent_steps"] = steps_executed
-            _write_llm_trace(trace)
-            hint = ""
-            if steps_executed == 1 and first_tool_hint:
-                _ht, _ha, _hm = first_tool_hint
-                hint = _optional_arg_hint(_ht, _ha, _hm)
-            return decide_text + hint
+        if continue_line is None:
+            if (not summ_on) and blocked_line is not None:
+                # Adaptive dependency the model can't satisfy without seeing data.
+                reason = blocked_line.split(":", 1)[1].strip()
+                trace["outcome"] = "loop_blocked_no_data"
+                trace["agent_steps"] = steps_executed
+                _write_llm_trace(trace)
+                blocked = (
+                    "I did the parts I can without reading returned data, but the rest needs a value "
+                    f"from an earlier step that I can't see with summarization off ({reason}). "
+                    "Turn summarization on to let me continue.\n\n" + _describe_results_local(raw_results)
+                )
+                return blocked
+            # Goal satisfied. summ_on: the reply IS the answer. summ_off: the model
+            # only signalled DONE — render locally so no data is invented.
+            answer = decide_text if summ_on else _describe_results_local(raw_results)
+            return _done(answer)
 
-        remains = _continue_line.split(":", 1)[1].strip()
+        remains = continue_line.split(":", 1)[1].strip()
         logger.info("Agent loop step %d done; continuing: %s", steps_executed, remains[:200])
 
         if steps_executed >= MAX_AGENT_STEPS:
@@ -516,6 +580,16 @@ async def _agent_continuation_loop(
         await _emit_agent_progress({"phase": "planning", "step": step_number, "max_steps": MAX_AGENT_STEPS})
         step_message = {"role": "user", "content": remains}
 
+        async def _finalize() -> str:
+            return await _finalize_from_transcript(
+                latest_user_message=latest_user_message,
+                history=history,
+                transcript=transcript,
+                raw_results=raw_results,
+                summ_on=summ_on,
+                turn_trace_id=turn_trace_id,
+            )
+
         nav_tools, nav_pkg, nav_mixin, _ms = await _navigate_to_tools(step_message, [], turn_trace_id)
         if (not nav_tools) and nav_pkg and nav_pkg != "__unclear__":
             # Backtrack: mixin-level miss — retry with the whole package once.
@@ -524,12 +598,7 @@ async def _agent_continuation_loop(
             trace["outcome"] = "loop_routing_dead_end"
             trace["agent_steps"] = steps_executed
             _write_llm_trace(trace)
-            return await _finalize_from_transcript(
-                latest_user_message=latest_user_message,
-                history=history,
-                transcript=transcript,
-                turn_trace_id=turn_trace_id,
-            )
+            return await _finalize()
 
         # ------------------------------------------------------------------ plan
         planning_messages: List[Dict[str, Any]] = [
@@ -561,12 +630,7 @@ async def _agent_continuation_loop(
             trace["outcome"] = "loop_planning_dead_end"
             trace["agent_steps"] = steps_executed
             _write_llm_trace(trace)
-            return await _finalize_from_transcript(
-                latest_user_message=latest_user_message,
-                history=history,
-                transcript=transcript,
-                turn_trace_id=turn_trace_id,
-            )
+            return await _finalize()
 
         # One operation per loop step — keeps mutation gating and progress legible.
         call = calls[0]
@@ -598,12 +662,7 @@ async def _agent_continuation_loop(
                     trace["outcome"] = "loop_overreach_finalized"
                     trace["agent_steps"] = steps_executed
                     _write_llm_trace(trace)
-                    return await _finalize_from_transcript(
-                        latest_user_message=latest_user_message,
-                        history=history,
-                        transcript=transcript,
-                        turn_trace_id=turn_trace_id,
-                    )
+                    return await _finalize()
                 trace["outcome"] = "loop_validation_failed"
                 trace["agent_steps"] = steps_executed
                 _write_llm_trace(trace)
@@ -620,6 +679,7 @@ async def _agent_continuation_loop(
                 }
                 LAST_PENDING_LOOP = {
                     "transcript": transcript,
+                    "raw_results": raw_results,
                     "steps_executed": steps_executed,
                     "tool_id": tool_id,
                     "arguments": args,
@@ -643,17 +703,8 @@ async def _agent_continuation_loop(
         )
         result = await mcp_client.invoke_tool(tool_id, args)
         LAST_TOOL_RESULT = result
-
-        shrunk = _shrink_for_llm(result)
-        transcript.append({"role": "assistant", "content": "", "tool_calls": [call]})
-        transcript.append(
-            {
-                "role": "tool",
-                "tool_call_id": call.get("id"),
-                "name": tool_id,
-                "content": json.dumps(shrunk, ensure_ascii=False),
-            }
-        )
+        raw_results.append((tool_id, result))
+        transcript.extend(_transcript_step(call, tool_id, result, summ_on))
         steps_executed += 1
         await _emit_agent_progress(
             {
@@ -800,36 +851,15 @@ async def call_llm_with_tools(
                 }
             )
 
-            if not allow_summarization_flag:
-                _trace["outcome"] = "loop_resumed_summarization_disabled"
-                _write_llm_trace(_trace)
-                return _describe_tool_result(_pl_tool_id, result)
-
+            _resume_call = {
+                "id": f"resume-{turn_trace_id[:8]}",
+                "type": "function",
+                "function": {"name": _pl_tool_id, "arguments": json.dumps(_pl_args, ensure_ascii=False)},
+            }
             _resume_transcript = list(pending_loop.get("transcript") or [])
-            _resume_transcript.append(
-                {
-                    "role": "assistant",
-                    "content": "",
-                    "tool_calls": [
-                        {
-                            "id": f"resume-{turn_trace_id[:8]}",
-                            "type": "function",
-                            "function": {
-                                "name": _pl_tool_id,
-                                "arguments": json.dumps(_pl_args, ensure_ascii=False),
-                            },
-                        }
-                    ],
-                }
-            )
-            _resume_transcript.append(
-                {
-                    "role": "tool",
-                    "tool_call_id": f"resume-{turn_trace_id[:8]}",
-                    "name": _pl_tool_id,
-                    "content": json.dumps(_shrink_for_llm(result), ensure_ascii=False),
-                }
-            )
+            _resume_transcript.extend(_transcript_step(_resume_call, _pl_tool_id, result, allow_summarization_flag))
+            _resume_raw = list(pending_loop.get("raw_results") or [])
+            _resume_raw.append((_pl_tool_id, result))
             _trace["routing_module"] = "loop_resume"
             _trace["tool_selected"] = _pl_tool_id
             return await _agent_continuation_loop(
@@ -837,9 +867,11 @@ async def call_llm_with_tools(
                 history=_history,
                 planning_context=planning_context,
                 transcript=_resume_transcript,
+                raw_results=_resume_raw,
                 steps_executed=_pl_step,
                 mcp_client=mcp_client,
                 approved_mutations=approved_mutations,
+                summ_on=allow_summarization_flag,
                 turn_trace_id=turn_trace_id,
                 trace=_trace,
             )
@@ -920,15 +952,15 @@ async def call_llm_with_tools(
             else:
                 logger.warning("Migration fast-path: registry files missing, using passed tools")
         else:
-            # Chat mode. When the loop is enabled (summarization on), decompose a
-            # possibly-compound request to its first sub-task so step-1 routing +
-            # planning see a single clean intent — the decide loop handles the
-            # rest. Single-intent messages pass through ~unchanged.
-            if allow_summarization_flag:
-                _first = await _decompose_first_step(user_text, turn_trace_id)
-                if _first and _first.strip() and _first.strip() != user_text.strip():
-                    logger.info("First-step decomposition: %r -> %r", user_text[:120], _first[:120])
-                    step1_message = {"role": "user", "content": _first}
+            # Chat mode. Decompose a possibly-compound request to its first
+            # sub-task so step-1 routing + planning see a single clean intent —
+            # the reactive loop handles the rest. Runs in BOTH summarization modes
+            # (it reads only the request text, never results, so it is privacy-safe
+            # with summarization off). Single-intent messages pass through ~unchanged.
+            _first = await _decompose_first_step(user_text, turn_trace_id)
+            if _first and _first.strip() and _first.strip() != user_text.strip():
+                logger.info("First-step decomposition: %r -> %r", user_text[:120], _first[:120])
+                step1_message = {"role": "user", "content": _first}
 
             # 3-level navigation (package → mixin → tools).
             _nav_tools, _nav_pkg, _nav_mixin, _routing_ms = await _navigate_to_tools(
@@ -1031,172 +1063,152 @@ async def call_llm_with_tools(
         return planning_content or ""
 
     # -------------------------------------------------------------------------
-    # 3) Execute tools via MCP with mutation approval gating
+    # 3) Execute step 1, then hand to the reactive loop (both summ modes).
+    # Only the FIRST tool_call is taken — one operation per step keeps mutation
+    # gating and progress legible; further work is driven by the loop.
     # -------------------------------------------------------------------------
-    tool_messages_for_llm: List[Dict[str, Any]] = []
-
-    planning_assistant_message: Dict[str, Any] = {
-        "role": "assistant",
-        "content": planning_content or "",
-        "tool_calls": tool_calls,
-    }
-
-    for tool_call in tool_calls:
-        fn = tool_call.get("function") or {}
-        tool_id = fn.get("name")
-        args_str = fn.get("arguments", "{}")
-
-        if not isinstance(tool_id, str) or not tool_id:
-            logger.warning("Skipping tool call with missing name: %s", tool_call)
-            continue
-
-        args = _safe_json_loads(args_str, default={})
-        if not isinstance(args, dict):
-            args = {}
-
-        meta = TOOL_REGISTRY.get(tool_id) or {}
-        mutates = bool(meta.get("mutates", False))
-
-        # Validate args against the tool's JSON schema; block on mismatch rather than proceeding silently.
-        tool_schema = meta.get("parameters")
-        if tool_schema:
-            try:
-                jsonschema.validate(
-                    instance=args,
-                    schema=tool_schema,
-                    format_checker=jsonschema.FormatChecker(),
-                )
-            except jsonschema.ValidationError as _ve:
-                missing = _missing_required_fields(args, tool_schema)
-                if missing:
-                    # Missing required arg → clarification loop (Step 7), not a dead end.
-                    attempts = clarify_attempts_base + 1
-                    if attempts > CLARIFY_MAX_ATTEMPTS:
-                        logger.info(
-                            "Clarification cap (%d) reached for %s; giving up. missing=%s",
-                            CLARIFY_MAX_ATTEMPTS,
-                            tool_id,
-                            missing,
-                        )
-                        _trace["outcome"] = "clarification_exhausted"
-                        _write_llm_trace(_trace)
-                        return _clarification_giveup_message(tool_id, meta, missing)
-
-                    filled = {
-                        k: v for k, v in args.items() if not (v is None or (isinstance(v, str) and not v.strip()))
-                    }
-                    question = await _generate_clarification_question(tool_id, meta, missing, filled, turn_trace_id)
-                    LAST_PENDING_CLARIFICATION = {
-                        "tool_id": tool_id,
-                        "missing_fields": missing,
-                        "filled_args": filled,
-                        "attempts": attempts,
-                        "question": question,
-                    }
-                    logger.info("Clarification needed: tool=%s missing=%s attempt=%d", tool_id, missing, attempts)
-                    _trace["outcome"] = "awaiting_clarification"
-                    _write_llm_trace(_trace)
-                    return question
-
-                # Value present but wrong (format/type/enum) → hard block, no loop.
-                logger.error("Tool %s arg validation failed: %s", tool_id, _ve.message)
-                _trace["outcome"] = "validation_failed"
-                _write_llm_trace(_trace)
-                return (
-                    f"I couldn't call `{tool_id}` — a required argument is invalid or missing: "
-                    f"{_ve.message}. Please provide more details."
-                )
-
-        logger.info("Tool selected: %s (mutates=%s)", tool_id, mutates)
-        _log_json_truncated("Tool args (from planner)", args)
-
-        if mutates and REQUIRE_MUTATION_CONFIRM:
-            key = _approval_key(tool_id, args)
-            if key not in approved_mutations:
-                # Plain-English description of what will change, for the approval dialog.
-                explanation = await _generate_mutation_explanation(tool_id, meta, args, turn_trace_id)
-                pending = {
-                    "tool_id": tool_id,
-                    "arguments": args,
-                    "reason": explanation,
-                }
-                LAST_TOOL_RESULT = {"ok": False, "pending_confirmation": pending}
-                # Save loop state so the approval turn executes this exact call
-                # directly (no re-plan) and can continue the turn afterwards.
-                LAST_PENDING_LOOP = {
-                    "transcript": list(tool_messages_for_llm),
-                    "steps_executed": 0,
-                    "tool_id": tool_id,
-                    "arguments": args,
-                }
-                logger.info(
-                    "Pending mutation approval tool=%s args=%s",
-                    tool_id,
-                    json.dumps(_scrub_secrets(args), ensure_ascii=False),
-                )
-                _trace["outcome"] = "pending_mutation"
-                _write_llm_trace(_trace)
-                return explanation
-
-        if mutates:
-            audit_logger.info(
-                "EXECUTING mutation tool=%s args=%s",
-                tool_id,
-                json.dumps(_scrub_secrets(args), ensure_ascii=False),
-            )
-
-        # Step 1 executes here (the loop's own steps emit from within the loop).
-        await _emit_agent_progress({"phase": "executing", "step": 1, "max_steps": MAX_AGENT_STEPS, "tool_id": tool_id})
-        result = await mcp_client.invoke_tool(tool_id, args)
-        LAST_TOOL_RESULT = result
-        await _emit_agent_progress(
-            {
-                "phase": "completed",
-                "step": 1,
-                "max_steps": MAX_AGENT_STEPS,
-                "tool_id": tool_id,
-                "ok": bool(result.get("ok")) if isinstance(result, dict) else False,
-            }
-        )
-
-        shrunk = _shrink_for_llm(result)
-
-        tool_messages_for_llm.append(
-            {
-                "role": "tool",
-                "tool_call_id": tool_call.get("id"),
-                "name": tool_id,
-                "content": json.dumps(shrunk, ensure_ascii=False),
-            }
-        )
-
-    if not tool_messages_for_llm:
+    tool_call = tool_calls[0]
+    fn = tool_call.get("function") or {}
+    tool_id = fn.get("name")
+    if not isinstance(tool_id, str) or not tool_id:
         _trace["outcome"] = "no_execution"
         _write_llm_trace(_trace)
         return planning_content or ""
 
-    # -------------------------------------------------------------------------
-    # 4) Continue the turn (Step 8) — decide whether the goal is met; if not,
-    # loop route → plan → execute until done, paused, or capped. The decide call
-    # doubles as the summarizer: its non-CONTINUE reply is the final answer.
-    # -------------------------------------------------------------------------
-    if not allow_summarization_flag:
-        # Kill-switch: tool results must not reach the LLM, so neither the decide
-        # call nor multi-step continuation is possible — single-shot behaviour.
-        last_name = tool_messages_for_llm[-1].get("name", "unknown")
-        _trace["outcome"] = "summarization_disabled"
-        _write_llm_trace(_trace)
-        return _describe_tool_result(last_name, LAST_TOOL_RESULT) + _optional_arg_hint(tool_id, args, meta)
+    args = _safe_json_loads(fn.get("arguments", "{}"), default={})
+    if not isinstance(args, dict):
+        args = {}
 
-    transcript: List[Dict[str, Any]] = [planning_assistant_message, *tool_messages_for_llm]
+    meta = TOOL_REGISTRY.get(tool_id) or {}
+    mutates = bool(meta.get("mutates", False))
+
+    # Validate args against the tool's JSON schema; block rather than proceed silently.
+    tool_schema = meta.get("parameters")
+    if tool_schema:
+        try:
+            jsonschema.validate(instance=args, schema=tool_schema, format_checker=jsonschema.FormatChecker())
+        except jsonschema.ValidationError as _ve:
+            missing = _missing_required_fields(args, tool_schema)
+            if missing:
+                # Missing required arg on the first step → clarification loop (Step 7).
+                attempts = clarify_attempts_base + 1
+                if attempts > CLARIFY_MAX_ATTEMPTS:
+                    logger.info(
+                        "Clarification cap (%d) reached for %s; giving up. missing=%s",
+                        CLARIFY_MAX_ATTEMPTS,
+                        tool_id,
+                        missing,
+                    )
+                    _trace["outcome"] = "clarification_exhausted"
+                    _write_llm_trace(_trace)
+                    return _clarification_giveup_message(tool_id, meta, missing)
+
+                filled = {k: v for k, v in args.items() if not (v is None or (isinstance(v, str) and not v.strip()))}
+                question = await _generate_clarification_question(tool_id, meta, missing, filled, turn_trace_id)
+                LAST_PENDING_CLARIFICATION = {
+                    "tool_id": tool_id,
+                    "missing_fields": missing,
+                    "filled_args": filled,
+                    "attempts": attempts,
+                    "question": question,
+                }
+                logger.info("Clarification needed: tool=%s missing=%s attempt=%d", tool_id, missing, attempts)
+                _trace["outcome"] = "awaiting_clarification"
+                _write_llm_trace(_trace)
+                return question
+
+            # Value present but wrong (format/type/enum) → hard block, no loop.
+            logger.error("Tool %s arg validation failed: %s", tool_id, _ve.message)
+            _trace["outcome"] = "validation_failed"
+            _write_llm_trace(_trace)
+            return (
+                f"I couldn't call `{tool_id}` — a required argument is invalid or missing: "
+                f"{_ve.message}. Please provide more details."
+            )
+
+    logger.info("Tool selected: %s (mutates=%s)", tool_id, mutates)
+    _log_json_truncated("Tool args (from planner)", args)
+
+    if mutates and REQUIRE_MUTATION_CONFIRM:
+        key = _approval_key(tool_id, args)
+        if key not in approved_mutations:
+            # Plain-English description of what will change, for the approval dialog.
+            explanation = await _generate_mutation_explanation(tool_id, meta, args, turn_trace_id)
+            LAST_TOOL_RESULT = {
+                "ok": False,
+                "pending_confirmation": {"tool_id": tool_id, "arguments": args, "reason": explanation},
+            }
+            # Save loop state so the approval turn executes this exact call directly
+            # (no re-plan) and continues the turn afterwards.
+            LAST_PENDING_LOOP = {
+                "transcript": [],
+                "raw_results": [],
+                "steps_executed": 0,
+                "tool_id": tool_id,
+                "arguments": args,
+            }
+            logger.info(
+                "Pending mutation approval tool=%s args=%s",
+                tool_id,
+                json.dumps(_scrub_secrets(args), ensure_ascii=False),
+            )
+            _trace["outcome"] = "pending_mutation"
+            _write_llm_trace(_trace)
+            return explanation
+
+    if mutates:
+        audit_logger.info(
+            "EXECUTING mutation tool=%s args=%s",
+            tool_id,
+            json.dumps(_scrub_secrets(args), ensure_ascii=False),
+        )
+
+    await _emit_agent_progress({"phase": "executing", "step": 1, "max_steps": MAX_AGENT_STEPS, "tool_id": tool_id})
+    result = await mcp_client.invoke_tool(tool_id, args)
+    LAST_TOOL_RESULT = result
+    await _emit_agent_progress(
+        {
+            "phase": "completed",
+            "step": 1,
+            "max_steps": MAX_AGENT_STEPS,
+            "tool_id": tool_id,
+            "ok": bool(result.get("ok")) if isinstance(result, dict) else False,
+        }
+    )
+
+    # -------------------------------------------------------------------------
+    # 4) Reactive loop — runs in BOTH summarization modes. The transcript carries
+    # full results (summ on) or action metadata only (summ off); the loop decides
+    # continue / done / (summ-off) blocked from there.
+    # -------------------------------------------------------------------------
+    planning_assistant_message: Dict[str, Any] = {
+        "role": "assistant",
+        "content": planning_content or "",
+        "tool_calls": [tool_call],
+    }
+    transcript: List[Dict[str, Any]] = [planning_assistant_message]
+    transcript.append(
+        {
+            "role": "tool",
+            "tool_call_id": tool_call.get("id"),
+            "name": tool_id,
+            "content": json.dumps(
+                _shrink_for_llm(result) if allow_summarization_flag else _metadata_record(tool_id, result),
+                ensure_ascii=False,
+                default=str,
+            ),
+        }
+    )
     return await _agent_continuation_loop(
         latest_user_message=latest_user_message,
         history=_history,
         planning_context=planning_context,
         transcript=transcript,
+        raw_results=[(tool_id, result)],
         steps_executed=1,
         mcp_client=mcp_client,
         approved_mutations=approved_mutations,
+        summ_on=allow_summarization_flag,
         turn_trace_id=turn_trace_id,
         trace=_trace,
         first_tool_hint=(tool_id, args, meta),
