@@ -54,15 +54,16 @@ generic tool-executor over the PySisense SDK; it has no notion of the loop.
 
 ## The agentic loop (Step 8)
 
-One user turn can now chain multiple tool executions. The shape:
+One user turn can chain multiple tool executions. It is a single loop
+(`_reactive_loop`); the "what's next?" step is a decompose on the first pass and
+a decide on every pass after:
 
 ```
-decompose ── first sub-task
-   │
-   ▼
-route ─▶ plan ─▶ execute ─▶ DECIDE ──┬── "answer"   ─▶ final reply, done
-   ▲                                 │
-   └──────────── "CONTINUE: <next>" ─┘   (loop, max FES_MAX_AGENT_STEPS = 8)
+        ┌──────────────────────────────────────────────┐
+        ▼                                               │
+WHAT'S NEXT? ─▶ route ─▶ plan ─▶ execute ──────────────┘  "CONTINUE: <next>"
+   │  (step 0: decompose · step N: decide)      (loop, max FES_MAX_AGENT_STEPS = 8)
+   └── "answer" / DONE / (summ off) BLOCKED ─▶ final reply, done
 ```
 
 - **DISCOVER / PLAN** = route + plan (pick one tool for one sub-task)
@@ -119,23 +120,25 @@ This distinction drives the summarization switch below.
 
 ### High level — the calls in order
 
-A turn is a short, fixed pipeline, then a loop:
+A turn is **one loop** (`_reactive_loop`), the same body every step:
 
 ```
-DECOMPOSE                     once, up front — pick the FIRST sub-task
-  └─▶ loop, until done:
-        ROUTE L1              which package? (of ~12)
-        ROUTE L2              which mixin? (→ ~10 tools)
-        PLAN                  pick ONE tool + args from those ~10
-        (validate · gate)     code, no LLM — schema check, mutation approval
-        EXECUTE               run the tool via MCP → result
-        DECIDE                CONTINUE <next> · DONE · (summ off) BLOCKED
+loop, until done:
+    WHAT'S NEXT?          step 0 → DECOMPOSE the request to its first sub-task
+                          step N → DECIDE: CONTINUE <next> · DONE · (off) BLOCKED
+    ROUTE L1              which package? (of ~12)
+    ROUTE L2              which mixin? (→ ~10 tools)
+    PLAN                  pick ONE tool + args from those ~10
+    (validate · gate)     code, no LLM — schema check, mutation approval
+    EXECUTE               run the tool via MCP → result → back to WHAT'S NEXT?
 ```
 
-Each box is one LLM call except *validate/gate* (code) and *execute* (MCP).
-`DECOMPOSE` runs once; everything under the loop repeats per step. `DECIDE` is
-what closes the loop — its answer becomes the reply, or its `CONTINUE:` feeds
-the next sub-task back into `ROUTE`.
+Each box is one LLM call except *validate/gate* (code) and *execute* (MCP). The
+only thing that differs by step is **WHAT'S NEXT?** — on the first pass the
+history is empty so it decomposes the request; on later passes the decide call
+reads goal + history and either ends the turn (its answer becomes the reply) or
+emits a `CONTINUE:` that feeds the next sub-task back into ROUTE. There is no
+separate step-1 code path — decompose and decide are the same loop position.
 
 ### Detailed — an adaptive request, call by call
 
