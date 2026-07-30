@@ -277,9 +277,12 @@ Same first step; summ-on passes the value and finishes, summ-off blocks. (Verifi
 
 ### Why this shape
 
-- **First LLM decision is a planner.** Step 1's decompose + every step's decide
-  are the same "what's next?" question; today they are two calls (`_decompose_
-  first_step` + the decide call), unified into one `next_step` node at Step 10.
+- **First LLM decision is a planner.** Step 1 and every later step are the same
+  "what's next?" question, run by the **one** `_reactive_loop` — step 1 is not a
+  special path. On the first pass it decomposes the request to its first
+  sub-task; on later passes the decide call reads goal + history. (The old
+  `_decompose_first_step` + separate continuation loop were unified in Step 8's
+  refactor.)
 - **All reactive** — re-decide each step from goal + history — so unknown-shape
   tasks work (summ on).
 - Tradeoff: one LLM call per step (vs one up-front plan). Worth it — flexibility
@@ -340,13 +343,13 @@ part. This section is the glossary + the mapping to fill in after Step 10.
 
 | Term | What it does | Where it lives now |
 |---|---|---|
-| **Decompose** | splits a compound request; returns the first sub-task | `_decompose_first_step` |
+| **Decompose** | first pass of the loop: request → first sub-task | `_decompose_first_step` (called in `_reactive_loop` when `steps==0`) |
 | **Route** | narrows 119 tools → one package → one mixin (~10 tools) | `_navigate_to_tools` (`_routing.py`) |
 | **Plan** | given one sub-task + ~10 tools, pick ONE tool + args | planning `call_llm_raw(..., tools=...)` |
 | **Execute** | run the chosen tool via MCP → Sisense | `mcp_client.invoke_tool` |
-| **Decide** | given goal + history, answer / `CONTINUE:` / (summ off) `BLOCKED:`/`DONE` | `_agent_continuation_loop` (decide call; prompt is data or nodata) |
+| **Decide** | given goal + history, answer / `CONTINUE:` / (summ off) `BLOCKED:`/`DONE` | `_reactive_loop` (decide call; prompt is data or nodata) |
 | **History visibility** | full result (summ on) vs metadata only (summ off) — the privacy boundary | `_transcript_step` / `_metadata_record` |
-| **Loop control** | while-loop tying decide→route→plan→execute together; runs in both modes | `_agent_continuation_loop` (`while True`) |
+| **Loop control** | ONE while-loop: decide→route→plan→execute for step 1 through N; both modes | `_reactive_loop` (`while True`) |
 | **Pause/resume state** | externalized state so a turn can stop and continue next turn | `SessionEntry.pending_loop` / `.pending_clarification` |
 | **Mutation gate** | stop before a destructive tool, wait for approval | `REQUIRE_MUTATION_CONFIRM` check + `pending_confirmation` |
 | **Clarification** | stop and ask when a required arg is missing | `_generate_clarification_question` + `LAST_PENDING_CLARIFICATION` |
@@ -360,9 +363,8 @@ you use LangGraph here?"_ Verify/adjust each row once Step 10 is built.
 
 | Our hand-rolled piece | Expected LangGraph primitive |
 |---|---|
-| `_agent_continuation_loop` `while` loop | the **graph** itself (nodes + edges) |
-| Route / Plan / Execute / Decide | individual **nodes** |
-| Decompose + Decide (see merge below) | one `next_step` **node** |
+| `_reactive_loop` `while` loop | the **graph** itself (nodes + edges) |
+| Decompose+Decide (unified), Route, Plan, Execute | individual **nodes** |
 | "`CONTINUE:` → loop back, else → answer" | a **conditional edge** |
 | `pending_loop` / `pending_clarification` in `SessionEntry` | **checkpointer** (persistent state / `thread_id`) |
 | Mutation gate → return, resume next turn | **interrupt** (human-in-the-loop) |
@@ -382,17 +384,6 @@ primitives, and makes each node independently testable."
 
 ## What's next _(planned)_
 
-- **`next_step` merge.** Today decompose-first and decide are two prompts asking
-  nearly the same question — "given the goal and progress so far, what's next?"
-  decompose-first is just decide with an empty history; they are separate only
-  because of build order (decide came first in Step 8, decompose-first was
-  bolted on to fix a compound-request routing bug). Merge them into one reactive
-  `next_step(goal, history, summ_flag)` call that runs every step including the
-  first. Not a performance fix — pure clarity: one prompt, one path, step 1 stops
-  being special. Best done at Step 10 (LangGraph), where the loop is torn into
-  named nodes anyway and `next_step` becomes one node — the duplication dissolves
-  for free, and each node is independently testable, so the refactor is safer
-  there than churning the stable hot path now.
 - **Step 9 — MCP OAuth + Claude connector.** Bearer/OAuth on the MCP server so
   it can be a hosted, standalone connector. (See the separate
   `sisense-admin-mcp` brief.)
