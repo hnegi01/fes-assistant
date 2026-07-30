@@ -30,6 +30,9 @@ Global rules:
   invent a parameter value from descriptive words in the request. If a required
   parameter's value was not provided, omit it rather than guessing — leaving it
   missing (so the user can be asked) is better than filling it with a guess.
+  NEVER use placeholder or example values such as "user@example.com", "example.com",
+  "test", "unknown", "N/A", "some_user", or any value you made up. If the user did
+  not say it, do not pass it.
 - If the user's message is too vague, too short, or contains no recognisable
   intent, respond in natural language asking them to be more specific. DO NOT
   guess a tool.

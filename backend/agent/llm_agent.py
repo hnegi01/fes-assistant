@@ -76,6 +76,9 @@ from ._routing import (
     _pick_tool_calls_from_llm_response,
     call_llm_raw,
 )
+from ._routing import (
+    planner_schema as _planner_schema,
+)
 from .mcp_client import McpClient
 
 # -----------------------------------------------------------------------------
@@ -133,7 +136,7 @@ def load_tools_for_llm() -> List[Dict[str, Any]]:
                 "function": {
                     "name": tid,
                     "description": desc,
-                    "parameters": params,
+                    "parameters": _planner_schema(params),
                 },
             }
         )
@@ -206,9 +209,21 @@ def _optional_arg_hint(tool_id: str, used_args: Dict[str, Any], tool_meta: Dict[
 # Clarification loop (Step 7) — ask for missing required args, resume next turn
 # -----------------------------------------------------------------------------
 def _missing_required_fields(args: Dict[str, Any], schema: Dict[str, Any]) -> List[str]:
-    """Required schema fields absent from args, excluding injected credential fields."""
+    """Required schema fields absent or empty in args, excluding injected credential fields.
+
+    Planners sometimes send `""` or null for a value the user never provided instead
+    of omitting the key — treat those as missing so they trigger clarification, not
+    a format-validation hard block.
+    """
     required = schema.get("required") or []
-    return [f for f in required if f not in _CREDENTIAL_FIELDS and f not in args]
+
+    def _is_missing(f: str) -> bool:
+        if f not in args:
+            return True
+        v = args[f]
+        return v is None or (isinstance(v, str) and not v.strip())
+
+    return [f for f in required if f not in _CREDENTIAL_FIELDS and _is_missing(f)]
 
 
 def _curated_optionals(schema: Dict[str, Any], filled_args: Dict[str, Any], limit: int = 3) -> List[str]:
@@ -229,7 +244,7 @@ def _tool_def_for(tool_id: str) -> Optional[Dict[str, Any]]:
         "function": {
             "name": tool_id,
             "description": meta.get("description") or "",
-            "parameters": meta.get("parameters") or {},
+            "parameters": _planner_schema(meta.get("parameters") or {}),
         },
     }
 
@@ -430,6 +445,7 @@ async def call_llm_with_tools(
     planning_content: Optional[str] = None
     tool_calls: List[Dict[str, Any]] = []
     _resumed = False
+    _resume_declined = False
 
     if pending_clarification:
         _pc_tool_id = pending_clarification.get("tool_id")
@@ -459,8 +475,11 @@ async def call_llm_with_tools(
                 _trace["routing_module"] = "resume"
                 _trace["tool_selected"] = (tool_calls[0].get("function") or {}).get("name", "")
             else:
-                # Planner declined the pinned tool → treat as a topic change.
+                # Planner declined the pinned tool → likely a topic change; route
+                # fresh. If routing then finds no intent either, it wasn't a topic
+                # change — it was a non-answer ("I'm not sure"), handled below.
                 logger.info("Resume: planner declined %s — topic change, routing fresh.", _pc_tool_id)
+                _resume_declined = True
                 clarify_attempts_base = 0
 
     # -------------------------------------------------------------------------
@@ -482,6 +501,37 @@ async def call_llm_with_tools(
                 latest_user_message, _history, turn_trace_id
             )
             if _nav_pkg == "__unclear__":
+                if _resume_declined and pending_clarification:
+                    # The "topic change" had no topic — the user gave a non-answer
+                    # to the clarifying question ("I'm not sure"). Keep the
+                    # clarification alive: re-ask, count the attempt, cap applies.
+                    _pc_tool_id = pending_clarification.get("tool_id") or ""
+                    _pc_meta = TOOL_REGISTRY.get(_pc_tool_id) or {}
+                    _pc_missing = pending_clarification.get("missing_fields") or []
+                    _pc_filled = pending_clarification.get("filled_args") or {}
+                    attempts = int(pending_clarification.get("attempts", 1)) + 1
+                    if attempts > CLARIFY_MAX_ATTEMPTS:
+                        logger.info(
+                            "Clarification cap (%d) reached for %s after non-answer; giving up.",
+                            CLARIFY_MAX_ATTEMPTS,
+                            _pc_tool_id,
+                        )
+                        _trace["outcome"] = "clarification_exhausted"
+                        _write_llm_trace(_trace)
+                        return _clarification_giveup_message(_pc_tool_id, _pc_meta, _pc_missing)
+                    question = await _generate_clarification_question(
+                        _pc_tool_id, _pc_meta, _pc_missing, _pc_filled, turn_trace_id
+                    )
+                    LAST_PENDING_CLARIFICATION = {
+                        "tool_id": _pc_tool_id,
+                        "missing_fields": _pc_missing,
+                        "filled_args": _pc_filled,
+                        "attempts": attempts,
+                    }
+                    logger.info("Clarification re-asked after non-answer: tool=%s attempt=%d", _pc_tool_id, attempts)
+                    _trace["outcome"] = "awaiting_clarification"
+                    _write_llm_trace(_trace)
+                    return question
                 _trace["outcome"] = "unclear_intent"
                 _write_llm_trace(_trace)
                 return (
@@ -597,11 +647,14 @@ async def call_llm_with_tools(
                         _write_llm_trace(_trace)
                         return _clarification_giveup_message(tool_id, meta, missing)
 
-                    question = await _generate_clarification_question(tool_id, meta, missing, args, turn_trace_id)
+                    filled = {
+                        k: v for k, v in args.items() if not (v is None or (isinstance(v, str) and not v.strip()))
+                    }
+                    question = await _generate_clarification_question(tool_id, meta, missing, filled, turn_trace_id)
                     LAST_PENDING_CLARIFICATION = {
                         "tool_id": tool_id,
                         "missing_fields": missing,
-                        "filled_args": args,
+                        "filled_args": filled,
                         "attempts": attempts,
                     }
                     logger.info("Clarification needed: tool=%s missing=%s attempt=%d", tool_id, missing, attempts)

@@ -675,12 +675,16 @@ def _resolve_sdk_callable(
 
 def _sdk_error_payload(tool_id: str, result: Any) -> Optional[Dict[str, Any]]:
     """
-    SDK methods that fail return {"error": "..."} instead of raising.
-    Detect that pattern and normalise to ok=False so callers don't have to
-    inspect the result dict themselves.
+    SDK methods that fail return {"error": "..."} instead of raising — sometimes
+    wrapped in a single-item list ([{"error": "..."}]) by list-returning methods.
+    Detect both patterns and normalise to ok=False so callers don't have to
+    inspect the result themselves.
     """
-    if isinstance(result, dict) and list(result.keys()) == ["error"]:
-        return {"tool_id": tool_id, "ok": False, "error": result["error"], "error_type": "SDKError"}
+    candidate = result
+    if isinstance(result, list) and len(result) == 1:
+        candidate = result[0]
+    if isinstance(candidate, dict) and list(candidate.keys()) == ["error"]:
+        return {"tool_id": tool_id, "ok": False, "error": candidate["error"], "error_type": "SDKError"}
     return None
 
 

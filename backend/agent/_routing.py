@@ -17,6 +17,7 @@ What lives here:
 
 from __future__ import annotations
 
+import copy
 import json
 import os
 import time
@@ -165,6 +166,20 @@ def _load_package_index(package: str) -> Dict[str, Any]:
         return {}
 
 
+def planner_schema(params: Dict[str, Any]) -> Dict[str, Any]:
+    """Schema variant sent to the planning LLM: same properties, but no `required` list.
+
+    Marking a field required pressures the model to fill it with *something* —
+    placeholders ("user@example.com"), empty strings, or words lifted from the
+    request ("email"). With no required pressure it naturally omits values the
+    user didn't provide; server-side validation against the real schema then
+    routes genuinely missing fields into the clarification loop.
+    """
+    schema = copy.deepcopy(params or {})
+    schema.pop("required", None)
+    return schema
+
+
 def _load_mixin_tools(package: str, mixin: str) -> List[Dict[str, Any]]:
     """
     Load tools from config/registry/{package}/{mixin}.json and convert to OpenAI format.
@@ -187,7 +202,7 @@ def _load_mixin_tools(package: str, mixin: str) -> List[Dict[str, Any]]:
                 "function": {
                     "name": row["tool_id"],
                     "description": row.get("description", ""),
-                    "parameters": row.get("parameters", {"type": "object", "properties": {}}),
+                    "parameters": planner_schema(row.get("parameters") or {"type": "object", "properties": {}}),
                 },
             }
         )
@@ -262,6 +277,12 @@ async def _navigate_to_tools(
     else:
         chosen_mixin, ms2 = await _route_to_module(latest_user_message, history, modules, trace_id)
         total_ms += ms2
+        if chosen_mixin == "__unclear__":
+            # Router saw no clear intent at mixin level — propagate the same
+            # short-circuit as a Level 1 unclear instead of falling through to a
+            # failed file load (0 tools → full-registry fallback → forced tool call).
+            logger.info("Level 2 navigation: unclear intent in %s — short-circuiting", chosen_pkg)
+            return [], "__unclear__", "", total_ms
         if not chosen_mixin:
             logger.warning("Level 2 navigation: no mixin selected in %s", chosen_pkg)
             return [], chosen_pkg, "", total_ms
