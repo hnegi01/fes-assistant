@@ -50,7 +50,7 @@ def test_clarify_then_resume(backend_url, tenant_config):
     session_id = f"integ-clarify-{uuid.uuid4()}"
 
     # Turn 1: ask to look up a user profile WITHOUT giving an email/identifier.
-    first = _turn(backend_url, tenant_config, session_id, "show me a user's profile")
+    first = _turn(backend_url, tenant_config, session_id, "look up a single user by their email address")
     reply1 = first.get("reply") or ""
 
     # It should pause and ask, not execute a lookup with a guessed value.
@@ -118,7 +118,7 @@ def test_clarification_gives_up_after_cap(backend_url, tenant_config):
     """Two non-answers in a row should end in a terminal 'what's required' message, not loop forever."""
     session_id = f"integ-clarify-cap-{uuid.uuid4()}"
 
-    _turn(backend_url, tenant_config, session_id, "show me a user's profile")
+    _turn(backend_url, tenant_config, session_id, "look up a single user by their email address")
     _turn(backend_url, tenant_config, session_id, "i'm not sure")
     third = _turn(backend_url, tenant_config, session_id, "still don't know")
     reply3 = (third.get("reply") or "").lower()

@@ -454,10 +454,19 @@ async def call_llm_with_tools(
             logger.warning("Resume: pending tool %s not in registry — dropping clarification.", _pc_tool_id)
         else:
             clarify_attempts_base = int(pending_clarification.get("attempts", 1))
+            # Anchor the re-plan with the stored clarifying question if the client
+            # didn't echo it in history (the UI does; bare API clients may not).
+            # Without it the answer ("admin@x.com") floats context-free and the
+            # planner has nothing tying it to the pinned tool's missing field.
+            _pc_question = pending_clarification.get("question") or ""
+            _needs_q = _pc_question and not any(
+                m.get("role") == "assistant" and m.get("content") == _pc_question for m in _history
+            )
             _resume_messages = [
                 {"role": "system", "content": PLANNING_SYSTEM_PROMPT},
                 {"role": "system", "content": planning_context},
                 *_history,
+                *([{"role": "assistant", "content": _pc_question}] if _needs_q else []),
                 latest_user_message,
             ]
             logger.info("Resume: re-planning pinned tool %s (attempt base=%d).", _pc_tool_id, clarify_attempts_base)
@@ -527,6 +536,7 @@ async def call_llm_with_tools(
                         "missing_fields": _pc_missing,
                         "filled_args": _pc_filled,
                         "attempts": attempts,
+                        "question": question,
                     }
                     logger.info("Clarification re-asked after non-answer: tool=%s attempt=%d", _pc_tool_id, attempts)
                     _trace["outcome"] = "awaiting_clarification"
@@ -656,6 +666,7 @@ async def call_llm_with_tools(
                         "missing_fields": missing,
                         "filled_args": filled,
                         "attempts": attempts,
+                        "question": question,
                     }
                     logger.info("Clarification needed: tool=%s missing=%s attempt=%d", tool_id, missing, attempts)
                     _trace["outcome"] = "awaiting_clarification"
