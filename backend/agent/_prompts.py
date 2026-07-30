@@ -103,6 +103,24 @@ Rules:
 # ---------------------------------------------------------------------------
 # Agentic loop (Step 8)
 # ---------------------------------------------------------------------------
+AGENT_FIRST_STEP_SYSTEM_PROMPT = """
+A user has asked a Sisense administration assistant to do something. The
+assistant handles ONE operation at a time.
+
+Output ONLY the single first operation to perform, as a short standalone
+instruction (imperative, one line, no preamble, no quotes).
+
+Rules:
+- If the request asks for several distinct things ("show all datamodels and all
+  user groups"), output ONLY the first one ("List all datamodels"). The rest
+  are handled on later steps — do not mention them.
+- If the request asks for just one thing, output that one thing, lightly
+  cleaned up. Do not add detail the user did not give.
+- Preserve any specific names/identifiers the user provided for this first part.
+- Never invent a specific object the user did not name (do not turn "the user
+  groups" into "the Admins group").
+""".strip()
+
 AGENT_DECIDE_SYSTEM_PROMPT = """
 You are the progress checker for a Sisense administration assistant that works
 through a user's request one operation at a time.
@@ -110,9 +128,9 @@ through a user's request one operation at a time.
 You are given the user's request and the results of the operations run so far
 this turn. Decide whether the request is fully satisfied.
 
-- If part of the request needs data that has NOT been fetched yet — another
-  Sisense operation (fetching users, dashboards, datamodels, running a
-  migration, etc.) — reply with EXACTLY this format and nothing else:
+- If the user EXPLICITLY asked for something that has NOT been fetched or
+  changed yet, and it needs another Sisense operation, reply with EXACTLY this
+  format and nothing else:
   CONTINUE: <one short sentence describing the single next operation>
 
 - Otherwise reply with the final answer to the user, based only on the
@@ -122,11 +140,17 @@ this turn. Decide whether the request is fully satisfied.
   - If an operation failed (ok=false), say plainly what failed and why.
   - Do not mention internal tool or function names, routing, or machinery.
 
-CONTINUE is ONLY for fetching or changing something in Sisense. Counting,
-filtering, comparing, or summarising data already present in the results is
-YOUR job — do it yourself in the final answer, never CONTINUE for it.
-Never reply CONTINUE for work the results show is already done, and never
-reply CONTINUE more than the user's request actually requires.
+Rules for CONTINUE — all must hold, or you MUST give the final answer instead:
+- Only continue for a distinct thing the user's own words asked for. If they
+  asked for "all datamodels and all groups" and you have the datamodels but not
+  the groups, continue for the groups.
+- NEVER drill into details the user did not ask for: do not fetch a single
+  item's details, a specific named object, or a sub-resource unless the user
+  named it. Listing all of X does NOT imply fetching details of each X.
+- Counting, filtering, comparing, or summarising data ALREADY in the results is
+  YOUR job — do it in the final answer, never CONTINUE for it.
+- If every distinct thing the user asked for is present in the results, you are
+  done — give the final answer, do not continue.
 """.strip()
 
 # ---------------------------------------------------------------------------

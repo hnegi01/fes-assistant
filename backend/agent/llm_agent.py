@@ -51,6 +51,7 @@ from ._config import (
 # --- _prompts ---
 from ._prompts import (
     AGENT_DECIDE_SYSTEM_PROMPT,
+    AGENT_FIRST_STEP_SYSTEM_PROMPT,
     CHAT_PLANNING_CONTEXT_PROMPT,
     CLARIFY_QUESTION_SYSTEM_PROMPT,
     MIGRATION_PLANNING_CONTEXT_PROMPT,
@@ -349,6 +350,32 @@ async def _generate_mutation_explanation(
 # -----------------------------------------------------------------------------
 # Agentic loop (Step 8) — decide → route → plan → execute, until done or capped
 # -----------------------------------------------------------------------------
+async def _decompose_first_step(user_text: str, trace_id: str) -> str:
+    """Return the single first operation to route/plan for this turn.
+
+    Compound requests ("all datamodels and all groups") confuse step-1 routing
+    and planning, which see two intents and mis-pick. This returns just the
+    first sub-task so step 1 routes on a clean single intent (like every
+    continuation step does); the decide loop handles the remaining parts. For a
+    single-intent message it returns the message ~unchanged. Falls back to the
+    original text on any failure — never blocks the turn."""
+    try:
+        data = await call_llm_raw(
+            [
+                {"role": "system", "content": AGENT_FIRST_STEP_SYSTEM_PROMPT},
+                {"role": "user", "content": user_text},
+            ],
+            tools=None,
+            trace_id=trace_id,
+        )
+        text, _ = _pick_tool_calls_from_llm_response(data)
+        text = (text or "").strip()
+        return text or user_text
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("First-step decomposition failed (%s); using full message.", exc)
+        return user_text
+
+
 async def _emit_agent_progress(event: Dict[str, Any]) -> None:
     """Publish a loop progress event to the turn's SSE stream (best-effort)."""
     try:
@@ -367,6 +394,40 @@ def _loop_partial_message(steps_executed: int, remains: str, reason: str) -> str
         f"Still to do: {remains} "
         "The results so far are shown above — send a follow-up message to continue."
     )
+
+
+async def _finalize_from_transcript(
+    *,
+    latest_user_message: Dict[str, Any],
+    history: List[Dict[str, Any]],
+    transcript: List[Dict[str, Any]],
+    turn_trace_id: str,
+) -> str:
+    """Force a final answer from the results gathered so far — used when the loop
+    must stop (e.g. a continued step overreached into a tool needing info the user
+    never gave). One LLM call; falls back to describing the last result."""
+    messages = [
+        {"role": "system", "content": AGENT_DECIDE_SYSTEM_PROMPT},
+        {
+            "role": "system",
+            "content": "The turn is ending now. Answer the user based only on the results already gathered. "
+            "Do NOT reply CONTINUE.",
+        },
+        *history,
+        latest_user_message,
+        *transcript,
+    ]
+    try:
+        data = await call_llm_raw(messages, tools=None, trace_id=turn_trace_id)
+        text, _ = _pick_tool_calls_from_llm_response(data)
+        text = (text or "").strip()
+        # Strip a stray CONTINUE if the model ignores the instruction.
+        if text and not text.upper().startswith("CONTINUE:"):
+            return text
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Loop finalize call failed (%s); describing last result.", exc)
+    last_name = next((m.get("name", "unknown") for m in reversed(transcript) if m.get("role") == "tool"), "unknown")
+    return _describe_tool_result(last_name, LAST_TOOL_RESULT)
 
 
 async def _agent_continuation_loop(
@@ -463,7 +524,12 @@ async def _agent_continuation_loop(
             trace["outcome"] = "loop_routing_dead_end"
             trace["agent_steps"] = steps_executed
             _write_llm_trace(trace)
-            return _loop_partial_message(steps_executed, remains, "no matching operation found")
+            return await _finalize_from_transcript(
+                latest_user_message=latest_user_message,
+                history=history,
+                transcript=transcript,
+                turn_trace_id=turn_trace_id,
+            )
 
         # ------------------------------------------------------------------ plan
         planning_messages: List[Dict[str, Any]] = [
@@ -495,7 +561,12 @@ async def _agent_continuation_loop(
             trace["outcome"] = "loop_planning_dead_end"
             trace["agent_steps"] = steps_executed
             _write_llm_trace(trace)
-            return _loop_partial_message(steps_executed, remains, "could not pick the next operation")
+            return await _finalize_from_transcript(
+                latest_user_message=latest_user_message,
+                history=history,
+                transcript=transcript,
+                turn_trace_id=turn_trace_id,
+            )
 
         # One operation per loop step — keeps mutation gating and progress legible.
         call = calls[0]
@@ -514,24 +585,25 @@ async def _agent_continuation_loop(
             except jsonschema.ValidationError as _ve:
                 missing = _missing_required_fields(args, tool_schema)
                 if missing:
-                    # Pause for the missing value. v1 limitation: the resumed turn
-                    # re-plans this tool standalone — earlier loop steps' results
-                    # are not carried into the resumed context.
-                    filled = {
-                        k: v for k, v in args.items() if not (v is None or (isinstance(v, str) and not v.strip()))
-                    }
-                    question = await _generate_clarification_question(tool_id, meta, missing, filled, turn_trace_id)
-                    LAST_PENDING_CLARIFICATION = {
-                        "tool_id": tool_id,
-                        "missing_fields": missing,
-                        "filled_args": filled,
-                        "attempts": 1,
-                        "question": question,
-                    }
-                    trace["outcome"] = "loop_awaiting_clarification"
+                    # A continued step needs info the user never gave → the decide
+                    # call overreached (drilled into a detail the request didn't
+                    # ask for). Don't pause to ask a confusing question mid-loop;
+                    # stop and answer from what's already gathered.
+                    logger.info(
+                        "Agent loop overreach at step %d: %s needs %s the user didn't provide; finalizing.",
+                        step_number,
+                        tool_id,
+                        missing,
+                    )
+                    trace["outcome"] = "loop_overreach_finalized"
                     trace["agent_steps"] = steps_executed
                     _write_llm_trace(trace)
-                    return question
+                    return await _finalize_from_transcript(
+                        latest_user_message=latest_user_message,
+                        history=history,
+                        transcript=transcript,
+                        turn_trace_id=turn_trace_id,
+                    )
                 trace["outcome"] = "loop_validation_failed"
                 trace["agent_steps"] = steps_executed
                 _write_llm_trace(trace)
@@ -835,6 +907,9 @@ async def call_llm_with_tools(
     # 1a) Tool selection: migration fast-path or 3-level navigation
     # -------------------------------------------------------------------------
     if not _resumed:
+        # The message step-1 planning is built around. Chat mode may narrow this
+        # to a decomposed first sub-task below; migration always uses the full one.
+        step1_message = latest_user_message
         if mode == "migration":
             # Migration has ~9 tools — load all directly, no navigation needed.
             _nav_tools = _load_all_package_tools("migration")
@@ -845,9 +920,19 @@ async def call_llm_with_tools(
             else:
                 logger.warning("Migration fast-path: registry files missing, using passed tools")
         else:
-            # Chat mode: 3-level navigation (package → mixin → tools).
+            # Chat mode. When the loop is enabled (summarization on), decompose a
+            # possibly-compound request to its first sub-task so step-1 routing +
+            # planning see a single clean intent — the decide loop handles the
+            # rest. Single-intent messages pass through ~unchanged.
+            if allow_summarization_flag:
+                _first = await _decompose_first_step(user_text, turn_trace_id)
+                if _first and _first.strip() and _first.strip() != user_text.strip():
+                    logger.info("First-step decomposition: %r -> %r", user_text[:120], _first[:120])
+                    step1_message = {"role": "user", "content": _first}
+
+            # 3-level navigation (package → mixin → tools).
             _nav_tools, _nav_pkg, _nav_mixin, _routing_ms = await _navigate_to_tools(
-                latest_user_message, _history, turn_trace_id
+                step1_message, _history, turn_trace_id
             )
             if _nav_pkg == "__unclear__":
                 if _resume_declined and pending_clarification:
@@ -912,7 +997,7 @@ async def call_llm_with_tools(
             {"role": "system", "content": PLANNING_SYSTEM_PROMPT},
             {"role": "system", "content": planning_context},
             *_history,
-            latest_user_message,
+            step1_message,
         ]
 
         # ---------------------------------------------------------------------
@@ -1060,8 +1145,19 @@ async def call_llm_with_tools(
                 json.dumps(_scrub_secrets(args), ensure_ascii=False),
             )
 
+        # Step 1 executes here (the loop's own steps emit from within the loop).
+        await _emit_agent_progress({"phase": "executing", "step": 1, "max_steps": MAX_AGENT_STEPS, "tool_id": tool_id})
         result = await mcp_client.invoke_tool(tool_id, args)
         LAST_TOOL_RESULT = result
+        await _emit_agent_progress(
+            {
+                "phase": "completed",
+                "step": 1,
+                "max_steps": MAX_AGENT_STEPS,
+                "tool_id": tool_id,
+                "ok": bool(result.get("ok")) if isinstance(result, dict) else False,
+            }
+        )
 
         shrunk = _shrink_for_llm(result)
 

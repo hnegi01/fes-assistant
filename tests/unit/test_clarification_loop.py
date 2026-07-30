@@ -426,11 +426,18 @@ def test_approved_mutation_executes():
     raw = AsyncMock(
         side_effect=[
             _plan_resp("access_management.delete_user", json.dumps(args)),  # planning
-            _text_resp("Done. User bob has been deleted."),  # summarizer
+            _text_resp("Done. User bob has been deleted."),  # decide → final answer
         ]
     )
 
-    with patch.object(m, "_navigate_to_tools", new=nav), patch.object(m, "call_llm_raw", new=raw):
+    async def _identity(user_text, trace_id):
+        return user_text
+
+    with (
+        patch.object(m, "_navigate_to_tools", new=nav),
+        patch.object(m, "call_llm_raw", new=raw),
+        patch.object(m, "_decompose_first_step", new=_identity),
+    ):
         reply = run(
             m.call_llm_with_tools(
                 messages,

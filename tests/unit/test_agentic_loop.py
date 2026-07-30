@@ -80,6 +80,18 @@ def reset_pending():
     m.LAST_PENDING_LOOP = None
 
 
+@pytest.fixture(autouse=True)
+def no_decompose(monkeypatch):
+    """Step-1 decomposition is an extra LLM call on summarization-on chat turns.
+    Neutralise it here (identity) so tests drive call_llm_raw with fixed
+    side-effect lists; decomposition behaviour is covered separately."""
+
+    async def _identity(user_text, trace_id):
+        return user_text
+
+    monkeypatch.setattr(m, "_decompose_first_step", _identity)
+
+
 def _tool_def(name, schema):
     return {"type": "function", "function": {"name": name, "description": "", "parameters": schema}}
 
@@ -301,7 +313,37 @@ def test_summarization_disabled_degrades_to_single_shot(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# 7) Backtrack: planner declines mixin tools → retried with whole package
+# 8) Overreach: a continued step needs an arg the user never gave → the loop
+#    stops and answers from what it has (no confusing mid-loop clarification).
+# ---------------------------------------------------------------------------
+
+
+def test_continued_step_missing_arg_finalizes_not_clarifies():
+    client = _fake_client()
+    get_user_tools = [_tool_def("access_management.get_user", GET_USER_SCHEMA)]
+    reply, _nav, _raw = _run_turn(
+        llm_responses=[
+            _plan_resp("dashboard.get_dashboards", "{}"),  # step 1: list dashboards
+            _text_resp("CONTINUE: get that user's details"),  # decide overreaches
+            _plan_resp("access_management.get_user", "{}"),  # step-2 plan: no email (user never gave one)
+            _text_resp("Here are your 3 dashboards: A, B, C."),  # finalize call answers from what we have
+        ],
+        nav_side_effect=[
+            (DASHBOARD_TOOLS, "dashboard", "core", 0),
+            (get_user_tools, "access_management", "users", 0),
+        ],
+        client=client,
+    )
+
+    # Only the first tool ran; the overreaching second step never executed.
+    client.invoke_tool.assert_awaited_once()
+    # It answered — did NOT pause for a "which user's email?" clarification.
+    assert m.LAST_PENDING_CLARIFICATION is None
+    assert "dashboards" in reply.lower()
+
+
+# ---------------------------------------------------------------------------
+# 9) Backtrack: planner declines mixin tools → retried with whole package
 # ---------------------------------------------------------------------------
 
 
