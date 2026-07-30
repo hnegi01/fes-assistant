@@ -1,20 +1,19 @@
 """
-Integration tests for the Step 7 scenarios not covered elsewhere, end to end.
+Integration tests for multi-turn conversation flows, end to end.
 
 Prompts here are the exact ones verified live against a real Sisense
-environment on 2026-07-30 (see the Step 7 scenario matrix in .claude/docs/).
-Coverage map across the integration suite:
+environment on 2026-07-30. Coverage map across the integration suite:
 
-  Scenario 1 (single missing arg → clarify → resume)  → test_clarification_flow.py
-  Scenario 2 (multiple missing args → one ask → both) → HERE
-  Scenario 3 (topic change on resume → fresh routing) → HERE
-  Scenario 4 (attempt cap → terminal give-up)         → test_clarification_flow.py
-  Scenario 5 (format error → hard block)              → test_validation_prompts.py
-  Scenario 6 (mutation gate + English reason)         → HERE (reason assertion)
-  Scenario 7 (clarify → then mutation gate)           → HERE
-  Scenario 8 (off-topic short-circuit)                → test_validation_prompts.py
-  Scenario 9 (approved mutation executes)             → test_clarification_flow.py
-  Scenario 10 (mutation cancel)                       → frontend-only, no backend test
+  single missing arg → clarify → resume          → test_clarification_flow.py
+  multiple missing args → one ask → fills both   → HERE
+  topic change mid-clarification → fresh routing → HERE
+  attempt cap → terminal give-up                 → test_clarification_flow.py
+  format error → hard block, no clarify          → test_validation_prompts.py
+  mutation gate carries an English explanation   → HERE
+  clarify first, THEN mutation gate              → HERE
+  off-topic → short-circuit before planning      → test_validation_prompts.py
+  approved mutation executes                     → test_clarification_flow.py
+  mutation cancel                                → frontend-only, no backend test
 
 Like the other integration tests these need the full stack + real creds
 (tests/integration/integration_config.yaml) and are skipped otherwise. They
@@ -22,7 +21,7 @@ assert on the FLOW (clarify vs gate vs execute), not on Sisense data, so they
 hold on any instance. They are sensitive to planner behaviour — treat a
 failure as a prompt/model-quality signal, not only a wiring bug.
 
-    pytest tests/integration/test_step7_scenarios.py -v -m integration
+    pytest tests/integration/test_conversation_flows.py -v -m integration
 """
 
 import uuid
@@ -66,7 +65,7 @@ def _looks_like_question(text: str) -> bool:
 
 @pytest.mark.integration
 def test_multiple_missing_args_asked_together_then_resumed(backend_url, tenant_config):
-    """Scenario 2: a request missing TWO required args gets ONE question asking
+    """A request missing TWO required args gets ONE question asking
     for both; the answer supplying both resumes and executes.
 
     The resume uses env-specific names — a wrong-name SDK error still proves
@@ -92,7 +91,7 @@ def test_multiple_missing_args_asked_together_then_resumed(backend_url, tenant_c
 
 @pytest.mark.integration
 def test_topic_change_on_resume_routes_fresh(backend_url, tenant_config):
-    """Scenario 3: answering a clarifying question with a NEW request drops the
+    """Answering a clarifying question with a NEW request drops the
     clarification and routes the new request normally."""
     session_id = f"integ-s3-{uuid.uuid4()}"
     history = []
@@ -114,7 +113,7 @@ def test_topic_change_on_resume_routes_fresh(backend_url, tenant_config):
 
 @pytest.mark.integration
 def test_mutation_gate_has_english_reason(backend_url, tenant_config):
-    """Scenario 6: a mutating request with all args present pauses at the gate,
+    """A mutating request with all args present pauses at the gate,
     and pending_confirmation carries a plain-English explanation (reason)."""
     session_id = f"integ-s6-{uuid.uuid4()}"
 
@@ -136,7 +135,7 @@ def test_mutation_gate_has_english_reason(backend_url, tenant_config):
 
 @pytest.mark.integration
 def test_clarify_then_mutation_gate(backend_url, tenant_config):
-    """Scenario 7: a mutating request missing its required arg clarifies FIRST
+    """A mutating request missing its required arg clarifies FIRST
     (no gate yet); supplying the arg then fires the mutation gate. Not approved —
     nothing executes."""
     session_id = f"integ-s7-{uuid.uuid4()}"
