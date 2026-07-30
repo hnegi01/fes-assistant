@@ -224,6 +224,43 @@ def _write_run_log(run_log: Any, _run_log_out: Optional[Dict[str, Any]] = None) 
         pass  # Called from background thread — session state not accessible
 
 
+def _render_agent_progress(
+    placeholder: Any,
+    completed_steps: List[Dict[str, Any]],
+    status_line: Optional[str],
+) -> None:
+    """Render the agentic-loop progress block: collapsed checklist of completed
+    steps + a live status line for the current phase."""
+    if placeholder is None:
+        return
+    lines: List[str] = []
+    for s in completed_steps:
+        mark = "✅" if s.get("ok") else "⚠️"
+        lines.append(f"- {mark} Step {s.get('step')}: `{s.get('tool_id', '?')}`")
+    md = ""
+    if lines:
+        md += "\n".join(lines) + "\n\n"
+    if status_line:
+        md += f"*{status_line}*"
+    if md:
+        placeholder.markdown(md)
+
+
+def _agent_progress_status_line(data: Dict[str, Any]) -> Optional[str]:
+    """Map an agent_progress event to a human status line (None for 'completed')."""
+    phase = data.get("phase")
+    step = data.get("step")
+    max_steps = data.get("max_steps")
+    tool_id = data.get("tool_id")
+    if phase == "deciding":
+        return "🤔 Checking progress against your request…"
+    if phase == "planning":
+        return f"🧭 Planning step {step}/{max_steps}…"
+    if phase == "executing":
+        return f"⏳ Step {step}/{max_steps}: running `{tool_id}`…"
+    return None
+
+
 def _cancel_backend_turn(sid: str) -> None:
     """POST /agent/cancel for the given session id; errors are logged and swallowed."""
     try:
@@ -433,9 +470,11 @@ def call_backend_turn(
     """
     Thin HTTP client for the backend /agent/turn API.
 
-    Strategy:
-    - Migration mode: request SSE and render progress + store run_log.
-    - Chat mode: request JSON only (no SSE), since SDK tools do not emit progress.
+    Strategy (both modes request SSE):
+    - Migration mode: render SDK progress lines + store run_log.
+    - Chat mode: render agentic-loop step progress (agent_progress events) so
+      multi-step turns show live "planning / running tool X" status instead of
+      a silent spinner.
     """
     payload = {
         "messages": messages,
@@ -454,13 +493,8 @@ def call_backend_turn(
 
     headers: Dict[str, str] = {
         "Content-Type": "application/json",
+        "Accept": "text/event-stream, application/json",
     }
-
-    # Only request SSE for migration mode (where progress is meaningful).
-    if is_migration:
-        headers["Accept"] = "text/event-stream, application/json"
-    else:
-        headers["Accept"] = "application/json"
 
     # Timeouts: keep connect timeout reasonable; allow long reads for migration.
     timeout = (30, 1800)
@@ -470,19 +504,11 @@ def call_backend_turn(
         json=payload,
         headers=headers,
         timeout=timeout,
-        stream=is_migration,  # only stream when we requested SSE
+        stream=True,
     )
     resp.raise_for_status()
 
-    # If we didn't request SSE, we expect JSON.
-    if not is_migration:
-        st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
-        data = resp.json()
-        reply = data.get("reply", "")
-        tool_result = data.get("tool_result")
-        return reply, tool_result
-
-    # Migration path: SSE expected (but backend might still return JSON).
+    # SSE expected (but backend might still return JSON).
     ctype = (resp.headers.get("Content-Type") or "").lower()
 
     if "text/event-stream" in ctype:
@@ -495,6 +521,7 @@ def call_backend_turn(
         }
 
         progress_lines: List[str] = []
+        agent_steps: List[Dict[str, Any]] = []
 
         for event, data in _iter_sse_events(resp):
             if event == "keepalive":
@@ -502,6 +529,19 @@ def call_backend_turn(
 
             cleaned_payload = _extract_progress_payload(data)
             run_log["events"].append({"event": event, "payload": cleaned_payload})
+
+            # Agentic-loop step progress (Step 8) — dedicated checklist rendering.
+            if event == "progress" and data.get("type") == "agent_progress":
+                if data.get("phase") == "completed":
+                    agent_steps.append({"step": data.get("step"), "tool_id": data.get("tool_id"), "ok": data.get("ok")})
+                    _render_agent_progress(progress_placeholder, agent_steps, None)
+                else:
+                    _render_agent_progress(progress_placeholder, agent_steps, _agent_progress_status_line(data))
+                if progress_callback is not None:
+                    line = _agent_progress_status_line(data)
+                    if line:
+                        progress_callback(line)
+                continue
 
             if event == "status":
                 phase = data.get("phase")
@@ -537,7 +577,8 @@ def call_backend_turn(
                 if progress_callback is not None:
                     progress_callback(new_line)
 
-            if progress_placeholder is not None and progress_lines:
+            # Migration-style rolling log; chat placeholders render agent_progress only.
+            if is_migration and progress_placeholder is not None and progress_lines:
                 tail = progress_lines[-20:]
                 progress_placeholder.markdown("**Progress**\n\n" + "\n".join([f"- {x}" for x in tail]))
 
@@ -953,7 +994,7 @@ if mode == MODE_CHAT:
                 key = _approval_key(pending["tool_id"], pending.get("arguments", {}))
                 st.session_state[CHAT_APPROVED_KEY].add(key)
 
-                # Chat mode: no progress placeholder needed (backend will respond JSON)
+                _agent_ph = st.empty()
                 with st.spinner("Running approved action..."):
                     try:
                         reply, tr = call_backend_turn(
@@ -965,7 +1006,7 @@ if mode == MODE_CHAT:
                             session_id=session_id,
                             allow_summarization=st.session_state["allow_summarization"],
                             mode=BACKEND_MODE_CHAT,
-                            progress_placeholder=None,
+                            progress_placeholder=_agent_ph,
                         )
                     except Exception as e:
                         logger.exception("Agent run after approval failed: %s", e)
@@ -973,6 +1014,7 @@ if mode == MODE_CHAT:
                         st.exception(e)
                         st.session_state[CHAT_PENDING_KEY] = None
                         st.rerun()
+                _agent_ph.empty()
 
                 # Ensure run log is not shown/stored for chat
                 st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
@@ -1005,7 +1047,8 @@ if mode == MODE_CHAT:
             st.markdown(user_input)
 
         with st.chat_message("assistant"):
-            # Chat mode: no progress placeholder (JSON path)
+            # Live agentic-loop progress (step checklist + current phase).
+            _agent_ph = st.empty()
             _call_failed = False
             with st.spinner("Thinking..."):
                 try:
@@ -1018,7 +1061,7 @@ if mode == MODE_CHAT:
                         session_id=session_id,
                         allow_summarization=st.session_state["allow_summarization"],
                         mode=BACKEND_MODE_CHAT,
-                        progress_placeholder=None,
+                        progress_placeholder=_agent_ph,
                     )
                 except Exception as e:
                     _call_failed = True
@@ -1027,6 +1070,7 @@ if mode == MODE_CHAT:
                     st.exception(e)
                     reply = f"Error: {e}"
                     tr = None
+            _agent_ph.empty()
 
             # Ensure run log is not shown/stored for chat
             st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
@@ -1049,6 +1093,7 @@ if mode == MODE_CHAT:
                         key = _approval_key(pc["tool_id"], pc.get("arguments", {}))
                         st.session_state[CHAT_APPROVED_KEY].add(key)
 
+                        _agent_ph2 = st.empty()
                         with st.spinner("Running approved action..."):
                             try:
                                 reply2, tr2 = call_backend_turn(
@@ -1060,7 +1105,7 @@ if mode == MODE_CHAT:
                                     session_id=session_id,
                                     allow_summarization=st.session_state["allow_summarization"],
                                     mode=BACKEND_MODE_CHAT,
-                                    progress_placeholder=None,
+                                    progress_placeholder=_agent_ph2,
                                 )
                             except Exception as e:
                                 logger.exception("Agent run after approval failed: %s", e)
@@ -1068,6 +1113,7 @@ if mode == MODE_CHAT:
                                 st.exception(e)
                                 st.session_state[CHAT_PENDING_KEY] = None
                                 st.rerun()
+                        _agent_ph2.empty()
 
                         st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
 
