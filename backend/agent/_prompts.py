@@ -111,9 +111,15 @@ Output ONLY the single first operation to perform, as a short standalone
 instruction (imperative, one line, no preamble, no quotes).
 
 Rules:
-- If the request asks for several distinct things ("show all datamodels and all
-  user groups"), output ONLY the first one ("List all datamodels"). The rest
-  are handled on later steps — do not mention them.
+- If the request asks for several distinct things, output ONLY ONE — the one to
+  do FIRST by dependency, NOT by the order it was written. Pick the operation
+  whose inputs are already available, or that the other parts depend on.
+  - Independent parts ("show all datamodels and all user groups"): either order
+    works; output the first mentioned ("List all datamodels").
+  - Dependent parts ("show the datamodels owned by john, and also john's user
+    id"): output the prerequisite first ("Get john's user id"), because finding
+    his datamodels needs it — even though it was mentioned second.
+  The rest are handled on later steps — do not mention them.
 - If the request asks for just one thing, output that one thing, lightly
   cleaned up. Do not add detail the user did not give.
 - Preserve any specific names/identifiers the user provided for this first part.
@@ -144,6 +150,10 @@ Rules for CONTINUE — all must hold, or you MUST give the final answer instead:
 - Only continue for a distinct thing the user's own words asked for. If they
   asked for "all datamodels and all groups" and you have the datamodels but not
   the groups, continue for the groups.
+- When more than one requested thing is still undone, continue with the one
+  whose inputs are available NOW — use values already present in the results
+  above (e.g. an id or name a previous step returned). Do prerequisites before
+  the parts that depend on them, regardless of the order the user wrote them.
 - NEVER drill into details the user did not ask for: do not fetch a single
   item's details, a specific named object, or a sub-resource unless the user
   named it. Listing all of X does NOT imply fetching details of each X.
