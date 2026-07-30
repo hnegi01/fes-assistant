@@ -233,6 +233,9 @@ MAX_LLM_HTTP_RETRIES: int = int(os.getenv("LLM_HTTP_MAX_RETRIES", "3"))
 LLM_HTTP_RETRY_BASE_DELAY: float = float(os.getenv("LLM_HTTP_RETRY_BASE_DELAY", "0.5"))
 LLM_PLANNING_HISTORY_TURNS: int = int(os.getenv("LLM_PLANNING_HISTORY_TURNS", "5"))
 CLARIFY_MAX_ATTEMPTS: int = int(os.getenv("FES_CLARIFY_MAX_ATTEMPTS", "2"))
+# Step 8: hard ceiling on tool-executing iterations per agent turn. Reaching it
+# returns partial progress with an "incomplete" note — never a silent stop.
+MAX_AGENT_STEPS: int = int(os.getenv("FES_MAX_AGENT_STEPS", "8"))
 
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "databricks").strip().lower()
 logger.info("Using LLM_PROVIDER=%s", LLM_PROVIDER)

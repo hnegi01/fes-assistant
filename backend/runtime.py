@@ -268,6 +268,10 @@ class SessionEntry:
     # Step 7: carried-over clarification state when a turn paused for a missing
     # required arg. {tool_id, missing_fields, filled_args, attempts} or None.
     pending_clarification: Optional[Dict[str, Any]] = None
+    # Step 8: carried-over agentic-loop state when a turn paused mid-loop for a
+    # mutation approval. {transcript, steps_executed, tool_id, arguments} or None.
+    # On the approval turn the loop resumes from the paused step (Option A).
+    pending_loop: Optional[Dict[str, Any]] = None
 
 
 # session_id -> SessionEntry
@@ -476,6 +480,17 @@ async def _run_turn_once(
             prior_clarification.get("attempts"),
         )
 
+    # Step 8: restore paused loop state so an approval turn resumes mid-loop
+    # instead of re-planning from scratch.
+    prior_loop = entry.pending_loop if entry else None
+    if prior_loop:
+        logger.info(
+            "Resuming paused agent loop for session %s: step=%s gated_tool=%s",
+            session_id,
+            prior_loop.get("steps_executed"),
+            prior_loop.get("tool_id"),
+        )
+
     try:
         async with _progress_context(progress_cb):
             reply = await call_llm_with_tools(
@@ -485,13 +500,15 @@ async def _run_turn_once(
                 approved_mutations=approved_keys,
                 allow_summarization=allow_summarization,
                 pending_clarification=prior_clarification,
+                pending_loop=prior_loop,
             )
 
-        # Persist or clear clarification state for the next turn. The LLM layer sets
-        # llm_agent.LAST_PENDING_CLARIFICATION only when it paused to ask; any other
-        # outcome (executed, gave up, topic change) leaves it None → cleared.
+        # Persist or clear pause state for the next turn. The LLM layer sets these
+        # globals only when it paused (to ask / for approval); any other outcome
+        # (executed, gave up, topic change) leaves them None → cleared.
         if entry is not None:
             entry.pending_clarification = getattr(llm_agent, "LAST_PENDING_CLARIFICATION", None)
+            entry.pending_loop = getattr(llm_agent, "LAST_PENDING_LOOP", None)
 
         logger.info("call_llm_with_tools completed successfully for session %s.", session_id)
         logger.debug("Agent reply (truncated): %s", reply[:500] if isinstance(reply, str) else repr(reply))
