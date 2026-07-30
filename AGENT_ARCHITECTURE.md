@@ -115,6 +115,101 @@ This distinction drives the summarization switch below.
 
 ---
 
+## Anatomy of a turn — every call, with inputs and outputs
+
+### High level — the calls in order
+
+A turn is a short, fixed pipeline, then a loop:
+
+```
+DECOMPOSE                     once, up front — pick the FIRST sub-task
+  └─▶ loop, until done:
+        ROUTE L1              which package? (of ~12)
+        ROUTE L2              which mixin? (→ ~10 tools)
+        PLAN                  pick ONE tool + args from those ~10
+        (validate · gate)     code, no LLM — schema check, mutation approval
+        EXECUTE               run the tool via MCP → result
+        DECIDE                CONTINUE <next> · DONE · (summ off) BLOCKED
+```
+
+Each box is one LLM call except *validate/gate* (code) and *execute* (MCP).
+`DECOMPOSE` runs once; everything under the loop repeats per step. `DECIDE` is
+what closes the loop — its answer becomes the reply, or its `CONTINUE:` feeds
+the next sub-task back into `ROUTE`.
+
+### Detailed — an adaptive request, call by call
+
+**User:** _"get the details of user gowtham@sisense.com, then list all other
+users who have that same role"_ — adaptive: step 2 needs the *role* that step 1
+returns.
+
+For each call: the **prompt logic** (what it's told to do, not the full text),
+its **input**, and its **output**.
+
+**1 · DECOMPOSE** — _logic:_ output only the first operation; order by
+dependency, not sentence order; don't invent specifics.
+- in: the full user message
+- out: `"Get the details of user gowtham@sisense.com"`
+  _(the prerequisite — you can't list by role until you have the role)_
+
+**2 · ROUTE L1** — _logic:_ reply with the one package that fits, or `none`.
+- in: `"Get the details of user gowtham@sisense.com"`
+- out: `access_management`
+
+**3 · ROUTE L2** — _logic:_ pick the mixin within that package.
+- in: same sub-task
+- out: `users` → loads ~10 user tools
+
+**4 · PLAN** — _logic:_ pick ONE tool; fill only args the user actually gave;
+never use a placeholder for a missing one.
+- in: sub-task + the ~10 user tools
+- out: tool_call `access_management.get_user(user_email="gowtham@sisense.com")`
+
+**· validate · gate** — code: args pass the schema; tool is not mutating → no
+approval needed.
+
+**5 · EXECUTE** — MCP → SDK → Sisense.
+- in: `get_user`, `{user_email: "gowtham@sisense.com"}`
+- out: `{ok: true, result: {firstName: "Gowtham", role: "sysAdmin", groups: [...]}}`
+
+**6 · DECIDE (after step 1)** — _logic (data mode):_ given the goal + results so
+far, reply `CONTINUE: <next op>` or the final answer; do prerequisites first;
+counting/filtering is your job, not a CONTINUE.
+- in: goal + history containing step-1's **full result** (role visible)
+- out: `"CONTINUE: list all users whose role is sysAdmin"`
+  _(it read `role: sysAdmin` out of the result — this is the adaptive hand-off)_
+
+**7 · ROUTE + PLAN + EXECUTE (step 2)** — as above for the new sub-task.
+- plan out: `access_management.get_users_with_role_names_and_group_names()`
+- execute out: `{ok: true, result: [ ...all users with roles... ]}`
+
+**8 · DECIDE (after step 2)** — everything asked for is present.
+- in: goal + both results
+- out: final answer — _"Gowtham is a sysAdmin; no other users share that role."_
+
+### The same request with summarization OFF
+
+Only call 6 changes — and it changes everything downstream:
+
+**6 · DECIDE (nodata mode)** — _logic:_ you see only which tools ran + ok/count,
+never the data; reply `CONTINUE` for an undone independent op, `BLOCKED` if the
+next op needs a value you can't see, or `DONE`.
+- in: goal + history = `{tool: get_user, ok: true, count: 1}` — **no role**
+- out: `"BLOCKED: need gowtham's role from step 1, which I can't see"`
+
+→ the loop stops, keeps step 1's result, and replies: _"I got the user's
+details, but listing others with the same role needs a value I can't read with
+summarization off — turn it on to continue,"_ then renders step 1 locally. The
+role data never reached the LLM.
+
+Contrast a **non-adaptive** request (_"list all datamodels and all groups"_):
+call 6's nodata decide sees `{tool: get_all_datamodel, ok, count: 400}`, which
+is enough to know that part is done, so it replies `CONTINUE: list all user
+groups` and the loop runs both — no block, because neither step needs the
+other's data.
+
+---
+
 ## The summarization switch _(as built)_
 
 `ALLOW_SUMMARIZATION` is a **hard privacy control: when false, tool result *data*
