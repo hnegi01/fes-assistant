@@ -222,6 +222,57 @@ log.) With summarization off there is no loop, so only step 1's execution shows.
 
 ---
 
+## Hand-rolled building blocks (and their LangGraph future)
+
+Everything today is **hand-rolled** — plain Python control flow inside
+`backend/agent/llm_agent.py`, no agent framework. This was deliberate: build the
+machinery by hand first, understand what each piece is *for*, then adopt
+LangGraph in Step 10 knowing exactly which primitive replaces which hand-rolled
+part. This section is the glossary + the mapping to fill in after Step 10.
+
+### The building blocks, in our own terms
+
+| Term | What it does | Where it lives now |
+|---|---|---|
+| **Decompose** | splits a compound request; returns the first sub-task | `_decompose_first_step` |
+| **Route** | narrows 119 tools → one package → one mixin (~10 tools) | `_navigate_to_tools` (`_routing.py`) |
+| **Plan** | given one sub-task + ~10 tools, pick ONE tool + args | planning `call_llm_raw(..., tools=...)` |
+| **Execute** | run the chosen tool via MCP → Sisense | `mcp_client.invoke_tool` |
+| **Decide** | given goal + results so far, answer or `CONTINUE:` | `_agent_continuation_loop` (decide call) |
+| **Loop control** | while-loop tying decide→route→plan→execute together | `_agent_continuation_loop` (`while True`) |
+| **Pause/resume state** | externalized state so a turn can stop and continue next turn | `SessionEntry.pending_loop` / `.pending_clarification` |
+| **Mutation gate** | stop before a destructive tool, wait for approval | `REQUIRE_MUTATION_CONFIRM` check + `pending_confirmation` |
+| **Clarification** | stop and ask when a required arg is missing | `_generate_clarification_question` + `LAST_PENDING_CLARIFICATION` |
+| **Graceful stop** | every exit returns readable text, never a silent halt | `_finalize_from_transcript`, `_loop_partial_message` |
+| **Progress** | emit a step event each phase | `_emit_agent_progress` |
+
+### Mapping to LangGraph _(to confirm after Step 10)_
+
+The expected correspondence — the table you point at when someone asks _"how did
+you use LangGraph here?"_ Verify/adjust each row once Step 10 is built.
+
+| Our hand-rolled piece | Expected LangGraph primitive |
+|---|---|
+| `_agent_continuation_loop` `while` loop | the **graph** itself (nodes + edges) |
+| Route / Plan / Execute / Decide | individual **nodes** |
+| Decompose + Decide (see merge below) | one `next_step` **node** |
+| "`CONTINUE:` → loop back, else → answer" | a **conditional edge** |
+| `pending_loop` / `pending_clarification` in `SessionEntry` | **checkpointer** (persistent state / `thread_id`) |
+| Mutation gate → return, resume next turn | **interrupt** (human-in-the-loop) |
+| The dict passed between steps (goal, transcript, results) | the graph **state** object |
+| Graceful-stop terminal returns | **END** node / terminal edges |
+| _(new in Step 10)_ plan → replan | a `plan` node + a **replan edge** on divergence |
+| _(new in Step 10)_ cross-package parallel | **fan-out / fan-in** (parallel branches) |
+
+The point of the left column: none of these are LangGraph inventions — they are
+real problems any agent hits (how to loop, pause, resume, stop safely, keep a
+human in the loop). We solved each by hand first; LangGraph just gives each a
+named, reusable primitive. That is the honest answer to "why LangGraph" — not
+"it makes agents," but "it replaces this hand-rolled plumbing with tested
+primitives, and makes each node independently testable."
+
+---
+
 ## What's next _(planned)_
 
 - **`next_step` merge.** Today decompose-first and decide are two prompts asking
