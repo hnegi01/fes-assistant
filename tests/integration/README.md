@@ -73,4 +73,16 @@ pytest tests/integration/ -v -m integration
 - They are slow (real LLM calls, real Sisense API calls).
 - They are non-deterministic — LLM responses vary between runs.
 
-The intent is to run them manually before cutting a release branch.
+The intent is to run them manually before cutting a release branch. This is a
+deliberate policy: LLM and Sisense secrets are never added to GitHub Actions.
+
+## Reading a failure
+
+Because a real LLM is in the loop, a single failure is not automatically a bug:
+
+1. **A test fails once** → re-run just that test
+   (`pytest tests/integration/<file>::<test> -m integration`).
+   If it passes on retry, it was model non-determinism — fine.
+2. **A test fails consistently** → something real changed: either code broke
+   the flow, or the model's behaviour drifted and a prompt needs strengthening.
+   Both are release blockers worth investigating.
