@@ -103,82 +103,92 @@ compound request.
 ### Two kinds of multi-step
 
 - **Static / independent** — _"show all datamodels AND all groups."_ Both parts
-  are knowable from the request alone; neither needs the other's result.
+  are knowable from the request alone; neither needs the other's result. Works
+  in **both** summarization modes.
 - **Adaptive / dependent** — _"get the username for user_id xyz, then find which
   datamodels that user owns."_ Step 2 needs step 1's *output* to form its
-  request. The decide call must *read* step 1's result to plan step 2.
+  request. The decide call must *read* step 1's result — so adaptive chains
+  complete only with summarization **on**; with it off they stop gracefully
+  (`BLOCKED`).
 
-This distinction drives everything about the summarization switch below.
+This distinction drives the summarization switch below.
 
 ---
 
-## The summarization switch
+## The summarization switch _(as built)_
 
-`ALLOW_SUMMARIZATION` is a **hard privacy kill-switch: when false, tool results
-are never sent to the LLM.** It is not merely "skip the prose summary."
-
-The decide/verify call *requires* reading results. So:
-
-| | Summarization ON | Summarization OFF |
-|---|---|---|
-| Tool results → LLM | yes | **never** |
-| Decide / verify call | yes | impossible |
-| Multi-step loop | yes | no — single shot |
-| Adaptive chains | yes | **no** (need result content) |
-| Static compound | yes | _(see "planned" below)_ |
-| Final answer | LLM prose | local raw description |
-
-**Current behaviour with summarization OFF (as built):** the turn routes the
-full message, plans one tool, executes it, returns the raw result — a single
-shot. Decompose does not run, so a compound request runs only its first-matched
-tool. This is a known gap; the target design below fixes it.
-
-### Target design — one reactive planner, flag controls visibility _(planned)_
-
-Do NOT branch the orchestration on the summarization flag. Keep **one reactive
-planner call** — `next_step(goal, history, summ_flag)` — that runs first and on
-every step, always deciding "the next single operation, or done." The flag does
-not switch loop-vs-no-loop; it only controls **how much of each result the
-planner sees in `history`:**
+`ALLOW_SUMMARIZATION` is a **hard privacy control: when false, tool result *data*
+is never sent to the LLM.** It is NOT "loop vs no loop" and NOT "skip the prose
+summary." The reactive loop runs in **both** modes — the flag only changes **how
+much of each result the planner sees:**
 
 | | Summarization ON | Summarization OFF |
 |---|---|---|
-| `history` contains | full tool results | **action metadata only** — which tool ran + ok/fail, never the data |
-| Sequence independent tasks | yes | yes (it knows what's done from the metadata) |
-| Pass a value between steps (adaptive) | yes (reads the id/name) | no — the value isn't in `history`, so it stops and explains |
-| Completion check / verify | yes | yes (metadata is enough to know a step ran) |
-| Final answer | LLM prose | local raw description of the results |
+| `history` the planner sees | full tool results | **action metadata only** — `{tool, ok, count, error}`, never the data |
+| Multi-step (independent tasks) | yes | **yes** (knows what's done from metadata) |
+| Adaptive (pass a value between steps) | yes (reads the id/name) | no — value isn't in history → `BLOCKED`, stop + explain |
+| Final answer | LLM prose | local raw description (rendered in-process, no LLM) |
 
-Why this is the right shape:
+**Where the boundary is enforced:** one place in code — `_transcript_step`
+builds each step's history entry with the full result (`_shrink_for_llm`) when
+summ is on, or `_metadata_record` (`{tool, ok, count}`) when off. The planner
+*physically never receives* data it shouldn't. It is *told* the mode (via the
+`AGENT_DECIDE_NODATA` prompt) so it can explain the limit — but the guarantee is
+that data was never put in the messages, **never that the model was asked not to
+look.** Never trust the model to enforce a privacy boundary.
 
-- **The first LLM call is the planner.** On step 1 `history` is empty; the
-  planner decides the first operation. This replaces the separate decompose
-  call — decompose-first was just this planner with an empty history (see the
-  `next_step` merge under "What's next").
-- **It is all reactive.** The same call re-decides each step from goal +
-  history, so it naturally handles unknown-shape tasks ("restart every failed
-  datamodel") that up-front planning cannot express.
-- **Data enforcement is in code, not the LLM.** The code builds `history` with
-  full results (summ on) or metadata only (summ off). The planner physically
-  never receives data it shouldn't. It is *told* the flag so it can explain the
-  limit — but the guarantee is that the data was never put in the messages, not
-  that the model was asked not to look. Never trust the model to enforce a
-  privacy boundary.
-- **Adaptive degrades gracefully.** With summ off, the planner sees "step 1 ran
-  get_user (ok)" but not the id it returned; when the next step needs that id
-  there is nothing to fill it with, so it stops: _"I listed X and Y, but finding
-  john's datamodels needs the id from a prior step, which I can't read with
-  summarization off."_
+**Adaptive degrades gracefully:** with summ off the planner sees "step 1 ran
+`get_user` (ok)" but not the id it returned. When the next step needs that id,
+the `AGENT_DECIDE_NODATA` prompt makes it reply `BLOCKED:` — the loop stops and
+says _"I did the parts I can, but the rest needs a value from an earlier step I
+can't see with summarization off — turn it on to continue,"_ then renders what
+it got, locally.
 
-Irreducible floor: **truly reactive tasks that branch on result *content*
-(unknown iteration count driven by the data) are only possible with summ on** —
-not a design choice, but because reacting to data requires seeing data. Ordering
-and sequencing (text reasoning) are mode-independent; only value-passing needs
-the data.
+**Irreducible floor:** tasks that branch on result *content* (unknown iteration
+count driven by the data — "restart every failed datamodel") are only possible
+with summ on. Not a design choice — reacting to data requires seeing data.
+Ordering/sequencing is text reasoning (mode-independent); only value-passing
+needs the data.
 
-Tradeoff: fully reactive = one LLM call per step (vs one up-front plan for N
-steps). Worth it — the flexibility to handle unknown-shape tasks is the point of
-an autonomous agent.
+### The four flows
+
+Non-adaptive compound — _"show all datamodels AND all groups"_:
+
+```
+                    decompose → "list datamodels"
+SUMM ON:   route→plan→exec(datamodels)  ─┐ history=full data
+           decide: CONTINUE list groups  │
+           route→plan→exec(groups)       │
+           decide: DONE → LLM prose combining both
+SUMM OFF:  route→plan→exec(datamodels)  ─┐ history=metadata {ok,count}
+           decide(nodata): CONTINUE      │
+           route→plan→exec(groups)       │
+           decide(nodata): DONE → local render "399 datamodels… 35 groups…"
+```
+Both run the two steps. Only the *final answer* and *what the planner saw*
+differ. (Verified live.)
+
+Adaptive — _"get user X's details, then list others with that same role"_:
+
+```
+SUMM ON:   exec(get_user) → history has role=sysAdmin
+           decide: CONTINUE "list users with role sysAdmin"   ← reads the role
+           exec(get_users_with_role) → decide: DONE → prose answer
+SUMM OFF:  exec(get_user) → history = {ok, count} (NO role)
+           decide(nodata): BLOCKED "need the role from step 1, can't see it"
+           → stop + explain + local render of step 1
+```
+Same first step; summ-on passes the value and finishes, summ-off blocks. (Verified live.)
+
+### Why this shape
+
+- **First LLM decision is a planner.** Step 1's decompose + every step's decide
+  are the same "what's next?" question; today they are two calls (`_decompose_
+  first_step` + the decide call), unified into one `next_step` node at Step 10.
+- **All reactive** — re-decide each step from goal + history — so unknown-shape
+  tasks work (summ on).
+- Tradeoff: one LLM call per step (vs one up-front plan). Worth it — flexibility
+  is the point of an autonomous agent.
 
 ---
 
@@ -218,7 +228,8 @@ Each loop phase emits an `agent_progress` SSE event
 (`deciding | planning | executing | completed`, with step / max_steps /
 tool_id). Chat mode streams these to the UI, which renders a live step checklist
 plus a current-phase status line. (Migration mode keeps its SDK-emitted progress
-log.) With summarization off there is no loop, so only step 1's execution shows.
+log.) The loop runs in both summarization modes, so multi-step progress shows
+either way.
 
 ---
 
@@ -238,8 +249,9 @@ part. This section is the glossary + the mapping to fill in after Step 10.
 | **Route** | narrows 119 tools → one package → one mixin (~10 tools) | `_navigate_to_tools` (`_routing.py`) |
 | **Plan** | given one sub-task + ~10 tools, pick ONE tool + args | planning `call_llm_raw(..., tools=...)` |
 | **Execute** | run the chosen tool via MCP → Sisense | `mcp_client.invoke_tool` |
-| **Decide** | given goal + results so far, answer or `CONTINUE:` | `_agent_continuation_loop` (decide call) |
-| **Loop control** | while-loop tying decide→route→plan→execute together | `_agent_continuation_loop` (`while True`) |
+| **Decide** | given goal + history, answer / `CONTINUE:` / (summ off) `BLOCKED:`/`DONE` | `_agent_continuation_loop` (decide call; prompt is data or nodata) |
+| **History visibility** | full result (summ on) vs metadata only (summ off) — the privacy boundary | `_transcript_step` / `_metadata_record` |
+| **Loop control** | while-loop tying decide→route→plan→execute together; runs in both modes | `_agent_continuation_loop` (`while True`) |
 | **Pause/resume state** | externalized state so a turn can stop and continue next turn | `SessionEntry.pending_loop` / `.pending_clarification` |
 | **Mutation gate** | stop before a destructive tool, wait for approval | `REQUIRE_MUTATION_CONFIRM` check + `pending_confirmation` |
 | **Clarification** | stop and ask when a required arg is missing | `_generate_clarification_question` + `LAST_PENDING_CLARIFICATION` |
@@ -286,10 +298,6 @@ primitives, and makes each node independently testable."
   named nodes anyway and `next_step` becomes one node — the duplication dissolves
   for free, and each node is independently testable, so the refactor is safer
   there than churning the stable hot path now.
-- **Summarization-off path.** Implement the "one reactive planner, flag controls
-  visibility" design above: build `history` with full results (summ on) or
-  action metadata only (summ off). Fixes today's single-shot gap without
-  branching the orchestration.
 - **Step 9 — MCP OAuth + Claude connector.** Bearer/OAuth on the MCP server so
   it can be a hosted, standalone connector. (See the separate
   `sisense-admin-mcp` brief.)
