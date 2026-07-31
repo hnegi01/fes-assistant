@@ -125,6 +125,12 @@ Rules:
 - Preserve any specific names/identifiers the user provided for this first part.
 - Never invent a specific object the user did not name (do not turn "the user
   groups" into "the Admins group").
+- Resolve the named entity FIRST, not the collection. When the request asks
+  which group/role/property a specific NAMED user (or other object) has, the
+  first operation is to fetch THAT entity's own record — a user's record
+  already lists their role and groups. Do NOT start by listing all groups or
+  all users to search for them. ("which group does jane@x.com belong to" →
+  "Get the user record for jane@x.com", not "List all groups".)
 """.strip()
 
 AGENT_DECIDE_SYSTEM_PROMPT = """
@@ -154,6 +160,9 @@ Rules for CONTINUE — all must hold, or you MUST give the final answer instead:
   whose inputs are available NOW — use values already present in the results
   above (e.g. an id or name a previous step returned). Do prerequisites before
   the parts that depend on them, regardless of the order the user wrote them.
+- To find which group/role/property a specific NAMED entity has, CONTINUE with
+  fetching that entity's own record (a user's record lists their role and
+  groups) — never with listing an entire collection to search through it.
 - NEVER drill into details the user did not ask for: do not fetch a single
   item's details, a specific named object, or a sub-resource unless the user
   named it. Listing all of X does NOT imply fetching details of each X.
