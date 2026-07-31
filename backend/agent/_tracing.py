@@ -33,7 +33,7 @@ import contextvars
 import os
 from typing import Any, Dict, List, Optional
 
-from ._config import _scrub_secrets, logger
+from ._config import LLM_CONFIG, LLM_PROVIDER, _scrub_secrets, logger
 
 try:
     from langsmith.run_trees import RunTree
@@ -204,11 +204,20 @@ def log_llm_child(
             "output_tokens": usage.get("completion_tokens", 0),
             "total_tokens": usage.get("total_tokens", 0),
         }
+        # ls_provider / ls_model_name are LangSmith's convention for automatic
+        # cost calculation (token usage x its model price table). Prefer the
+        # response's exact model version (e.g. gpt-4o-2024-11-20) over config.
+        child_md = dict((root.extra or {}).get("metadata") or {})
+        model_name = str((response or {}).get("model") or LLM_CONFIG.model or "")
+        if "/" in model_name:  # litellm prefix form, e.g. "azure/gpt-4o"
+            model_name = model_name.split("/", 1)[1]
+        child_md["ls_provider"] = LLM_PROVIDER
+        child_md["ls_model_name"] = model_name
         child = root.create_child(
             name=name or "llm-call",
             run_type="llm",
             inputs=inputs,
-            extra={"metadata": dict((root.extra or {}).get("metadata") or {})},
+            extra={"metadata": child_md},
         )
         child.end(outputs=outputs, error=error)
         # Duration: RunTree stamps start/end itself; ours is close enough that we
