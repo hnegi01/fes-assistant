@@ -708,8 +708,12 @@ async def _reactive_loop(
                 # VERIFY #3 (goal): the decide call (maker) thinks it's done. An
                 # independent checker re-reads the whole request against the
                 # results and can push one more step if something was missed.
+                # Summarization-on only: judging whether the goal was actually
+                # ACHIEVED needs the result data. With summarization off the
+                # checker would see only metadata — which the decide call already
+                # checked — so it adds a call for no real depth; skip it.
                 answer = decide_text if summ_on else _describe_results_local(raw_results)
-                if VERIFY_GOAL and checker_overrides < VERIFY_MAX_RECHECKS:
+                if summ_on and VERIFY_GOAL and checker_overrides < VERIFY_MAX_RECHECKS:
                     await _emit_agent_progress(
                         {"phase": "verifying", "step": steps_executed, "max_steps": MAX_AGENT_STEPS}
                     )

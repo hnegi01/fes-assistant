@@ -334,7 +334,7 @@ of trust.
 |---|---|---|---|---|
 | 1 | the **call** is well-formed | before execute | `jsonschema.validate` (`args valid?`) | objective — code |
 | 2 | the **step** succeeded | after execute | the result's `ok` flag (`_metadata_record`) | objective — code |
-| 3 | the **whole request** is done | at "done" | the decide call, then an independent checker | judgment — LLM |
+| 3 | the **whole request** is done | at "done" | the decide call (maker), then an independent checker — **an LLM call** | judgment — LLM |
 
 **Per-step (1 and 2) is deterministic code** — a schema passes or it doesn't; `ok`
 is true or false. No LLM, nothing to second-guess.
@@ -354,11 +354,15 @@ Why a checker only on #3: the maker is biased toward declaring victory and can't
 catch its own "stopped too early." A second, differently-prompted pass catches
 that. #1 and #2 need no checker — code doesn't misjudge schemas or booleans.
 
+**Summarization-on only.** Judging whether the goal was actually *achieved* means
+reading the results — so the checker runs only when summarization is on. With it
+off the checker would see just metadata (which the decide call already checked),
+adding an LLM call for no real depth; there it's skipped and the decide call's
+`DONE` stands.
+
 Guards: `FES_VERIFY_GOAL` toggles it; `FES_VERIFY_MAX_RECHECKS` (default 1) bounds
 overrides; the step cap still applies; any checker failure defaults to *complete*
-so it can never block a good answer. It respects the privacy boundary — with
-summarization off the checker sees the same metadata-only history the decide call
-saw. Cost: one extra LLM call per turn.
+so it can never block a good answer. Cost: one extra LLM call per turn (summ-on).
 
 Ceiling: the checker is still an LLM judging completion — better than the maker
 alone, not infallible. And "the whole request" means the current turn's prompt;

@@ -215,8 +215,8 @@ Rules:
   demand detail they didn't request, or ask to "double-check" completed work.
 - Counting, filtering, or summarising data already in the results is DONE work,
   not missing work.
-- If you can see only which operations ran (not their data), judge from that:
-  did every operation the user asked for actually run and succeed?
+- Judge from the actual results: did every part the user asked for get fetched
+  or changed, and did it succeed?
 - When in doubt whether a genuinely-requested part ran, prefer INCOMPLETE.
 """.strip()
 
