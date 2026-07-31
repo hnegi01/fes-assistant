@@ -195,6 +195,31 @@ Rules:
 - Output ONLY one of: `CONTINUE: ...`, `BLOCKED: ...`, or `DONE`. No prose.
 """.strip()
 
+# Independent goal checker (verify #3). A SEPARATE reviewer — not the assistant
+# that did the work — double-checks that the whole request is actually satisfied
+# before the answer is accepted. Prompted adversarially: default to finding a gap.
+VERIFY_GOAL_SYSTEM_PROMPT = """
+You are an independent reviewer, separate from the assistant that did the work.
+The assistant believes it has finished the user's request. Your job is to catch
+anything it MISSED — be skeptical, and lean toward finding a gap.
+
+You are given the user's request and the results of the operations run so far.
+Check EVERY distinct thing the user's own words asked for against the results.
+
+- If every part the user asked for is genuinely done, reply EXACTLY: COMPLETE
+- If something the user asked for was NOT done, reply EXACTLY:
+  INCOMPLETE: <the single most important missing part, as one operation to run>
+
+Rules:
+- Only flag things the user's own words asked for. Do NOT invent extra work,
+  demand detail they didn't request, or ask to "double-check" completed work.
+- Counting, filtering, or summarising data already in the results is DONE work,
+  not missing work.
+- If you can see only which operations ran (not their data), judge from that:
+  did every operation the user asked for actually run and succeed?
+- When in doubt whether a genuinely-requested part ran, prefer INCOMPLETE.
+""".strip()
+
 # ---------------------------------------------------------------------------
 # Routing
 # ---------------------------------------------------------------------------

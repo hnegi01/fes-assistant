@@ -254,6 +254,8 @@ def _agent_progress_status_line(data: Dict[str, Any]) -> Optional[str]:
     tool_id = data.get("tool_id")
     if phase == "deciding":
         return "🤔 Checking progress against your request…"
+    if phase == "verifying":
+        return "🔎 Double-checking the result covers your whole request…"
     if phase == "planning":
         return f"🧭 Planning step {step}/{max_steps}…"
     if phase == "executing":

@@ -257,8 +257,12 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 | `PYSISENSE_MCP_HTTP_URL` | `http://localhost:8002` | MCP server URL (from backend) |
 | `PYSISENSE_MCP_HTTP_TIMEOUT` | `1800` | MCP HTTP call timeout (30 min for migrations) |
 | `FES_BACKEND_URL` | `http://localhost:8001` | Backend URL (from frontend) |
-| `ALLOW_SUMMARIZATION` | `true` | Hard kill-switch for sending tool results to LLM |
+| `ALLOW_SUMMARIZATION` | `true` | Hard kill-switch for sending tool result **data** to LLM (loop still runs on metadata when off) |
 | `FES_ALLOW_SUMMARIZATION_TOGGLE` | `true` | Whether UI checkbox is shown |
+| `FES_MAX_AGENT_STEPS` | `8` | Hard ceiling on tool-executing steps per agent turn (one SDK call each); cap → partial answer |
+| `FES_CLARIFY_MAX_ATTEMPTS` | `2` | Max clarifying questions before the agent gives up and states what it needs |
+| `FES_VERIFY_GOAL` | `true` | Independent goal checker (verify #3): re-checks a "done" answer against the request before accepting it |
+| `FES_VERIFY_MAX_RECHECKS` | `1` | How many times the goal checker may push the loop to run one more step |
 | `FES_LOG_LEVEL` | `INFO` | Log level across all services |
 | `FES_UI_IDLE_TIMEOUT_HOURS` | `9` | Streamlit session idle timeout |
 | `PYSISENSE_MAX_CONCURRENT_MIGRATIONS` | `3` | Max parallel migrations |

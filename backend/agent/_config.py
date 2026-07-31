@@ -237,6 +237,21 @@ CLARIFY_MAX_ATTEMPTS: int = int(os.getenv("FES_CLARIFY_MAX_ATTEMPTS", "2"))
 # returns partial progress with an "incomplete" note — never a silent stop.
 MAX_AGENT_STEPS: int = int(os.getenv("FES_MAX_AGENT_STEPS", "8"))
 
+
+def _cfg_flag(name: str, default: str = "true") -> bool:
+    return os.getenv(name, default).strip().lower() in ("1", "true", "yes", "y", "on")
+
+
+# Independent goal checker (verify #3): before accepting a "done" answer, a
+# separate adversarial LLM call re-checks the whole prompt against the results
+# to catch "declared victory too early". Only the goal-completion verify is
+# checked — per-step verify (schema + ok flag) is deterministic code and needs no
+# second opinion. Set false to skip the extra call.
+VERIFY_GOAL: bool = _cfg_flag("FES_VERIFY_GOAL", "true")
+# How many times the checker may override a "done" and push the loop to continue.
+# Bounds the extra cost; the step cap still applies on top.
+VERIFY_MAX_RECHECKS: int = int(os.getenv("FES_VERIFY_MAX_RECHECKS", "1"))
+
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "databricks").strip().lower()
 logger.info("Using LLM_PROVIDER=%s", LLM_PROVIDER)
 

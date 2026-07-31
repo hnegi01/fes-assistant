@@ -1,0 +1,141 @@
+<title>FES Agent — Scenario 5: Format Error Hard Block</title>
+<style>
+:root{--g:#EDF0F7;--s:#FFF;--s2:#F4F7FC;--tx:#18253A;--mu:#5A6878;--bd:#C8D2E2;--wir:#B0BCCE;
+--ac:#2756CC;--ab:#EBF0FD;--am:#C96A0A;--sys:#1D4ED8;--usr:#0C6B4E;--ub:#E6F7F2;
+--ast:#6B21A8;--atb:#F3EBFD;--tcol:#9A4500;--cbg:#F0F5FF;--cbor:#93B4F0;
+--stbg:#1E2D45;--stx:#C8D8F0;--obg:#FFFBF0;--red:#C00020;--rbg:#FFF0F2;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--g);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:13.5px;line-height:1.55;padding:0 20px 100px;}
+.hero{max-width:880px;margin:0 auto;padding:44px 0 26px;border-bottom:1px solid var(--bd);}
+.stag{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ac);margin-bottom:8px;}
+.htit{font-size:24px;font-weight:700;letter-spacing:-.3px;margin-bottom:10px;}
+.hmeta{font-size:12px;color:var(--mu);display:flex;gap:16px;flex-wrap:wrap;}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+.dotb{background:var(--ac);}.dotr{background:var(--red);}
+.tsec{max-width:880px;margin:32px auto 0;}
+.thdr{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.tbadge{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:4px;flex-shrink:0;background:var(--ab);color:var(--sys);}
+.tinp{font-size:13.5px;}
+.pipe{position:relative;padding-left:26px;}
+.pipe::before{content:'';position:absolute;left:6px;top:18px;bottom:50px;width:2px;background:linear-gradient(to bottom,var(--ac),var(--wir));}
+.cb{position:relative;background:var(--s);border:1px solid var(--bd);border-radius:8px;margin-bottom:9px;overflow:hidden;}
+.cb.hard{border-color:#E8A0A0;background:var(--rbg);}
+.cb::before{content:'';position:absolute;left:-20px;top:16px;width:14px;height:14px;border-radius:50%;background:var(--ac);border:2.5px solid var(--g);z-index:1;}
+.cb.hard::before{background:var(--red);}
+.callout{background:#FFF8F0;border:1.5px solid #E8C060;border-radius:6px;padding:10px 13px;margin:10px 14px 6px 76px;font-size:12.5px;line-height:1.65;}
+.callout strong{color:#7A5500;}
+.ch{display:flex;align-items:baseline;gap:10px;padding:10px 14px 9px;border-bottom:1px solid var(--bd);flex-wrap:wrap;}
+.cnum{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);}
+.cnam{font-size:14px;font-weight:700;}
+.cpurp{font-size:11.5px;color:var(--mu);margin-left:auto;}
+.chips{display:flex;gap:6px;}
+.chip{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:3px;}
+.ct{background:var(--ab);color:var(--ac);}.cn{background:var(--s2);color:var(--mu);}
+.ml{padding:2px 0;}
+.mr{display:grid;grid-template-columns:68px 1fr;gap:0;border-left:3.5px solid transparent;padding:6px 14px 6px 10px;}
+.mr:hover{background:var(--s2);}
+.mr.sys{border-left-color:var(--sys);}.mr.usr{border-left-color:var(--usr);}.mr.ast{border-left-color:var(--ast);}
+.rl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding-top:2px;}
+.sys .rl{color:var(--sys);}.usr .rl{color:var(--usr);}.ast .rl{color:var(--ast);}
+.mb{min-width:0;}
+.mi{font-family:'SF Mono',ui-monospace,monospace;font-size:11.5px;white-space:pre-wrap;word-break:break-word;}
+.qu{color:var(--usr);font-weight:600;}
+.ob{border-top:1px solid var(--bd);background:var(--obg);padding:8px 14px 8px 76px;display:flex;gap:9px;}
+.ob.go{background:var(--rbg);border-top-color:#E8A0A0;}
+.oarr{font-size:13px;font-weight:700;flex-shrink:0;padding-top:1px;color:var(--am);}
+.oarr.red{color:var(--red);}
+.oc{font-family:'SF Mono',ui-monospace,monospace;font-size:11.5px;white-space:pre-wrap;word-break:break-word;}
+.k{color:var(--sys);}.sv{color:var(--usr);}.cm{color:var(--mu);font-size:11px;}.rv{color:var(--red);}
+.sr{display:flex;gap:14px;padding:9px 14px;border-bottom:1px solid var(--bd);}
+.sr:last-child{border-bottom:none;}
+.stg{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;width:68px;flex-shrink:0;padding-top:2px;}
+.sb{font-size:12.5px;line-height:1.6;}
+.sb code{font-family:'SF Mono',monospace;font-size:11.5px;background:var(--s);padding:1px 4px;border-radius:3px;color:var(--sys);}
+.atag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle;background:#FCE8EC;color:var(--red);}
+.stb{max-width:880px;margin:24px auto;background:var(--stbg);border-radius:8px;overflow:hidden;}
+.sth{padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;}
+.stl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6B9FD4;}
+.std{font-size:12px;color:#8BAFD0;}
+.stbd{padding:12px 14px;}
+.stc{font-family:'SF Mono',ui-monospace,monospace;font-size:11.5px;line-height:1.7;white-space:pre;color:var(--stx);}
+.stc .key{color:#7EB8F7;}.stc .str{color:#A8D8A8;}.stc .num{color:#F0C070;}.stc .note{color:#5A7A9A;font-style:italic;}
+.uw{max-width:880px;margin:24px auto 0;padding:14px 18px;background:var(--s);border:1px solid var(--bd);border-radius:8px;}
+.uwl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin-bottom:7px;}
+</style>
+
+<div class="hero">
+  <div class="stag">Scenario 5 of 10 · Step 7 — hard block, no clarification loop</div>
+  <h1 class="htit">Format error → hard block, clarification loop never fires</h1>
+  <div class="hmeta">
+    <span><span class="dot dotb"></span>1 turn · 3 LLM calls (L1 + L2 + planner)</span>
+    <span><span class="dot dotr"></span>user_email IS present — wrong format (not an email address)</span>
+    <span><span class="dot dotr"></span>_missing_required_fields() returns [] (field not absent) → hard block path, no clarification</span>
+    <span><span class="dot dotb"></span>No pending state set — session stays clean</span>
+  </div>
+</div>
+
+<div class="tsec">
+  <div class="thdr">
+    <span class="tbadge">Turn 1</span>
+    <span class="tinp">User: <strong>"show me the profile for user john"</strong></span>
+  </div>
+  <div class="pipe">
+
+    <div class="cb">
+      <div class="ch"><span class="cnum">CALL 1</span><span class="cnam">L1 Package Router</span><div class="chips"><span class="chip cn">no tools</span></div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">ROUTING_SYSTEM_PROMPT · 12 package descriptions</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qu">"show me the profile for user john"</span></div></div>
+      </div>
+      <div class="ob"><span class="oarr">→</span><div class="oc"><span class="sv">"access_management"</span></div></div>
+    </div>
+
+    <div class="cb">
+      <div class="ch"><span class="cnum">CALL 2</span><span class="cnam">L2 Mixin Router</span><div class="chips"><span class="chip cn">no tools</span></div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">ROUTING_SYSTEM_PROMPT · access_management mixins</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qu">"show me the profile for user john"</span></div></div>
+      </div>
+      <div class="ob"><span class="oarr">→</span><div class="oc"><span class="sv">"users"</span></div></div>
+    </div>
+
+    <div class="cb">
+      <div class="ch"><span class="cnum">CALL 3</span><span class="cnam">Planner</span><div class="chips"><span class="chip ct">10 tools</span><span class="chip" style="background:#FEF3E2;color:var(--am);">required</span></div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">PLANNING_SYSTEM_PROMPT + CHAT_PLANNING_CONTEXT_PROMPT</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qu">"show me the profile for user john"</span></div></div>
+      </div>
+      <div class="ob"><span class="oarr">→</span><div class="oc">{<span class="k">"name"</span>:<span class="sv">"access_management.get_user"</span>, <span class="k">"arguments"</span>:<span class="sv">'{"user_email":"john"}'</span>}
+<span class="cm"># Planner extracted "john" as the user identifier — value IS present</span></div></div>
+    </div>
+
+    <div class="cb hard">
+      <div class="ch"><span class="cnum" style="color:var(--red);">NO LLM</span><span class="cnam">JSON Schema Validation → Hard Block <span class="atag">format error</span></span><span class="cpurp">llm_agent.py line ~580</span></div>
+      <div class="sr"><span class="stg" style="color:var(--red);">SCHEMA</span><div class="sb">jsonschema validates <code>{"user_email":"john"}</code> against <code>access_management/users.json</code> schema</div></div>
+      <div class="sr"><span class="stg" style="color:var(--red);">RESULT</span><div class="sb">ValidationError: <code>"john"</code> is not a <code>"email"</code> (format check fails)</div></div>
+      <div class="sr"><span class="stg" style="color:var(--red);">BRANCH</span><div class="sb"><code>_missing_required_fields(args, schema)</code> → <code>[]</code> — field IS present, just wrong format<br>
+      Falls to the <strong>hard block</strong> path (not the clarification path). No pending state written.</div></div>
+      <div class="ob go"><span class="oarr red">→</span><div class="oc"><span class="rv">"I couldn't call `access_management.get_user` — a required argument is invalid or missing: 'john' is not a 'email'. Please provide more details."</span></div></div>
+    </div>
+
+    <div class="callout">
+      <strong>Why hard block and not clarify?</strong> The clarification loop fires when a required field is <em>absent</em> from the args dict. Here <code>user_email</code> is present — the user told the planner something, and the planner put it in the args. Asking a follow-up question ("what's the email?") would be strange when the user already gave a value; instead the error message tells them exactly what's wrong with what they provided.
+    </div>
+
+  </div>
+</div>
+
+<div class="stb">
+  <div class="sth"><span class="stl">Session State After Turn 1</span><span class="std">No pending state — hard block is stateless</span></div>
+  <div class="stbd"><pre class="stc"><span class="note"># Hard block is entirely synchronous — no pending_clarification written.</span>
+entry.pending_clarification = <span class="num">None</span>   <span class="note"># unchanged</span>
+LAST_PENDING_CLARIFICATION   = <span class="num">None</span>   <span class="note"># unchanged</span>
+<span class="note">
+# The next turn will be treated as a completely fresh request.</span></pre></div>
+</div>
+
+<div class="uw">
+  <div class="uwl">What the user sees after Turn 1</div>
+  <div style="font-size:14px;">Assistant: <em>"I couldn't call `access_management.get_user` — a required argument is invalid or missing: 'john' is not a 'email'. Please provide more details."</em></div>
+  <div style="font-size:12.5px;color:var(--mu);margin-top:6px;line-height:1.6;">Unlike scenarios 1–4, no question is asked and no state is saved. The user simply retypes with a valid email in their next message, which starts a fresh turn.</div>
+</div>

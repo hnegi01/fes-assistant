@@ -40,6 +40,8 @@ from ._config import (
     LLM_PROVIDER,
     MAX_AGENT_STEPS,
     REQUIRE_MUTATION_CONFIRM,
+    VERIFY_GOAL,
+    VERIFY_MAX_RECHECKS,
     _log_json_truncated,
     _scrub_secrets,
     _write_llm_trace,
@@ -57,6 +59,7 @@ from ._prompts import (
     MIGRATION_PLANNING_CONTEXT_PROMPT,
     MUTATION_EXPLAIN_SYSTEM_PROMPT,
     PLANNING_SYSTEM_PROMPT,
+    VERIFY_GOAL_SYSTEM_PROMPT,
 )
 
 # --- _registry ---
@@ -415,6 +418,37 @@ def _transcript_step(call: Dict[str, Any], tool_id: str, result: Any, summ_on: b
     ]
 
 
+async def _verify_goal_complete(
+    latest_user_message: Dict[str, Any],
+    transcript: List[Dict[str, Any]],
+    turn_trace_id: str,
+) -> Tuple[bool, str]:
+    """Independent goal check (verify #3): a separate adversarial LLM call decides
+    whether the whole request is actually done. Returns (complete, missing_op).
+
+    This is the *checker* half of maker/checker — the decide call is the maker.
+    Scoped to goal completion only; per-step verify (schema, ok flag) is
+    deterministic code and needs no second opinion. Sees the same transcript the
+    decide call saw, so summarization-off keeps its metadata-only privacy. Any
+    failure defaults to 'complete' — the checker must never block a good answer."""
+    messages = [
+        {"role": "system", "content": VERIFY_GOAL_SYSTEM_PROMPT},
+        latest_user_message,
+        *transcript,
+    ]
+    try:
+        data = await call_llm_raw(messages, tools=None, trace_id=turn_trace_id)
+        text, _ = _pick_tool_calls_from_llm_response(data)
+        text = (text or "").strip()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Goal checker failed (%s); accepting the answer.", exc)
+        return True, ""
+    if text.upper().startswith("INCOMPLETE"):
+        missing = text.split(":", 1)[1].strip() if ":" in text else ""
+        return (False, missing) if missing else (True, "")
+    return True, ""
+
+
 async def _emit_agent_progress(event: Dict[str, Any]) -> None:
     """Publish a loop progress event to the turn's SSE stream (best-effort)."""
     try:
@@ -552,6 +586,7 @@ async def _reactive_loop(
     raw_results = raw_results if raw_results is not None else []
     first_tool_hint: Optional[Tuple[str, Dict[str, Any], Dict[str, Any]]] = None
     pending_seed = seed_call  # consumed on the first iteration only
+    checker_overrides = 0  # times the goal checker has pushed a "done" back into the loop
 
     def _done(answer: str) -> str:
         trace["outcome"] = "ok"
@@ -669,10 +704,28 @@ async def _reactive_loop(
                         f"from an earlier step that I can't see with summarization off ({reason}). "
                         "Turn summarization on to let me continue.\n\n" + _describe_results_local(raw_results)
                     )
-                return _done(decide_text if summ_on else _describe_results_local(raw_results))
 
-            remains = continue_line.split(":", 1)[1].strip()
-            logger.info("Agent loop step %d done; continuing: %s", steps_executed, remains[:200])
+                # VERIFY #3 (goal): the decide call (maker) thinks it's done. An
+                # independent checker re-reads the whole request against the
+                # results and can push one more step if something was missed.
+                answer = decide_text if summ_on else _describe_results_local(raw_results)
+                if VERIFY_GOAL and checker_overrides < VERIFY_MAX_RECHECKS:
+                    await _emit_agent_progress(
+                        {"phase": "verifying", "step": steps_executed, "max_steps": MAX_AGENT_STEPS}
+                    )
+                    complete, missing = await _verify_goal_complete(latest_user_message, transcript, turn_trace_id)
+                    if not complete and missing:
+                        checker_overrides += 1
+                        trace["goal_rechecks"] = checker_overrides
+                        logger.info("Goal checker: INCOMPLETE → continuing with: %s", missing[:160])
+                        remains = missing
+                    else:
+                        return _done(answer)
+                else:
+                    return _done(answer)
+            else:
+                remains = continue_line.split(":", 1)[1].strip()
+                logger.info("Agent loop step %d done; continuing: %s", steps_executed, remains[:200])
 
             if steps_executed >= MAX_AGENT_STEPS:
                 trace["outcome"] = "step_cap"

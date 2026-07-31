@@ -93,6 +93,13 @@ def no_decompose(monkeypatch):
     monkeypatch.setattr(m, "_decompose_first_step", _identity)
 
 
+@pytest.fixture(autouse=True)
+def disable_goal_checker(monkeypatch):
+    """The goal checker adds an LLM call at each 'done'. Off by default so most
+    tests keep tight side-effect lists; the checker tests re-enable it."""
+    monkeypatch.setattr(m, "VERIFY_GOAL", False)
+
+
 def _tool_def(name, schema):
     return {"type": "function", "function": {"name": name, "description": "", "parameters": schema}}
 
@@ -445,3 +452,51 @@ def test_backtrack_retries_with_full_package(monkeypatch):
 
     assert client.invoke_tool.await_count == 2
     assert reply == "Done: 1 dashboard."
+
+
+# ---------------------------------------------------------------------------
+# 10) Goal checker (verify #3): a "done" is re-checked by an independent call.
+# ---------------------------------------------------------------------------
+
+
+def test_goal_checker_pushes_incomplete_then_finishes(monkeypatch):
+    """decide says done → checker says INCOMPLETE → the loop runs one more step,
+    then the (capped) checker accepts the next done."""
+    monkeypatch.setattr(m, "VERIFY_GOAL", True)
+    monkeypatch.setattr(m, "VERIFY_MAX_RECHECKS", 1)
+    client = _fake_client(results=[{"ok": True, "result": {"e": "a@b.com"}}, {"ok": True, "result": [{"t": "Sales"}]}])
+    reply, _nav, _raw = _run_turn(
+        llm_responses=[
+            _plan_resp("access_management.get_user", '{"user_email":"a@b.com"}'),  # step 1 plan
+            _text_resp("Here is the user."),  # decide 1: looks done...
+            _text_resp("INCOMPLETE: list the user's dashboards"),  # checker overrides
+            _plan_resp("dashboard.get_dashboards", "{}", call_id="c2"),  # step 2 plan
+            _text_resp("User and 1 dashboard shown."),  # decide 2: done (checker now capped)
+        ],
+        nav_side_effect=[
+            (GET_USER_TOOLS, "access_management", "users", 0),
+            (DASHBOARD_TOOLS, "dashboard", "core", 0),
+        ],
+        client=client,
+    )
+    # The checker forced a second step that the maker had skipped.
+    assert client.invoke_tool.await_count == 2
+    assert reply == "User and 1 dashboard shown."
+
+
+def test_goal_checker_confirms_complete(monkeypatch):
+    """decide says done → checker says COMPLETE → answer returned, no extra step."""
+    monkeypatch.setattr(m, "VERIFY_GOAL", True)
+    monkeypatch.setattr(m, "VERIFY_MAX_RECHECKS", 1)
+    client = _fake_client()
+    reply, _nav, _raw = _run_turn(
+        llm_responses=[
+            _plan_resp("access_management.get_user", '{"user_email":"a@b.com"}'),
+            _text_resp("Found the user a@b.com."),  # decide: done
+            _text_resp("COMPLETE"),  # checker: agrees
+        ],
+        nav_side_effect=[(GET_USER_TOOLS, "access_management", "users", 0)],
+        client=client,
+    )
+    client.invoke_tool.assert_awaited_once()
+    assert reply == "Found the user a@b.com."

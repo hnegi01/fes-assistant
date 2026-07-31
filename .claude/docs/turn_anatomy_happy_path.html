@@ -1,0 +1,976 @@
+
+<title>FES Agent — Turn Anatomy</title>
+<style>
+:root {
+  --ground:    #EDF0F7;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F7FC;
+  --text:      #18253A;
+  --muted:     #5A6878;
+  --border:    #C8D2E2;
+  --wire:      #B0BCCE;
+  --accent:    #2756CC;
+  --amber:     #C96A0A;
+
+  --sys-color:   #1D4ED8;
+  --sys-bg:      #EBF0FD;
+  --usr-color:   #0C6B4E;
+  --usr-bg:      #E6F7F2;
+  --ast-color:   #6B21A8;
+  --ast-bg:      #F3EBFD;
+  --tool-color:  #9A4500;
+  --tool-bg:     #FEF0E0;
+  --no-llm-bg:   #F0F3F8;
+  --output-bg:   #FFFBF0;
+  --output-border: #E0C060;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--ground);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.55;
+  padding: 0 20px 100px;
+}
+
+a { color: inherit; }
+
+/* ─── Header ─────────────────────────────────────────────────────── */
+.hero {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 52px 0 36px;
+  border-bottom: 1px solid var(--border);
+}
+.hero-eyebrow {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.hero-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.3px;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+.user-input-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 7px 16px 7px 12px;
+  border-radius: 22px;
+  margin-bottom: 20px;
+}
+.user-input-bubble .icon {
+  font-size: 13px;
+  opacity: .75;
+}
+.hero-meta {
+  font-size: 12.5px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.meta-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.meta-chip .dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--wire);
+  flex-shrink: 0;
+}
+.meta-chip .dot.blue { background: var(--accent); }
+.meta-chip .dot.amber { background: var(--amber); }
+
+/* ─── Pipeline overview ──────────────────────────────────────────── */
+.overview {
+  max-width: 860px;
+  margin: 28px auto 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  padding: 0 0 4px;
+}
+.ov-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex-shrink: 0;
+}
+.ov-box {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  min-width: 80px;
+}
+.ov-box.active { border-color: var(--accent); color: var(--accent); }
+.ov-box.no-llm { border-style: dashed; color: var(--muted); }
+.ov-label {
+  font-size: 9.5px;
+  color: var(--muted);
+  margin-top: 4px;
+  letter-spacing: .03em;
+}
+.ov-arrow {
+  font-size: 16px;
+  color: var(--wire);
+  flex-shrink: 0;
+  margin: 0 3px;
+  line-height: 1;
+  padding-bottom: 16px;
+}
+
+/* ─── Pipeline ───────────────────────────────────────────────────── */
+.pipeline {
+  max-width: 860px;
+  margin: 44px auto 0;
+  position: relative;
+  padding-left: 28px;
+}
+.pipeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 20px;
+  bottom: 80px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent) 0%, var(--wire) 40%, var(--wire) 100%);
+}
+
+/* ─── Call block ─────────────────────────────────────────────────── */
+.call-block {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity .35s ease, transform .35s ease;
+}
+.call-block.visible { opacity: 1; transform: translateY(0); }
+.call-block.no-llm-block { background: var(--no-llm-bg); }
+
+.call-block::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: 18px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2.5px solid var(--ground);
+  z-index: 1;
+}
+.call-block.no-llm-block::before {
+  background: var(--wire);
+}
+
+.connector-gap {
+  height: 18px;
+}
+
+/* ─── Call header ────────────────────────────────────────────────── */
+.call-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 13px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.call-number {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.call-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.1px;
+}
+.call-purpose {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-left: auto;
+}
+.call-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.chip {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: .04em;
+}
+.chip-tools { background: #E8F0FE; color: var(--accent); }
+.chip-tc    { background: #FEF3E2; color: var(--amber); }
+.chip-none  { background: var(--surface-2); color: var(--muted); }
+
+/* ─── Message list ───────────────────────────────────────────────── */
+.msg-list {
+  padding: 6px 0;
+}
+.msg-row {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 0;
+  border-left: 3.5px solid transparent;
+  padding: 7px 16px 7px 12px;
+  background: transparent;
+  transition: background .12s;
+}
+.msg-row:hover { background: var(--surface-2); }
+
+.msg-row.r-system    { border-left-color: var(--sys-color); }
+.msg-row.r-user      { border-left-color: var(--usr-color); }
+.msg-row.r-assistant { border-left-color: var(--ast-color); }
+.msg-row.r-tool      { border-left-color: var(--tool-color); }
+
+.role-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+.r-system    .role-label { color: var(--sys-color); }
+.r-user      .role-label { color: var(--usr-color); }
+.r-assistant .role-label { color: var(--ast-color); }
+.r-tool      .role-label { color: var(--tool-color); }
+
+.msg-body { min-width: 0; }
+
+/* Expandable prompt */
+details.prompt-expand { width: 100%; }
+details.prompt-expand summary {
+  list-style: none;
+  cursor: pointer;
+  outline: none;
+}
+details.prompt-expand summary::-webkit-details-marker { display: none; }
+
+.prompt-preview {
+  font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.prompt-preview em {
+  font-style: normal;
+  color: var(--muted);
+}
+.expand-toggle {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 3px;
+  letter-spacing: .03em;
+  user-select: none;
+}
+details[open] .expand-toggle { display: none; }
+
+.prompt-full {
+  font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-top: 4px;
+}
+.prompt-full .var { color: var(--amber); font-style: italic; }
+.prompt-full .comment { color: var(--muted); }
+
+/* Short inline messages */
+.msg-inline {
+  font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
+  font-size: 11.5px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.msg-inline.quoted {
+  color: var(--usr-color);
+  font-weight: 600;
+}
+
+/* Tool calls block */
+.tool-calls-block {
+  font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
+  font-size: 11px;
+  background: var(--ast-bg);
+  border-radius: 4px;
+  padding: 6px 8px;
+  color: var(--ast-color);
+  white-space: pre;
+}
+
+/* ─── Tools section ──────────────────────────────────────────────── */
+.tools-section {
+  border-top: 1px solid var(--border);
+  padding: 10px 16px 10px 82px;
+}
+.tools-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+details.tools-expand summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 11.5px;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: .03em;
+  outline: none;
+  user-select: none;
+}
+details.tools-expand summary::-webkit-details-marker { display: none; }
+.tool-list {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.tool-item {
+  font-family: 'SF Mono', ui-monospace, 'Menlo', monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  padding: 4px 8px;
+  background: var(--sys-bg);
+  border-radius: 4px;
+  color: var(--text);
+}
+.tool-item .tool-name { color: var(--sys-color); font-weight: 600; }
+.tool-item .tool-desc { color: var(--muted); }
+
+/* ─── Output block ───────────────────────────────────────────────── */
+.output-block {
+  border-top: 1px solid var(--border);
+  background: var(--output-bg);
+  padding: 10px 16px 10px 82px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.output-arrow {
+  font-size: 13px;
+  color: var(--amber);
+  font-weight: 700;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+.output-content {
+  font-family: 'SF Mono', ui-monospace, 'Menlo', monospace;
+  font-size: 11.5px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.output-content .key { color: var(--sys-color); }
+.output-content .val { color: #C14040; }
+.output-content .str { color: var(--usr-color); }
+
+/* ─── No-LLM step ────────────────────────────────────────────────── */
+.step-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.step-row:last-child { border-bottom: none; }
+.step-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  width: 70px;
+  padding-top: 2px;
+}
+.step-tag.pass { color: #0C6B4E; }
+.step-tag.skip { color: var(--muted); }
+.step-tag.exec { color: var(--accent); }
+.step-body { font-size: 12.5px; color: var(--text); }
+.step-body code {
+  font-family: 'SF Mono', ui-monospace, monospace;
+  font-size: 11.5px;
+  background: var(--surface);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--sys-color);
+}
+.step-body .ok { color: #0C6B4E; font-weight: 600; }
+.step-body .skip-label { color: var(--muted); }
+
+/* ─── Divider ────────────────────────────────────────────────────── */
+.section-divider {
+  max-width: 860px;
+  margin: 0 auto;
+  border: none;
+  border-top: 1px solid var(--border);
+  margin-top: 48px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .call-block { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
+</style>
+
+<!-- ─── Hero ────────────────────────────────────────────────────────── -->
+<div class="hero">
+  <div class="hero-eyebrow">FES Agent · Step 7 architecture · Happy path</div>
+  <h1 class="hero-title">One turn. What actually goes to the LLM.</h1>
+  <div class="user-input-bubble">
+    <span class="icon">💬</span>
+    <span>show me all users</span>
+  </div>
+  <div class="hero-meta">
+    <span class="meta-chip"><span class="dot blue"></span>Chat mode · single deployment</span>
+    <span class="meta-chip"><span class="dot blue"></span>4 LLM calls</span>
+    <span class="meta-chip"><span class="dot"></span>1 non-LLM step</span>
+    <span class="meta-chip"><span class="dot"></span>Summarization ON · no pending clarification</span>
+  </div>
+</div>
+
+<!-- ─── Pipeline overview ─────────────────────────────────────────── -->
+<div class="overview" style="max-width:860px;margin:22px auto 0;">
+  <div class="ov-step">
+    <div class="ov-box active">L1 ROUTER</div>
+    <div class="ov-label">package</div>
+  </div>
+  <div class="ov-arrow">→</div>
+  <div class="ov-step">
+    <div class="ov-box active">L2 ROUTER</div>
+    <div class="ov-label">mixin</div>
+  </div>
+  <div class="ov-arrow">→</div>
+  <div class="ov-step">
+    <div class="ov-box active">PLANNER</div>
+    <div class="ov-label">tool + args</div>
+  </div>
+  <div class="ov-arrow">→</div>
+  <div class="ov-step">
+    <div class="ov-box no-llm">VALIDATE</div>
+    <div class="ov-label">no LLM</div>
+  </div>
+  <div class="ov-arrow">→</div>
+  <div class="ov-step">
+    <div class="ov-box no-llm">EXECUTE</div>
+    <div class="ov-label">no LLM</div>
+  </div>
+  <div class="ov-arrow">→</div>
+  <div class="ov-step">
+    <div class="ov-box active">SUMMARIZE</div>
+    <div class="ov-label">reply</div>
+  </div>
+</div>
+
+<!-- ─── Pipeline ──────────────────────────────────────────────────── -->
+<div class="pipeline">
+
+  <!-- ──────── CALL 1 ────────── -->
+  <div class="call-block">
+    <div class="call-header">
+      <span class="call-number">CALL 1 / 4</span>
+      <span class="call-name">L1 Package Router</span>
+      <div class="call-chips">
+        <span class="chip chip-none">no tools</span>
+        <span class="chip chip-none">plain text out</span>
+      </div>
+      <span class="call-purpose">_route_to_module() ← _navigate_to_tools()</span>
+    </div>
+    <div class="msg-list">
+
+      <!-- system -->
+      <div class="msg-row r-system">
+        <span class="role-label">system</span>
+        <div class="msg-body">
+          <details class="prompt-expand">
+            <summary>
+              <div class="prompt-preview">You are a request router for a Sisense administration assistant.
+
+Your ONLY job is to identify which module best matches the user's request.
+
+Available modules:
+- access_management: Manage Sisense users, groups, permissions, and access control…<em> (12 packages total)</em></div>
+              <div class="expand-toggle">▸ show full prompt</div>
+            </summary>
+            <pre class="prompt-full">You are a request router for a Sisense administration assistant.
+
+Your ONLY job is to identify which module best matches the user's request.
+
+Available modules:
+- access_management: Manage Sisense users, groups, permissions, and access control.
+
+  Covers user lifecycle (create, update, deactivate), group membership,
+  role assignment, folder and dashboard ownership transfer, column-level
+  security restrictions, and administrative reporting on dashboard shares
+  and scheduled builds.
+- blox: Manage custom Blox actions on a Sisense instance.
+
+  Provides read, write, and delete access to Blox custom actions. Fetch
+  operations are supported on both Linux and Windows deployments via
+  OS-routed endpoints; save and delete are Linux-only.
+- custom_code: Manage Sisense custom-code notebooks and their file system layout.
+
+  Covers the full notebook lifecycle — create, retrieve, update, export,
+  and delete notebooks — as well as renaming notebook files and folders
+  within the Sisense custom-code directory structure.
+- dashboard: Manage Sisense dashboards, their shares, columns, and scripts.
+
+  Covers dashboard CRUD (get, export, rename, move, publish), share
+  management for users and groups, inspection of all table/column
+  references used within a dashboard, and reading or writing JavaScript
+  scripts attached to dashboards and individual widgets.
+- datamodel: Manage Sisense data models, connections, builds, security, and data.
+
+  Covers the full data model lifecycle — schema retrieval, provisioning
+  new models and tables, connection management, row-level security rules,
+  user/group share assignments, and direct table-level data access via SQL.
+- encryption: Encrypt and decrypt Sisense connection parameter values.
+
+  Wraps the Sisense encryption service for preparing or recovering
+  connection credentials (such as passwords and keys) used during
+  cross-server data model migration.
+- folder: Manage the Sisense folder hierarchy and individual folder records.
+
+  Covers folder CRUD (create, update, delete), lookup by name or ID,
+  navigation of the full folder tree, and retrieval of a folder's
+  ancestor chain.
+- metadata: Retrieve datasource metadata — measures, dimensions, and field definitions.
+
+  Provides read-only access to the semantic layer of a Sisense datasource:
+  saved formula measures, dimension definitions, the list of available
+  datasources, and the ability to run raw metadata queries.
+- migration: Copy Sisense content between two separate Sisense environments.
+
+  Connects to a source and a target Sisense instance (via YAML config files
+  or injected clients) and migrates groups, users, dashboards, and data
+  models from one to the other.
+- plugins: Manage Sisense plugin installation state and enable/disable lifecycle.
+
+  Covers listing installed plugins, toggling individual plugins or batches
+  of plugins, and capturing or restoring a full plugin state snapshot.
+- queries: Execute custom JAQL and SQL queries against Sisense datasources.
+
+  Sends caller-supplied query payloads directly to the elasticube or live
+  datasource engine.
+- wellcheck: Analyze Sisense dashboards and data models for health and complexity issues.
+
+  Runs structural and best-practice checks across dashboards (widget counts,
+  pivot field density, tabber/accordion/jump-to-dashboard usage) and data
+  models (custom table SQL, island tables, RLS column datatypes, import
+  queries, many-to-many relationships, unused columns).
+
+Rules:
+- Reply with ONLY the module name — a single word, nothing else.
+- Pick the module whose tools are most likely to fulfil the request.
+- If the request spans multiple modules, pick the primary one.
+- If the message has no recognisable Sisense administration intent (greetings,
+  random words, unrelated questions, gibberish), reply with exactly: none</pre>
+          </details>
+        </div>
+      </div>
+
+      <!-- user -->
+      <div class="msg-row r-user">
+        <span class="role-label">user</span>
+        <div class="msg-body">
+          <span class="msg-inline quoted">"show me all users"</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="output-block">
+      <span class="output-arrow">→</span>
+      <div class="output-content"><span class="str">"access_management"</span>  <span style="color:var(--muted);font-size:11px;"># plain text, no tool_calls — L1 resolved</span></div>
+    </div>
+  </div>
+
+  <div class="connector-gap"></div>
+
+  <!-- ──────── CALL 2 ────────── -->
+  <div class="call-block">
+    <div class="call-header">
+      <span class="call-number">CALL 2 / 4</span>
+      <span class="call-name">L2 Mixin Router</span>
+      <div class="call-chips">
+        <span class="chip chip-none">no tools</span>
+        <span class="chip chip-none">plain text out</span>
+      </div>
+      <span class="call-purpose">_route_to_module() with access_management mixins</span>
+    </div>
+    <div class="msg-list">
+
+      <!-- system — same ROUTING_SYSTEM_PROMPT, now module_list = mixins -->
+      <div class="msg-row r-system">
+        <span class="role-label">system</span>
+        <div class="msg-body">
+          <details class="prompt-expand">
+            <summary>
+              <div class="prompt-preview">You are a request router for a Sisense administration assistant.
+
+Your ONLY job is to identify which module best matches the user's request.
+
+Available modules:
+- admin: Administrative reporting — retrieve share entries for every dashboard…<em> (5 mixins)</em></div>
+              <div class="expand-toggle">▸ show full prompt</div>
+            </summary>
+            <pre class="prompt-full"><span class="comment"># Same ROUTING_SYSTEM_PROMPT template — module_list now filled with
+# access_management/index.json modules (5 mixins instead of 12 packages)</span>
+
+You are a request router for a Sisense administration assistant.
+
+Your ONLY job is to identify which module best matches the user's request.
+
+Available modules:
+- admin: Administrative reporting — retrieve share entries for every dashboard
+  on the instance; schedule elasticube builds.
+- columns: Column-level data model security — list all columns in a data model,
+  identify unused columns across one or more data models.
+- groups: Group membership — list groups by name, list all members per group.
+- ownership: Transfer folder and dashboard ownership — reassign an entire folder
+  tree (including subfolders and dashboards) to a new owner.
+- users: User CRUD — get, create, update, and deactivate users; resolve by email
+  or ID; map role and group names to internal IDs.
+
+Rules:
+- Reply with ONLY the module name — a single word, nothing else.
+- Pick the module whose tools are most likely to fulfil the request.
+- If the request spans multiple modules, pick the primary one.
+- If the message has no recognisable Sisense administration intent (greetings,
+  random words, unrelated questions, gibberish), reply with exactly: none</pre>
+          </details>
+        </div>
+      </div>
+
+      <!-- user -->
+      <div class="msg-row r-user">
+        <span class="role-label">user</span>
+        <div class="msg-body">
+          <span class="msg-inline quoted">"show me all users"</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="output-block">
+      <span class="output-arrow">→</span>
+      <div class="output-content"><span class="str">"users"</span>  <span style="color:var(--muted);font-size:11px;"># access_management/users.json loaded → 10 tools sent to planner</span></div>
+    </div>
+  </div>
+
+  <div class="connector-gap"></div>
+
+  <!-- ──────── CALL 3 ────────── -->
+  <div class="call-block">
+    <div class="call-header">
+      <span class="call-number">CALL 3 / 4</span>
+      <span class="call-name">Planner</span>
+      <div class="call-chips">
+        <span class="chip chip-tools">10 tools</span>
+        <span class="chip chip-tc">tool_choice: "required"</span>
+      </div>
+      <span class="call-purpose">call_llm_with_tools() → planning step</span>
+    </div>
+    <div class="msg-list">
+
+      <!-- system 1: PLANNING_SYSTEM_PROMPT -->
+      <div class="msg-row r-system">
+        <span class="role-label">system</span>
+        <div class="msg-body">
+          <details class="prompt-expand">
+            <summary>
+              <div class="prompt-preview">You are a planning assistant for a Sisense tool-calling agent.
+
+Your ONLY job is to decide which function tool to call and with what JSON arguments.
+You are given:
+- A natural-language user request.
+- A list of tools (functions) with names and JSON parameter schemas.<em> [+8 more paragraphs]</em></div>
+              <div class="expand-toggle">▸ show full prompt</div>
+            </summary>
+            <pre class="prompt-full">You are a planning assistant for a Sisense tool-calling agent.
+
+Your ONLY job is to decide which function tool to call and with what JSON arguments.
+You are given:
+- A natural-language user request.
+- A list of tools (functions) with names and JSON parameter schemas.
+
+Global rules:
+- Prefer calling a single tool that best matches the request.
+- The arguments MUST match the tool's JSON Schema:
+  - If type is "array", pass a JSON array (e.g. ["Sales","Marketing"]), NOT a
+    comma-separated string.
+  - If type is "boolean", use true or false, NOT "true" or "false".
+  - If type is "integer", pass a number, NOT a quoted string.
+  - If an enum is defined, the value MUST be one of the allowed enum values.
+- Optional parameters can be omitted if the user did not imply them.
+- Only fill a parameter with a value the user explicitly provided. Do NOT infer
+  or invent a parameter value from descriptive words in the request. If a required
+  parameter's value was not provided, omit it rather than guessing — leaving it
+  missing (so the user can be asked) is better than filling it with a guess.
+- If the user's message is too vague, too short, or contains no recognisable
+  intent, respond in natural language asking them to be more specific. DO NOT
+  guess a tool.
+- If no tool is clearly appropriate, answer the user directly in natural language
+  and DO NOT call any tool.
+- Do NOT try to summarise results or explain anything beyond choosing a tool
+  and args.
+
+Strict rules for list parameters (e.g. group_name_list, user_name_list,
+dashboard_names, dashboard_ids, datamodel_names, datamodel_ids, dependencies):
+- Always pass these as JSON arrays.
+- Only include items that the user has explicitly mentioned in their latest message.
+- Treat the user's message as the complete list. DO NOT add extra items.
+
+Additional guidance for dependencies:
+- If the user explicitly says "all dependencies" or similar, map that to:
+  ["dataSecurity", "formulas", "hierarchies", "perspectives"].
+- Otherwise, only include the dependency types the user mentions.</pre>
+          </details>
+        </div>
+      </div>
+
+      <!-- system 2: CHAT_PLANNING_CONTEXT_PROMPT -->
+      <div class="msg-row r-system">
+        <span class="role-label">system</span>
+        <div class="msg-body">
+          <span class="msg-inline">The user is working with a single Sisense deployment (chat mode).
+When selecting tools, assume there is exactly one active deployment configured.</span>
+        </div>
+      </div>
+
+      <!-- user -->
+      <div class="msg-row r-user">
+        <span class="role-label">user</span>
+        <div class="msg-body">
+          <span class="msg-inline quoted">"show me all users"</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Tools list -->
+    <div class="tools-section">
+      <div class="tools-label">tools array · 10 functions</div>
+      <details class="tools-expand">
+        <summary>▸ show tools</summary>
+        <div class="tool-list">
+          <div class="tool-item"><span class="tool-name">access_management.change_user_password</span> · <span class="tool-desc">Change a user's password.</span></div>
+          <div class="tool-item"><span class="tool-name">access_management.create_user</span> · <span class="tool-desc">Create a new user in Sisense.</span></div>
+          <div class="tool-item"><span class="tool-name">access_management.delete_user</span> · <span class="tool-desc">Delete a user by their email (username).</span></div>
+          <div class="tool-item"><span class="tool-name">access_management.get_my_user</span> · <span class="tool-desc">Retrieve the currently logged-in user for the API token.</span></div>
+          <div class="tool-item"><span class="tool-name">access_management.get_roles</span> · <span class="tool-desc">Retrieve all Sisense roles.</span></div>
+          <div class="tool-item"><span class="tool-name">access_management.get_user</span> · <span class="tool-desc">Retrieve a user's details by email address.</span></div>
+          <div class="tool-item"><span class="tool-name">access_management.get_user_with_role_and_group_names</span> · <span class="tool-desc">Retrieve a single user by email with role and group details.</span></div>
+          <div class="tool-item" style="border: 1.5px solid var(--sys-color);"><span class="tool-name">access_management.get_users_all</span> · <span class="tool-desc">Retrieve all users with group and role information. ← planner picks this</span></div>
+          <div class="tool-item"><span class="tool-name">access_management.get_users_with_role_names_and_group_names</span> · <span class="tool-desc">Retrieve all users enriched with role names and group names.</span></div>
+          <div class="tool-item"><span class="tool-name">access_management.update_user</span> · <span class="tool-desc">Update an existing Sisense user identified by their email address.</span></div>
+        </div>
+      </details>
+    </div>
+
+    <div class="output-block">
+      <span class="output-arrow">→</span>
+      <div class="output-content">{
+  <span class="key">"tool_calls"</span>: [{
+    <span class="key">"id"</span>: <span class="str">"call_x7bq"</span>,
+    <span class="key">"type"</span>: <span class="str">"function"</span>,
+    <span class="key">"function"</span>: {
+      <span class="key">"name"</span>: <span class="str">"access_management.get_users_all"</span>,
+      <span class="key">"arguments"</span>: <span class="str">"{}"</span>
+    }
+  }]
+}</div>
+    </div>
+  </div>
+
+  <div class="connector-gap"></div>
+
+  <!-- ──────── NO-LLM STEP ────────── -->
+  <div class="call-block no-llm-block">
+    <div class="call-header">
+      <span class="call-number" style="color:var(--muted);">NO LLM</span>
+      <span class="call-name" style="color:var(--muted);">Validate → Mutation Gate → Execute</span>
+      <span class="call-purpose">llm_agent.py — after tool_calls parsed</span>
+    </div>
+
+    <div class="step-row">
+      <span class="step-tag pass">VALIDATE</span>
+      <div class="step-body">
+        <code>jsonschema.validate({}, get_users_all.parameters, FormatChecker())</code><br>
+        No required fields → <span class="ok">✓ pass</span>. No format fields → no format check needed.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <span class="step-tag skip">GATE</span>
+      <div class="step-body">
+        <code>mutates = False</code> for <code>get_users_all</code> → <span class="skip-label">mutation gate skipped entirely</span>.
+        No approval dialog, no <code>pending_confirmation</code>, no <code>MUTATION_EXPLAIN_SYSTEM_PROMPT</code> call.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <span class="step-tag exec">EXECUTE</span>
+      <div class="step-body">
+        <code>mcp_client.invoke_tool("access_management.get_users_all", {})</code><br>
+        Credential fields injected from <code>tenant_config</code> before the call.<br>
+        MCP server → PySisense SDK → Sisense REST API → returns 74 user records.
+      </div>
+    </div>
+
+    <div class="output-block" style="background:transparent;">
+      <span class="output-arrow">→</span>
+      <div class="output-content">{<span class="key">"ok"</span>: <span class="val">true</span>, <span class="key">"result"</span>: [<span class="str">{…user 1…}</span>, <span class="str">{…user 2…}</span>, <span style="color:var(--muted);">… 72 more …</span>]}
+<span style="color:var(--muted);font-size:11px;"># then _shrink_for_llm() reduces payload size before it goes to Call 4</span></div>
+    </div>
+  </div>
+
+  <div class="connector-gap"></div>
+
+  <!-- ──────── CALL 4 ────────── -->
+  <div class="call-block">
+    <div class="call-header">
+      <span class="call-number">CALL 4 / 4</span>
+      <span class="call-name">Summarizer</span>
+      <div class="call-chips">
+        <span class="chip chip-none">no tools</span>
+        <span class="chip chip-none">plain text out</span>
+      </div>
+      <span class="call-purpose">ALLOW_SUMMARIZATION=true → second LLM call</span>
+    </div>
+    <div class="msg-list">
+
+      <!-- system: SUMMARY_SYSTEM_PROMPT_CHAT -->
+      <div class="msg-row r-system">
+        <span class="role-label">system</span>
+        <div class="msg-body">
+          <span class="msg-inline">You are a Sisense analytics assistant. Summarise tool results for the user.
+
+Rules:
+- Base your answer only on the tool results; do NOT invent objects.
+- If many rows are returned, do NOT list everything. Provide counts and a few examples.
+- If few rows are returned (roughly &lt;= 20), it is usually OK to list them when helpful.</span>
+        </div>
+      </div>
+
+      <!-- user -->
+      <div class="msg-row r-user">
+        <span class="role-label">user</span>
+        <div class="msg-body">
+          <span class="msg-inline quoted">"show me all users"</span>
+        </div>
+      </div>
+
+      <!-- assistant (tool_calls echo — required by OpenAI format) -->
+      <div class="msg-row r-assistant">
+        <span class="role-label">assistant</span>
+        <div class="msg-body">
+          <div class="tool-calls-block">tool_calls: [{ name: "access_management.get_users_all", arguments: "{}" }]
+content: null</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">The planner's tool_call is echoed back as an assistant message so the model understands what ran.</div>
+        </div>
+      </div>
+
+      <!-- tool result -->
+      <div class="msg-row r-tool">
+        <span class="role-label">tool</span>
+        <div class="msg-body">
+          <details class="prompt-expand">
+            <summary>
+              <div class="prompt-preview" style="color:var(--tool-color);">{<span style="color:var(--text);">"ok": true, "result": [{"email": "alice@acme.com", "role": "Admin", "groups": ["Sales"]}, <em>…shrunk, 74 records total</em>]}</span></div>
+              <div class="expand-toggle">▸ show note on shrinking</div>
+            </summary>
+            <pre class="prompt-full"><span class="comment"># _shrink_for_llm() ran between the execution step and this call.
+# It caps the list at a token-safe size, truncates long string values,
+# and strips fields that don't help the summarizer (internal IDs, etc.).
+# The result role message is what the summarizer sees — not the raw SDK output.</span>
+
+{
+  "ok": true,
+  "result": [
+    {"email": "alice@acme.com", "role": "Admin", "groups": ["Sales"]},
+    {"email": "bob@acme.com",   "role": "Designer", "groups": []},
+    {"email": "carol@acme.com", "role": "Viewer", "groups": ["Marketing", "Finance"]},
+    … (74 records total, possibly truncated if very large)
+  ]
+}</pre>
+          </details>
+        </div>
+      </div>
+
+    </div>
+    <div class="output-block">
+      <span class="output-arrow">→</span>
+      <div class="output-content"><span class="str">"Found 74 users on the deployment. Admins include alice@acme.com
+and bob@acme.com. The full list is available in the results panel."</span>
+
+<span style="color:var(--muted);font-size:11px;"># After this, _optional_arg_hint() may append a hint about optional params.
+# LAST_TOOL_RESULT is set to the raw MCP result so the UI can render the table.</span></div>
+    </div>
+  </div>
+
+</div><!-- end .pipeline -->
+
+<!-- ─── What the user sees ────────────────────────────────────────── -->
+<div style="max-width:860px;margin:36px auto 0;padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;opacity:0;transform:translateY(10px);transition:.35s ease;transition-delay:.15s;" class="visible-summary visible">
+  <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">What the user sees</div>
+  <div style="font-size:14px;color:var(--text);">The assistant message in the chat: <em>"Found 74 users on the deployment. Admins include alice@acme.com and bob@acme.com."</em></div>
+  <div style="font-size:12.5px;color:var(--muted);margin-top:6px;">Below it: a collapsible results panel rendered by <code style="font-size:11.5px;background:var(--surface-2);padding:1px 4px;border-radius:3px;">_render_tool_result()</code> in app.py — shows the 74 users as a table from <code style="font-size:11.5px;background:var(--surface-2);padding:1px 4px;border-radius:3px;">LAST_TOOL_RESULT</code>.</div>
+</div>
+
+<script>
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.05 });
+
+  document.querySelectorAll('.call-block').forEach(el => obs.observe(el));
+
+  // Wire the visible-summary too
+  document.querySelectorAll('.visible-summary').forEach(el => obs.observe(el));
+</script>

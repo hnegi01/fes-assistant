@@ -1,0 +1,218 @@
+<title>FES Agent — Scenario 7: Clarify Then Mutate</title>
+<style>
+:root{--g:#EDF0F7;--s:#FFF;--s2:#F4F7FC;--tx:#18253A;--mu:#5A6878;--bd:#C8D2E2;--wir:#B0BCCE;
+--ac:#2756CC;--ab:#EBF0FD;--am:#C96A0A;--amb:#FEF3E2;--sys:#1D4ED8;--usr:#0C6B4E;
+--ast:#6B21A8;--tcol:#9A4500;--cbg:#F0F5FF;--cbor:#93B4F0;
+--stbg:#1E2D45;--stx:#C8D8F0;--obg:#FFFBF0;--mgbg:#FFF8F0;--mgbor:#E8B060;
+--warnbg:#FFF3E0;--warnbor:#F0A040;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--g);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:13.5px;line-height:1.55;padding:0 20px 100px;}
+.hero{max-width:880px;margin:0 auto;padding:44px 0 26px;border-bottom:1px solid var(--bd);}
+.stag{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ac);margin-bottom:8px;}
+.htit{font-size:24px;font-weight:700;letter-spacing:-.3px;margin-bottom:10px;}
+.hmeta{font-size:12px;color:var(--mu);display:flex;gap:16px;flex-wrap:wrap;}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+.dotb{background:var(--ac);}.dotam{background:var(--am);}
+.tsec{max-width:880px;margin:32px auto 0;}
+.thdr{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.tbadge{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:4px;flex-shrink:0;}
+.tb1{background:var(--ab);color:var(--sys);}
+.tb2{background:var(--amb);color:#7A4500;}
+.tinp{font-size:13.5px;}
+.pipe{position:relative;padding-left:26px;}
+.pipe::before{content:'';position:absolute;left:6px;top:18px;bottom:50px;width:2px;background:linear-gradient(to bottom,var(--ac),var(--wir));}
+.cb{position:relative;background:var(--s);border:1px solid var(--bd);border-radius:8px;margin-bottom:9px;overflow:hidden;}
+.cb.clarify{border-color:var(--cbor);background:var(--cbg);}
+.cb.mut{border-color:var(--mgbor);background:var(--mgbg);}
+.cb.resume{border-color:#A0C0E8;background:#F0F5FD;}
+.cb::before{content:'';position:absolute;left:-20px;top:16px;width:14px;height:14px;border-radius:50%;background:var(--ac);border:2.5px solid var(--g);z-index:1;}
+.cb.clarify::before{background:var(--sys);}
+.cb.mut::before{background:var(--am);}
+.cb.resume::before{background:var(--ac);}
+.ch{display:flex;align-items:baseline;gap:10px;padding:10px 14px 9px;border-bottom:1px solid var(--bd);flex-wrap:wrap;}
+.cnum{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);}
+.cnam{font-size:14px;font-weight:700;}
+.cpurp{font-size:11.5px;color:var(--mu);margin-left:auto;}
+.chips{display:flex;gap:6px;}
+.chip{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:3px;}
+.ct{background:var(--ab);color:var(--ac);}.cn{background:var(--s2);color:var(--mu);}
+.cam{background:var(--amb);color:var(--am);}
+.cr{background:#FCE8F3;color:#9B3070;}
+.ml{padding:2px 0;}
+.mr{display:grid;grid-template-columns:68px 1fr;gap:0;border-left:3.5px solid transparent;padding:6px 14px 6px 10px;}
+.mr:hover{background:var(--s2);}
+.mr.sys{border-left-color:var(--sys);}.mr.usr{border-left-color:var(--usr);}.mr.ast{border-left-color:var(--ast);}
+.rl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding-top:2px;}
+.sys .rl{color:var(--sys);}.usr .rl{color:var(--usr);}.ast .rl{color:var(--ast);}
+.mb{min-width:0;}
+.mi{font-family:'SF Mono',ui-monospace,monospace;font-size:11.5px;white-space:pre-wrap;word-break:break-word;}
+.qu{color:var(--usr);font-weight:600;}.qa{color:#3358AA;font-weight:600;}
+.ob{border-top:1px solid var(--bd);background:var(--obg);padding:8px 14px 8px 76px;display:flex;gap:9px;}
+.ob.co{background:var(--cbg);border-top-color:var(--cbor);}
+.ob.mo{background:var(--mgbg);border-top-color:var(--mgbor);}
+.oarr{font-size:13px;font-weight:700;flex-shrink:0;padding-top:1px;color:var(--am);}
+.oarr.blue{color:var(--sys);}
+.oc{font-family:'SF Mono',ui-monospace,monospace;font-size:11.5px;white-space:pre-wrap;word-break:break-word;}
+.k{color:var(--sys);}.sv{color:var(--usr);}.cm{color:var(--mu);font-size:11px;}.amv{color:var(--am);}
+.sr{display:flex;gap:14px;padding:9px 14px;border-bottom:1px solid var(--bd);}
+.sr:last-child{border-bottom:none;}
+.stg{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;width:68px;flex-shrink:0;padding-top:2px;}
+.sb{font-size:12.5px;line-height:1.6;}
+.sb code{font-family:'SF Mono',monospace;font-size:11.5px;background:var(--s);padding:1px 4px;border-radius:3px;color:var(--sys);}
+.atag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle;}
+.ablue{background:var(--ab);color:var(--ac);}
+.aam{background:var(--amb);color:var(--am);}
+.stb{max-width:880px;margin:24px auto;background:var(--stbg);border-radius:8px;overflow:hidden;}
+.sth{padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;}
+.stl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6B9FD4;}
+.std{font-size:12px;color:#8BAFD0;}
+.stbd{padding:12px 14px;}
+.stc{font-family:'SF Mono',ui-monospace,monospace;font-size:11.5px;line-height:1.7;white-space:pre;color:var(--stx);}
+.stc .key{color:#7EB8F7;}.stc .str{color:#A8D8A8;}.stc .num{color:#F0C070;}.stc .note{color:#5A7A9A;font-style:italic;}.stc .strike{color:#5A6878;text-decoration:line-through;}
+.uw{max-width:880px;margin:24px auto 0;padding:14px 18px;background:var(--s);border:1px solid var(--bd);border-radius:8px;}
+.uwl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin-bottom:7px;}
+.ui-dialog{background:var(--warnbg);border:1.5px solid var(--warnbor);border-radius:8px;padding:12px 15px;margin-top:10px;}
+.ui-title{font-size:13px;font-weight:700;color:#7A4500;margin-bottom:5px;}
+.ui-body{font-size:13px;line-height:1.6;margin-bottom:9px;}
+.ui-btns{display:flex;gap:9px;}
+.ui-confirm{background:#D14020;color:#fff;border:none;border-radius:5px;padding:5px 13px;font-size:13px;font-weight:600;cursor:default;}
+.ui-cancel{background:var(--s);color:var(--tx);border:1px solid var(--bd);border-radius:5px;padding:5px 13px;font-size:13px;cursor:default;}
+</style>
+
+<div class="hero">
+  <div class="stag">Scenario 7 of 10 · Clarification then mutation gate</div>
+  <h1 class="htit">Missing arg on mutating tool → clarify Turn 1, gate fires Turn 2</h1>
+  <div class="hmeta">
+    <span><span class="dot dotb"></span>2 turns · 6 LLM calls total</span>
+    <span><span class="dot dotb"></span>Turn 1: clarification loop (email missing on delete_user)</span>
+    <span><span class="dot dotam"></span>Turn 2: resume fills email → validation passes → mutation gate fires</span>
+    <span><span class="dot dotam"></span>Approval dialog shown — still no MCP execution after Turn 2</span>
+  </div>
+</div>
+
+<!-- TURN 1 -->
+<div class="tsec">
+  <div class="thdr">
+    <span class="tbadge tb1">Turn 1</span>
+    <span class="tinp">User: <strong>"delete the user john"</strong> — no email address</span>
+  </div>
+  <div class="pipe">
+
+    <div class="cb">
+      <div class="ch"><span class="cnum">CALL 1</span><span class="cnam">L1 Package Router</span><div class="chips"><span class="chip cn">no tools</span></div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">ROUTING_SYSTEM_PROMPT · 12 package descriptions</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qu">"delete the user john"</span></div></div>
+      </div>
+      <div class="ob"><span class="oarr">→</span><div class="oc"><span class="sv">"access_management"</span></div></div>
+    </div>
+
+    <div class="cb">
+      <div class="ch"><span class="cnum">CALL 2</span><span class="cnam">L2 Mixin Router</span><div class="chips"><span class="chip cn">no tools</span></div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">ROUTING_SYSTEM_PROMPT · access_management mixins</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qu">"delete the user john"</span></div></div>
+      </div>
+      <div class="ob"><span class="oarr">→</span><div class="oc"><span class="sv">"users"</span></div></div>
+    </div>
+
+    <div class="cb">
+      <div class="ch"><span class="cnum">CALL 3</span><span class="cnam">Planner</span><div class="chips"><span class="chip ct">10 tools</span><span class="chip" style="background:#FEF3E2;color:var(--am);">required</span></div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">PLANNING_SYSTEM_PROMPT + CHAT_PLANNING_CONTEXT_PROMPT</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qu">"delete the user john"</span></div></div>
+      </div>
+      <div class="ob"><span class="oarr">→</span><div class="oc">{<span class="k">"name"</span>:<span class="sv">"access_management.delete_user"</span>, <span class="k">"arguments"</span>:<span class="sv">"{}"</span>}
+<span class="cm"># "john" is a name not an email — planner omits it per PLANNING_SYSTEM_PROMPT "omit rather than guess"</span></div></div>
+    </div>
+
+    <div class="cb clarify">
+      <div class="ch"><span class="cnum" style="color:var(--sys);">CALL 4</span><span class="cnam">Clarification Question Gen <span class="atag ablue">attempt 1 of 2</span></span></div>
+      <div class="sr"><span class="stg" style="color:var(--sys);">MISSING</span><div class="sb"><code>user_email</code> — required, format: email. Mutation gate not reached yet — missing check fires first.</div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">CLARIFY_QUESTION_SYSTEM_PROMPT</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qu">"delete the user john"</span></div></div>
+        <div class="mr ast"><span class="rl">assistant</span><div class="mb"><span class="mi" style="color:var(--ast);">tool_calls: [{ name:"access_management.delete_user", args:"{}" }]</span></div></div>
+      </div>
+      <div class="ob co"><span class="oarr blue">→</span><div class="oc"><span class="sv">"Which user would you like to delete? Please provide their email address."</span></div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="stb">
+  <div class="sth"><span class="stl">Session State After Turn 1</span><span class="std">pending_clarification for a mutating tool</span></div>
+  <div class="stbd"><pre class="stc">entry.pending_clarification = {
+  <span class="key">"tool_id"</span>:        <span class="str">"access_management.delete_user"</span>,  <span class="note"># mutates=true</span>
+  <span class="key">"missing_fields"</span>: <span class="arr">["user_email"]</span>,
+  <span class="key">"filled_args"</span>:    {},
+  <span class="key">"attempts"</span>:       <span class="num">1</span>,
+}</pre></div>
+</div>
+
+<!-- TURN 2 -->
+<div class="tsec">
+  <div class="thdr">
+    <span class="tbadge tb2">Turn 2</span>
+    <span class="tinp">User: <strong>"alice@corp.com"</strong> — answers the clarification question</span>
+  </div>
+  <div class="pipe">
+
+    <div class="cb resume">
+      <div class="ch"><span class="cnum">CALL 5</span><span class="cnam">Resume Planner — fills email, validation passes <span class="atag ablue">resumed</span></span><div class="chips"><span class="chip cr">1 tool pinned</span><span class="chip cr">tool_choice: auto</span></div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">PLANNING_SYSTEM_PROMPT + CHAT_PLANNING_CONTEXT_PROMPT</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi" style="color:var(--mu);">"delete the user john"  <span class="cm"># Turn 1 history</span></span></div></div>
+        <div class="mr ast"><span class="rl">assistant</span><div class="mb"><span class="mi" style="color:var(--mu);">"Which user would you like to delete? Please provide their email address."  <span class="cm"># Turn 1 history</span></span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qa">"alice@corp.com"</span></div></div>
+      </div>
+      <div class="ob"><span class="oarr">→</span><div class="oc">{<span class="k">"name"</span>:<span class="sv">"access_management.delete_user"</span>, <span class="k">"arguments"</span>:<span class="sv">'{"user_email":"alice@corp.com"}'</span>}
+<span class="cm"># Resume succeeded (_resumed=True). Validation: email format ✓, no missing fields.
+# mutates=true → gate check begins.</span></div></div>
+    </div>
+
+    <div class="cb mut">
+      <div class="ch"><span class="cnum" style="color:var(--am);">CALL 6</span><span class="cnam">Mutation Explain LLM call <span class="atag aam">gate fires</span></span><span class="cpurp">_generate_mutation_explanation()</span></div>
+      <div class="sr"><span class="stg" style="color:var(--am);">GATE CHK</span><div class="sb">key NOT in <code>approved_mutations</code> (empty set) → gate fires; pending_clarification is cleared first</div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">MUTATION_EXPLAIN_SYSTEM_PROMPT</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qa">"alice@corp.com"</span></div></div>
+        <div class="mr ast"><span class="rl">assistant</span><div class="mb"><span class="mi" style="color:var(--ast);">tool_calls: [{ name:"access_management.delete_user", args:'{"user_email":"alice@corp.com"}' }]</span></div></div>
+      </div>
+      <div class="ob mo"><span class="oarr">→</span><div class="oc"><span class="amv">"This will permanently delete the Sisense account for alice@corp.com. The user will lose access to all dashboards and groups and will no longer be able to sign in."</span>
+<span class="cm">
+# LAST_TOOL_RESULT = { "ok": False, "pending_confirmation": { tool_id, arguments, reason } }</span></div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="stb">
+  <div class="sth"><span class="stl">Session State After Turn 2</span><span class="std">clarification cleared, mutation pending awaiting UI approval</span></div>
+  <div class="stbd"><pre class="stc"><span class="note"># Clarification resolved — cleared when resume planner succeeded.</span>
+entry.pending_clarification = <span class="num">None</span>   <span class="note"># cleared</span>
+
+<span class="note"># Mutation gate fired — stored in LAST_TOOL_RESULT for API layer to relay to UI.</span>
+LAST_TOOL_RESULT = {
+  <span class="key">"ok"</span>:                  <span class="num">False</span>,
+  <span class="key">"pending_confirmation"</span>: {
+    <span class="key">"tool_id"</span>:    <span class="str">"access_management.delete_user"</span>,
+    <span class="key">"arguments"</span>: { <span class="key">"user_email"</span>: <span class="str">"alice@corp.com"</span> },
+    <span class="key">"reason"</span>:    <span class="str">"This will permanently delete the Sisense account for alice@corp.com…"</span>,
+  }
+}</pre></div>
+</div>
+
+<div class="uw">
+  <div class="uwl">What the user sees after Turn 2</div>
+  <div style="font-size:14px;">Assistant: <em>"This will permanently delete the Sisense account for alice@corp.com…"</em></div>
+  <div class="ui-dialog">
+    <div class="ui-title">⚠ Confirm action: access_management.delete_user</div>
+    <div class="ui-body">This will permanently delete the Sisense account for alice@corp.com. The user will lose access to all dashboards and groups and will no longer be able to sign in.</div>
+    <div class="ui-btns">
+      <button class="ui-confirm">Confirm</button>
+      <button class="ui-cancel">Cancel</button>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--mu);margin-top:8px;">After 2 turns (clarify + gate), still no MCP execution. The delete only runs if the user clicks Confirm (Scenario 9).</div>
+</div>

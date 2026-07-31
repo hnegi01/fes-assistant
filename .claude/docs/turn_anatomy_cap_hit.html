@@ -1,0 +1,238 @@
+<title>FES Agent — Scenario 4: Clarification Cap Hit</title>
+<style>
+:root{--g:#EDF0F7;--s:#FFF;--s2:#F4F7FC;--tx:#18253A;--mu:#5A6878;--bd:#C8D2E2;--wir:#B0BCCE;
+--ac:#2756CC;--ab:#EBF0FD;--am:#C96A0A;--sys:#1D4ED8;--usr:#0C6B4E;--ub:#E6F7F2;
+--ast:#6B21A8;--atb:#F3EBFD;--tcol:#9A4500;--cbg:#F0F5FF;--cbor:#93B4F0;
+--stbg:#1E2D45;--stx:#C8D8F0;--obg:#FFFBF0;--warn:#FFF8EC;--red:#C00020;--rbg:#FFF0F2;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--g);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:13.5px;line-height:1.55;padding:0 20px 100px;}
+.hero{max-width:880px;margin:0 auto;padding:44px 0 26px;border-bottom:1px solid var(--bd);}
+.stag{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ac);margin-bottom:8px;}
+.htit{font-size:24px;font-weight:700;letter-spacing:-.3px;margin-bottom:10px;}
+.hmeta{font-size:12px;color:var(--mu);display:flex;gap:16px;flex-wrap:wrap;}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+.dotb{background:var(--ac);}.dotr{background:var(--red);}.dotg{background:var(--usr);}
+.tsec{max-width:880px;margin:32px auto 0;}
+.thdr{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.tbadge{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:4px;flex-shrink:0;}
+.tb1{background:var(--ab);color:var(--sys);}
+.tb2{background:#F0F5FF;color:#3358AA;}
+.tb3{background:var(--rbg);color:var(--red);}
+.tinp{font-size:13.5px;}
+.pipe{position:relative;padding-left:26px;}
+.pipe::before{content:'';position:absolute;left:6px;top:18px;bottom:50px;width:2px;background:linear-gradient(to bottom,var(--ac),var(--wir));}
+.cb{position:relative;background:var(--s);border:1px solid var(--bd);border-radius:8px;margin-bottom:9px;overflow:hidden;}
+.cb.clarify{border-color:var(--cbor);background:var(--cbg);}
+.cb.giveup{border-color:#E8A0A0;background:var(--rbg);}
+.cb::before{content:'';position:absolute;left:-20px;top:16px;width:14px;height:14px;border-radius:50%;background:var(--ac);border:2.5px solid var(--g);z-index:1;}
+.cb.clarify::before{background:var(--sys);}
+.cb.giveup::before{background:var(--red);}
+.ch{display:flex;align-items:baseline;gap:10px;padding:10px 14px 9px;border-bottom:1px solid var(--bd);flex-wrap:wrap;}
+.cnum{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);}
+.cnam{font-size:14px;font-weight:700;}
+.cpurp{font-size:11.5px;color:var(--mu);margin-left:auto;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:3px;}
+.ct{background:var(--ab);color:var(--ac);}
+.cn{background:var(--s2);color:var(--mu);}
+.cr{background:#FCE8F3;color:#9B3070;}
+.ml{padding:2px 0;}
+.mr{display:grid;grid-template-columns:68px 1fr;gap:0;border-left:3.5px solid transparent;padding:6px 14px 6px 10px;}
+.mr:hover{background:var(--s2);}
+.mr.sys{border-left-color:var(--sys);}
+.mr.usr{border-left-color:var(--usr);}
+.mr.ast{border-left-color:var(--ast);}
+.mr.tol{border-left-color:var(--tcol);}
+.rl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding-top:2px;}
+.sys .rl{color:var(--sys);} .usr .rl{color:var(--usr);} .ast .rl{color:var(--ast);} .tol .rl{color:var(--tcol);}
+.mb{min-width:0;}
+.mi{font-family:'SF Mono',ui-monospace,monospace;font-size:11.5px;white-space:pre-wrap;word-break:break-word;}
+.qu{color:var(--usr);font-weight:600;} .qa{color:#3358AA;font-weight:600;} .qr{color:var(--red);font-weight:600;}
+.ob{border-top:1px solid var(--bd);background:var(--obg);padding:8px 14px 8px 78px;display:flex;gap:9px;}
+.ob.co{background:var(--cbg);border-top-color:var(--cbor);}
+.ob.go{background:var(--rbg);border-top-color:#E8A0A0;}
+.oarr{font-size:13px;font-weight:700;flex-shrink:0;padding-top:1px;color:var(--am);}
+.oarr.blue{color:var(--sys);} .oarr.red{color:var(--red);}
+.oc{font-family:'SF Mono',ui-monospace,monospace;font-size:11.5px;white-space:pre-wrap;word-break:break-word;}
+.k{color:var(--sys);} .sv{color:var(--usr);} .cm{color:var(--mu);font-size:11px;}
+.atag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle;}
+.ared{background:#FCE8EC;color:var(--red);}
+.ablue{background:#EBF0FD;color:var(--ac);}
+.sr{display:flex;gap:14px;padding:9px 14px;border-bottom:1px solid var(--bd);}
+.sr:last-child{border-bottom:none;}
+.stg{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;width:68px;flex-shrink:0;padding-top:2px;}
+.sb{font-size:12.5px;line-height:1.6;}
+.sb code{font-family:'SF Mono',monospace;font-size:11.5px;background:var(--s);padding:1px 4px;border-radius:3px;color:var(--sys);}
+.stb{max-width:880px;margin:24px auto;background:var(--stbg);border-radius:8px;overflow:hidden;}
+.sth{padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;}
+.stl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6B9FD4;}
+.std{font-size:12px;color:#8BAFD0;}
+.stbd{padding:12px 14px;}
+.stc{font-family:'SF Mono',ui-monospace,monospace;font-size:11.5px;line-height:1.7;white-space:pre;color:var(--stx);}
+.stc .key{color:#7EB8F7;}.stc .str{color:#A8D8A8;}.stc .num{color:#F0C070;}.stc .arr{color:#D0A0E8;}.stc .note{color:#5A7A9A;font-style:italic;}.stc .strike{color:#5A6878;text-decoration:line-through;}
+.uw{max-width:880px;margin:24px auto 0;padding:14px 18px;background:var(--s);border:1px solid var(--bd);border-radius:8px;}
+.uwl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin-bottom:7px;}
+</style>
+
+<div class="hero">
+  <div class="stag">Scenario 4 of 10 · Step 7 clarification loop</div>
+  <h1 class="htit">Clarification cap hit → give-up message on Turn 3</h1>
+  <div class="hmeta">
+    <span><span class="dot dotb"></span>3 turns · 8 LLM calls total</span>
+    <span><span class="dot dotb"></span>CLARIFY_MAX_ATTEMPTS = 2 (env: FES_CLARIFY_MAX_ATTEMPTS)</span>
+    <span><span class="dot dotr"></span>Attempt 3 exceeds cap → _clarification_giveup_message() returns static message</span>
+    <span><span class="dot dotg"></span>No pending state left after give-up — session is clean</span>
+  </div>
+</div>
+
+<!-- TURN 1 -->
+<div class="tsec">
+  <div class="thdr">
+    <span class="tbadge tb1">Turn 1</span>
+    <span class="tinp">User: <strong>"show me a user's profile"</strong></span>
+  </div>
+  <div class="pipe">
+
+    <div class="cb">
+      <div class="ch"><span class="cnum">CALL 1</span><span class="cnam">L1 Package Router</span><div class="chips"><span class="chip cn">no tools</span></div><span class="cpurp">_navigate_to_tools()</span></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">ROUTING_SYSTEM_PROMPT · 12 package descriptions</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qu">"show me a user's profile"</span></div></div>
+      </div>
+      <div class="ob"><span class="oarr">→</span><div class="oc"><span class="sv">"access_management"</span></div></div>
+    </div>
+
+    <div class="cb">
+      <div class="ch"><span class="cnum">CALL 2</span><span class="cnam">L2 Mixin Router</span><div class="chips"><span class="chip cn">no tools</span></div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">ROUTING_SYSTEM_PROMPT · access_management mixins (users, groups, columns, ownership, admin)</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qu">"show me a user's profile"</span></div></div>
+      </div>
+      <div class="ob"><span class="oarr">→</span><div class="oc"><span class="sv">"users"</span></div></div>
+    </div>
+
+    <div class="cb">
+      <div class="ch"><span class="cnum">CALL 3</span><span class="cnam">Planner</span><div class="chips"><span class="chip ct">10 tools</span><span class="chip" style="background:#FEF3E2;color:var(--am);">required</span></div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">PLANNING_SYSTEM_PROMPT + CHAT_PLANNING_CONTEXT_PROMPT</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qu">"show me a user's profile"</span></div></div>
+      </div>
+      <div class="ob"><span class="oarr">→</span><div class="oc">{<span class="k">"name"</span>:<span class="sv">"access_management.get_user"</span>, <span class="k">"arguments"</span>:<span class="sv">"{}"</span>}
+<span class="cm"># user_email not in message → args empty</span></div></div>
+    </div>
+
+    <div class="cb clarify">
+      <div class="ch"><span class="cnum" style="color:var(--sys);">CALL 4</span><span class="cnam">Clarification Question Gen <span class="atag ablue">attempt 1 of 2</span></span></div>
+      <div class="sr"><span class="stg" style="color:var(--sys);">MISSING</span><div class="sb"><code>user_email</code> — required, format: email</div></div>
+      <div class="sr"><span class="stg" style="color:var(--sys);">CAP CHK</span><div class="sb">attempts=1 ≤ CLARIFY_MAX_ATTEMPTS=2 → ask</div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">CLARIFY_QUESTION_SYSTEM_PROMPT</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qu">"show me a user's profile"</span></div></div>
+        <div class="mr ast"><span class="rl">assistant</span><div class="mb"><span class="mi" style="color:var(--ast);">tool_calls: [{ name:"access_management.get_user", args:"{}" }]</span></div></div>
+      </div>
+      <div class="ob co"><span class="oarr blue">→</span><div class="oc"><span class="sv">"Which user would you like to look up? Please provide their email address."</span></div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="stb">
+  <div class="sth"><span class="stl">Session State After Turn 1</span><span class="std">attempts = 1, pending clarification stored</span></div>
+  <div class="stbd"><pre class="stc">entry.pending_clarification = {
+  <span class="key">"tool_id"</span>:        <span class="str">"access_management.get_user"</span>,
+  <span class="key">"missing_fields"</span>: <span class="arr">["user_email"]</span>,
+  <span class="key">"filled_args"</span>:    {},
+  <span class="key">"attempts"</span>:       <span class="num">1</span>,
+}</pre></div>
+</div>
+
+<!-- TURN 2 -->
+<div class="tsec">
+  <div class="thdr">
+    <span class="tbadge tb2">Turn 2</span>
+    <span class="tinp">User: <strong>"I'm not sure, maybe the admin?"</strong> — vague, no email provided</span>
+  </div>
+  <div class="pipe">
+
+    <div class="cb clarify">
+      <div class="ch"><span class="cnum" style="color:var(--sys);">CALL 5</span><span class="cnam">Resume Planner — fills tool, email still missing <span class="atag ablue">attempt 2 of 2</span></span><div class="chips"><span class="chip cr">1 tool pinned</span><span class="chip cr">tool_choice: auto</span></div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">PLANNING_SYSTEM_PROMPT + CHAT_PLANNING_CONTEXT_PROMPT</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi" style="color:var(--mu);">"show me a user's profile"  <span class="cm"># Turn 1 history</span></span></div></div>
+        <div class="mr ast"><span class="rl">assistant</span><div class="mb"><span class="mi" style="color:var(--mu);">"Which user would you like to look up? Please provide their email address."  <span class="cm"># Turn 1 history</span></span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qa">"I'm not sure, maybe the admin?"</span></div></div>
+      </div>
+      <div class="ob co"><span class="oarr blue">→</span><div class="oc">{<span class="k">"name"</span>:<span class="sv">"access_management.get_user"</span>, <span class="k">"arguments"</span>:<span class="sv">"{}"</span>}
+<span class="cm"># LLM still can't extract an email — returns tool_call but with empty args</span>
+<span class="cm"># validation fires again: user_email still missing, attempts=2 ≤ 2 → ask again</span></div></div>
+    </div>
+
+    <div class="cb clarify">
+      <div class="ch"><span class="cnum" style="color:var(--sys);">CALL 6</span><span class="cnam">Clarification Question Gen — 2nd attempt</span></div>
+      <div class="sr"><span class="stg" style="color:var(--sys);">CAP CHK</span><div class="sb">attempts=2 ≤ CLARIFY_MAX_ATTEMPTS=2 → still ask (last chance)</div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">CLARIFY_QUESTION_SYSTEM_PROMPT</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qa">"I'm not sure, maybe the admin?"</span></div></div>
+        <div class="mr ast"><span class="rl">assistant</span><div class="mb"><span class="mi" style="color:var(--ast);">tool_calls: [{ name:"access_management.get_user", args:"{}" }]</span></div></div>
+      </div>
+      <div class="ob co"><span class="oarr blue">→</span><div class="oc"><span class="sv">"I still need the user's email address to look them up. Could you provide it — for example, admin@yourcompany.com?"</span></div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="stb">
+  <div class="sth"><span class="stl">Session State After Turn 2</span><span class="std">attempts = 2, still pending — one more try allowed</span></div>
+  <div class="stbd"><pre class="stc">entry.pending_clarification = {
+  <span class="key">"tool_id"</span>:        <span class="str">"access_management.get_user"</span>,
+  <span class="key">"missing_fields"</span>: <span class="arr">["user_email"]</span>,
+  <span class="key">"filled_args"</span>:    {},
+  <span class="key">"attempts"</span>:       <span class="num">2</span>,
+}</pre></div>
+</div>
+
+<!-- TURN 3 -->
+<div class="tsec">
+  <div class="thdr">
+    <span class="tbadge tb3">Turn 3</span>
+    <span class="tinp">User: <strong>"what about the default one?"</strong> — still no email, cap exceeded</span>
+  </div>
+  <div class="pipe">
+
+    <div class="cb giveup">
+      <div class="ch"><span class="cnum" style="color:var(--red);">CALL 7</span><span class="cnam">Resume Planner — email still absent <span class="atag ared">attempt 3 > cap</span></span><div class="chips"><span class="chip cr">1 tool pinned</span><span class="chip cr">tool_choice: auto</span></div></div>
+      <div class="ml">
+        <div class="mr sys"><span class="rl">system</span><div class="mb"><span class="mi">PLANNING_SYSTEM_PROMPT + CHAT_PLANNING_CONTEXT_PROMPT</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi" style="color:var(--mu);">"show me a user's profile"  <span class="cm"># T1 history</span></span></div></div>
+        <div class="mr ast"><span class="rl">assistant</span><div class="mb"><span class="mi" style="color:var(--mu);">"Which user would you like to look up? Please provide their email address."</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi" style="color:var(--mu);">"I'm not sure, maybe the admin?"  <span class="cm"># T2 history</span></span></div></div>
+        <div class="mr ast"><span class="rl">assistant</span><div class="mb"><span class="mi" style="color:var(--mu);">"I still need the user's email address…"</span></div></div>
+        <div class="mr usr"><span class="rl">user</span><div class="mb"><span class="mi qr">"what about the default one?"</span></div></div>
+      </div>
+      <div class="ob go"><span class="oarr red">→</span><div class="oc">{<span class="k">"name"</span>:<span class="sv">"access_management.get_user"</span>, <span class="k">"arguments"</span>:<span class="sv">"{}"</span>}
+<span class="cm"># still no email → missing check fires → attempts = clarify_attempts_base+1 = 3</span>
+<span class="cm"># 3 > CLARIFY_MAX_ATTEMPTS(2) → _clarification_giveup_message() called (no LLM call)</span></div></div>
+    </div>
+
+    <div class="cb giveup">
+      <div class="ch"><span class="cnum" style="color:var(--red);">NO LLM</span><span class="cnam">_clarification_giveup_message() — static return <span class="atag ared">cap exhausted</span></span></div>
+      <div class="sr"><span class="stg" style="color:var(--red);">CAP CHK</span><div class="sb">attempts=3 &gt; CLARIFY_MAX_ATTEMPTS=2 → give up immediately, no 8th LLM call</div></div>
+      <div class="ob go"><span class="oarr red">→</span><div class="oc"><span class="sv">"I wasn't able to look up the user — I still need their email address (user_email). Please start a new message with the email when you're ready."</span></div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="stb">
+  <div class="sth"><span class="stl">Session State After Turn 3</span><span class="std">Pending cleared on give-up — session is clean</span></div>
+  <div class="stbd"><pre class="stc"><span class="note"># Give-up clears pending state immediately — no dangling clarification.</span>
+entry.pending_clarification = <span class="num">None</span>
+LAST_PENDING_CLARIFICATION   = <span class="num">None</span>
+<span class="note"># User must start fresh. Nothing is carried forward.</span></pre></div>
+</div>
+
+<div class="uw">
+  <div class="uwl">What the user sees after Turn 3</div>
+  <div style="font-size:14px;">Assistant: <em>"I wasn't able to look up the user — I still need their email address (user_email). Please start a new message with the email when you're ready."</em></div>
+  <div style="font-size:12.5px;color:var(--mu);margin-top:6px;line-height:1.6;">The give-up message names the missing field and its required format. It tells the user to start a new message rather than continue the same thread. <code style="font-size:11.5px;background:var(--s2);padding:1px 4px;border-radius:3px;">_clarification_giveup_message()</code> is a pure function — no LLM call, no extra token cost at give-up time.</div>
+</div>
