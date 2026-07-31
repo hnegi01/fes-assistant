@@ -10,6 +10,8 @@ recorded scenarios at once, instead of fixing one and silently breaking another.
 Adding a case = appending one dict to EVAL_CASES (no new code):
   prompt               - the user message, verbatim
   expect_tools_any     - at least one executed tool id must contain one of these
+  expect_tools_all     - EVERY fragment here must match some executed tool id
+  expect_min_steps     - at least this many tool executions (step_results)
   forbid_tools         - no executed tool id may contain any of these
   expect_reply_any     - reply must contain at least one of these (case-insensitive)
   forbid_reply         - reply must contain none of these (case-insensitive)
@@ -81,6 +83,32 @@ EVAL_CASES = [
         "forbid_reply": ["does not appear in any group"],
         "origin": "2026-07-31: typo'd email produced a misleading 'in no group' from a bulk scan",
     },
+    {
+        "id": "adaptive-role-chain-two-steps",
+        "prompt": "get details of user gowtham.senthilkumar@sisense.com, "
+        "then list all other users who have that same role",
+        # Dependent chain: step 2 needs step 1's returned role. Must resolve the
+        # user first, then pull users-with-roles; never treat the role as a group.
+        "expect_tools_any": ["get_user"],
+        "expect_min_steps": 2,
+        "forbid_tools": ["users_per_group"],
+        "expect_reply_any": ["sysadmin", "admin"],
+        "forbid_reply": ["not found"],
+        "origin": "2026-07-30/31: adaptive value-passing chain, verified live during Step 8",
+    },
+    {
+        "id": "fanout-three-independent-steps",
+        "prompt": "list all datamodels, all user groups, and also all folders",
+        # Three independent parts -> the orchestrator plans 3 untagged steps and
+        # they fan out concurrently; all three domains must actually execute.
+        "expect_tools_any": ["folder"],
+        "expect_tools_all": ["group", "folder"],
+        "expect_min_steps": 3,
+        "forbid_tools": [],
+        "expect_reply_any": ["folder"],
+        "forbid_reply": [],
+        "origin": "2026-07-31: parallel fan-out (level 1+2) — 3-part request, verified live ~10s",
+    },
 ]
 
 
@@ -115,6 +143,12 @@ def test_planner_eval(backend_url, tenant_config, case):
         assert any(
             frag in t for t in tools for frag in case["expect_tools_any"]
         ), f"expected a tool matching one of {case['expect_tools_any']}{ctx}"
+    for frag in case.get("expect_tools_all", []):
+        assert any(frag in t for t in tools), f"no executed tool matches {frag!r}{ctx}"
+    if case.get("expect_min_steps"):
+        assert (
+            len(tools) >= case["expect_min_steps"]
+        ), f"expected >= {case['expect_min_steps']} executed steps, got {len(tools)}{ctx}"
     for frag in case["forbid_tools"]:
         # Exact-fragment check, but don't let e.g. "users_per_group" ban
         # "users_per_group_all" unless explicitly listed — match whole ids.
