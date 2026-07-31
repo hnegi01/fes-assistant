@@ -658,10 +658,13 @@ primitives, and makes each node independently testable."
 
 ## What's next _(planned)_
 
-- **MCP OAuth + Claude connector.** Bearer/OAuth on the MCP server so it can be
-  a hosted, standalone connector. (See the separate `sisense-admin-mcp` brief.)
 - **LangGraph.** Refactor the hand-rolled loop into named graph nodes
-  (plan / execute / decide / approval / fan-out).
+  (planner / router / select / validator / tools / replanner / evaluator /
+  respond) — via an engine flag (`FES_AGENT_ENGINE`), parallel-run to parity.
+- ~~MCP OAuth + Claude connector~~ — **out of scope for this repo** (decision
+  2026-07-31): this MCP server stays local/embedded (multi-tenant credential
+  injection, agent-coupled session state). OAuth + connector belong to the
+  separate standard-shaped `sisense-admin-mcp` project (see its brief).
 - **Level-3 workers (true MAS)** — each independent sub-goal running its OWN
   reactive loop (own transcript, own decide/replan, own budget) and reporting a
   summary back to the orchestrator. Fan-out today (built — see below) is level
