@@ -19,7 +19,7 @@ Each LLM call sees only what it needs:
 
 | Call | Sees | Decides |
 |---|---|---|
-| **Plan (strategist)** | your message + capability catalog (one-liners) | the ordered plan; its first operation starts the loop |
+| **Plan (orchestrator)** | your message + capability catalog (one-liners) | the ordered plan; its first operation starts the loop |
 | **Route L1** | one sub-task | which of ~12 packages? |
 | **Route L2** | one sub-task | which mixin within that package? |
 | **Plan** | one sub-task + ~10 tools | pick exactly ONE tool + its arguments |
@@ -28,7 +28,7 @@ Each LLM call sees only what it needs:
 Crucially, the **planner never sees the whole request and never sees more than
 ~10 tools.** It cannot "choose to call two tools across packages" because it
 never sees two packages at once. Multi-part requests are handled by the
-_strategist_ (plan/replan) and _decide_ calls, one layer above the planner — not
+_orchestrator_ (plan/replan) and _decide_ calls, one layer above the planner — not
 by the planner itself.
 
 Why build it this way? Because the full tool catalog is ~119 tools. Showing all
@@ -52,15 +52,60 @@ generic tool-executor over the PySisense SDK; it has no notion of the loop.
 
 ---
 
+## The full flow — orchestrator view (high level)
+
+Standard plan-and-execute shape: an **orchestrator** drafts and repairs the
+plan, **executors** run one step each (independent steps in parallel), and a
+**critic** independently evaluates the goal before the answer ships.
+
+```mermaid
+flowchart TD
+    U(["🧑 User prompt"]) --> ORC
+
+    ORC["ORCHESTRATOR (LLM)<br/>drafts the plan from the tool catalog<br/>orders steps · tags data dependencies"]
+    ORC --> S1["Step 1 · executor<br/>route → select → verify → run"]
+    ORC --> S2["Step 2 · executor"]
+    ORC --> S3["Step 3 · executor"]
+
+    S1 --> J[("JOIN<br/>results, plan order")]
+    S2 --> J
+    S3 --> J
+
+    J --> DEP["Dependent step(s) · executor<br/>sequential — use joined results<br/>(mutations pause here for approval)"]
+    DEP --> CR{{"CRITIC (independent LLM)<br/>whole request achieved?"}}
+    CR -->|"INCOMPLETE · +1 step"| DEP
+    CR -->|"COMPLETE"| ANS(["💬 Reply"])
+    DEP -. "a step failed → REPLAN" .-> ORC
+
+    classDef term fill:#dcfce7,stroke:#16a34a,color:#14532d;
+    classDef orch fill:#f4eefe,stroke:#7c3aed,color:#4c1d95;
+    classDef exec fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
+    class ANS term
+    class ORC,CR orch
+    class S1,S2,S3,DEP exec
+```
+
+- **Orchestrator** = `_make_plan` / `_replan` (sees the tool catalog as
+  one-liners, writes prose steps, never calls tools)
+- **Executor** = one route→select→validate→execute pipeline per step
+  (`_execute_branch` when parallel, the loop body when sequential)
+- **Critic** = `_verify_goal_complete` — separate context, adversarial prompt
+- Independent steps fan out concurrently (`FES_MAX_PARALLEL_STEPS`); dependent
+  steps run after the join; mutations always pause for human approval
+
+Each executor step runs through the reactive loop machinery detailed next.
+
+---
+
 ## The agentic loop (Step 8)
 
 One user turn can chain multiple tool executions. It is a single loop
 (`_reactive_loop`) wrapped in **plan → execute → replan**: on the first pass a
-strategist call drafts the full plan (request + a compact capability catalog —
+orchestrator call drafts the full plan (request + a compact capability catalog —
 tool one-liners, no schemas) and the plan is shown to the user; every later pass
 a decide call picks the next move. When a step's outcome shows the approach
 cannot work (failed / found nothing / wrong kind of data), decide says
-`REPLAN:` and the strategist revises the plan with the catalog — a retry that
+`REPLAN:` and the orchestrator revises the plan with the catalog — a retry that
 CHANGES approach, budgeted by `FES_MAX_REPLANS`. Each lap executes **exactly
 one** SDK call.
 
@@ -68,8 +113,8 @@ one** SDK call.
 flowchart TD
     U(["🧑 User message"]) --> WN
 
-    WN{{"WHAT'S NEXT?<br/>step 0 · PLAN (strategist + catalog)<br/>step N · decide · REPLAN on failure"}}
-    WN -->|"REPLAN: approach failed"| RP["REPLAN<br/>strategist + catalog<br/>revise the plan"]
+    WN{{"WHAT'S NEXT?<br/>step 0 · PLAN (orchestrator + catalog)<br/>step N · decide · REPLAN on failure"}}
+    WN -->|"REPLAN: approach failed"| RP["REPLAN<br/>orchestrator + catalog<br/>revise the plan"]
     RP -->|"new approach"| WN
     RP -->|"GIVEUP"| ANS
     WN -->|"DONE · final answer"| ANS(["💬 Reply to user"])
@@ -103,16 +148,16 @@ flowchart TD
 ```
 
 Reading it: the diamond **WHAT'S NEXT?** is the only thing that changes by step —
-the strategist's plan on the first lap, decide after (with `REPLAN:` routing back
-through the strategist when an approach fails). Green = the turn ends with an answer;
+the orchestrator's plan on the first lap, decide after (with `REPLAN:` routing back
+through the orchestrator when an approach fails). Green = the turn ends with an answer;
 yellow = it pauses or blocks (and resumes/explains); blue = the one SDK call this
 lap. The dashed edge is the loop: append the result, ask "what's next?" again.
 
-- **DISCOVER / PLAN** = the strategist's plan, then route + tool-pick per step
+- **DISCOVER / PLAN** = the orchestrator's plan, then route + tool-pick per step
 - **EXECUTE** = call the tool via MCP — one SDK call per lap
 - **VERIFY** = the decide call (+ the independent goal checker at "done")
 - **ITERATE** = `CONTINUE:` feeds the next sub-task back through routing;
-  `REPLAN:` sends the failure back through the strategist for a new approach
+  `REPLAN:` sends the failure back through the orchestrator for a new approach
 
 Stop conditions (every one returns something readable — never a silent stop):
 - decide returns a plain answer → goal met
@@ -127,7 +172,7 @@ Stop conditions (every one returns something readable — never a silent stop):
 
 | # | LLM call | Given | Result |
 |---|---|---|---|
-| 1 | Plan (strategist) | full message + capability catalog | _"1. List all datamodels 2. List all user groups"_ — step 1 starts |
+| 1 | Plan (orchestrator) | full message + capability catalog | _"1. List all datamodels 2. List all user groups"_ — step 1 starts |
 | 2 | Route L1 | _"List all datamodels"_ | `datamodel` |
 | 3 | Route L2 | _"List all datamodels"_ | core |
 | 4 | Plan | sub-task + ~10 datamodel tools | `datamodel.get_all_datamodel` |
@@ -139,7 +184,7 @@ Stop conditions (every one returns something readable — never a silent stop):
 | — | _execute_ | | 35 groups |
 | 9 | Decide | full message + BOTH results | final answer combining both |
 
-The "break it into two" decision lives in **call 1** (the strategist's plan)
+The "break it into two" decision lives in **call 1** (the orchestrator's plan)
 and is re-checked by **call 5** (decide notices what's still undone — and can
 say `REPLAN:` if a step's outcome shows the approach failed). The planner
 (calls 4, 8) only ever picks one tool from a small menu and never sees the
@@ -168,7 +213,7 @@ A turn is **one loop** (`_reactive_loop`), the same body every step:
 
 ```
 loop, until done:
-    WHAT'S NEXT?          step 0 → PLAN: strategist + catalog → ordered plan (shown)
+    WHAT'S NEXT?          step 0 → PLAN: orchestrator + catalog → ordered plan (shown)
                           step N → DECIDE: CONTINUE · REPLAN · DONE · (off) BLOCKED
     ROUTE L1              which package? (of ~12)
     ROUTE L2              which mixin? (→ ~10 tools)
@@ -179,10 +224,10 @@ loop, until done:
 
 Each box is one LLM call except *validate/gate* (code) and *execute* (MCP). The
 only thing that differs by step is **WHAT'S NEXT?** — on the first pass the
-strategist drafts the plan (request + capability catalog) and its first
+orchestrator drafts the plan (request + capability catalog) and its first
 operation starts the loop; on later passes the decide call reads goal + history
 and ends the turn (its answer becomes the reply), emits `CONTINUE:` (next
-sub-task into ROUTE), or emits `REPLAN:` (the strategist revises the plan with
+sub-task into ROUTE), or emits `REPLAN:` (the orchestrator revises the plan with
 the catalog + failure evidence). There is no separate step-1 code path.
 
 ### Detailed — an adaptive request, call by call
@@ -194,7 +239,7 @@ returns.
 For each call: the **prompt logic** (what it's told to do, not the full text),
 its **input**, and its **output**.
 
-**1 · PLAN (strategist)** — _logic:_ draft the ordered plan using the capability
+**1 · PLAN (orchestrator)** — _logic:_ draft the ordered plan using the capability
 catalog (tool one-liners, no schemas); dependency order, not sentence order;
 never promote a descriptive word into an object name.
 - in: the full user message
@@ -283,7 +328,7 @@ look.** Never trust the model to enforce a privacy boundary.
 
 **Adaptive degrades gracefully — and cheaply.** Two layers:
 
-1. **Plan-time dependency gate (code).** The strategist tags plan steps that
+1. **Plan-time dependency gate (code).** The orchestrator tags plan steps that
    need a value from an earlier step's RESULT (`[needs-prior-result]`) — pure
    text reasoning, privacy-safe. With summ off, code splits the plan there:
    the independent prefix runs, the dependent tail is **skipped up front** (no
@@ -305,7 +350,7 @@ needs the data.
 Non-adaptive compound — _"show all datamodels AND all groups"_:
 
 ```
-                    plan (strategist) → "1. list datamodels 2. list groups"
+                    plan (orchestrator) → "1. list datamodels 2. list groups"
 SUMM ON:   route→plan→exec(datamodels)  ─┐ history=full data
            decide: CONTINUE list groups  │
            route→plan→exec(groups)       │
@@ -334,9 +379,9 @@ Same first step; summ-on passes the value and finishes, summ-off blocks. (Verifi
 
 - **First LLM decision is a planner.** Step 1 and every later step are the same
   "what's next?" question, run by the **one** `_reactive_loop` — step 1 is not a
-  special path. On the first pass the strategist (`_make_plan`) drafts the plan;
+  special path. On the first pass the orchestrator (`_make_plan`) drafts the plan;
   on later passes the decide call reads goal + history, with `REPLAN:` routing
-  back through the strategist when an approach fails. (The old
+  back through the orchestrator when an approach fails. (The old
   `_decompose_first_step` + separate continuation loop were unified, then
   upgraded to plan→replan.)
 - **All reactive** — re-decide each step from goal + history — so unknown-shape
@@ -355,7 +400,7 @@ of trust.
 |---|---|---|---|---|
 | 1 | the **call** is well-formed | before execute | `jsonschema.validate` (`args valid?`) | objective — code |
 | 2 | the **step** succeeded | after execute | the result's `ok` flag (`_metadata_record`) | objective — code |
-| 3 | the **whole request** is done | at "done" | the decide call (maker), then an independent checker — **an LLM call** | judgment — LLM |
+| 3 | the **whole request** is done | at "done" | the decide call (maker), then an independent **critic** — an LLM call | judgment — LLM |
 
 **Per-step (1 and 2) is deterministic code** — a schema passes or it doesn't; `ok`
 is true or false. No LLM, nothing to second-guess.
@@ -364,7 +409,7 @@ is true or false. No LLM, nothing to second-guess.
 
 - **Maker** = the decide call (`WHAT'S NEXT?`). When it stops emitting `CONTINUE`
   it believes the request is satisfied.
-- **Checker** = an independent call (`_verify_goal_complete`,
+- **Critic (the checker)** = an independent call (`_verify_goal_complete`,
   `VERIFY_GOAL_SYSTEM_PROMPT`) that re-reads the *whole* request against the
   results, prompted adversarially to find what was missed. It sees only goal +
   results (not the maker's reasoning), so it doesn't inherit the maker's
@@ -444,8 +489,8 @@ part. This section is the glossary + the mapping to fill in after Step 10.
 
 | Term | What it does | Where it lives now |
 |---|---|---|
-| **Plan (strategist)** | request + capability catalog (tool one-liners, NO schemas) → ordered plan; step 1 seeds the loop, plan shown in UI | `_make_plan` (in `_reactive_loop` when `steps==0`) |
-| **Replan (strategist)** | failed approach + catalog → revised plan for remaining work, or GIVEUP; budget `FES_MAX_REPLANS` | `_replan` / `_attempt_replan`; decide's `REPLAN:` verb + routing/planning dead-ends trigger it |
+| **Plan (orchestrator)** | request + capability catalog (tool one-liners, NO schemas) → ordered plan; step 1 seeds the loop, plan shown in UI | `_make_plan` (in `_reactive_loop` when `steps==0`) |
+| **Replan (orchestrator)** | failed approach + catalog → revised plan for remaining work, or GIVEUP; budget `FES_MAX_REPLANS` | `_replan` / `_attempt_replan`; decide's `REPLAN:` verb + routing/planning dead-ends trigger it |
 | **Fan-out (level 1+2)** | independent (untagged) plan steps execute concurrently — per-branch route→plan→validate→execute, joined in plan order; mutations/missing-args/dead-ends defer to the sequential loop; width `FES_MAX_PARALLEL_STEPS` | `_execute_branch` + `asyncio.gather` in `_reactive_loop` |
 | **Route** | narrows 119 tools → one package → one mixin (~10 tools) | `_navigate_to_tools` (`_routing.py`) |
 | **Plan** | given one sub-task + ~10 tools, pick ONE tool + args | planning `call_llm_raw(..., tools=...)` |
@@ -467,13 +512,13 @@ you use LangGraph here?"_ Verify/adjust each row once Step 10 is built.
 | Our hand-rolled piece | Expected LangGraph primitive |
 |---|---|
 | `_reactive_loop` `while` loop | the **graph** itself (nodes + edges) |
-| Strategist (plan/replan), Decide, Route, Plan, Execute | individual **nodes** |
+| Orchestrator (plan/replan), Decide, Route, Plan, Execute | individual **nodes** |
 | "`CONTINUE:` → loop back, else → answer" | a **conditional edge** |
 | `pending_loop` / `pending_clarification` in `SessionEntry` | **checkpointer** (persistent state / `thread_id`) |
 | Mutation gate → return, resume next turn | **interrupt** (human-in-the-loop) |
 | The dict passed between steps (goal, transcript, results) | the graph **state** object |
 | Graceful-stop terminal returns | **END** node / terminal edges |
-| Plan → replan (strategist + capability catalog) | a `plan` node + a **replan edge** on divergence |
+| Plan → replan (orchestrator + capability catalog) | a `plan` node + a **replan edge** on divergence |
 | _(new in Step 10)_ cross-package parallel | **fan-out / fan-in** (parallel branches) |
 
 The point of the left column: none of these are LangGraph inventions — they are
