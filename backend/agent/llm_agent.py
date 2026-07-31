@@ -368,7 +368,7 @@ async def _generate_mutation_explanation(
 # -----------------------------------------------------------------------------
 def _capability_catalog(mode: str) -> str:
     """One line per tool — `tool_id: first line of description` — for the
-    strategist (plan/replan). NO schemas: the strategist writes prose steps, it
+    orchestrator (plan/replan). NO schemas: the orchestrator writes prose steps, it
     never emits tool calls, so the compact full catalog is safe where showing
     119 schemas to the CALLING planner would not be. Mode-filtered the same way
     the registry is (migration tools only in migration mode)."""
@@ -384,7 +384,7 @@ def _capability_catalog(mode: str) -> str:
 
 
 def _parse_plan_lines(text: str) -> List[str]:
-    """Extract the numbered steps from a strategist reply."""
+    """Extract the numbered steps from a orchestrator reply."""
     import re
 
     steps = []
@@ -405,7 +405,7 @@ def _split_dependent_tail(plan_steps: List[str]) -> Tuple[List[str], List[str]]:
     the LLM cannot see with summarization off — executing them would only
     produce doomed calls, so they are skipped. Untagged steps run regardless of
     position (independent steps are order-free by definition, so an untagged
-    step after a tagged one still runs). Detection is the strategist's (text
+    step after a tagged one still runs). Detection is the orchestrator's (text
     reasoning at plan time); this enforcement is code. The marker on step 1 is
     ignored (nothing precedes it). Markers are stripped from both halves."""
 
@@ -423,7 +423,7 @@ def _split_dependent_tail(plan_steps: List[str]) -> Tuple[List[str], List[str]]:
 
 
 async def _make_plan(user_text: str, mode: str, history: List[Dict[str, Any]], trace_id: str) -> List[str]:
-    """The upfront strategist call: request + capability catalog → ordered plan
+    """The upfront orchestrator call: request + capability catalog → ordered plan
     (a list of one-operation instructions). Falls back to [user_text] on any
     failure — planning must never block a turn. Privacy-safe in both summ modes:
     it reads only the request text and the catalog, never tool results."""
@@ -437,7 +437,7 @@ async def _make_plan(user_text: str, mode: str, history: List[Dict[str, Any]], t
             ],
             tools=None,
             trace_id=trace_id,
-            label="strategy",
+            label="orchestrator",
         )
         text, _ = _pick_tool_calls_from_llm_response(data)
         steps = _parse_plan_lines(text or "")
@@ -458,7 +458,7 @@ async def _replan(
     reason: str,
     trace_id: str,
 ) -> Tuple[List[str], str]:
-    """The recovery strategist: request + what ran (with outcomes) + why the
+    """The recovery orchestrator: request + what ran (with outcomes) + why the
     executor gave up + the catalog → a REVISED plan for the remaining work, or
     ("GIVEUP", <user-facing sentence>) when no alternative exists. Returns
     (steps, giveup_message) — one of the two is empty."""
@@ -695,7 +695,7 @@ async def _reactive_loop(
     first_tool_hint: Optional[Tuple[str, Dict[str, Any], Dict[str, Any]]] = None
     pending_seed = seed_call  # consumed on the first iteration only
     checker_overrides = 0  # times the goal checker has pushed a "done" back into the loop
-    replans_used = 0  # times the strategist revised the plan this turn
+    replans_used = 0  # times the orchestrator revised the plan this turn
     next_op_override: Optional[str] = None  # set by a replan; consumed instead of a decide call
     blocked_tail: List[str] = []  # summ-off: plan steps skipped because they need prior-result values
 
@@ -728,9 +728,9 @@ async def _reactive_loop(
         )
 
     async def _attempt_replan(reason: str) -> Tuple[Optional[str], str]:
-        """Ask the strategist for a revised plan after the current approach failed.
+        """Ask the orchestrator for a revised plan after the current approach failed.
         Returns (next_op, giveup_msg): next_op None = no viable alternative
-        (budget spent, or the strategist gave up)."""
+        (budget spent, or the orchestrator gave up)."""
         nonlocal replans_used
         if replans_used >= MAX_REPLANS:
             return None, ""
@@ -857,7 +857,7 @@ async def _reactive_loop(
             pending_seed = None
 
         elif is_first:
-            # Fresh turn: the strategist drafts the full plan (request + capability
+            # Fresh turn: the orchestrator drafts the full plan (request + capability
             # catalog, no schemas), the loop executes its first operation. The plan
             # is stashed in the transcript so decide/verify follow it, and emitted
             # to the UI for transparency.
@@ -1014,7 +1014,7 @@ async def _reactive_loop(
                 remains = continue_line.split(":", 1)[1].strip()
                 logger.info("Agent loop step %d done; continuing: %s", steps_executed, remains[:200])
             elif replan_line is not None:
-                # The last step's outcome contradicts the plan → strategist revises
+                # The last step's outcome contradicts the plan → orchestrator revises
                 # with the capability catalog (a retry that CHANGES approach).
                 reason = replan_line.split(":", 1)[1].strip()
                 op, giveup = await _attempt_replan(reason)
@@ -1075,7 +1075,7 @@ async def _reactive_loop(
             if (not nav_tools) and nav_pkg and nav_pkg != "__unclear__":
                 nav_tools = _load_all_package_tools(nav_pkg)
             if not nav_tools:
-                # No drawer fits this op — let the strategist rephrase/reroute once.
+                # No drawer fits this op — let the orchestrator rephrase/reroute once.
                 op, giveup = await _attempt_replan(f"no matching operation found for: {remains}")
                 if op:
                     next_op_override = op
@@ -1110,7 +1110,7 @@ async def _reactive_loop(
                     except Exception:  # noqa: BLE001
                         calls = []
             if not calls:
-                # The planner couldn't pick a tool for this op — strategist retry.
+                # The planner couldn't pick a tool for this op — orchestrator retry.
                 op, giveup = await _attempt_replan(f"could not pick an operation for: {remains}")
                 if op:
                     next_op_override = op

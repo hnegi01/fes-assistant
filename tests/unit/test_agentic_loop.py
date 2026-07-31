@@ -503,7 +503,7 @@ def test_goal_checker_confirms_complete(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# 11) Plan→replan: decide says REPLAN → strategist revises → new op executes.
+# 11) Plan→replan: decide says REPLAN → orchestrator revises → new op executes.
 # ---------------------------------------------------------------------------
 
 
@@ -523,7 +523,7 @@ def test_decide_replan_revises_and_continues(monkeypatch):
         llm_responses=[
             _plan_resp("dashboard.get_dashboards", "{}"),  # step-1 plan (wrong approach)
             _text_resp("REPLAN: that approach failed; still need the user's group"),  # decide
-            _plan_text_resp("1. Get the user record for a@b.com"),  # strategist replan
+            _plan_text_resp("1. Get the user record for a@b.com"),  # orchestrator replan
             _plan_resp("access_management.get_user", '{"user_email":"a@b.com"}', call_id="c2"),  # new plan call
             _text_resp("a@b.com belongs to the Everyone group."),  # decide: final
         ],
@@ -557,14 +557,14 @@ def test_replan_budget_exhausted_gives_up_gracefully(monkeypatch):
     assert isinstance(reply, str) and reply
 
 
-def test_replan_strategist_giveup_message_surfaces(monkeypatch):
+def test_replan_orchestrator_giveup_message_surfaces(monkeypatch):
     monkeypatch.setattr(m, "MAX_REPLANS", 1)
     client = _fake_client(results=[{"ok": False, "error": "not found"}])
     reply, _nav, _raw = _run_turn(
         llm_responses=[
             _plan_resp("dashboard.get_dashboards", "{}"),  # step 1 fails
             _text_resp("REPLAN: approach failed"),  # decide
-            _text_resp("GIVEUP: There is no operation that can retrieve this."),  # strategist
+            _text_resp("GIVEUP: There is no operation that can retrieve this."),  # orchestrator
             _text_resp("Summary of what ran."),  # finalize
         ],
         nav_side_effect=[(DASHBOARD_TOOLS, "dashboard", "core", 0)],
