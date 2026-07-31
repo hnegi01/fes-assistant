@@ -39,7 +39,7 @@ ever picks — and that narrowing is what makes each pick reliable.
 
 ---
 
-## The processes (unchanged from V1)
+## The processes
 
 ```
 Browser (Streamlit :8501)
@@ -98,7 +98,7 @@ Each executor step runs through the reactive loop machinery detailed next.
 
 ---
 
-## The agentic loop (Step 8)
+## The agentic loop
 
 One user turn can chain multiple tool executions. It is a single loop
 (`_reactive_loop`) wrapped in **plan → execute → replan**: on the first pass a
@@ -461,7 +461,7 @@ Two clarifications that prevent a common misreading:
 
 ---
 
-## Mutation approval (carried from Step 7, extended in Step 8)
+## Mutation approval
 
 A mutating tool never executes without explicit approval, **even mid-loop**.
 
@@ -476,7 +476,7 @@ A mutating tool never executes without explicit approval, **even mid-loop**.
 
 ---
 
-## Clarification (Step 7)
+## Clarification
 
 If step-1 planning leaves a required argument missing (the user never provided
 it), the turn pauses and asks, then resumes next turn with the answer. The
@@ -491,7 +491,7 @@ confusing question about something the user never mentioned.
 
 ---
 
-## Progress streaming (Step 8)
+## Progress streaming
 
 Each loop phase emits an `agent_progress` SSE event
 (`deciding | planning | executing | completed`, with step / max_steps /
@@ -504,11 +504,11 @@ either way.
 
 ## Hand-rolled building blocks (and their LangGraph future)
 
-Everything today is **hand-rolled** — plain Python control flow inside
-`backend/agent/llm_agent.py`, no agent framework. This was deliberate: build the
-machinery by hand first, understand what each piece is *for*, then adopt
-LangGraph in Step 10 knowing exactly which primitive replaces which hand-rolled
-part. This section is the glossary + the mapping to fill in after Step 10.
+Everything is **hand-rolled** — plain Python control flow inside
+`backend/agent/llm_agent.py`, no agent framework. This is deliberate: the
+machinery is built by hand so each piece's purpose is explicit, which is also
+what makes the planned LangGraph refactor a mechanical mapping rather than a
+redesign. This section is the glossary + that mapping.
 
 ### The building blocks, in our own terms
 
@@ -529,10 +529,10 @@ part. This section is the glossary + the mapping to fill in after Step 10.
 | **Graceful stop** | every exit returns readable text, never a silent halt | `_finalize_from_transcript`, `_loop_partial_message` |
 | **Progress** | emit a step event each phase | `_emit_agent_progress` |
 
-### Mapping to LangGraph _(to confirm after Step 10)_
+### Mapping to LangGraph _(planned)_
 
 The expected correspondence — the table you point at when someone asks _"how did
-you use LangGraph here?"_ Verify/adjust each row once Step 10 is built.
+you use LangGraph here?"_ Each row is confirmed when the refactor lands.
 
 | Our hand-rolled piece | Expected LangGraph primitive |
 |---|---|
@@ -544,7 +544,7 @@ you use LangGraph here?"_ Verify/adjust each row once Step 10 is built.
 | The dict passed between steps (goal, transcript, results) | the graph **state** object |
 | Graceful-stop terminal returns | **END** node / terminal edges |
 | Plan → replan (orchestrator + capability catalog) | a `plan` node + a **replan edge** on divergence |
-| _(new in Step 10)_ cross-package parallel | **fan-out / fan-in** (parallel branches) |
+| Fan-out (`_execute_branch` + `asyncio.gather`) | **fan-out / fan-in** (parallel branches) |
 
 The point of the left column: none of these are LangGraph inventions — they are
 real problems any agent hits (how to loop, pause, resume, stop safely, keep a
@@ -557,10 +557,9 @@ primitives, and makes each node independently testable."
 
 ## What's next _(planned)_
 
-- **Step 9 — MCP OAuth + Claude connector.** Bearer/OAuth on the MCP server so
-  it can be a hosted, standalone connector. (See the separate
-  `sisense-admin-mcp` brief.)
-- **Step 10 — LangGraph.** Refactor the hand-rolled loop into named graph nodes
+- **MCP OAuth + Claude connector.** Bearer/OAuth on the MCP server so it can be
+  a hosted, standalone connector. (See the separate `sisense-admin-mcp` brief.)
+- **LangGraph.** Refactor the hand-rolled loop into named graph nodes
   (plan / execute / decide / approval / fan-out).
 - **Level-3 workers (true MAS)** — each independent sub-goal running its OWN
   reactive loop (own transcript, own decide/replan, own budget) and reporting a

@@ -60,10 +60,8 @@ Mode is determined by `_select_tools_for_mode(mode)` in `api_server.py`, which f
 
 ### 3. The agentic loop — plan → execute → replan (llm_agent.py)
 
-> This replaced the old fixed "plan → execute → summarize" three-step pipeline
-> in Step 8. The whole turn is now one reactive loop, `_reactive_loop()` inside
-> `call_llm_with_tools()`. See `AGENT_ARCHITECTURE.md` for the full diagram and
-> the artifact for the visual.
+> The whole turn is one reactive loop, `_reactive_loop()` inside
+> `call_llm_with_tools()`. See `AGENT_ARCHITECTURE.md` for the full diagram.
 
 Industry-standard **plan-and-execute** shape. Named parts (session-invented
 terms in parentheses — kept out of docs, still live in some code identifiers):
@@ -262,8 +260,7 @@ API/UI default is `false` when the field is omitted — set it explicitly.
 both with a `REPLAN:` verb), `VERIFY_GOAL_SYSTEM_PROMPT`,
 `CLARIFY_QUESTION_SYSTEM_PROMPT`, routing/mode-context prompts. Prompts carry
 **only generic strategy** — never scenario-specific rules (failures become eval
-cases, not prompt patches). `SUMMARY_SYSTEM_PROMPT_*` and `PLANNING_SYSTEM_PROMPT`
-are legacy (decide replaced summarize).
+cases, not prompt patches).
 
 **LLM providers:** Azure OpenAI (with AWS Secrets Manager fallback) or Databricks Model Serving. Selected by `LLM_PROVIDER` env var. Config built once at import time into `LLM_CONFIG` frozen dataclass.
 
