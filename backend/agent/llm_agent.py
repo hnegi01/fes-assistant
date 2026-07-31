@@ -864,6 +864,15 @@ async def _reactive_loop(
             await _emit_agent_progress({"phase": "planning", "step": 1, "max_steps": MAX_AGENT_STEPS})
             _raw_plan = await _make_plan(user_text, mode, history, turn_trace_id)
             independent_steps, dependent_steps = _split_dependent_tail(_raw_plan)
+            if len(independent_steps) + len(dependent_steps) == 1 and not history:
+                # Faithfulness guard (code, not prompt): for a fresh single-step
+                # request the user's own message IS the step — the orchestrator's
+                # paraphrase tends to echo the catalog description of whichever
+                # operation matches, and the step text feeds routing + tool
+                # selection downstream. With history present, keep the
+                # orchestrator's line: it may resolve references ("its members")
+                # that the raw text alone cannot.
+                independent_steps, dependent_steps = [user_text], []
             if summ_on:
                 # Dependent steps run too — sequentially, after the results they
                 # need exist. Order: independents first (fan-out set), then tail.

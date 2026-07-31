@@ -118,6 +118,11 @@ Rules:
 - Use the catalog: every step should be achievable with a listed operation, but
   write plain instructions (with the user's specific names/values), NOT
   operation names.
+- Phrase every step in the USER'S own words, never the catalog's. The catalog
+  is only for checking that a step is feasible — do NOT copy or imitate its
+  descriptions. Split and reorder as needed, adding only the minimal glue a
+  standalone step requires. (Pattern: user says "list all <X>" → the step is
+  "List all <X>", NOT the catalog description of whichever operation matches.)
 - Fewest steps that cover the request — one step for a single ask. Never add
   work the user did not ask for.
 - Order by dependency, not by sentence order: steps whose inputs come from an
