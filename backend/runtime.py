@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional, Set, Tuple
 
 from backend.agent import llm_agent
+from backend.agent._tracing import end_turn_trace, start_turn_trace
 from backend.agent.llm_agent import call_llm_with_tools
 from backend.agent.mcp_client import McpClient
 
@@ -491,6 +492,11 @@ async def _run_turn_once(
             prior_loop.get("tool_id"),
         )
 
+    # LangSmith: one root `agent_turn` run per turn; every LLM call and tool
+    # execution attaches as a child via ContextVar. thread_id = the UI session,
+    # so a whole conversation groups in the Threads view. Best-effort only.
+    _last_user = next((m.get("content", "") for m in reversed(messages) if m.get("role") == "user"), "")
+    start_turn_trace(str(_last_user), session_id, "migration" if migration_config else "chat")
     try:
         async with _progress_context(progress_cb):
             reply = await call_llm_with_tools(
@@ -512,17 +518,22 @@ async def _run_turn_once(
 
         logger.info("call_llm_with_tools completed successfully for session %s.", session_id)
         logger.debug("Agent reply (truncated): %s", reply[:500] if isinstance(reply, str) else repr(reply))
+        end_turn_trace(reply=reply if isinstance(reply, str) else None, outcome="ok")
         return reply
 
     except asyncio.CancelledError:
         logger.info("Agent turn cancelled (session_id=%s).", session_id)
+        end_turn_trace(outcome="cancelled")
         raise
 
     except Exception as exc:
         logger.exception("Error during agent turn (session_id=%s): %s", session_id, exc)
+        end_turn_trace(outcome=f"error: {str(exc)[:200]}")
         raise
 
     finally:
+        # Idempotent — a no-op when one of the paths above already closed it.
+        end_turn_trace(outcome="unknown")
         logger.info("=== run_turn_once END (session_id=%s) ===", session_id)
 
 

@@ -35,11 +35,16 @@ litellm.drop_params = True
 
 
 def _configure_langsmith_tracing() -> None:
-    """Wire LiteLLM → LangSmith when LANGSMITH_TRACING=true.
+    """Prepare the process for LangSmith tracing when LANGSMITH_TRACING=true.
 
-    Extracted into a function so tests can call it directly with monkeypatched
-    env vars without reloading the module.
+    Reporting itself is done by backend/agent/_tracing.py via the LangSmith SDK
+    (a proper run tree: root agent_turn + llm/tool children). LiteLLM's bundled
+    "langsmith" callback is deliberately NOT registered: it drops custom
+    metadata keys and posts every call as an isolated root run, so it can
+    neither group a turn's calls nor power the Threads view.
     """
+    litellm.success_callback = []
+    litellm.failure_callback = []
     if os.getenv("LANGSMITH_TRACING", "").strip().lower() == "true":
         # macOS venv Python often lacks system CA certs; point to certifi's bundle.
         try:
@@ -49,12 +54,6 @@ def _configure_langsmith_tracing() -> None:
             os.environ.setdefault("REQUESTS_CA_BUNDLE", certifi.where())
         except ImportError:
             pass
-
-        litellm.success_callback = ["langsmith"]
-        litellm.failure_callback = ["langsmith"]
-    else:
-        litellm.success_callback = []
-        litellm.failure_callback = []
 
 
 _configure_langsmith_tracing()
@@ -85,6 +84,7 @@ LLM_TRACES_PATH = LOG_DIR / "llm_traces.csv"
 # Per-CALL log: one row per LLM call (route/plan/decide/verify/...), all rows of
 # one turn sharing the same trace_id. Join to llm_traces.csv (per-turn) on trace_id.
 LLM_CALLS_PATH = LOG_DIR / "llm_calls.csv"
+TOOL_CALLS_PATH = LOG_DIR / "tool_calls.csv"
 
 logger = logging.getLogger("backend.agent.llm_agent")
 logger.setLevel(_log_level)
@@ -541,3 +541,50 @@ def write_llm_call(
             writer.writerow(row)
     except Exception as exc:  # noqa: BLE001
         logger.warning("Failed to write LLM call trace: %s", exc)
+
+
+_TOOL_CALL_COLUMNS: List[str] = [
+    "timestamp",
+    "trace_id",  # same for every call in one turn — group by this
+    "user_message",
+    "tool_id",
+    "ok",  # True / False
+    "count",  # rows in the result, when list-shaped
+    "latency_ms",
+    "mutates",
+    "error",
+]
+
+
+def write_tool_call(
+    *,
+    tool_id: str,
+    ok: Optional[bool],
+    count: Optional[int],
+    latency_ms: int,
+    mutates: bool = False,
+    error: str = "",
+) -> None:
+    """Append one row per MCP tool execution (tool_calls.csv) — the tool-side
+    twin of write_llm_call. Metadata only: never result payloads."""
+    try:
+        turn = _CURRENT_TURN.get()
+        row = {
+            "timestamp": datetime.datetime.utcnow().isoformat(),
+            "trace_id": turn.get("trace_id", ""),
+            "user_message": turn.get("user_message", ""),
+            "tool_id": tool_id or "unknown",
+            "ok": ok,
+            "count": count if count is not None else "",
+            "latency_ms": latency_ms,
+            "mutates": mutates,
+            "error": (error or "")[:300],
+        }
+        write_header = _csv_needs_header(TOOL_CALLS_PATH, _TOOL_CALL_COLUMNS)
+        with TOOL_CALLS_PATH.open("a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=_TOOL_CALL_COLUMNS, extrasaction="ignore")
+            if write_header:
+                writer.writeheader()
+            writer.writerow(row)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Failed to write tool call trace: %s", exc)

@@ -38,6 +38,7 @@ from ._config import (
 from ._prompts import (
     ROUTING_SYSTEM_PROMPT,
 )
+from ._tracing import log_llm_child
 from .mcp_client import McpClient
 
 logger = _make_module_logger("backend.agent.llm_routing", "llm_routing.log")
@@ -399,26 +400,30 @@ async def call_llm_raw(
     try:
         response = await litellm.acompletion(**kwargs)
     except Exception as exc:
+        _ms = int((time.perf_counter() - _t0) * 1000)
         write_llm_call(
             call_type=label,
             n_messages=len(messages),
             n_tools=len(tools or []),
-            latency_ms=int((time.perf_counter() - _t0) * 1000),
+            latency_ms=_ms,
             ok=False,
             error=str(exc),
         )
+        log_llm_child(label, messages, None, _ms, n_tools=len(tools or []), error=str(exc))
         raise
     data = response.model_dump()
     _usage = data.get("usage") or {}
+    _ms = int((time.perf_counter() - _t0) * 1000)
     write_llm_call(
         call_type=label,
         n_messages=len(messages),
         n_tools=len(tools or []),
-        latency_ms=int((time.perf_counter() - _t0) * 1000),
+        latency_ms=_ms,
         tokens_in=_usage.get("prompt_tokens", 0) or 0,
         tokens_out=_usage.get("completion_tokens", 0) or 0,
         ok=True,
     )
+    log_llm_child(label, messages, data, _ms, n_tools=len(tools or []))
     _log_json_truncated("LLM raw response (truncated)", data)
     return data
 

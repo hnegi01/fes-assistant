@@ -26,6 +26,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import json
+import time
 import uuid
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -51,6 +52,7 @@ from ._config import (
     audit_logger,
     logger,
     set_current_turn,
+    write_tool_call,
 )
 
 # --- _prompts ---
@@ -88,6 +90,7 @@ from ._routing import (
 from ._routing import (
     planner_schema as _planner_schema,
 )
+from ._tracing import log_tool_child
 from .mcp_client import McpClient
 
 # -----------------------------------------------------------------------------
@@ -501,6 +504,36 @@ def _metadata_record(tool_id: str, result: Any) -> Dict[str, Any]:
     return rec
 
 
+async def _invoke_tool_traced(mcp_client: McpClient, tool_id: str, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute one MCP tool call with observability: a `tool` child run in the
+    LangSmith trace and a row in tool_calls.csv. Both carry METADATA ONLY
+    (tool_id, scrubbed args, ok, count, duration) — result payloads never leave
+    for either destination. Errors from the tool propagate unchanged."""
+    meta = TOOL_REGISTRY.get(tool_id) or {}
+    t0 = time.perf_counter()
+    try:
+        result = await mcp_client.invoke_tool(tool_id, args)
+    except Exception as exc:
+        ms = int((time.perf_counter() - t0) * 1000)
+        write_tool_call(
+            tool_id=tool_id, ok=False, count=None, latency_ms=ms, mutates=bool(meta.get("mutates")), error=str(exc)
+        )
+        log_tool_child(tool_id, args, ok=False, count=None, duration_ms=ms, error=str(exc))
+        raise
+    ms = int((time.perf_counter() - t0) * 1000)
+    rec = _metadata_record(tool_id, result)
+    write_tool_call(
+        tool_id=tool_id,
+        ok=rec.get("ok"),
+        count=rec.get("count"),
+        latency_ms=ms,
+        mutates=bool(meta.get("mutates")),
+        error=str(rec.get("error") or ""),
+    )
+    log_tool_child(tool_id, args, ok=rec.get("ok"), count=rec.get("count"), duration_ms=ms, error=rec.get("error"))
+    return result
+
+
 def _describe_results_local(raw_results: List[Tuple[str, Any]]) -> str:
     """Render collected results locally (no LLM) for summarization-OFF final
     answers — the raw data never leaves the process."""
@@ -819,7 +852,7 @@ async def _reactive_loop(
             await _emit_agent_progress(
                 {"phase": "executing", "step": branch_step, "max_steps": MAX_AGENT_STEPS, "tool_id": btool_id}
             )
-            bresult = await mcp_client.invoke_tool(btool_id, bargs)
+            bresult = await _invoke_tool_traced(mcp_client, btool_id, bargs)
             await _emit_agent_progress(
                 {
                     "phase": "completed",
@@ -1233,7 +1266,7 @@ async def _reactive_loop(
         await _emit_agent_progress(
             {"phase": "executing", "step": step_number, "max_steps": MAX_AGENT_STEPS, "tool_id": tool_id}
         )
-        result = await mcp_client.invoke_tool(tool_id, args)
+        result = await _invoke_tool_traced(mcp_client, tool_id, args)
         LAST_TOOL_RESULT = result
         LAST_STEP_RESULTS.append({"step": step_number, "tool_id": tool_id, "result": result})
         raw_results.append((tool_id, result))
@@ -1379,7 +1412,7 @@ async def call_llm_with_tools(
             await _emit_agent_progress(
                 {"phase": "executing", "step": _pl_step, "max_steps": MAX_AGENT_STEPS, "tool_id": _pl_tool_id}
             )
-            result = await mcp_client.invoke_tool(_pl_tool_id, _pl_args)
+            result = await _invoke_tool_traced(mcp_client, _pl_tool_id, _pl_args)
             LAST_TOOL_RESULT = result
             LAST_STEP_RESULTS.append({"step": _pl_step, "tool_id": _pl_tool_id, "result": result})
             await _emit_agent_progress(

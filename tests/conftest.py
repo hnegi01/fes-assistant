@@ -34,5 +34,7 @@ def _no_trace_writes(monkeypatch):
 
     monkeypatch.setattr(cfg, "_write_llm_trace", lambda *a, **k: None)
     monkeypatch.setattr(cfg, "write_llm_call", lambda *a, **k: None)
+    monkeypatch.setattr(cfg, "write_tool_call", lambda *a, **k: None)
     # llm_agent imported _write_llm_trace by name, so patch that binding too.
     monkeypatch.setattr(agent, "_write_llm_trace", lambda *a, **k: None, raising=False)
+    monkeypatch.setattr(agent, "write_tool_call", lambda *a, **k: None, raising=False)

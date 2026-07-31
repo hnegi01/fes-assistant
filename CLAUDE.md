@@ -327,6 +327,7 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 | `FES_VERIFY_MAX_RECHECKS` | `1` | How many times the goal checker may push the loop to run one more step |
 | `FES_MAX_REPLANS` | `1` | How many times per turn the orchestrator may revise the plan after a failed approach (0 = off) |
 | `FES_MAX_PARALLEL_STEPS` | `3` | How many independent plan steps may execute concurrently (1 = off); mutations always sequential |
+| `FES_LANGSMITH_LOG_CONTENT` | `false` | Whether prompt/response content may go to LangSmith (independent of summarization); tool results never go |
 | `FES_LOG_LEVEL` | `INFO` | Log level across all services |
 | `FES_UI_IDLE_TIMEOUT_HOURS` | `9` | Streamlit session idle timeout |
 | `PYSISENSE_MAX_CONCURRENT_MIGRATIONS` | `3` | Max parallel migrations |
