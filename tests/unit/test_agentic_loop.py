@@ -87,10 +87,10 @@ def no_decompose(monkeypatch):
     Neutralise it here (identity) so tests drive call_llm_raw with fixed
     side-effect lists; decomposition behaviour is covered separately."""
 
-    async def _identity(user_text, trace_id):
-        return user_text
+    async def _one_step_plan(user_text, mode, history, trace_id):
+        return [user_text]
 
-    monkeypatch.setattr(m, "_decompose_first_step", _identity)
+    monkeypatch.setattr(m, "_make_plan", _one_step_plan)
 
 
 @pytest.fixture(autouse=True)
@@ -335,13 +335,13 @@ def test_summarization_off_runs_metadata_loop(monkeypatch):
         ]
         return seq[len(sent_to_llm) - 1]
 
-    async def _identity(user_text, trace_id):
-        return user_text
+    async def _one_step_plan(user_text, mode, history, trace_id):
+        return [user_text]
 
     with (
         patch.object(m, "_navigate_to_tools", new=nav),
         patch.object(m, "call_llm_raw", new=_capturing_raw),
-        patch.object(m, "_decompose_first_step", new=_identity),
+        patch.object(m, "_make_plan", new=_one_step_plan),
     ):
         reply = run(m.call_llm_with_tools(messages, GET_USER_TOOLS, client, allow_summarization=False))
 
@@ -371,8 +371,8 @@ def test_summarization_off_adaptive_blocks_gracefully():
     messages = [{"role": "user", "content": "find the datamodels owned by john"}]
     nav = AsyncMock(return_value=(GET_USER_TOOLS, "access_management", "users", 0))
 
-    async def _identity(user_text, trace_id):
-        return user_text
+    async def _one_step_plan(user_text, mode, history, trace_id):
+        return [user_text]
 
     raw = AsyncMock(
         side_effect=[
@@ -383,7 +383,7 @@ def test_summarization_off_adaptive_blocks_gracefully():
     with (
         patch.object(m, "_navigate_to_tools", new=nav),
         patch.object(m, "call_llm_raw", new=raw),
-        patch.object(m, "_decompose_first_step", new=_identity),
+        patch.object(m, "_make_plan", new=_one_step_plan),
     ):
         reply = run(m.call_llm_with_tools(messages, GET_USER_TOOLS, client, allow_summarization=False))
 
@@ -500,3 +500,75 @@ def test_goal_checker_confirms_complete(monkeypatch):
     )
     client.invoke_tool.assert_awaited_once()
     assert reply == "Found the user a@b.com."
+
+
+# ---------------------------------------------------------------------------
+# 11) Plan→replan: decide says REPLAN → strategist revises → new op executes.
+# ---------------------------------------------------------------------------
+
+
+def _plan_text_resp(text):
+    return _text_resp(text)
+
+
+def test_decide_replan_revises_and_continues(monkeypatch):
+    monkeypatch.setattr(m, "MAX_REPLANS", 1)
+    client = _fake_client(
+        results=[
+            {"ok": False, "error": "Group 'x' not found."},  # step 1: wrong approach fails
+            {"ok": True, "result": {"email": "a@b.com", "groups": ["Everyone"]}},  # step 2 after replan
+        ]
+    )
+    reply, _nav, raw = _run_turn(
+        llm_responses=[
+            _plan_resp("dashboard.get_dashboards", "{}"),  # step-1 plan (wrong approach)
+            _text_resp("REPLAN: that approach failed; still need the user's group"),  # decide
+            _plan_text_resp("1. Get the user record for a@b.com"),  # strategist replan
+            _plan_resp("access_management.get_user", '{"user_email":"a@b.com"}', call_id="c2"),  # new plan call
+            _text_resp("a@b.com belongs to the Everyone group."),  # decide: final
+        ],
+        nav_side_effect=[
+            (DASHBOARD_TOOLS, "dashboard", "core", 0),
+            (GET_USER_TOOLS, "access_management", "users", 0),
+        ],
+        client=client,
+    )
+
+    assert client.invoke_tool.await_count == 2
+    second_tool = client.invoke_tool.await_args_list[1].args[0]
+    assert second_tool == "access_management.get_user"
+    assert reply == "a@b.com belongs to the Everyone group."
+
+
+def test_replan_budget_exhausted_gives_up_gracefully(monkeypatch):
+    monkeypatch.setattr(m, "MAX_REPLANS", 0)  # replanning disabled
+    client = _fake_client(results=[{"ok": False, "error": "not found"}])
+    reply, _nav, _raw = _run_turn(
+        llm_responses=[
+            _plan_resp("dashboard.get_dashboards", "{}"),  # step 1 fails
+            _text_resp("REPLAN: approach failed"),  # decide wants a replan
+            _text_resp("Here is what I found so far."),  # finalize call
+        ],
+        nav_side_effect=[(DASHBOARD_TOOLS, "dashboard", "core", 0)],
+        client=client,
+    )
+
+    client.invoke_tool.assert_awaited_once()  # nothing further executed
+    assert isinstance(reply, str) and reply
+
+
+def test_replan_strategist_giveup_message_surfaces(monkeypatch):
+    monkeypatch.setattr(m, "MAX_REPLANS", 1)
+    client = _fake_client(results=[{"ok": False, "error": "not found"}])
+    reply, _nav, _raw = _run_turn(
+        llm_responses=[
+            _plan_resp("dashboard.get_dashboards", "{}"),  # step 1 fails
+            _text_resp("REPLAN: approach failed"),  # decide
+            _text_resp("GIVEUP: There is no operation that can retrieve this."),  # strategist
+            _text_resp("Summary of what ran."),  # finalize
+        ],
+        nav_side_effect=[(DASHBOARD_TOOLS, "dashboard", "core", 0)],
+        client=client,
+    )
+
+    assert "no operation that can retrieve this" in reply

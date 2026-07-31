@@ -23,9 +23,7 @@ logger = _make_module_logger("backend.agent.llm_registry", "llm_registry.log")
 
 _registry_env = os.getenv("PYSISENSE_REGISTRY_PATH")
 REGISTRY_PATH: Path = (
-    Path(_registry_env)
-    if _registry_env
-    else ROOT_DIR / "config" / "tools.registry.with_examples.json"
+    Path(_registry_env) if _registry_env else ROOT_DIR / "config" / "tools.registry.with_examples.json"
 )
 
 _registry_cache_mtime: Optional[float] = None

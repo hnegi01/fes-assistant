@@ -228,16 +228,21 @@ def _render_agent_progress(
     placeholder: Any,
     completed_steps: List[Dict[str, Any]],
     status_line: Optional[str],
+    plan_text: Optional[str] = None,
 ) -> None:
-    """Render the agentic-loop progress block: collapsed checklist of completed
-    steps + a live status line for the current phase."""
+    """Render the agentic-loop progress block: the current plan (when the
+    strategist made one), a collapsed checklist of completed steps, and a live
+    status line for the current phase."""
     if placeholder is None:
         return
+    md = ""
+    if plan_text:
+        plan_lines = "\n".join(f"> {ln}" for ln in plan_text.splitlines())
+        md += f"**📋 Plan**\n{plan_lines}\n\n"
     lines: List[str] = []
     for s in completed_steps:
         mark = "✅" if s.get("ok") else "⚠️"
         lines.append(f"- {mark} Step {s.get('step')}: `{s.get('tool_id', '?')}`")
-    md = ""
     if lines:
         md += "\n".join(lines) + "\n\n"
     if status_line:
@@ -253,6 +258,10 @@ def _agent_progress_status_line(data: Dict[str, Any]) -> Optional[str]:
     tool_id = data.get("tool_id")
     if phase == "deciding":
         return "🤔 Checking progress against your request…"
+    if phase == "replanning":
+        return "🧠 That approach didn't work — rethinking the plan…"
+    if phase == "replanned":
+        return "📋 Plan revised — continuing…"
     if phase == "verifying":
         return "🔎 Double-checking the result covers your whole request…"
     if phase == "planning":
@@ -525,6 +534,7 @@ def call_backend_turn(
 
         progress_lines: List[str] = []
         agent_steps: List[Dict[str, Any]] = []
+        agent_plan: Optional[str] = None
 
         for event, data in _iter_sse_events(resp):
             if event == "keepalive":
@@ -535,11 +545,15 @@ def call_backend_turn(
 
             # Agentic-loop step progress (Step 8) — dedicated checklist rendering.
             if event == "progress" and data.get("type") == "agent_progress":
+                if data.get("plan"):
+                    agent_plan = data["plan"]
                 if data.get("phase") == "completed":
                     agent_steps.append({"step": data.get("step"), "tool_id": data.get("tool_id"), "ok": data.get("ok")})
-                    _render_agent_progress(progress_placeholder, agent_steps, None)
+                    _render_agent_progress(progress_placeholder, agent_steps, None, agent_plan)
                 else:
-                    _render_agent_progress(progress_placeholder, agent_steps, _agent_progress_status_line(data))
+                    _render_agent_progress(
+                        progress_placeholder, agent_steps, _agent_progress_status_line(data), agent_plan
+                    )
                 if progress_callback is not None:
                     line = _agent_progress_status_line(data)
                     if line:

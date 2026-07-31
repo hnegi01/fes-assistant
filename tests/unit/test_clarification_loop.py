@@ -98,10 +98,10 @@ def no_decompose(monkeypatch):
     summ modes). Neutralise it (identity, no call_llm_raw) so tests drive
     call_llm_raw with fixed side-effect lists."""
 
-    async def _identity(user_text, trace_id):
-        return user_text
+    async def _one_step_plan(user_text, mode, history, trace_id):
+        return [user_text]
 
-    monkeypatch.setattr(m, "_decompose_first_step", _identity)
+    monkeypatch.setattr(m, "_make_plan", _one_step_plan)
 
 
 def _tool_def(name, schema):
@@ -444,13 +444,13 @@ def test_approved_mutation_executes():
         ]
     )
 
-    async def _identity(user_text, trace_id):
-        return user_text
+    async def _one_step_plan(user_text, mode, history, trace_id):
+        return [user_text]
 
     with (
         patch.object(m, "_navigate_to_tools", new=nav),
         patch.object(m, "call_llm_raw", new=raw),
-        patch.object(m, "_decompose_first_step", new=_identity),
+        patch.object(m, "_make_plan", new=_one_step_plan),
     ):
         reply = run(
             m.call_llm_with_tools(

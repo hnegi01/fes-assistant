@@ -39,6 +39,7 @@ from ._config import (
     LLM_PLANNING_HISTORY_TURNS,
     LLM_PROVIDER,
     MAX_AGENT_STEPS,
+    MAX_REPLANS,
     REQUIRE_MUTATION_CONFIRM,
     VERIFY_GOAL,
     VERIFY_MAX_RECHECKS,
@@ -54,7 +55,8 @@ from ._config import (
 from ._prompts import (
     AGENT_DECIDE_NODATA_SYSTEM_PROMPT,
     AGENT_DECIDE_SYSTEM_PROMPT,
-    AGENT_FIRST_STEP_SYSTEM_PROMPT,
+    AGENT_PLAN_SYSTEM_PROMPT,
+    AGENT_REPLAN_SYSTEM_PROMPT,
     CHAT_PLANNING_CONTEXT_PROMPT,
     CLARIFY_QUESTION_SYSTEM_PROMPT,
     MIGRATION_PLANNING_CONTEXT_PROMPT,
@@ -362,31 +364,98 @@ async def _generate_mutation_explanation(
 # -----------------------------------------------------------------------------
 # Agentic loop (Step 8) — decide → route → plan → execute, until done or capped
 # -----------------------------------------------------------------------------
-async def _decompose_first_step(user_text: str, trace_id: str) -> str:
-    """Return the single first operation to route/plan for this turn.
+def _capability_catalog(mode: str) -> str:
+    """One line per tool — `tool_id: first line of description` — for the
+    strategist (plan/replan). NO schemas: the strategist writes prose steps, it
+    never emits tool calls, so the compact full catalog is safe where showing
+    119 schemas to the CALLING planner would not be. Mode-filtered the same way
+    the registry is (migration tools only in migration mode)."""
+    lines: List[str] = []
+    for tid in sorted(TOOL_REGISTRY):
+        meta = TOOL_REGISTRY[tid]
+        is_migration = meta.get("module") == "migration"
+        if (mode == "migration") != is_migration:
+            continue
+        desc = (meta.get("description") or "").strip().splitlines()
+        lines.append(f"- {tid}: {desc[0] if desc else ''}")
+    return "\n".join(lines)
 
-    Compound requests ("all datamodels and all groups") confuse step-1 routing
-    and planning, which see two intents and mis-pick. This returns just the
-    first sub-task so step 1 routes on a clean single intent (like every
-    continuation step does); the decide loop handles the remaining parts. For a
-    single-intent message it returns the message ~unchanged. Falls back to the
-    original text on any failure — never blocks the turn."""
+
+def _parse_plan_lines(text: str) -> List[str]:
+    """Extract the numbered steps from a strategist reply."""
+    import re
+
+    steps = []
+    for ln in (text or "").splitlines():
+        m = re.match(r"\s*\d+[.)]\s*(.+)", ln)
+        if m and m.group(1).strip():
+            steps.append(m.group(1).strip())
+    return steps
+
+
+async def _make_plan(user_text: str, mode: str, history: List[Dict[str, Any]], trace_id: str) -> List[str]:
+    """The upfront strategist call: request + capability catalog → ordered plan
+    (a list of one-operation instructions). Falls back to [user_text] on any
+    failure — planning must never block a turn. Privacy-safe in both summ modes:
+    it reads only the request text and the catalog, never tool results."""
     try:
         data = await call_llm_raw(
             [
-                {"role": "system", "content": AGENT_FIRST_STEP_SYSTEM_PROMPT},
+                {"role": "system", "content": AGENT_PLAN_SYSTEM_PROMPT},
+                {"role": "system", "content": f"Operation catalog:\n{_capability_catalog(mode)}"},
+                *history,
                 {"role": "user", "content": user_text},
             ],
             tools=None,
             trace_id=trace_id,
-            label="decompose",
+            label="strategy",
+        )
+        text, _ = _pick_tool_calls_from_llm_response(data)
+        steps = _parse_plan_lines(text or "")
+        if steps:
+            return steps
+        # A bare unnumbered one-liner still counts as a single-step plan.
+        text = (text or "").strip()
+        return [text] if text else [user_text]
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Plan call failed (%s); using the raw message as a single step.", exc)
+        return [user_text]
+
+
+async def _replan(
+    user_text: str,
+    mode: str,
+    transcript: List[Dict[str, Any]],
+    reason: str,
+    trace_id: str,
+) -> Tuple[List[str], str]:
+    """The recovery strategist: request + what ran (with outcomes) + why the
+    executor gave up + the catalog → a REVISED plan for the remaining work, or
+    ("GIVEUP", <user-facing sentence>) when no alternative exists. Returns
+    (steps, giveup_message) — one of the two is empty."""
+    try:
+        data = await call_llm_raw(
+            [
+                {"role": "system", "content": AGENT_REPLAN_SYSTEM_PROMPT},
+                {"role": "system", "content": f"Operation catalog:\n{_capability_catalog(mode)}"},
+                {"role": "user", "content": user_text},
+                *transcript,
+                {"role": "user", "content": f"The executor gave up on the current plan because: {reason}"},
+            ],
+            tools=None,
+            trace_id=trace_id,
+            label="replan",
         )
         text, _ = _pick_tool_calls_from_llm_response(data)
         text = (text or "").strip()
-        return text or user_text
+        if text.upper().startswith("GIVEUP"):
+            msg = text.split(":", 1)[1].strip() if ":" in text else ""
+            return [], msg or "I couldn't find another way to do this with the available operations."
+        steps = _parse_plan_lines(text)
+        return (steps, "") if steps else ([], "I couldn't find another way to do this with the available operations.")
     except Exception as exc:  # noqa: BLE001
-        logger.warning("First-step decomposition failed (%s); using full message.", exc)
-        return user_text
+        logger.warning("Replan call failed (%s).", exc)
+        return [], "I couldn't work out an alternative approach."
 
 
 def _metadata_record(tool_id: str, result: Any) -> Dict[str, Any]:
@@ -597,6 +666,8 @@ async def _reactive_loop(
     first_tool_hint: Optional[Tuple[str, Dict[str, Any], Dict[str, Any]]] = None
     pending_seed = seed_call  # consumed on the first iteration only
     checker_overrides = 0  # times the goal checker has pushed a "done" back into the loop
+    replans_used = 0  # times the strategist revised the plan this turn
+    next_op_override: Optional[str] = None  # set by a replan; consumed instead of a decide call
 
     def _done(answer: str) -> str:
         trace["outcome"] = "ok"
@@ -619,6 +690,29 @@ async def _reactive_loop(
             turn_trace_id=turn_trace_id,
         )
 
+    async def _attempt_replan(reason: str) -> Tuple[Optional[str], str]:
+        """Ask the strategist for a revised plan after the current approach failed.
+        Returns (next_op, giveup_msg): next_op None = no viable alternative
+        (budget spent, or the strategist gave up)."""
+        nonlocal replans_used
+        if replans_used >= MAX_REPLANS:
+            return None, ""
+        replans_used += 1
+        trace["replans"] = replans_used
+        await _emit_agent_progress({"phase": "replanning", "step": steps_executed, "max_steps": MAX_AGENT_STEPS})
+        new_steps, giveup = await _replan(user_text, mode, transcript, reason, turn_trace_id)
+        if not new_steps:
+            return None, giveup
+        plan_text = "\n".join(f"{i + 1}. {st}" for i, st in enumerate(new_steps))
+        transcript.append({"role": "assistant", "content": f"REVISED PLAN (after: {reason}):\n{plan_text}"})
+        await _emit_agent_progress(
+            {"phase": "replanned", "step": steps_executed, "max_steps": MAX_AGENT_STEPS, "plan": plan_text}
+        )
+        logger.info(
+            "Replanned (%d/%d) after: %s -> next: %s", replans_used, MAX_REPLANS, reason[:120], new_steps[0][:120]
+        )
+        return new_steps[0], ""
+
     while True:
         is_first = steps_executed == 0
         step_number = steps_executed + 1
@@ -633,9 +727,19 @@ async def _reactive_loop(
             pending_seed = None
 
         elif is_first:
-            # Fresh turn: decompose to the first sub-task, then route + plan it.
+            # Fresh turn: the strategist drafts the full plan (request + capability
+            # catalog, no schemas), the loop executes its first operation. The plan
+            # is stashed in the transcript so decide/verify follow it, and emitted
+            # to the UI for transparency.
             await _emit_agent_progress({"phase": "planning", "step": 1, "max_steps": MAX_AGENT_STEPS})
-            first_op = await _decompose_first_step(user_text, turn_trace_id)
+            plan_steps = await _make_plan(user_text, mode, history, turn_trace_id)
+            if len(plan_steps) > 1:
+                _plan_text = "\n".join(f"{i + 1}. {st}" for i, st in enumerate(plan_steps))
+                transcript.append({"role": "assistant", "content": f"PLAN:\n{_plan_text}"})
+                await _emit_agent_progress(
+                    {"phase": "planned", "step": 1, "max_steps": MAX_AGENT_STEPS, "plan": _plan_text}
+                )
+            first_op = plan_steps[0] if plan_steps else user_text
             step_message = {"role": "user", "content": first_op if (first_op or "").strip() else user_text}
 
             if mode == "migration":
@@ -683,6 +787,11 @@ async def _reactive_loop(
                 _write_llm_trace(trace)
                 return content or ""
 
+        elif next_op_override is not None:
+            # A replan already chose the next operation — skip the decide call.
+            remains = next_op_override
+            next_op_override = None
+
         else:
             # ---------------------------------------------------------- decide
             await _emit_agent_progress({"phase": "deciding", "step": steps_executed, "max_steps": MAX_AGENT_STEPS})
@@ -699,23 +808,38 @@ async def _reactive_loop(
                 _write_llm_trace(trace)
                 return _describe_results_local(raw_results)
 
-            # Hedge handling: a CONTINUE line anywhere means more work — it wins.
+            # Hedge handling: an action line anywhere wins over surrounding prose.
             dlines = [ln.strip() for ln in decide_text.splitlines() if ln.strip()]
             continue_line = next((ln for ln in dlines if ln.upper().startswith("CONTINUE:")), None)
+            replan_line = next((ln for ln in dlines if ln.upper().startswith("REPLAN:")), None)
             blocked_line = next((ln for ln in dlines if ln.upper().startswith("BLOCKED:")), None)
 
-            if continue_line is None:
-                if (not summ_on) and blocked_line is not None:
-                    reason = blocked_line.split(":", 1)[1].strip()
-                    trace["outcome"] = "loop_blocked_no_data"
+            if continue_line is not None:
+                remains = continue_line.split(":", 1)[1].strip()
+                logger.info("Agent loop step %d done; continuing: %s", steps_executed, remains[:200])
+            elif replan_line is not None:
+                # The last step's outcome contradicts the plan → strategist revises
+                # with the capability catalog (a retry that CHANGES approach).
+                reason = replan_line.split(":", 1)[1].strip()
+                op, giveup = await _attempt_replan(reason)
+                if op is None:
+                    trace["outcome"] = "replan_giveup"
                     trace["agent_steps"] = steps_executed
                     _write_llm_trace(trace)
-                    return (
-                        "I did the parts I can without reading returned data, but the rest needs a value "
-                        f"from an earlier step that I can't see with summarization off ({reason}). "
-                        "Turn summarization on to let me continue.\n\n" + _describe_results_local(raw_results)
-                    )
-
+                    prefix = f"{giveup}\n\n" if giveup else ""
+                    return prefix + await _finalize()
+                remains = op
+            elif (not summ_on) and blocked_line is not None:
+                reason = blocked_line.split(":", 1)[1].strip()
+                trace["outcome"] = "loop_blocked_no_data"
+                trace["agent_steps"] = steps_executed
+                _write_llm_trace(trace)
+                return (
+                    "I did the parts I can without reading returned data, but the rest needs a value "
+                    f"from an earlier step that I can't see with summarization off ({reason}). "
+                    "Turn summarization on to let me continue.\n\n" + _describe_results_local(raw_results)
+                )
+            else:
                 # VERIFY #3 (goal): the decide call (maker) thinks it's done. An
                 # independent checker re-reads the whole request against the
                 # results and can push one more step if something was missed.
@@ -738,27 +862,32 @@ async def _reactive_loop(
                         return _done(answer)
                 else:
                     return _done(answer)
-            else:
-                remains = continue_line.split(":", 1)[1].strip()
-                logger.info("Agent loop step %d done; continuing: %s", steps_executed, remains[:200])
 
+        # ------------------------------------------------ route + plan (steps > 0)
+        # Runs for both a decide CONTINUE and a replan-injected op (`calls` is
+        # already set on the first step / clarification-seed paths).
+        if not calls:
             if steps_executed >= MAX_AGENT_STEPS:
                 trace["outcome"] = "step_cap"
                 trace["agent_steps"] = steps_executed
                 _write_llm_trace(trace)
                 return _loop_partial_message(steps_executed, remains, "per-turn step limit reached")
 
-            # ------------------------------------------------------- route + plan
             await _emit_agent_progress({"phase": "planning", "step": step_number, "max_steps": MAX_AGENT_STEPS})
             step_message = {"role": "user", "content": remains}
             nav_tools, nav_pkg, nav_mixin, _ms = await _navigate_to_tools(step_message, [], turn_trace_id)
             if (not nav_tools) and nav_pkg and nav_pkg != "__unclear__":
                 nav_tools = _load_all_package_tools(nav_pkg)
             if not nav_tools:
+                # No drawer fits this op — let the strategist rephrase/reroute once.
+                op, giveup = await _attempt_replan(f"no matching operation found for: {remains}")
+                if op:
+                    next_op_override = op
+                    continue
                 trace["outcome"] = "loop_routing_dead_end"
                 trace["agent_steps"] = steps_executed
                 _write_llm_trace(trace)
-                return await _finalize()
+                return (f"{giveup}\n\n" if giveup else "") + await _finalize()
 
             planning_messages = [
                 {"role": "system", "content": PLANNING_SYSTEM_PROMPT},
@@ -785,10 +914,15 @@ async def _reactive_loop(
                     except Exception:  # noqa: BLE001
                         calls = []
             if not calls:
+                # The planner couldn't pick a tool for this op — strategist retry.
+                op, giveup = await _attempt_replan(f"could not pick an operation for: {remains}")
+                if op:
+                    next_op_override = op
+                    continue
                 trace["outcome"] = "loop_planning_dead_end"
                 trace["agent_steps"] = steps_executed
                 _write_llm_trace(trace)
-                return await _finalize()
+                return (f"{giveup}\n\n" if giveup else "") + await _finalize()
 
         # ============================================ one tool for this iteration
         call = calls[0]

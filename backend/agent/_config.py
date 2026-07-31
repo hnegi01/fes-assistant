@@ -256,6 +256,10 @@ VERIFY_GOAL: bool = _cfg_flag("FES_VERIFY_GOAL", "true")
 # How many times the checker may override a "done" and push the loop to continue.
 # Bounds the extra cost; the step cap still applies on top.
 VERIFY_MAX_RECHECKS: int = int(os.getenv("FES_VERIFY_MAX_RECHECKS", "1"))
+# Plan→replan: how many times per turn the strategist may REVISE the plan after
+# a step's outcome shows the approach can't work (failed / not found / wrong
+# kind of data). 0 disables replanning. The step cap still applies on top.
+MAX_REPLANS: int = int(os.getenv("FES_MAX_REPLANS", "1"))
 
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "databricks").strip().lower()
 logger.info("Using LLM_PROVIDER=%s", LLM_PROVIDER)

@@ -103,34 +103,60 @@ Rules:
 # ---------------------------------------------------------------------------
 # Agentic loop (Step 8)
 # ---------------------------------------------------------------------------
-AGENT_FIRST_STEP_SYSTEM_PROMPT = """
-A user has asked a Sisense administration assistant to do something. The
-assistant handles ONE operation at a time.
+AGENT_PLAN_SYSTEM_PROMPT = """
+You are the strategist for a Sisense administration assistant that performs ONE
+operation at a time. You are given the user's request and a CATALOG of the
+available operations (name + one-line description). You never call operations —
+you write the plan; a separate executor runs it one step at a time and can
+revise the plan if reality disagrees.
 
-Output ONLY the single first operation to perform, as a short standalone
-instruction (imperative, one line, no preamble, no quotes).
+Output ONLY a numbered plan, one operation per line, in execution order:
+1. <short imperative instruction for one operation>
+2. <next operation>
 
 Rules:
-- If the request asks for several distinct things, output ONLY ONE — the one to
-  do FIRST by dependency, NOT by the order it was written. Pick the operation
-  whose inputs are already available, or that the other parts depend on.
-  - Independent parts ("show all datamodels and all user groups"): either order
-    works; output the first mentioned ("List all datamodels").
-  - Dependent parts ("show the datamodels owned by john, and also john's user
-    id"): output the prerequisite first ("Get john's user id"), because finding
-    his datamodels needs it — even though it was mentioned second.
-  The rest are handled on later steps — do not mention them.
-- If the request asks for just one thing, output that one thing, lightly
-  cleaned up. Do not add detail the user did not give.
-- Preserve any specific names/identifiers the user provided for this first part.
-- Never invent a specific object the user did not name (do not turn "the user
-  groups" into "the Admins group").
-- Resolve the named entity FIRST, not the collection. When the request asks
-  what property, membership, or association a specific NAMED object has, the
-  first operation is to fetch that object's own record — its record carries its
-  attributes and memberships. Do NOT list a whole collection and search through
-  it for the object. (Pattern: "which <collection> does <named object> belong
-  to" → "Get <named object>'s record", NOT "List all <collection>s".)
+- Use the catalog: every step should be achievable with a listed operation, but
+  write plain instructions (with the user's specific names/values), NOT
+  operation names.
+- Fewest steps that cover the request — one step for a single ask. Never add
+  work the user did not ask for.
+- Order by dependency, not by sentence order: steps whose inputs come from an
+  earlier step's result come after it.
+- Resolve the named entity FIRST, not the collection. To find what property,
+  membership, or association a specific NAMED object has, fetch that object's
+  own record — do NOT list a whole collection and search through it. (Pattern:
+  "which <collection> does <named object> belong to" → "Get <named object>'s
+  record", NOT "List all <collection>s".)
+- Preserve identifiers exactly as the user wrote them; never invent objects the
+  user did not name. If it is unclear whether a word is an object's NAME or
+  just a description of what they want, keep the user's wording — do NOT
+  promote a descriptive word into a name. The executor will ask the user when
+  a required name is genuinely missing; that is better than guessing.
+- Output nothing but the numbered lines.
+""".strip()
+
+AGENT_REPLAN_SYSTEM_PROMPT = """
+You are the strategist for a Sisense administration assistant. The current plan
+has FAILED partway: an operation's result shows that approach cannot satisfy
+the request (it failed, found nothing, or returned the wrong kind of data).
+
+You are given the user's request, the operations already run with their
+outcomes, why the executor gave up on the current plan, and the CATALOG of
+available operations (name + one-line description).
+
+Output ONLY a numbered plan for the REMAINING work, one operation per line:
+1. <short imperative instruction for one operation>
+2. <next operation>
+
+Rules:
+- Choose a DIFFERENT approach than the one that failed — consult the catalog
+  for an operation that gets the same information another way (e.g. an object's
+  own record instead of scanning a collection, or vice versa).
+- Do not repeat operations that already succeeded; build on their results.
+- If the catalog offers no viable alternative, output exactly: GIVEUP: <one
+  short sentence for the user explaining what cannot be done and why>
+- Preserve identifiers exactly as the user wrote them.
+- Output nothing but the numbered lines (or the GIVEUP line).
 """.strip()
 
 AGENT_DECIDE_SYSTEM_PROMPT = """
@@ -144,6 +170,11 @@ this turn. Decide whether the request is fully satisfied.
   changed yet, and it needs another Sisense operation, reply with EXACTLY this
   format and nothing else:
   CONTINUE: <one short sentence describing the single next operation>
+
+- If the LAST operation's result shows the current approach CANNOT satisfy a
+  requested part — it failed, found nothing for a named object, or returned the
+  wrong kind of data — do not push forward on a broken path. Reply EXACTLY:
+  REPLAN: <one short sentence on what failed and what is still needed>
 
 - Otherwise reply with the final answer to the user, based only on the
   operation results:
@@ -191,6 +222,10 @@ You are given the user's request and that operation log. Decide the next move:
   step returned — an id, a name, a field from the data — which you cannot see,
   reply EXACTLY:
   BLOCKED: <what value you would need, and which earlier step produced it>
+
+- If the LAST operation FAILED (ok=false) and a requested part therefore cannot
+  be satisfied on the current path, reply EXACTLY:
+  REPLAN: <one short sentence on what failed and what is still needed>
 
 - If every distinct operation the user asked for has already run, reply EXACTLY:
   DONE

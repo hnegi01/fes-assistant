@@ -263,6 +263,7 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 | `FES_CLARIFY_MAX_ATTEMPTS` | `2` | Max clarifying questions before the agent gives up and states what it needs |
 | `FES_VERIFY_GOAL` | `true` | Independent goal checker (verify #3): re-checks a "done" answer against the request before accepting it |
 | `FES_VERIFY_MAX_RECHECKS` | `1` | How many times the goal checker may push the loop to run one more step |
+| `FES_MAX_REPLANS` | `1` | How many times per turn the strategist may revise the plan after a failed approach (0 = off) |
 | `FES_LOG_LEVEL` | `INFO` | Log level across all services |
 | `FES_UI_IDLE_TIMEOUT_HOURS` | `9` | Streamlit session idle timeout |
 | `PYSISENSE_MAX_CONCURRENT_MIGRATIONS` | `3` | Max parallel migrations |

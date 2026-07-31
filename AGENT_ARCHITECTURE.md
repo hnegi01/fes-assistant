@@ -19,7 +19,7 @@ Each LLM call sees only what it needs:
 
 | Call | Sees | Decides |
 |---|---|---|
-| **Decompose** | your message | what is the *first* single operation? |
+| **Plan (strategist)** | your message + capability catalog (one-liners) | the ordered plan; its first operation starts the loop |
 | **Route L1** | one sub-task | which of ~12 packages? |
 | **Route L2** | one sub-task | which mixin within that package? |
 | **Plan** | one sub-task + ~10 tools | pick exactly ONE tool + its arguments |
@@ -55,15 +55,20 @@ generic tool-executor over the PySisense SDK; it has no notion of the loop.
 ## The agentic loop (Step 8)
 
 One user turn can chain multiple tool executions. It is a single loop
-(`_reactive_loop`), run again and again until the goal is met — the "what's
-next?" step is a decompose on the first pass and a decide on every pass after.
-Each lap executes **exactly one** SDK call.
+(`_reactive_loop`) wrapped in **plan → execute → replan**: on the first pass a
+strategist call drafts the full plan (request + a compact capability catalog —
+tool one-liners, no schemas) and the plan is shown to the user; every later pass
+a decide call picks the next move. When a step's outcome shows the approach
+cannot work (failed / found nothing / wrong kind of data), decide says
+`REPLAN:` and the strategist revises the plan with the catalog — a retry that
+CHANGES approach, budgeted by `FES_MAX_REPLANS`. Each lap executes **exactly
+one** SDK call.
 
 ```mermaid
 flowchart TD
     U(["🧑 User message"]) --> WN
 
-    WN{{"WHAT'S NEXT?<br/>step 0 · decompose the request<br/>step N · decide from history"}}
+    WN{{"WHAT'S NEXT?<br/>step 0 · PLAN (strategist + catalog)<br/>step N · decide · REPLAN on failure"}}
     WN -->|"DONE · final answer"| ANS(["💬 Reply to user"])
     WN -->|"BLOCKED · summ-off adaptive"| ANS
     WN -->|"CONTINUE: next op"| RT
@@ -156,8 +161,8 @@ A turn is **one loop** (`_reactive_loop`), the same body every step:
 
 ```
 loop, until done:
-    WHAT'S NEXT?          step 0 → DECOMPOSE the request to its first sub-task
-                          step N → DECIDE: CONTINUE <next> · DONE · (off) BLOCKED
+    WHAT'S NEXT?          step 0 → PLAN: strategist + catalog → ordered plan (shown)
+                          step N → DECIDE: CONTINUE · REPLAN · DONE · (off) BLOCKED
     ROUTE L1              which package? (of ~12)
     ROUTE L2              which mixin? (→ ~10 tools)
     PLAN                  pick ONE tool + args from those ~10
@@ -423,7 +428,8 @@ part. This section is the glossary + the mapping to fill in after Step 10.
 
 | Term | What it does | Where it lives now |
 |---|---|---|
-| **Decompose** | first pass of the loop: request → first sub-task | `_decompose_first_step` (called in `_reactive_loop` when `steps==0`) |
+| **Plan (strategist)** | request + capability catalog (tool one-liners, NO schemas) → ordered plan; step 1 seeds the loop, plan shown in UI | `_make_plan` (in `_reactive_loop` when `steps==0`) |
+| **Replan (strategist)** | failed approach + catalog → revised plan for remaining work, or GIVEUP; budget `FES_MAX_REPLANS` | `_replan` / `_attempt_replan`; decide's `REPLAN:` verb + routing/planning dead-ends trigger it |
 | **Route** | narrows 119 tools → one package → one mixin (~10 tools) | `_navigate_to_tools` (`_routing.py`) |
 | **Plan** | given one sub-task + ~10 tools, pick ONE tool + args | planning `call_llm_raw(..., tools=...)` |
 | **Execute** | run the chosen tool via MCP → Sisense | `mcp_client.invoke_tool` |
@@ -450,7 +456,7 @@ you use LangGraph here?"_ Verify/adjust each row once Step 10 is built.
 | Mutation gate → return, resume next turn | **interrupt** (human-in-the-loop) |
 | The dict passed between steps (goal, transcript, results) | the graph **state** object |
 | Graceful-stop terminal returns | **END** node / terminal edges |
-| _(new in Step 10)_ plan → replan | a `plan` node + a **replan edge** on divergence |
+| Plan → replan (strategist + capability catalog) | a `plan` node + a **replan edge** on divergence |
 | _(new in Step 10)_ cross-package parallel | **fan-out / fan-in** (parallel branches) |
 
 The point of the left column: none of these are LangGraph inventions — they are
