@@ -17,4 +17,7 @@ ignore = []
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit"]
-markers = ["integration: marks tests as integration tests (require live stack + real creds)"]
+markers = [
+    "integration: marks tests as integration tests (require live stack + real creds)",
+    "eval: planner-behaviour regression battery of real prompts that once failed (subset of integration)",
+]

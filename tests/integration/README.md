@@ -65,7 +65,20 @@ docker compose up --build
 
 # 3. Run only integration tests
 pytest tests/integration/ -v -m integration
+
+# 3b. Run only the planner-behaviour EVAL battery (test_evals_planner.py)
+pytest tests/integration/ -v -m eval
 ```
+
+## Evals vs integration tests
+
+`test_evals_planner.py` is a **regression battery of real prompts that once
+failed** — it asserts planner *strategy* (which tools were picked/avoided, what
+the answer may claim), not wiring. The rule that keeps prompts from becoming
+whack-a-mole: **prompts carry only generic strategy principles; every
+scenario-specific failure becomes an eval case instead of a prompt rule.** Any
+prompt change must pass the whole battery, so fixing one scenario can't silently
+break another. Adding a case = appending one dict to `EVAL_CASES`.
 
 ## Why they are not in CI
 

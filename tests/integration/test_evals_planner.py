@@ -1,0 +1,111 @@
+"""
+Planner-behaviour EVALS — a regression battery of real prompts that once failed.
+
+This is not a wiring test (that's the other integration files): each case here
+records a live failure we diagnosed, and asserts the *strategy* the agent should
+use — which tools it picks / avoids, and what its answer must (not) claim. The
+point is to end prompt whack-a-mole: any prompt change is validated against ALL
+recorded scenarios at once, instead of fixing one and silently breaking another.
+
+Adding a case = appending one dict to EVAL_CASES (no new code):
+  prompt               - the user message, verbatim
+  expect_tools_any     - at least one executed tool id must contain one of these
+  forbid_tools         - no executed tool id may contain any of these
+  expect_reply_any     - reply must contain at least one of these (case-insensitive)
+  forbid_reply         - reply must contain none of these (case-insensitive)
+  origin               - date + one line on the failure this guards against
+
+Run (cred-gated like all integration tests; skipped without config):
+    pytest tests/integration/test_evals_planner.py -m eval -v
+
+Like all LLM-judgment tests these are non-deterministic: re-run a single failure
+once before treating it as real (see tests/integration/README.md).
+"""
+
+import uuid
+
+import httpx
+import pytest
+
+EVAL_CASES = [
+    {
+        "id": "role-lookup-then-users-with-role",
+        "prompt": "what role does himanshu.negi@sisense.com has? " "Also find all the users belong to that role",
+        # Must resolve the user's record; a role is answered from user data.
+        "expect_tools_any": ["get_user"],
+        # 2026-07-30 failure: checker pushed users_per_group("admin") — treated
+        # the admin ROLE as a GROUP; "group not found" polluted the answer.
+        "forbid_tools": ["users_per_group"],
+        "expect_reply_any": ["admin"],
+        "forbid_reply": ["not found", "does not exist"],
+        "origin": "2026-07-30: role treated as group; wrong extra step users_per_group('admin')",
+    },
+    {
+        "id": "group-membership-via-user-record",
+        "prompt": "can you tell which group himanshu.negi@sisense.com belongs to "
+        "and then show all user belonging to that group",
+        # Must fetch the user's record first (it lists GROUP_NAMES), then the group.
+        "expect_tools_any": ["get_user"],
+        # 2026-07-31 failure: enumerated ALL groups (users_per_group_all) and
+        # scanned for the user instead of reading their record; dead-ended.
+        "forbid_tools": ["users_per_group_all"],
+        "expect_reply_any": ["everyone"],
+        "forbid_reply": ["does not appear in any group", "cannot determine"],
+        "origin": "2026-07-31: enumerated all groups to find one user's membership",
+    },
+    {
+        "id": "group-membership-typo-email-honest-failure",
+        "prompt": "can you tell which group himanshu.negi@sisense belongs to "
+        "and then show all user belonging to that group",
+        # Typo'd email (missing .com): the honest outcome is "user not found" —
+        # NOT a scan-based claim that the user belongs to no group.
+        "expect_tools_any": ["get_user"],
+        "forbid_tools": [],
+        "expect_reply_any": ["not found", "couldn't find", "could not find", "no user"],
+        "forbid_reply": ["does not appear in any group"],
+        "origin": "2026-07-31: typo'd email produced a misleading 'in no group' from a bulk scan",
+    },
+]
+
+
+def _turn(backend_url, tenant_config, prompt):
+    resp = httpx.post(
+        f"{backend_url}/agent/turn",
+        json={
+            "session_id": f"eval-{uuid.uuid4()}",
+            "messages": [{"role": "user", "content": prompt}],
+            "user_input": prompt,
+            "mode": "chat",
+            "tenant_config": tenant_config,
+            "allow_summarization": True,  # evals exercise the full adaptive loop
+        },
+        timeout=180,
+    )
+    assert resp.status_code == 200, resp.text
+    return resp.json()
+
+
+@pytest.mark.integration
+@pytest.mark.eval
+@pytest.mark.parametrize("case", EVAL_CASES, ids=[c["id"] for c in EVAL_CASES])
+def test_planner_eval(backend_url, tenant_config, case):
+    body = _turn(backend_url, tenant_config, case["prompt"])
+    reply = (body.get("reply") or "").lower()
+    tools = [str(s.get("tool_id") or "") for s in (body.get("step_results") or [])]
+
+    ctx = f"\n  origin: {case['origin']}\n  tools: {tools}\n  reply: {reply[:300]!r}"
+
+    if case["expect_tools_any"]:
+        assert any(
+            frag in t for t in tools for frag in case["expect_tools_any"]
+        ), f"expected a tool matching one of {case['expect_tools_any']}{ctx}"
+    for frag in case["forbid_tools"]:
+        # Exact-fragment check, but don't let e.g. "users_per_group" ban
+        # "users_per_group_all" unless explicitly listed — match whole ids.
+        assert not any(t.endswith(frag) or t == frag for t in tools), f"forbidden tool {frag!r} was executed{ctx}"
+    if case["expect_reply_any"]:
+        assert any(
+            frag in reply for frag in case["expect_reply_any"]
+        ), f"reply lacks all of {case['expect_reply_any']}{ctx}"
+    for frag in case["forbid_reply"]:
+        assert frag not in reply, f"reply contains forbidden {frag!r}{ctx}"

@@ -126,11 +126,11 @@ Rules:
 - Never invent a specific object the user did not name (do not turn "the user
   groups" into "the Admins group").
 - Resolve the named entity FIRST, not the collection. When the request asks
-  which group/role/property a specific NAMED user (or other object) has, the
-  first operation is to fetch THAT entity's own record — a user's record
-  already lists their role and groups. Do NOT start by listing all groups or
-  all users to search for them. ("which group does jane@x.com belong to" →
-  "Get the user record for jane@x.com", not "List all groups".)
+  what property, membership, or association a specific NAMED object has, the
+  first operation is to fetch that object's own record — its record carries its
+  attributes and memberships. Do NOT list a whole collection and search through
+  it for the object. (Pattern: "which <collection> does <named object> belong
+  to" → "Get <named object>'s record", NOT "List all <collection>s".)
 """.strip()
 
 AGENT_DECIDE_SYSTEM_PROMPT = """
@@ -160,9 +160,9 @@ Rules for CONTINUE — all must hold, or you MUST give the final answer instead:
   whose inputs are available NOW — use values already present in the results
   above (e.g. an id or name a previous step returned). Do prerequisites before
   the parts that depend on them, regardless of the order the user wrote them.
-- To find which group/role/property a specific NAMED entity has, CONTINUE with
-  fetching that entity's own record (a user's record lists their role and
-  groups) — never with listing an entire collection to search through it.
+- To find what property, membership, or association a specific NAMED object
+  has, CONTINUE with fetching that object's own record — never with listing an
+  entire collection to search through it for the object.
 - NEVER drill into details the user did not ask for: do not fetch a single
   item's details, a specific named object, or a sub-resource unless the user
   named it. Listing all of X does NOT imply fetching details of each X.
@@ -224,12 +224,7 @@ Rules:
   demand detail they didn't request, or ask to "double-check" completed work.
 - If the results ALREADY contain the data needed to answer a part — even if it
   still needs filtering, counting, or cross-referencing — that part is DONE.
-  Do NOT ask to re-fetch it a different way. (e.g. if a full list of users with
-  their roles is present, "find the users with role X" is answerable by filtering
-  that list — it is DONE, not missing.)
-- Do NOT confuse distinct concepts when proposing the next operation: a role is
-  not a group, a user is not a datamodel. Never suggest fetching a value by the
-  wrong kind of key.
+  Do NOT ask to re-fetch it a different way.
 - Judge from the actual results: did every part the user asked for get fetched
   or changed, and did it succeed?
 - Prefer INCOMPLETE only when a genuinely-requested part has NO supporting data
