@@ -123,7 +123,7 @@ async def _route_to_module(
     ]
     t0 = time.perf_counter()
     try:
-        data = await call_llm_raw(routing_messages, tools=None, trace_id=trace_id)
+        data = await call_llm_raw(routing_messages, tools=None, trace_id=trace_id, label="route")
     except Exception as exc:
         latency_ms = int((time.perf_counter() - t0) * 1000)
         logger.warning("Routing LLM call failed (%s). Falling back to full tool list.", exc)
@@ -337,6 +337,7 @@ async def call_llm_raw(
     tools: Optional[List[Dict[str, Any]]] = None,
     trace_id: Optional[str] = None,
     tool_choice: Optional[str] = None,
+    label: str = "",
 ) -> Dict[str, Any]:
     """
     Make a single LLM call via LiteLLM and return the response as a plain dict.
@@ -369,12 +370,18 @@ async def call_llm_raw(
         # for providers that don't support it.
         kwargs["tool_choice"] = tool_choice or "required"
 
-    if trace_id:
-        # Groups the planning and summarization calls for one turn into a single
-        # LangSmith trace. No credentials or customer data included.
-        kwargs["metadata"] = {"trace_id": trace_id}
+    if trace_id or label:
+        # Groups a turn's calls under one LangSmith trace and tags each with its
+        # kind (route / plan / decide / verify / ...). No credentials or data.
+        kwargs["metadata"] = {"trace_id": trace_id, "call_type": label or "unknown"}
 
-    logger.info("LLM call start: model=%s messages=%d tools=%d", LLM_CONFIG.model, len(messages), len(tools or []))
+    logger.info(
+        "LLM call start: kind=%s model=%s messages=%d tools=%d",
+        label or "unknown",
+        LLM_CONFIG.model,
+        len(messages),
+        len(tools or []),
+    )
     _log_json_truncated("LLM request kwargs (truncated)", {k: v for k, v in kwargs.items() if k != "api_key"})
 
     response = await litellm.acompletion(**kwargs)

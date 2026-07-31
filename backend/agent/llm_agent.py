@@ -290,6 +290,7 @@ async def _generate_clarification_question(
             ],
             tools=None,
             trace_id=trace_id,
+            label="clarify",
         )
         content, _ = _pick_tool_calls_from_llm_response(data)
         if content and content.strip():
@@ -338,6 +339,7 @@ async def _generate_mutation_explanation(
             ],
             tools=None,
             trace_id=trace_id,
+            label="mutation_explain",
         )
         content, _ = _pick_tool_calls_from_llm_response(data)
         if content and content.strip():
@@ -370,6 +372,7 @@ async def _decompose_first_step(user_text: str, trace_id: str) -> str:
             ],
             tools=None,
             trace_id=trace_id,
+            label="decompose",
         )
         text, _ = _pick_tool_calls_from_llm_response(data)
         text = (text or "").strip()
@@ -437,7 +440,7 @@ async def _verify_goal_complete(
         *transcript,
     ]
     try:
-        data = await call_llm_raw(messages, tools=None, trace_id=turn_trace_id)
+        data = await call_llm_raw(messages, tools=None, trace_id=turn_trace_id, label="verify")
         text, _ = _pick_tool_calls_from_llm_response(data)
         text = (text or "").strip()
     except Exception as exc:  # noqa: BLE001
@@ -499,7 +502,7 @@ async def _finalize_from_transcript(
         *transcript,
     ]
     try:
-        data = await call_llm_raw(messages, tools=None, trace_id=turn_trace_id)
+        data = await call_llm_raw(messages, tools=None, trace_id=turn_trace_id, label="finalize")
         text, _ = _pick_tool_calls_from_llm_response(data)
         text = (text or "").strip()
         # Strip a stray CONTINUE if the model ignores the instruction.
@@ -657,7 +660,7 @@ async def _reactive_loop(
                 step_message,
             ]
             try:
-                plan_data = await call_llm_raw(planning_messages, tools=nav_tools, trace_id=turn_trace_id)
+                plan_data = await call_llm_raw(planning_messages, tools=nav_tools, trace_id=turn_trace_id, label="plan")
                 content, calls = _pick_tool_calls_from_llm_response(plan_data)
             except Exception as exc:  # noqa: BLE001 — planning failure → keyword fallback
                 logger.warning("Planning LLM call failed (%s). Using fallback direct tool.", exc)
@@ -678,7 +681,7 @@ async def _reactive_loop(
             decide_prompt = AGENT_DECIDE_SYSTEM_PROMPT if summ_on else AGENT_DECIDE_NODATA_SYSTEM_PROMPT
             decide_messages = [{"role": "system", "content": decide_prompt}, *history, latest_user_message, *transcript]
             try:
-                decide_data = await call_llm_raw(decide_messages, tools=None, trace_id=turn_trace_id)
+                decide_data = await call_llm_raw(decide_messages, tools=None, trace_id=turn_trace_id, label="decide")
                 decide_text, _ = _pick_tool_calls_from_llm_response(decide_data)
                 decide_text = (decide_text or "").strip()
             except Exception as exc:  # noqa: BLE001
@@ -757,7 +760,7 @@ async def _reactive_loop(
                 step_message,
             ]
             try:
-                plan_data = await call_llm_raw(planning_messages, tools=nav_tools, trace_id=turn_trace_id)
+                plan_data = await call_llm_raw(planning_messages, tools=nav_tools, trace_id=turn_trace_id, label="plan")
                 _content, calls = _pick_tool_calls_from_llm_response(plan_data)
             except Exception as exc:  # noqa: BLE001
                 logger.warning("Agent loop planning failed (%s).", exc)
@@ -767,7 +770,9 @@ async def _reactive_loop(
                 if full and len(full) != len(nav_tools):
                     logger.info("Agent loop backtrack: retrying step %d with all %s tools", step_number, nav_pkg)
                     try:
-                        plan_data = await call_llm_raw(planning_messages, tools=full, trace_id=turn_trace_id)
+                        plan_data = await call_llm_raw(
+                            planning_messages, tools=full, trace_id=turn_trace_id, label="plan"
+                        )
                         _content, calls = _pick_tool_calls_from_llm_response(plan_data)
                     except Exception:  # noqa: BLE001
                         calls = []
@@ -1105,7 +1110,7 @@ async def call_llm_with_tools(
             _tool_calls: List[Dict[str, Any]] = []
             try:
                 _rdata = await call_llm_raw(
-                    _resume_messages, tools=[_pc_def], trace_id=turn_trace_id, tool_choice="auto"
+                    _resume_messages, tools=[_pc_def], trace_id=turn_trace_id, tool_choice="auto", label="plan_resume"
                 )
                 _pc_content, _tool_calls = _pick_tool_calls_from_llm_response(_rdata)
             except Exception as exc:  # noqa: BLE001

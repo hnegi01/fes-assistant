@@ -414,6 +414,8 @@ _LLM_TRACE_COLUMNS: List[str] = [
     "summary_tokens_out",
     "summary_latency_ms",
     "summarization_used",
+    "agent_steps",  # tool-executing steps this turn
+    "goal_rechecks",  # times the goal checker (verify) pushed one more step
 ]
 
 
