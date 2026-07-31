@@ -17,7 +17,9 @@ What lives here:
 
 from __future__ import annotations
 
+import contextvars
 import csv
+import datetime
 import json
 import logging
 import os
@@ -80,6 +82,9 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 LOG_DIR = ROOT_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 LLM_TRACES_PATH = LOG_DIR / "llm_traces.csv"
+# Per-CALL log: one row per LLM call (route/plan/decide/verify/...), all rows of
+# one turn sharing the same trace_id. Join to llm_traces.csv (per-turn) on trace_id.
+LLM_CALLS_PATH = LOG_DIR / "llm_calls.csv"
 
 logger = logging.getLogger("backend.agent.llm_agent")
 logger.setLevel(_log_level)
@@ -430,3 +435,79 @@ def _write_llm_trace(trace: Dict[str, Any]) -> None:
             writer.writerow({col: trace.get(col, "") for col in _LLM_TRACE_COLUMNS})
     except Exception as exc:
         logger.warning("Failed to write LLM trace: %s", exc)
+
+
+# -----------------------------------------------------------------------------
+# Per-CALL tracing — one row per LLM call, grouped by turn via trace_id.
+# The current turn's id + user message are stashed in a ContextVar at turn start
+# so call_llm_raw can stamp every call it makes without threading them through.
+# -----------------------------------------------------------------------------
+_CURRENT_TURN: contextvars.ContextVar[Dict[str, str]] = contextvars.ContextVar("fes_current_turn", default={})
+
+_LLM_CALL_COLUMNS: List[str] = [
+    "timestamp",
+    "trace_id",  # same for every call in one turn — group by this
+    "user_message",  # repeated per row, so a turn's rows are eyeball-able
+    "call_type",  # route / plan / decide / verify / decompose / ...
+    "model",
+    "provider",
+    "messages",  # count of messages sent
+    "tools",  # count of tools offered
+    "latency_ms",
+    "tokens_in",
+    "tokens_out",
+    "ok",  # True / False
+    "error",
+]
+
+
+def set_current_turn(trace_id: str, user_message: str) -> contextvars.Token:
+    """Mark the turn each subsequent LLM call belongs to (for per-call tracing)."""
+    return _CURRENT_TURN.set({"trace_id": trace_id or "", "user_message": (user_message or "")[:300]})
+
+
+def reset_current_turn(token: contextvars.Token) -> None:
+    try:
+        _CURRENT_TURN.reset(token)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def write_llm_call(
+    *,
+    call_type: str,
+    n_messages: int,
+    n_tools: int,
+    latency_ms: int,
+    tokens_in: int = 0,
+    tokens_out: int = 0,
+    ok: bool = True,
+    error: str = "",
+) -> None:
+    """Append one row per LLM call. Reads turn id + user message from the
+    ContextVar. Swallows all errors — tracing must never break a turn."""
+    try:
+        turn = _CURRENT_TURN.get()
+        row = {
+            "timestamp": datetime.datetime.utcnow().isoformat(),
+            "trace_id": turn.get("trace_id", ""),
+            "user_message": turn.get("user_message", ""),
+            "call_type": call_type or "unknown",
+            "model": LLM_CONFIG.model,
+            "provider": LLM_PROVIDER,
+            "messages": n_messages,
+            "tools": n_tools,
+            "latency_ms": latency_ms,
+            "tokens_in": tokens_in,
+            "tokens_out": tokens_out,
+            "ok": ok,
+            "error": (error or "")[:300],
+        }
+        write_header = not LLM_CALLS_PATH.exists()
+        with LLM_CALLS_PATH.open("a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=_LLM_CALL_COLUMNS, extrasaction="ignore")
+            if write_header:
+                writer.writeheader()
+            writer.writerow(row)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Failed to write LLM call trace: %s", exc)

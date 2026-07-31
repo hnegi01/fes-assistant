@@ -47,6 +47,7 @@ from ._config import (
     _write_llm_trace,
     audit_logger,
     logger,
+    set_current_turn,
 )
 
 # --- _prompts ---
@@ -967,6 +968,10 @@ async def call_llm_with_tools(
     # One UUID per agent turn — groups planning + summarization LLM calls into a
     # single LangSmith trace. Contains no credentials or customer data.
     turn_trace_id = str(uuid.uuid4())
+
+    # Stamp every LLM call this turn makes with this id + the user message, for
+    # the per-call log (llm_calls.csv). Task-isolated, so no reset needed.
+    set_current_turn(turn_trace_id, user_text)
 
     _trace: Dict[str, Any] = {
         "timestamp": datetime.datetime.utcnow().isoformat(),
