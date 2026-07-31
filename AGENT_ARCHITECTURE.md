@@ -325,6 +325,47 @@ Same first step; summ-on passes the value and finishes, summ-off blocks. (Verifi
 
 ---
 
+## Verify — how the loop checks its work
+
+There is no single VERIFY box; checking happens at three points, at two levels
+of trust.
+
+| # | Checks | When | Who | Trust |
+|---|---|---|---|---|
+| 1 | the **call** is well-formed | before execute | `jsonschema.validate` (`args valid?`) | objective — code |
+| 2 | the **step** succeeded | after execute | the result's `ok` flag (`_metadata_record`) | objective — code |
+| 3 | the **whole request** is done | at "done" | the decide call, then an independent checker | judgment — LLM |
+
+**Per-step (1 and 2) is deterministic code** — a schema passes or it doesn't; `ok`
+is true or false. No LLM, nothing to second-guess.
+
+**Goal completion (3) is judgment, so it gets a maker/checker pair:**
+
+- **Maker** = the decide call (`WHAT'S NEXT?`). When it stops emitting `CONTINUE`
+  it believes the request is satisfied.
+- **Checker** = an independent call (`_verify_goal_complete`,
+  `VERIFY_GOAL_SYSTEM_PROMPT`) that re-reads the *whole* request against the
+  results, prompted adversarially to find what was missed. It sees only goal +
+  results (not the maker's reasoning), so it doesn't inherit the maker's
+  rationalisations. `INCOMPLETE: <op>` pushes the loop one more step; `COMPLETE`
+  accepts the answer.
+
+Why a checker only on #3: the maker is biased toward declaring victory and can't
+catch its own "stopped too early." A second, differently-prompted pass catches
+that. #1 and #2 need no checker — code doesn't misjudge schemas or booleans.
+
+Guards: `FES_VERIFY_GOAL` toggles it; `FES_VERIFY_MAX_RECHECKS` (default 1) bounds
+overrides; the step cap still applies; any checker failure defaults to *complete*
+so it can never block a good answer. It respects the privacy boundary — with
+summarization off the checker sees the same metadata-only history the decide call
+saw. Cost: one extra LLM call per turn.
+
+Ceiling: the checker is still an LLM judging completion — better than the maker
+alone, not infallible. And "the whole request" means the current turn's prompt;
+there is no standing cross-turn goal.
+
+---
+
 ## Mutation approval (carried from Step 7, extended in Step 8)
 
 A mutating tool never executes without explicit approval, **even mid-loop**.
