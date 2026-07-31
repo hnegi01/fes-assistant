@@ -606,49 +606,46 @@ def _approval_key(tool_id: str, args: Dict[str, Any]) -> Tuple[str, str]:
     return tool_id, json.dumps(args or {}, sort_keys=True, ensure_ascii=False)
 
 
+@st.cache_data(ttl=120, show_spinner=False)
+def _fetch_tools_cached(url: str):
+    """One HTTP fetch of /tools, cached so reruns (and browser refreshes) don't
+    re-hit the backend. Raises on any problem; the caller handles retry/errors.
+    Only successful returns are cached — a raise is retried next call."""
+    resp = requests.get(url, timeout=30)
+    resp.raise_for_status()
+    data = resp.json()
+    tools = data.get("tools") or []
+    registry = data.get("registry") or {}
+    if not isinstance(tools, list) or not isinstance(registry, dict):
+        raise ValueError("Unexpected /tools payload shape")
+    return tools, registry
+
+
 def fetch_tools_from_backend():
     """
     Fetch OpenAI-style tools and registry metadata from the backend.
+
+    Cached + retried: on a browser refresh Streamlit reruns this and the
+    reconnecting websocket can make a single request race and fail. Retrying a
+    couple of times (and caching the success) stops a transient blip from
+    flashing a scary error on every reload.
     """
     url = f"{BACKEND_URL}/tools"
-    logger.debug("Fetching tools from backend: %s", url)
+    last_err = None
+    for attempt in range(3):
+        try:
+            return _fetch_tools_cached(url)
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            logger.warning("Fetch /tools attempt %d failed: %s", attempt + 1, e)
+            time.sleep(0.4 * (attempt + 1))
 
-    try:
-        resp = requests.get(url, timeout=30)
-    except Exception as e:
-        logger.exception("Request to /tools failed: %s", e)
-        st.error(
-            "Could not reach the backend /tools endpoint. Check that the backend is running and BACKEND_URL is correct."
-        )
-        st.stop()
-
-    if not resp.ok:
-        logger.error("Backend /tools returned %s: %s", resp.status_code, resp.text[:500])
-        st.error(f"Backend /tools failed with status {resp.status_code}. See backend logs for details.")
-        st.stop()
-
-    try:
-        data = resp.json()
-    except ValueError as e:
-        logger.exception("Failed to decode JSON from /tools: %s", e)
-        st.error("Backend /tools did not return valid JSON. See backend logs.")
-        st.stop()
-
-    tools = data.get("tools") or []
-    registry = data.get("registry") or {}
-
-    if not isinstance(tools, list):
-        logger.error("Unexpected tools payload type from /tools: %r", type(tools))
-        st.error("Backend /tools returned tools in an unexpected format.")
-        st.stop()
-
-    if not isinstance(registry, dict):
-        logger.error("Unexpected registry payload type from /tools: %r", type(registry))
-        st.error("Backend /tools returned registry in an unexpected format.")
-        st.stop()
-
-    logger.debug("Loaded %d tools and %d registry entries from backend", len(tools), len(registry))
-    return tools, registry
+    logger.exception("Request to /tools failed after retries: %s", last_err)
+    st.error(
+        "Could not reach the backend /tools endpoint after a few tries. "
+        "Check that the backend is running and BACKEND_URL is correct."
+    )
+    st.stop()
 
 
 def render_tool_result(tr: dict):
@@ -913,6 +910,7 @@ if mode == MODE_CHAT:
         with st.sidebar:
             st.subheader("Status:")
             st.write(f"Chat tools available to LLM: **{len(chat_tools)}**")
+            st.caption("Admin & datamodel tools for one deployment. The 9 migration tools live in Migration mode.")
             st.markdown("**Mode:** Chat with deployment")
             st.markdown("---")
             st.caption(
@@ -942,6 +940,7 @@ if mode == MODE_CHAT:
     with st.sidebar:
         st.subheader("Status:")
         st.write(f"Chat tools available to LLM: **{len(chat_tools)}**")
+        st.caption("Admin & datamodel tools for one deployment. The 9 migration tools live in Migration mode.")
         st.markdown("**Mode:** Chat with deployment")
 
         st.markdown("**Connected tenant**")
