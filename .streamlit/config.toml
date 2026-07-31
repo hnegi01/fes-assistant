@@ -1,0 +1,11 @@
+# Streamlit UI config for the FES Assistant.
+
+[client]
+# "viewer" hides the developer toolbar AND its keyboard shortcuts (C = clear
+# cache, R = rerun) that otherwise hijack Ctrl+C / normal typing. Use "developer"
+# locally if you want those shortcuts back.
+toolbarMode = "viewer"
+
+[browser]
+# This is an internal admin tool — don't phone home usage stats.
+gatherUsageStats = false

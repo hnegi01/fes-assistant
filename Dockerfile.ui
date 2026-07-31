@@ -7,7 +7,11 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     STREAMLIT_SERVER_PORT=8501 \
-    STREAMLIT_SERVER_ADDRESS=0.0.0.0
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
+    # "viewer" hides the developer toolbar + its C/R keyboard shortcuts that
+    # otherwise hijack Ctrl+C (the .streamlit/config.toml equivalent for local runs).
+    STREAMLIT_CLIENT_TOOLBAR_MODE=viewer \
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
 
 # 3) Workdir inside container
 WORKDIR /app
