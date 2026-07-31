@@ -51,6 +51,14 @@ Browser (Streamlit :8501)
 The agent logic lives entirely in the backend. The MCP server is a thin,
 generic tool-executor over the PySisense SDK; it has no notion of the loop.
 
+**LLM access — gateway-as-a-library.** Every LLM call goes through one choke
+point (`call_llm_raw` in `_routing.py`) using the **LiteLLM SDK** in-process:
+unified API over Azure OpenAI / Databricks (env-switched), retries, param
+dropping. There is deliberately **no standalone LLM gateway service** — keys
+live with the backend. If centralized governance were ever needed (shared keys,
+budgets, org-wide rate limits), the LiteLLM Proxy speaks the same interface, so
+the migration is pointing `api_base` at it — a config change at one choke point.
+
 ---
 
 ## The full flow — orchestrator view (high level)

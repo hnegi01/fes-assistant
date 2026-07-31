@@ -280,7 +280,7 @@ both with a `REPLAN:` verb), `VERIFY_GOAL_SYSTEM_PROMPT`,
 **only generic strategy** — never scenario-specific rules (failures become eval
 cases, not prompt patches).
 
-**LLM providers:** Azure OpenAI (with AWS Secrets Manager fallback) or Databricks Model Serving. Selected by `LLM_PROVIDER` env var. Config built once at import time into `LLM_CONFIG` frozen dataclass.
+**LLM providers:** Azure OpenAI (with AWS Secrets Manager fallback) or Databricks Model Serving. Selected by `LLM_PROVIDER` env var. Config built once at import time into `LLM_CONFIG` frozen dataclass. All calls flow through one choke point (`call_llm_raw` → **LiteLLM SDK**) — a gateway-as-a-library in-process; no standalone gateway service (the LiteLLM Proxy would be a drop-in `api_base` change if centralized keys/budgets/rate-limits were ever needed).
 
 ### `backend/agent/mcp_client.py`
 

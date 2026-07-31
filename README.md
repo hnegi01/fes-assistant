@@ -116,9 +116,14 @@ MCP Server docs: [Meta-Management MCP Server](mcp_server/README.md)
   - PySisense SDK methods are wrapped as MCP tools and registered via a **tool registry JSON**.
   - Tools cover areas like access management, datamodels, dashboards, migration, and well-checks.
 
-- **Two LLM backends (configurable)**
+- **Two LLM backends (configurable) — via LiteLLM as an in-process gateway**
   - Switch between **Azure OpenAI** and **Databricks Model Serving** by changing environment variables.
-  - The agent layer abstracts over the provider so the rest of the app behaves the same.
+  - All LLM traffic goes through one choke point (`call_llm_raw` → the **LiteLLM SDK**), which acts as a
+    "gateway-as-a-library": unified API across providers, retries, provider-specific param handling —
+    embedded in the backend process, with **no separate gateway service** deployed.
+  - If centralized governance is ever needed (shared keys, per-team budgets, org-wide rate limits,
+    cross-model fallback), the LiteLLM Proxy speaks the same interface — the single choke point means
+    pointing `api_base` at a gateway is a config change, not a refactor.
 
 - **Safety via confirmation loops**
   - For **create / modify / delete / migration**-style operations, the agent uses a **confirmation loop**:
