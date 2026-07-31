@@ -184,6 +184,21 @@ code (never LLM trust):
 
 API/UI default is `false` when the field is omitted — set it explicitly.
 
+### 10. Observability — two destinations, each with its own switch
+
+Both **off by default**; enable what you need. Enforced in code (`_tracing.py`,
+`_config.py`), never LLM trust. The mutations audit log is always on (audit ≠
+observability).
+
+| Destination | Switch | What you get |
+|---|---|---|
+| **LangSmith** (external cloud) | `LANGSMITH_TRACING` (+ `FES_LANGSMITH_LOG_CONTENT` for result data in traces) | Trace tree per turn: root `agent_turn` → llm children (orchestrator/route/plan/decide/verify) + tool children (ok/rows/duration); Threads view groups a session; per-turn cost |
+| **Local CSVs** (`logs/`) | `FES_CSV_OBSERVABILITY` | `llm_traces.csv` (per turn), `llm_calls.csv` (per LLM call), `tool_calls.csv` (per tool execution) — grouped by per-turn `trace_id`, no cloud required |
+
+Hierarchy mapping (LangSmith ↔ app): Thread = UI session (`SESSION_POOL`),
+Trace = one `/agent/turn` prompt (root run `agent_turn`), Runs = the loop's LLM
+calls + tool executions. Details: `AGENT_ARCHITECTURE.md` → "Observability".
+
 ---
 
 ## File Reference
@@ -328,6 +343,11 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 | `FES_MAX_REPLANS` | `1` | How many times per turn the orchestrator may revise the plan after a failed approach (0 = off) |
 | `FES_MAX_PARALLEL_STEPS` | `3` | How many independent plan steps may execute concurrently (1 = off); mutations always sequential |
 | `FES_LANGSMITH_LOG_CONTENT` | `false` | Whether result data may appear in LangSmith traces (independent of summarization) — prompts shown, only data-bearing parts redacted; tool result payloads never go |
+| `FES_CSV_OBSERVABILITY` | `false` | Whether local CSV observability files are written (llm_traces / llm_calls / tool_calls); mutations audit log is always on |
+| `LANGSMITH_TRACING` | `false` | Master switch for the LangSmith trace tree (root agent_turn + llm/tool children) |
+| `LANGSMITH_API_KEY` | — | LangSmith API key (must be in the same workspace as the project) |
+| `LANGSMITH_PROJECT` | `default` | LangSmith project traces land in |
+| `LLM_PLANNING_HISTORY_TURNS` | `5` | Prior conversation turns sent to the planner (0 = latest message only) |
 | `FES_LOG_LEVEL` | `INFO` | Log level across all services |
 | `FES_UI_IDLE_TIMEOUT_HOURS` | `9` | Streamlit session idle timeout |
 | `PYSISENSE_MAX_CONCURRENT_MIGRATIONS` | `3` | Max parallel migrations |

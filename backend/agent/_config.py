@@ -86,6 +86,16 @@ LLM_TRACES_PATH = LOG_DIR / "llm_traces.csv"
 LLM_CALLS_PATH = LOG_DIR / "llm_calls.csv"
 TOOL_CALLS_PATH = LOG_DIR / "tool_calls.csv"
 
+
+def _csv_observability_enabled() -> bool:
+    """Local CSV observability (llm_traces / llm_calls / tool_calls) is opt-in:
+    FES_CSV_OBSERVABILITY=true. Off by default — same closed-by-default stance
+    as the LangSmith content flag, each destination with its own switch. The
+    mutations audit log is NOT gated by this: audit is a requirement, not
+    observability."""
+    return os.getenv("FES_CSV_OBSERVABILITY", "false").strip().lower() == "true"
+
+
 logger = logging.getLogger("backend.agent.llm_agent")
 logger.setLevel(_log_level)
 logger.propagate = False
@@ -456,6 +466,8 @@ def _csv_needs_header(path: Path, columns: List[str]) -> bool:
 
 def _write_llm_trace(trace: Dict[str, Any]) -> None:
     """Append one row to llm_traces.csv. Swallows all errors — never breaks a turn."""
+    if not _csv_observability_enabled():
+        return
     try:
         write_header = _csv_needs_header(LLM_TRACES_PATH, _LLM_TRACE_COLUMNS)
         with LLM_TRACES_PATH.open("a", newline="", encoding="utf-8") as f:
@@ -516,6 +528,8 @@ def write_llm_call(
 ) -> None:
     """Append one row per LLM call. Reads turn id + user message from the
     ContextVar. Swallows all errors — tracing must never break a turn."""
+    if not _csv_observability_enabled():
+        return
     try:
         turn = _CURRENT_TURN.get()
         row = {
@@ -567,6 +581,8 @@ def write_tool_call(
 ) -> None:
     """Append one row per MCP tool execution (tool_calls.csv) — the tool-side
     twin of write_llm_call. Metadata only: never result payloads."""
+    if not _csv_observability_enabled():
+        return
     try:
         turn = _CURRENT_TURN.get()
         row = {

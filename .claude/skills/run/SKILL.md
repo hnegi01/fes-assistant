@@ -49,8 +49,9 @@ sleep 3
 
 Logs land in `./logs/` — `llm_agent.log` is the one to watch (plan text,
 `Tool selected`, `Fan-out: running N`, `REPLAN`, `Clarification needed`,
-dependency-gate skips). `llm_calls.csv` has one row per LLM call, grouped by
-turn id.
+dependency-gate skips). `llm_calls.csv` has one row per LLM call and `tool_calls.csv` one per tool
+execution, grouped by turn id — written only when `FES_CSV_OBSERVABILITY=true`
+(off by default; LangSmith tracing likewise needs `LANGSMITH_TRACING=true`).
 
 ## Drive the agent like the UI does
 

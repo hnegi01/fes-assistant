@@ -548,7 +548,11 @@ replaced with `[… hidden · N chars]` placeholders:
 | Outputs of answer-producing calls (decide/finalize/verify/replan) + final reply | length-only | shown |
 | Tool spans' result payloads | **never** | **never** |
 
-### Local CSV twins (no cloud required)
+### Local CSV twins (no cloud required — opt-in via `FES_CSV_OBSERVABILITY`)
+
+Both observability destinations are **off by default**, each with its own
+switch: `LANGSMITH_TRACING` for the cloud tree, `FES_CSV_OBSERVABILITY` for the
+local files. The mutations audit log is always on (audit, not observability).
 
 | File | One row per | Grouped by |
 |---|---|---|
