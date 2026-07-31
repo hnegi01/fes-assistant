@@ -745,7 +745,7 @@ with st.sidebar:
     st.markdown(
         """
         <div style="font-weight: 700; font-size: 1.1rem; margin-top: 10px;">
-            Privacy & Controls
+            Data sharing &amp; agent capability
         </div>
         """,
         unsafe_allow_html=True,
@@ -754,26 +754,52 @@ with st.sidebar:
     if "allow_summarization" not in st.session_state:
         st.session_state["allow_summarization"] = False
 
+    _summ_help = (
+        "Controls whether tool **results (your Sisense data)** are sent to the LLM. "
+        "This is not only a privacy switch — it sets **how capable the assistant is**.\n\n"
+        "**On** — the assistant can:\n"
+        "- write natural-language answers, not just raw tables\n"
+        "- chain steps that depend on each other (e.g. find a user's role, then "
+        "list everyone with that role)\n"
+        "- independently double-check that it actually finished your whole request\n\n"
+        "…but result data leaves your Sisense instance and goes to the LLM "
+        "provider — enable only if you trust it with that data.\n\n"
+        "**Off** — data stays private: the LLM only ever sees *which* operations "
+        "ran and whether they succeeded, never the data itself. The assistant still "
+        "handles independent multi-step requests, but it **can't** pass data between "
+        "steps, **can't** verify the goal was met, and returns **raw results** "
+        "instead of a written summary."
+    )
+
     if ALLOW_SUMMARIZATION_TOGGLE:
         st.checkbox(
-            "Allow summarization (Sisense data will be sent to the LLM)",
+            "Send results to the LLM — fuller answers & smarter steps",
             key="allow_summarization",
-            help=(
-                "When enabled, Sisense data will be sent to the LLM provider for summarization. "
-                "This may include sensitive information, so enable only if you trust the LLM provider."
-            ),
+            help=_summ_help,
         )
+        if st.session_state["allow_summarization"]:
+            st.caption(
+                "🟢 **Full capability** — adaptive multi-step, goal double-check, "
+                "written answers. Result data is sent to the LLM."
+            )
+        else:
+            st.caption(
+                "🔒 **Private** — data stays in Sisense. Independent multi-step still "
+                "works; no data-chaining between steps, no goal check, raw results only."
+            )
     else:
         st.session_state["allow_summarization"] = False
         st.checkbox(
-            "Allow summarization (disabled by admin)",
+            "Send results to the LLM (disabled by admin)",
             key="allow_summarization",
             disabled=True,
-            help=(
-                "Summarization has been disabled in the server configuration. Sisense data will not be sent to the LLM."
-            ),
+            help=_summ_help + "\n\n_Disabled in the server configuration._",
         )
-        st.caption("Summarization is disabled by the administrator.")
+        st.caption(
+            "🔒 Disabled by the administrator — result data is never sent to the LLM. "
+            "The assistant runs in private mode: independent multi-step only, no "
+            "data-chaining, goal check, or written summaries."
+        )
 
 
 # -----------------------------------------------------------------------------
@@ -951,9 +977,9 @@ if mode == MODE_CHAT:
 
         st.markdown("---")
         st.caption(
-            "Agentic assistant for Sisense, powered by an LLM and MCP, "
-            "using PySisense tools for autonomous tool selection, execution, "
-            "and result summarization."
+            "Agentic assistant for Sisense, powered by an LLM and MCP. It plans, "
+            "runs PySisense tools one step at a time, and verifies its work against "
+            "your request — chaining multiple steps when needed."
         )
 
     # Render chat history (with hide support for approved mutation reruns)
