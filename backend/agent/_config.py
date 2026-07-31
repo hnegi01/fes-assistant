@@ -424,10 +424,31 @@ _LLM_TRACE_COLUMNS: List[str] = [
 ]
 
 
+def _csv_needs_header(path: Path, columns: List[str]) -> bool:
+    """Return True if a header row should be written. If the file exists but its
+    header no longer matches `columns` (we added/removed a column), rotate the old
+    file aside to `<name>.old` so a fresh, correctly-headed file starts — instead
+    of appending rows with more values than the header names."""
+    if not path.exists():
+        return True
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            existing = f.readline().rstrip("\r\n")
+    except Exception:  # noqa: BLE001
+        return False
+    if existing == ",".join(columns):
+        return False
+    try:
+        path.replace(path.with_name(path.name + ".old"))  # keep history, start fresh
+    except Exception:  # noqa: BLE001
+        return False
+    return True
+
+
 def _write_llm_trace(trace: Dict[str, Any]) -> None:
     """Append one row to llm_traces.csv. Swallows all errors — never breaks a turn."""
     try:
-        write_header = not LLM_TRACES_PATH.exists()
+        write_header = _csv_needs_header(LLM_TRACES_PATH, _LLM_TRACE_COLUMNS)
         with LLM_TRACES_PATH.open("a", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=_LLM_TRACE_COLUMNS, extrasaction="ignore")
             if write_header:
@@ -503,7 +524,7 @@ def write_llm_call(
             "ok": ok,
             "error": (error or "")[:300],
         }
-        write_header = not LLM_CALLS_PATH.exists()
+        write_header = _csv_needs_header(LLM_CALLS_PATH, _LLM_CALL_COLUMNS)
         with LLM_CALLS_PATH.open("a", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=_LLM_CALL_COLUMNS, extrasaction="ignore")
             if write_header:
