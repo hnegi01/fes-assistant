@@ -607,3 +607,44 @@ def test_summ_off_dependency_gate_skips_tagged_tail(monkeypatch):
     assert "skipped" in low and "summarization" in low
     assert "list all users in that group" in low  # names what was skipped, marker stripped
     assert "[needs-prior-result]" not in low
+
+
+def test_summ_off_gate_partitions_not_cuts(monkeypatch):
+    """independent, dependent, independent → the third (untagged) step still
+    runs; only the tagged middle step is skipped."""
+
+    async def _tagged_plan(user_text, mode, history, trace_id):
+        return [
+            "Get the user record for a@b.com",
+            "List users of that group [needs-prior-result]",
+            "List all dashboards",
+        ]
+
+    monkeypatch.setattr(m, "_make_plan", _tagged_plan)
+
+    client = _fake_client(results=[{"ok": True, "result": [{"u": 1}]}, {"ok": True, "result": [{"d": 1}]}])
+    messages = [{"role": "user", "content": "user group stuff and also all dashboards"}]
+    nav = AsyncMock(
+        side_effect=[
+            (GET_USER_TOOLS, "access_management", "users", 0),
+            (DASHBOARD_TOOLS, "dashboard", "core", 0),
+        ]
+    )
+    raw = AsyncMock(
+        side_effect=[
+            _plan_resp("access_management.get_user", '{"user_email":"a@b.com"}'),  # step 1
+            _text_resp("CONTINUE: list all dashboards"),  # nodata decide
+            _plan_resp("dashboard.get_dashboards", "{}", call_id="c2"),  # step 2 plan
+            _text_resp("DONE"),  # nodata decide
+        ]
+    )
+    with patch.object(m, "_navigate_to_tools", new=nav), patch.object(m, "call_llm_raw", new=raw):
+        reply = run(m.call_llm_with_tools(messages, GET_USER_TOOLS, client, allow_summarization=False))
+
+    # BOTH untagged steps executed; only the tagged one was skipped.
+    assert client.invoke_tool.await_count == 2
+    tools = [c.args[0] for c in client.invoke_tool.await_args_list]
+    assert tools == ["access_management.get_user", "dashboard.get_dashboards"]
+    low = reply.lower()
+    assert "skipped" in low and "list users of that group" in low
+    assert "list all dashboards" not in low.split("skipped")[1][:120]  # dashboards NOT in skip note

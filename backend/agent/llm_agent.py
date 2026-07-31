@@ -397,25 +397,27 @@ _DEP_MARKER = "[needs-prior-result]"
 
 
 def _split_dependent_tail(plan_steps: List[str]) -> Tuple[List[str], List[str]]:
-    """For summarization-OFF turns: split the plan at the first step tagged
-    [needs-prior-result]. The prefix is runnable (each step needs only the
-    user's message); the tail needs values from earlier RESULTS, which the LLM
-    cannot see with summarization off — executing it would only produce a
-    doomed call. Detection is the strategist's (text reasoning at plan time);
-    this enforcement is code. The marker on step 1 is ignored (nothing precedes
-    it). Markers are stripped from both halves."""
+    """For summarization-OFF turns: PARTITION the plan into runnable vs skipped.
+
+    Steps tagged [needs-prior-result] need values from earlier RESULTS, which
+    the LLM cannot see with summarization off — executing them would only
+    produce doomed calls, so they are skipped. Untagged steps run regardless of
+    position (independent steps are order-free by definition, so an untagged
+    step after a tagged one still runs). Detection is the strategist's (text
+    reasoning at plan time); this enforcement is code. The marker on step 1 is
+    ignored (nothing precedes it). Markers are stripped from both halves."""
 
     def _clean(st: str) -> str:
         return st.replace(_DEP_MARKER, "").replace(_DEP_MARKER.upper(), "").strip()
 
-    cut = None
+    runnable: List[str] = []
+    skipped: List[str] = []
     for i, st in enumerate(plan_steps):
         if i > 0 and _DEP_MARKER in st.lower():
-            cut = i
-            break
-    if cut is None:
-        return [_clean(st) for st in plan_steps], []
-    return [_clean(st) for st in plan_steps[:cut]], [_clean(st) for st in plan_steps[cut:]]
+            skipped.append(_clean(st))
+        else:
+            runnable.append(_clean(st))
+    return runnable, skipped
 
 
 async def _make_plan(user_text: str, mode: str, history: List[Dict[str, Any]], trace_id: str) -> List[str]:
