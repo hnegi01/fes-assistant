@@ -55,19 +55,51 @@ generic tool-executor over the PySisense SDK; it has no notion of the loop.
 ## The agentic loop (Step 8)
 
 One user turn can chain multiple tool executions. It is a single loop
-(`_reactive_loop`); the "what's next?" step is a decompose on the first pass and
-a decide on every pass after:
+(`_reactive_loop`), run again and again until the goal is met — the "what's
+next?" step is a decompose on the first pass and a decide on every pass after.
+Each lap executes **exactly one** SDK call.
 
+```mermaid
+flowchart TD
+    U(["🧑 User message"]) --> WN
+
+    WN{{"WHAT'S NEXT?<br/>step 0 · decompose the request<br/>step N · decide from history"}}
+    WN -->|"DONE · final answer"| ANS(["💬 Reply to user"])
+    WN -->|"BLOCKED · summ-off adaptive"| ANS
+    WN -->|"CONTINUE: next op"| RT
+
+    RT["ROUTE<br/>119 tools → 1 package → ~10"] --> PL
+    PL["PLAN<br/>pick ONE tool + args"] --> VAL
+
+    VAL{"args valid?"}
+    VAL -->|"missing required · step 0"| ASK(["❓ Ask the user"])
+    VAL -->|"wrong format"| BLK(["⛔ Hard block"])
+    VAL -->|"ok"| GT
+
+    GT{"mutating &<br/>not approved?"}
+    GT -->|"yes"| APR(["⏸️ Pause · await approval"])
+    GT -->|"no"| EX
+
+    EX["EXECUTE<br/>one SDK call via MCP"] --> HI[("append result<br/>to history")]
+    HI -. loop back .-> WN
+
+    classDef term fill:#dcfce7,stroke:#16a34a,color:#14532d;
+    classDef pause fill:#fef9c3,stroke:#ca8a04,color:#713f12;
+    classDef exec fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
+    classDef dec fill:#f1f5f9,stroke:#475569,color:#0f172a;
+    class ANS term
+    class ASK,BLK,APR pause
+    class EX exec
+    class WN,VAL,GT dec
 ```
-        ┌──────────────────────────────────────────────┐
-        ▼                                               │
-WHAT'S NEXT? ─▶ route ─▶ plan ─▶ execute ──────────────┘  "CONTINUE: <next>"
-   │  (step 0: decompose · step N: decide)      (loop, max FES_MAX_AGENT_STEPS = 8)
-   └── "answer" / DONE / (summ off) BLOCKED ─▶ final reply, done
-```
+
+Reading it: the diamond **WHAT'S NEXT?** is the only thing that changes by step —
+decompose on the first lap, decide after. Green = the turn ends with an answer;
+yellow = it pauses or blocks (and resumes/explains); blue = the one SDK call this
+lap. The dashed edge is the loop: append the result, ask "what's next?" again.
 
 - **DISCOVER / PLAN** = route + plan (pick one tool for one sub-task)
-- **EXECUTE** = call the tool via MCP
+- **EXECUTE** = call the tool via MCP — one SDK call per lap
 - **VERIFY** = the decide call — reads the results and judges completion
 - **ITERATE** = a `CONTINUE:` reply feeds the next sub-task back through routing
 
