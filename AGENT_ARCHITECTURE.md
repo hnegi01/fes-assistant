@@ -281,12 +281,18 @@ summ is on, or `_metadata_record` (`{tool, ok, count}`) when off. The planner
 that data was never put in the messages, **never that the model was asked not to
 look.** Never trust the model to enforce a privacy boundary.
 
-**Adaptive degrades gracefully:** with summ off the planner sees "step 1 ran
-`get_user` (ok)" but not the id it returned. When the next step needs that id,
-the `AGENT_DECIDE_NODATA` prompt makes it reply `BLOCKED:` — the loop stops and
-says _"I did the parts I can, but the rest needs a value from an earlier step I
-can't see with summarization off — turn it on to continue,"_ then renders what
-it got, locally.
+**Adaptive degrades gracefully — and cheaply.** Two layers:
+
+1. **Plan-time dependency gate (code).** The strategist tags plan steps that
+   need a value from an earlier step's RESULT (`[needs-prior-result]`) — pure
+   text reasoning, privacy-safe. With summ off, code splits the plan there:
+   the independent prefix runs, the dependent tail is **skipped up front** (no
+   doomed call, no wasted replan) and named in the reply with "turn
+   summarization on to run it".
+2. **Runtime safety net (decide).** Anything the plan missed still hits the
+   `AGENT_DECIDE_NODATA` `BLOCKED:` reply — the loop stops and says _"the rest
+   needs a value from an earlier step I can't see with summarization off"_ and
+   renders what it got, locally.
 
 **Irreducible floor:** tasks that branch on result *content* (unknown iteration
 count driven by the data — "restart every failed datamodel") are only possible

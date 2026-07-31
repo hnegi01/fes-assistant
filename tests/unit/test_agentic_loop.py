@@ -572,3 +572,38 @@ def test_replan_strategist_giveup_message_surfaces(monkeypatch):
     )
 
     assert "no operation that can retrieve this" in reply
+
+
+# ---------------------------------------------------------------------------
+# 12) Summ-off dependency gate: plan steps tagged [needs-prior-result] are
+#     skipped up front — no doomed call — and the reply says why.
+# ---------------------------------------------------------------------------
+
+
+def test_summ_off_dependency_gate_skips_tagged_tail(monkeypatch):
+    async def _tagged_plan(user_text, mode, history, trace_id):
+        return [
+            "Get the user record for a@b.com",
+            "List all users in that group [needs-prior-result]",
+        ]
+
+    monkeypatch.setattr(m, "_make_plan", _tagged_plan)
+
+    client = _fake_client(results=[{"ok": True, "result": [{"USER": "a@b.com", "GROUPS": ["Everyone"]}]}])
+    messages = [{"role": "user", "content": "which group does a@b.com belong to and show its users"}]
+    nav = AsyncMock(return_value=(GET_USER_TOOLS, "access_management", "users", 0))
+    raw = AsyncMock(
+        side_effect=[
+            _plan_resp("access_management.get_user", '{"user_email":"a@b.com"}'),  # step-1 plan call
+            _text_resp("DONE"),  # nodata decide: prefix complete
+        ]
+    )
+    with patch.object(m, "_navigate_to_tools", new=nav), patch.object(m, "call_llm_raw", new=raw):
+        reply = run(m.call_llm_with_tools(messages, GET_USER_TOOLS, client, allow_summarization=False))
+
+    # Only the independent prefix executed; the dependent tail never ran.
+    client.invoke_tool.assert_awaited_once()
+    low = reply.lower()
+    assert "skipped" in low and "summarization" in low
+    assert "list all users in that group" in low  # names what was skipped, marker stripped
+    assert "[needs-prior-result]" not in low

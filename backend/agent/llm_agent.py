@@ -393,6 +393,31 @@ def _parse_plan_lines(text: str) -> List[str]:
     return steps
 
 
+_DEP_MARKER = "[needs-prior-result]"
+
+
+def _split_dependent_tail(plan_steps: List[str]) -> Tuple[List[str], List[str]]:
+    """For summarization-OFF turns: split the plan at the first step tagged
+    [needs-prior-result]. The prefix is runnable (each step needs only the
+    user's message); the tail needs values from earlier RESULTS, which the LLM
+    cannot see with summarization off — executing it would only produce a
+    doomed call. Detection is the strategist's (text reasoning at plan time);
+    this enforcement is code. The marker on step 1 is ignored (nothing precedes
+    it). Markers are stripped from both halves."""
+
+    def _clean(st: str) -> str:
+        return st.replace(_DEP_MARKER, "").replace(_DEP_MARKER.upper(), "").strip()
+
+    cut = None
+    for i, st in enumerate(plan_steps):
+        if i > 0 and _DEP_MARKER in st.lower():
+            cut = i
+            break
+    if cut is None:
+        return [_clean(st) for st in plan_steps], []
+    return [_clean(st) for st in plan_steps[:cut]], [_clean(st) for st in plan_steps[cut:]]
+
+
 async def _make_plan(user_text: str, mode: str, history: List[Dict[str, Any]], trace_id: str) -> List[str]:
     """The upfront strategist call: request + capability catalog → ordered plan
     (a list of one-operation instructions). Falls back to [user_text] on any
@@ -668,6 +693,7 @@ async def _reactive_loop(
     checker_overrides = 0  # times the goal checker has pushed a "done" back into the loop
     replans_used = 0  # times the strategist revised the plan this turn
     next_op_override: Optional[str] = None  # set by a replan; consumed instead of a decide call
+    blocked_tail: List[str] = []  # summ-off: plan steps skipped because they need prior-result values
 
     def _done(answer: str) -> str:
         trace["outcome"] = "ok"
@@ -678,7 +704,14 @@ async def _reactive_loop(
         if steps_executed == 1 and first_tool_hint:
             _ht, _ha, _hm = first_tool_hint
             hint = _optional_arg_hint(_ht, _ha, _hm)
-        return answer + hint
+        tail_note = ""
+        if blocked_tail:
+            skipped = "; ".join(blocked_tail)
+            tail_note = (
+                "\n\n⏭️ Skipped (needs a value from an earlier result, which I can't read "
+                f"with summarization off): {skipped}. Turn summarization on to run it."
+            )
+        return answer + hint + tail_note
 
     async def _finalize() -> str:
         return await _finalize_from_transcript(
@@ -733,6 +766,16 @@ async def _reactive_loop(
             # to the UI for transparency.
             await _emit_agent_progress({"phase": "planning", "step": 1, "max_steps": MAX_AGENT_STEPS})
             plan_steps = await _make_plan(user_text, mode, history, turn_trace_id)
+            if not summ_on:
+                # Dependency gate: don't execute steps that need values from earlier
+                # RESULTS — the model can't read them with summarization off, so the
+                # call is doomed. Detected by the strategist at plan time (text
+                # reasoning only); enforced here in code. Saves the wasted call.
+                plan_steps, blocked_tail = _split_dependent_tail(plan_steps)
+                if blocked_tail:
+                    logger.info("Summ-off dependency gate: skipping %d dependent step(s).", len(blocked_tail))
+            else:
+                plan_steps = [st.replace(_DEP_MARKER, "").strip() for st in plan_steps]
             if len(plan_steps) > 1:
                 _plan_text = "\n".join(f"{i + 1}. {st}" for i, st in enumerate(plan_steps))
                 transcript.append({"role": "assistant", "content": f"PLAN:\n{_plan_text}"})

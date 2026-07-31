@@ -132,6 +132,10 @@ Rules:
   just a description of what they want, keep the user's wording — do NOT
   promote a descriptive word into a name. The executor will ask the user when
   a required name is genuinely missing; that is better than guessing.
+- Mark data dependencies: if a step needs a VALUE that only an earlier step's
+  RESULT can supply (an id, a name, a field — anything not present in the
+  user's own message), append exactly " [needs-prior-result]" to that line.
+  Steps runnable from the user's message alone get no marker.
 - Output nothing but the numbered lines.
 """.strip()
 
