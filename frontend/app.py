@@ -748,6 +748,21 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
+    # Widen the ? help tooltip so multi-line explanations don't scroll in a
+    # narrow one-line-wide box. The tooltip renders at document level, so this
+    # style is global (not scoped to the sidebar).
+    st.markdown(
+        """
+        <style>
+        [data-testid="stTooltipContent"] {
+            max-width: 460px !important;
+            max-height: 70vh !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     if "allow_summarization" not in st.session_state:
         st.session_state["allow_summarization"] = False
 
@@ -755,7 +770,7 @@ with st.sidebar:
         "Controls whether tool **results (your Sisense data)** are sent to the LLM. "
         "This is not only a privacy switch — it sets **how capable the assistant is**.\n\n"
         "**On** — the assistant can:\n"
-        "- write natural-language answers, not just raw tables\n"
+        "- answer in natural language, not just raw data\n"
         "- chain steps that depend on each other (e.g. find a user's role, then "
         "list everyone with that role)\n"
         "- independently double-check that it actually finished your whole request\n\n"
@@ -764,8 +779,8 @@ with st.sidebar:
         "**Off** — data stays private: the LLM only ever sees *which* operations "
         "ran and whether they succeeded, never the data itself. The assistant still "
         "handles independent multi-step requests, but it **can't** pass data between "
-        "steps, **can't** verify the goal was met, and returns **raw results** "
-        "instead of a written summary."
+        "steps, **can't** verify the goal was met, and returns **raw data** "
+        "instead of a natural-language answer."
     )
 
     if ALLOW_SUMMARIZATION_TOGGLE:
