@@ -26,6 +26,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import json
+import os
 import time
 import uuid
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -685,6 +686,20 @@ async def _reask_clarification_or_giveup(resume_clar: Dict[str, Any], turn_trace
 # The ORCHESTRATOR: reads the planner's blueprint and manages live execution —
 # dispatch a step, run it, decide the next move, replan on failure. The planner
 # (_make_plan) drafts; this loop orchestrates.
+async def _run_loop_engine(**kwargs: Any) -> str:
+    """Engine dispatch: the same turn contract, two interchangeable harnesses.
+
+    FES_AGENT_ENGINE=custom (default) → the hand-rolled `_reactive_loop`.
+    FES_AGENT_ENGINE=langgraph        → graph_engine.run_graph_loop (LangGraph
+    StateGraph over the SAME helpers — thin nodes, no checkpointer/DB/files).
+    Read dynamically so tests can flip engines per run without reimport."""
+    if os.getenv("FES_AGENT_ENGINE", "custom").strip().lower() == "langgraph":
+        from . import graph_engine  # lazy: avoids circular import at module load
+
+        return await graph_engine.run_graph_loop(**kwargs)
+    return await _reactive_loop(**kwargs)
+
+
 async def _reactive_loop(
     *,
     latest_user_message: Dict[str, Any],
@@ -1449,7 +1464,7 @@ async def call_llm_with_tools(
             _resume_raw.append((_pl_tool_id, result))
             _trace["routing_module"] = "loop_resume"
             _trace["tool_selected"] = _pl_tool_id
-            return await _reactive_loop(
+            return await _run_loop_engine(
                 latest_user_message=latest_user_message,
                 history=_history,
                 planning_context=planning_context,
@@ -1529,7 +1544,7 @@ async def call_llm_with_tools(
     # -------------------------------------------------------------------------
     # 2) The single reactive loop — handles step 1 through N (both summ modes).
     # -------------------------------------------------------------------------
-    return await _reactive_loop(
+    return await _run_loop_engine(
         latest_user_message=latest_user_message,
         history=_history,
         planning_context=planning_context,

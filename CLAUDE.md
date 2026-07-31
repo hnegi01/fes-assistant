@@ -62,6 +62,11 @@ Mode is determined by `_select_tools_for_mode(mode)` in `api_server.py`, which f
 
 > The whole turn is one reactive loop, `_reactive_loop()` inside
 > `call_llm_with_tools()`. See `AGENT_ARCHITECTURE.md` for the full diagram.
+> **Two interchangeable engines** run this same contract over the same helpers
+> (`FES_AGENT_ENGINE`): `custom` (the loop) and `langgraph`
+> (`backend/agent/graph_engine.py` — StateGraph, Send-API fan-out, no
+> checkpointer/DB/files). The unit suite is the parity harness: run it with the
+> flag flipped.
 
 Industry-standard **plan-and-execute** shape. Named parts (session-invented
 terms in parentheses — kept out of docs, still live in some code identifiers):
@@ -345,6 +350,7 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 | `FES_VERIFY_MAX_RECHECKS` | `1` | How many times the goal checker may push the loop to run one more step |
 | `FES_MAX_REPLANS` | `1` | How many times per turn the planner may revise the plan after a failed approach (0 = off) |
 | `FES_MAX_PARALLEL_STEPS` | `3` | How many independent plan steps may execute concurrently (1 = off); mutations always sequential |
+| `FES_AGENT_ENGINE` | `custom` | Turn harness: `custom` (hand-rolled loop) or `langgraph` (StateGraph over the same helpers; in-memory, no checkpointer) |
 | `FES_LANGSMITH_LOG_CONTENT` | `false` | Whether result data may appear in LangSmith traces (independent of summarization) — prompts shown, only data-bearing parts redacted; tool result payloads never go |
 | `FES_CSV_OBSERVABILITY` | `false` | Whether local CSV observability files are written (llm_traces / llm_calls / tool_calls); mutations audit log is always on |
 | `LANGSMITH_TRACING` | `false` | Master switch for the LangSmith trace tree (root agent_turn + llm/tool children) |

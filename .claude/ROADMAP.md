@@ -15,19 +15,17 @@ https://claude.ai/code/artifact/83dd30e5-5e65-471f-8022-bfe018bb9fe5
 
 What remains in THIS repo:
 
-## 1. LangGraph refactor — DESIGNED, DEFERRED (revisit when ready)
-Re-express the hand-rolled `_reactive_loop` as a LangGraph graph. The full
-blueprint is ready in `AGENT_ARCHITECTURE.md` → "Mapping to LangGraph": nodes
-`planner / router / agent / validator / tools / replanner / evaluator / respond`,
-`interrupt()` for the mutation gate + clarification, checkpointer
-(thread_id = session) for pause/resume, `Send` API for fan-out. Structural
-re-expression, not behavioral — thin nodes calling the existing helpers.
-Estimated ~2–4 sessions incl. full re-verification (unit + eval + integration +
-UI smoke). Caveat noted in the doc: keep our `_tracing.py` (LangGraph's native
-tracing would bypass the privacy redaction). Adoption strategy: engine flag
-(`FES_AGENT_ENGINE=custom|langgraph`) — both engines share the same helpers,
-parallel-run until parity, nothing thrown away either way. Checkpointer:
-in-memory (= today's behavior) or a SQLite file — no database required.
+## 1. LangGraph engine — BUILT (2026-07-31), parallel-run in progress
+`backend/agent/graph_engine.py` implements the blueprint: StateGraph with
+nodes planner / branch+join (Send-API fan-out) / first_select / next_select /
+validator / gate / tools / decide(replanner+evaluator), thin wrappers over the
+SAME llm_agent helpers, selected by `FES_AGENT_ENGINE=custom|langgraph`
+(default custom). No checkpointer/DB/files — pauses END the run and persist via
+SessionEntry exactly like the custom loop. Parity: all 150 unit tests pass
+under BOTH engines (helpers accessed via module attributes, so the same mocks
+exercise both). Remaining before flipping the default: live eval battery +
+integration suite under langgraph (blocked 2026-07-31 by an expired trial-tenant
+token — rerun once refreshed), then a parallel-run observation period.
 
 ## 2. Langfuse tracing backend — OPTIONAL, LATER
 Add a Langfuse implementation of our `_tracing.py` abstraction behind

@@ -600,25 +600,27 @@ redesign. This section is the glossary + that mapping.
 | **Graceful stop** | every exit returns readable text, never a silent halt | `_finalize_from_transcript`, `_loop_partial_message` |
 | **Progress** | emit a step event each phase | `_emit_agent_progress` |
 
-### Mapping to LangGraph _(designed, deferred — MCP OAuth first)_
+### Mapping to LangGraph _(BUILT — `graph_engine.py`, engine flag)_
 
-Decision (2026-07-31): the migration is **designed but deferred** until after
-MCP OAuth. The graph below is the ready-made blueprint — a structural
-re-expression of `_reactive_loop`, NOT a behavior change. Node names follow the
-**Plan-and-Execute / ReAct** conventions.
+Built 2026-07-31 as a **second interchangeable engine**, not a replacement:
+`FES_AGENT_ENGINE=custom|langgraph` selects the harness (default `custom`).
+Both are thin control flow over the SAME `llm_agent` helpers — accessed via
+module attributes, so the unit suite's mocks exercise both engines identically:
+**all 150 unit tests pass under each**. No checkpointer, no database, no files —
+pauses END the graph run and persist via `SessionEntry`, exactly like the loop.
+Node names follow the **Plan-and-Execute / ReAct** conventions.
 
-**The node graph:**
+**The node graph (as built in `backend/agent/graph_engine.py`):**
 
 | Node | Kind | Absorbs (current code) |
 |---|---|---|
 | `planner` | LLM | `_make_plan`, capability catalog, dependency tags, faithfulness guard, `_split_dependent_tail` |
-| `router` | LLM×2 | `_navigate_to_tools` (L1/L2) + backtrack widening |
-| `agent` | LLM | tool-selection call (~10 schemas) + `planner_schema` |
+| `first_select` / `next_select` | LLM×3 | `_navigate_to_tools` (L1/L2) + backtrack widening + the tool-selection call (~10 schemas, `planner_schema`) |
 | `validator` | code | jsonschema validate, `_missing_required_fields`, hard block |
 | `tools` | code/IO | `_invoke_tool_traced` → MCP invoke |
-| `replanner` | LLM | decide (CONTINUE/DONE/REPLAN/BLOCKED) + `_replan` + budget |
-| `evaluator` | LLM | `_verify_goal_complete` (the critic) + recheck budget |
-| `respond` | LLM/code | `_finalize_from_transcript`, `_describe_results_local`, `_done` |
+| `decide` (replanner + evaluator) | LLM | decide (CONTINUE/DONE/REPLAN/BLOCKED) + `_replan` + budget + `_verify_goal_complete` (the critic) |
+| `branch` + `join` | code/LLM | fan-out via the **Send API** (one `branch` per independent step, reducer-joined in plan order) |
+| terminal replies | LLM/code | `_finalize_from_transcript`, `_describe_results_local`, done/blocked messages — set `reply`, edge to END |
 
 ```
 planner ─Send(independent steps)→ router → agent → validator ─missing→ interrupt: clarify
@@ -636,8 +638,8 @@ planner ─Send(independent steps)→ router → agent → validator ─missing�
 | Our hand-rolled piece | LangGraph primitive |
 |---|---|
 | `_reactive_loop` `while` loop + its if/elif control flow | the **graph** (nodes + **conditional edges**) |
-| `pending_loop` / `pending_clarification` in `SessionEntry` | **checkpointer** (persistent, `thread_id` = session; survives restarts) |
-| Mutation gate + clarification pause → return, resume next turn | **interrupt()** (human-in-the-loop) |
+| `pending_loop` / `pending_clarification` in `SessionEntry` | kept AS-IS (pauses END the run; a checkpointer would add restart-surviving resume — deliberately not used: no DB/files) |
+| Mutation gate + clarification pause → return, resume next turn | terminal edges to END (interrupt() would need a checkpointer; same UX either way) |
 | Transcript / results / budgets / `LAST_*` globals | the graph **state** (TypedDict + reducers) |
 | Fan-out (`_execute_branch` + `asyncio.gather`, plan-order join) | **Send API** + a state **reducer** |
 | Graceful-stop terminal returns | **END** node / terminal edges |
@@ -658,9 +660,9 @@ primitives, and makes each node independently testable."
 
 ## What's next _(planned)_
 
-- **LangGraph.** Refactor the hand-rolled loop into named graph nodes
-  (planner / router / select / validator / tools / replanner / evaluator /
-  respond) — via an engine flag (`FES_AGENT_ENGINE`), parallel-run to parity.
+- **LangGraph engine: BUILT** (`graph_engine.py`, `FES_AGENT_ENGINE` flag,
+  150/150 test parity). Remaining: live eval battery under `langgraph`, then a
+  parallel-run period before considering a default flip.
 - ~~MCP OAuth + Claude connector~~ — **out of scope for this repo** (decision
   2026-07-31): this MCP server stays local/embedded (multi-tenant credential
   injection, agent-coupled session state). OAuth + connector belong to the
