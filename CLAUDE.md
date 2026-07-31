@@ -25,7 +25,7 @@ fes-assistant/
 │   ├── api_server.py                 # FastAPI routes (~487 lines)
 │   ├── runtime.py                    # Session pool + cancellation (~580 lines)
 │   └── agent/
-│       ├── llm_agent.py              # LLM orchestration: plan → execute → summarize (~1 133 lines)
+│       ├── llm_agent.py              # Agentic loop: plan → execute → replan (+ _config/_prompts/_registry/_routing)
 │       └── mcp_client.py             # JSON-RPC HTTP client for MCP server (~790 lines)
 ├── mcp_server/
 │   ├── server.py                     # Starlette MCP HTTP server (~866 lines)
@@ -58,34 +58,57 @@ Two logical modes, selected in the UI sidebar:
 
 Mode is determined by `_select_tools_for_mode(mode)` in `api_server.py`, which filters the tool registry by `meta.module == "migration"`.
 
-### 3. Three-Step LLM Orchestration (llm_agent.py)
+### 3. The agentic loop — plan → execute → replan (llm_agent.py)
 
-Every turn runs this pipeline inside `call_llm_with_tools()`:
+> This replaced the old fixed "plan → execute → summarize" three-step pipeline
+> in Step 8. The whole turn is now one reactive loop, `_reactive_loop()` inside
+> `call_llm_with_tools()`. See `AGENT_ARCHITECTURE.md` for the full diagram and
+> the artifact for the visual.
 
-```
-Step 1 — Planning
-  Messages sent to LLM: [system(PLANNING_SYSTEM_PROMPT), system(mode_context), latest_user_message]
-  LLM returns: tool_call (tool_id + args) OR plain text if no tool matched
+Industry-standard **plan-and-execute** shape. Named parts (session-invented
+terms in parentheses — kept out of docs, still live in some code identifiers):
 
-Step 2 — Execution (via MCP)
-  If tool is mutating AND not in approved_mutations → return pending_confirmation (no execution)
-  Otherwise → POST /mcp/ tools/call → get result → shrink result for LLM (_shrink_for_llm)
+- **Orchestrator** (`_make_plan` / `_replan`) — sees a compact **capability
+  catalog** (every tool as `tool_id: one-line description`, NO schemas — safe
+  because it writes prose steps, never emits tool calls). Drafts a
+  dependency-ordered plan and tags steps that need an earlier step's result
+  with `[needs-prior-result]`.
+- **Executor** — one route→select→validate→execute pipeline per step. Routing
+  is two-stage hierarchical (L1 package → L2 mixin → ~10 tools) so the
+  tool-selecting LLM never sees all 119 tools/schemas (hallucination control).
+- **Critic** (`_verify_goal_complete`) — an INDEPENDENT LLM call (maker/checker
+  split) that re-reads the whole request against the results before a "done"
+  ships. Summarization-ON only (judging goal completion needs the result data).
 
-Step 3 — Summarization (optional)
-  If ALLOW_SUMMARIZATION=false (env) → return "I ran the tool. Summarization disabled."
-  Otherwise → second LLM call with tool result → natural language summary
-```
+Per turn:
+1. **Plan** — orchestrator drafts the ordered, dependency-tagged plan (shown in
+   the UI).
+2. **Fan-out** — independent (untagged) steps run **concurrently**
+   (`_execute_branch` + `asyncio.gather`, width `FES_MAX_PARALLEL_STEPS`);
+   results join into the shared transcript in plan order.
+3. **Sequential tail** — dependent steps run one at a time (they need joined
+   results); a decide call picks each next move.
+4. **Verify** — per step: schema check + `ok` flag (code, no LLM). At "done":
+   the critic (LLM).
+5. **Recover** — the recovery ladder (see §8).
 
-**Critical gap**: Step 1 sends ONLY the `latest_user_message` to the LLM, not the conversation history. This means follow-up messages ("xyz datamodel" after "which datamodel?") arrive as standalone planning calls with no prior context.
+Multi-turn context: the planner receives the last `LLM_PLANNING_HISTORY_TURNS`
+turns via `_build_planning_history()`, so follow-ups ("xyz datamodel" after a
+clarifying question) resolve with prior context.
 
-### 4. Mutation Approval Flow (two-phase)
+### 4. Mutation Approval Flow (two-phase, human-in-the-loop)
 
-1. Planning picks a mutating tool → returns `pending_confirmation` dict inside `LAST_TOOL_RESULT`
+1. A mutating tool is selected → returns `pending_confirmation` dict inside `LAST_TOOL_RESULT` (with a plain-English `reason`)
 2. UI stores this and renders an approval dialog
 3. User approves → UI re-calls `/agent/turn` with `approved_keys` containing `(tool_id, args_json)`
 4. Backend checks `approved_mutations` set → executes the tool
 
-Mutations are logged separately to `logs/mutations.log` (audit trail).
+Mid-loop: if a mutation is reached partway through a multi-step turn, the loop
+**pauses** (`LAST_PENDING_LOOP` → `SessionEntry.pending_loop`); the approval
+turn resumes from the paused step instead of re-planning (Option A). In fan-out,
+mutating branches never execute concurrently — they **defer to the sequential
+loop** so the gate is handled one at a time. Mutations logged to
+`logs/mutations.log` (audit trail).
 
 ### 5. Progress Streaming (SSE)
 
@@ -134,6 +157,34 @@ Multi-layer best-effort:
 ```
 
 The backend uses mtime caching to avoid re-reading this file on every request.
+
+### 8. The recovery ladder
+
+Three recovery mechanisms at increasing altitude — each fires only when the
+cheaper one below can't help. **Backtrack fixes the step, replan fixes the
+strategy, the critic fixes completeness.**
+
+| Mechanism | Granularity | Trigger | Changes | Who | Budget |
+|---|---|---|---|---|---|
+| **Backtrack** | one step | routing/selection miss (no tool) | same op, wider tool menu (whole package) | code | 1 retry/step |
+| **Replan** | request's remaining plan (triggered by a step) | step result contradicts the plan, or dead end | new approach — orchestrator rewrites what's left | LLM | `FES_MAX_REPLANS` |
+| **Critic INCOMPLETE** | whole request, at "done" | maker declared done but something's missing | pushes +1 step (never rewrites) | LLM | `FES_VERIFY_MAX_RECHECKS` |
+
+There is no separate step-level replan (a step failure re-plans the *remaining*
+request) and no standalone request-level replan (the critic only *adds* a step).
+
+### 9. Summarization flag = data visibility, not loop on/off
+
+`allow_summarization` is a **privacy kill-switch over result DATA**, enforced in
+code (never LLM trust):
+
+- **On** — result data reaches the LLM. Adaptive chains complete; the critic runs.
+- **Off** — only metadata (`{tool, ok, count}`) reaches the LLM. Independent
+  multi-step still works; **adaptive/dependent** steps are skipped up front
+  (dependency gate — the value they need is unreadable) or stop gracefully
+  (`BLOCKED`), and the reply names what was skipped. The critic is off.
+
+API/UI default is `false` when the field is omitted — set it explicitly.
 
 ---
 
@@ -185,20 +236,34 @@ The backend uses mtime caching to avoid re-reading this file on every request.
 
 ### `backend/agent/llm_agent.py`
 
-**Globals:**
+> Split across sub-modules: `_config.py` (env/logging/tracing), `_prompts.py`
+> (all prompt constants), `_registry.py` (registry I/O + shrinkers), `_routing.py`
+> (two-stage routing + raw LLM call). `llm_agent.py` orchestrates.
+
+**Globals (module-level, read by the API layer via getattr):**
 - `TOOL_REGISTRY: Dict[str, dict]` — loaded from JSON registry
-- `LAST_TOOL_RESULT: Optional[dict]` — set after each tool call; API layer reads this
+- `LAST_TOOL_RESULT: Optional[dict]` — last tool result (single slot)
+- `LAST_STEP_RESULTS: List[dict]` — every step's result this turn (UI shows all)
+- `LAST_PENDING_CLARIFICATION` — set when the turn pauses to ask for a missing arg
+- `LAST_PENDING_LOOP` — set when a multi-step turn pauses mid-loop for approval
 
 **Key functions:**
-- `call_llm_with_tools()` — main orchestration (plan → execute → summarize)
-- `call_llm_raw()` — raw LLM HTTP call with retry logic
-- `load_tools_for_llm()` — loads registry → OpenAI tool format
-- `_shrink_for_llm()` — generic payload shrinker before summarization
-- `_fallback_direct_tool()` — keyword-based fallback if planning LLM call fails
+- `call_llm_with_tools()` → `_reactive_loop()` — the plan→execute→replan loop
+- `_make_plan()` / `_replan()` — orchestrator (capability-catalog planners)
+- `_capability_catalog()` — one-liner catalog (name + description, no schemas)
+- `_split_dependent_tail()` — partitions plan into independent vs `[needs-prior-result]`
+- `_execute_branch()` — one fan-out branch (route→select→validate→execute)
+- `_verify_goal_complete()` — the critic (independent goal checker)
+- `call_llm_raw()` — raw LLM HTTP call, retry + per-call CSV trace (`label=`)
+- `_fallback_direct_tool()` — keyword fallback if planning LLM call fails
 
-**Prompts:**
-- `PLANNING_SYSTEM_PROMPT` — instructs LLM to only select a tool + args, never summarize
-- `SUMMARY_SYSTEM_PROMPT_CHAT/MIGRATION` — instructs LLM to summarize tool result
+**Prompts** (`_prompts.py`): `AGENT_PLAN_SYSTEM_PROMPT`,
+`AGENT_REPLAN_SYSTEM_PROMPT`, `AGENT_DECIDE_SYSTEM_PROMPT` (+ `_NODATA` variant,
+both with a `REPLAN:` verb), `VERIFY_GOAL_SYSTEM_PROMPT`,
+`CLARIFY_QUESTION_SYSTEM_PROMPT`, routing/mode-context prompts. Prompts carry
+**only generic strategy** — never scenario-specific rules (failures become eval
+cases, not prompt patches). `SUMMARY_SYSTEM_PROMPT_*` and `PLANNING_SYSTEM_PROMPT`
+are legacy (decide replaced summarize).
 
 **LLM providers:** Azure OpenAI (with AWS Secrets Manager fallback) or Databricks Model Serving. Selected by `LLM_PROVIDER` env var. Config built once at import time into `LLM_CONFIG` frozen dataclass.
 
@@ -263,7 +328,7 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 | `FES_CLARIFY_MAX_ATTEMPTS` | `2` | Max clarifying questions before the agent gives up and states what it needs |
 | `FES_VERIFY_GOAL` | `true` | Independent goal checker (verify #3): re-checks a "done" answer against the request before accepting it |
 | `FES_VERIFY_MAX_RECHECKS` | `1` | How many times the goal checker may push the loop to run one more step |
-| `FES_MAX_REPLANS` | `1` | How many times per turn the strategist may revise the plan after a failed approach (0 = off) |
+| `FES_MAX_REPLANS` | `1` | How many times per turn the orchestrator may revise the plan after a failed approach (0 = off) |
 | `FES_MAX_PARALLEL_STEPS` | `3` | How many independent plan steps may execute concurrently (1 = off); mutations always sequential |
 | `FES_LOG_LEVEL` | `INFO` | Log level across all services |
 | `FES_UI_IDLE_TIMEOUT_HOURS` | `9` | Streamlit session idle timeout |
@@ -294,6 +359,43 @@ uvicorn backend.api_server:app --host 0.0.0.0 --port 8001
 # Run UI
 streamlit run frontend/app.py --server.port 8501
 ```
+
+> Venv is `venv_pysisense_chatbot`. For the launch/drive/restart recipes, the
+> manual `/agent/turn` harness, and gotchas, use the **`run` skill**
+> (`.claude/skills/run/SKILL.md`).
+
+## Testing
+
+Markers in `pyproject.toml`. Three tiers:
+
+```bash
+# Unit — mocked, fast, no creds. Always run these.
+pytest tests/unit -q
+
+# Integration — needs the live stack + real creds. Local only.
+pytest tests/integration -m integration -v
+
+# Eval battery — planner-behaviour regression prompts. Live + creds.
+pytest tests/integration/test_evals_planner.py -m eval -v
+```
+
+- **Integration/eval are local-only and never in GitHub Actions** — we never put
+  LLM or Sisense secrets in CI (firm policy). Creds live in
+  `tests/integration/integration_config.yaml` (gitignored, real token).
+- **Eval battery = anti-whack-a-mole**: a prompt that once misbehaved becomes an
+  `EVAL_CASES` entry, not a scenario-specific prompt rule.
+- **Mutation tests only ever mutate an asset they created** (create → gate →
+  approve → delete that same asset → `finally:` force-delete). See
+  `tests/integration/test_mutation_lifecycle.py`. Never touch a pre-existing asset.
+- LLM non-determinism → re-run a single failing integration test before calling
+  it a regression.
+
+## Docs
+
+- `AGENT_ARCHITECTURE.md` — the living architecture doc (loop, recovery ladder,
+  verify, LangGraph mapping) with Mermaid diagrams.
+- `.claude/skills/run/SKILL.md` — launch/drive/test the stack.
+- `.claude/PROGRESS.md` — build history / changelog.
 
 ## Docker
 
