@@ -589,22 +589,52 @@ redesign. This section is the glossary + that mapping.
 | **Graceful stop** | every exit returns readable text, never a silent halt | `_finalize_from_transcript`, `_loop_partial_message` |
 | **Progress** | emit a step event each phase | `_emit_agent_progress` |
 
-### Mapping to LangGraph _(planned)_
+### Mapping to LangGraph _(designed, deferred — MCP OAuth first)_
 
-The expected correspondence — the table you point at when someone asks _"how did
-you use LangGraph here?"_ Each row is confirmed when the refactor lands.
+Decision (2026-07-31): the migration is **designed but deferred** until after
+MCP OAuth. The graph below is the ready-made blueprint — a structural
+re-expression of `_reactive_loop`, NOT a behavior change. Node names follow the
+**Plan-and-Execute / ReAct** conventions.
 
-| Our hand-rolled piece | Expected LangGraph primitive |
+**The node graph:**
+
+| Node | Kind | Absorbs (current code) |
+|---|---|---|
+| `planner` | LLM | `_make_plan`, capability catalog, dependency tags, faithfulness guard, `_split_dependent_tail` |
+| `router` | LLM×2 | `_navigate_to_tools` (L1/L2) + backtrack widening |
+| `agent` | LLM | tool-selection call (~10 schemas) + `planner_schema` |
+| `validator` | code | jsonschema validate, `_missing_required_fields`, hard block |
+| `tools` | code/IO | `_invoke_tool_traced` → MCP invoke |
+| `replanner` | LLM | decide (CONTINUE/DONE/REPLAN/BLOCKED) + `_replan` + budget |
+| `evaluator` | LLM | `_verify_goal_complete` (the critic) + recheck budget |
+| `respond` | LLM/code | `_finalize_from_transcript`, `_describe_results_local`, `_done` |
+
+```
+planner ─Send(independent steps)→ router → agent → validator ─missing→ interrupt: clarify
+                                                        │ok
+                                                   mutating? ─yes→ interrupt: approval
+                                                        │no
+                                                      tools → replanner ─CONTINUE→ router
+                                                                 │REPLAN→ planner
+                                                                 │DONE→ evaluator ─INCOMPLETE→ router
+                                                                              │COMPLETE→ respond
+```
+
+**Framework primitives replacing custom machinery:**
+
+| Our hand-rolled piece | LangGraph primitive |
 |---|---|
-| `_reactive_loop` `while` loop | the **graph** itself (nodes + edges) |
-| Orchestrator (plan/replan), Decide, Route, Plan, Execute | individual **nodes** |
-| "`CONTINUE:` → loop back, else → answer" | a **conditional edge** |
-| `pending_loop` / `pending_clarification` in `SessionEntry` | **checkpointer** (persistent state / `thread_id`) |
-| Mutation gate → return, resume next turn | **interrupt** (human-in-the-loop) |
-| The dict passed between steps (goal, transcript, results) | the graph **state** object |
+| `_reactive_loop` `while` loop + its if/elif control flow | the **graph** (nodes + **conditional edges**) |
+| `pending_loop` / `pending_clarification` in `SessionEntry` | **checkpointer** (persistent, `thread_id` = session; survives restarts) |
+| Mutation gate + clarification pause → return, resume next turn | **interrupt()** (human-in-the-loop) |
+| Transcript / results / budgets / `LAST_*` globals | the graph **state** (TypedDict + reducers) |
+| Fan-out (`_execute_branch` + `asyncio.gather`, plan-order join) | **Send API** + a state **reducer** |
 | Graceful-stop terminal returns | **END** node / terminal edges |
-| Plan → replan (orchestrator + capability catalog) | a `plan` node + a **replan edge** on divergence |
-| Fan-out (`_execute_branch` + `asyncio.gather`) | **fan-out / fan-in** (parallel branches) |
+
+**Unchanged in a migration:** `_prompts.py`, the privacy boundary
+(`_transcript_step`/`_metadata_record`), registry + routing data, `mcp_client`,
+the eval battery. **Caveat:** LangGraph's native LangSmith tracing ships full
+state and would bypass our redaction — keep `_tracing.py` as the reporter.
 
 The point of the left column: none of these are LangGraph inventions — they are
 real problems any agent hits (how to loop, pause, resume, stop safely, keep a
