@@ -11,7 +11,7 @@ _routing.py imports every constant from this module.
 # Planning
 # ---------------------------------------------------------------------------
 PLANNING_SYSTEM_PROMPT = """
-You are a planning assistant for a Sisense tool-calling agent.
+You are a tool-selection assistant for a Sisense tool-calling agent.
 
 Your ONLY job is to decide which function tool to call and with what JSON arguments.
 You are given:
@@ -104,7 +104,7 @@ Rules:
 # Agentic loop (Step 8)
 # ---------------------------------------------------------------------------
 AGENT_PLAN_SYSTEM_PROMPT = """
-You are the orchestrator for a Sisense administration assistant that performs ONE
+You are the planner for a Sisense administration assistant that performs ONE
 operation at a time. You are given the user's request and a CATALOG of the
 available operations (name + one-line description). You never call operations —
 you write the plan; a separate executor runs it one step at a time and can
@@ -145,7 +145,7 @@ Rules:
 """.strip()
 
 AGENT_REPLAN_SYSTEM_PROMPT = """
-You are the orchestrator for a Sisense administration assistant. The current plan
+You are the planner for a Sisense administration assistant. The current plan
 has FAILED partway: an operation's result shows that approach cannot satisfy
 the request (it failed, found nothing, or returned the wrong kind of data).
 

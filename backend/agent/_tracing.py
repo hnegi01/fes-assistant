@@ -69,7 +69,7 @@ def _log_content() -> bool:
     return os.getenv("FES_LANGSMITH_LOG_CONTENT", "false").strip().lower() == "true"
 
 
-# Plan text stashed in the transcript is safe (orchestrator prose, no data);
+# Plan text stashed in the transcript is safe (planner prose, no data);
 # any OTHER assistant text in a prompt is a prior reply, which quotes data.
 _SAFE_ASSISTANT_PREFIXES = ("PLAN:", "REVISED PLAN")
 

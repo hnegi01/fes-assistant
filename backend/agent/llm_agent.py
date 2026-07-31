@@ -235,7 +235,7 @@ def _optional_arg_hint(tool_id: str, used_args: Dict[str, Any], tool_meta: Dict[
 def _missing_required_fields(args: Dict[str, Any], schema: Dict[str, Any]) -> List[str]:
     """Required schema fields absent or empty in args, excluding injected credential fields.
 
-    Planners sometimes send `""` or null for a value the user never provided instead
+    The tool-selection call sometimes sends `""` or null for a value the user never provided instead
     of omitting the key — treat those as missing so they trigger clarification, not
     a format-validation hard block.
     """
@@ -371,9 +371,9 @@ async def _generate_mutation_explanation(
 # -----------------------------------------------------------------------------
 def _capability_catalog(mode: str) -> str:
     """One line per tool — `tool_id: first line of description` — for the
-    orchestrator (plan/replan). NO schemas: the orchestrator writes prose steps, it
+    planner (plan/replan). NO schemas: the planner writes prose steps, it
     never emits tool calls, so the compact full catalog is safe where showing
-    119 schemas to the CALLING planner would not be. Mode-filtered the same way
+    119 schemas to the CALLING tool-selection step would not be. Mode-filtered the same way
     the registry is (migration tools only in migration mode)."""
     lines: List[str] = []
     for tid in sorted(TOOL_REGISTRY):
@@ -387,7 +387,7 @@ def _capability_catalog(mode: str) -> str:
 
 
 def _parse_plan_lines(text: str) -> List[str]:
-    """Extract the numbered steps from a orchestrator reply."""
+    """Extract the numbered steps from a planner reply."""
     import re
 
     steps = []
@@ -408,7 +408,7 @@ def _split_dependent_tail(plan_steps: List[str]) -> Tuple[List[str], List[str]]:
     the LLM cannot see with summarization off — executing them would only
     produce doomed calls, so they are skipped. Untagged steps run regardless of
     position (independent steps are order-free by definition, so an untagged
-    step after a tagged one still runs). Detection is the orchestrator's (text
+    step after a tagged one still runs). Detection is the planner's (text
     reasoning at plan time); this enforcement is code. The marker on step 1 is
     ignored (nothing precedes it). Markers are stripped from both halves."""
 
@@ -426,7 +426,7 @@ def _split_dependent_tail(plan_steps: List[str]) -> Tuple[List[str], List[str]]:
 
 
 async def _make_plan(user_text: str, mode: str, history: List[Dict[str, Any]], trace_id: str) -> List[str]:
-    """The upfront orchestrator call: request + capability catalog → ordered plan
+    """The upfront planner call: request + capability catalog → ordered plan
     (a list of one-operation instructions). Falls back to [user_text] on any
     failure — planning must never block a turn. Privacy-safe in both summ modes:
     it reads only the request text and the catalog, never tool results."""
@@ -440,7 +440,7 @@ async def _make_plan(user_text: str, mode: str, history: List[Dict[str, Any]], t
             ],
             tools=None,
             trace_id=trace_id,
-            label="orchestrator",
+            label="planner",
         )
         text, _ = _pick_tool_calls_from_llm_response(data)
         steps = _parse_plan_lines(text or "")
@@ -461,7 +461,7 @@ async def _replan(
     reason: str,
     trace_id: str,
 ) -> Tuple[List[str], str]:
-    """The recovery orchestrator: request + what ran (with outcomes) + why the
+    """The recovery planner (replan): request + what ran (with outcomes) + why the
     executor gave up + the catalog → a REVISED plan for the remaining work, or
     ("GIVEUP", <user-facing sentence>) when no alternative exists. Returns
     (steps, giveup_message) — one of the two is empty."""
@@ -682,6 +682,9 @@ async def _reask_clarification_or_giveup(resume_clar: Dict[str, Any], turn_trace
     return question
 
 
+# The ORCHESTRATOR: reads the planner's blueprint and manages live execution —
+# dispatch a step, run it, decide the next move, replan on failure. The planner
+# (_make_plan) drafts; this loop orchestrates.
 async def _reactive_loop(
     *,
     latest_user_message: Dict[str, Any],
@@ -712,7 +715,7 @@ async def _reactive_loop(
       - step > 0               → the decide call reads goal + history
 
     Runs in BOTH summarization modes: the flag only controls what the decide call
-    and planner see of each result (full data vs action metadata) — enforced by
+    and tool-selection step see of each result (full data vs action metadata) — enforced by
     `_transcript_step`. Final answer is LLM prose (summ on) or a local render of
     `raw_results` (summ off, so data never reaches the model).
 
@@ -728,7 +731,7 @@ async def _reactive_loop(
     first_tool_hint: Optional[Tuple[str, Dict[str, Any], Dict[str, Any]]] = None
     pending_seed = seed_call  # consumed on the first iteration only
     checker_overrides = 0  # times the goal checker has pushed a "done" back into the loop
-    replans_used = 0  # times the orchestrator revised the plan this turn
+    replans_used = 0  # times the planner revised the plan this turn
     next_op_override: Optional[str] = None  # set by a replan; consumed instead of a decide call
     blocked_tail: List[str] = []  # summ-off: plan steps skipped because they need prior-result values
 
@@ -761,9 +764,9 @@ async def _reactive_loop(
         )
 
     async def _attempt_replan(reason: str) -> Tuple[Optional[str], str]:
-        """Ask the orchestrator for a revised plan after the current approach failed.
+        """Ask the planner for a revised plan after the current approach failed.
         Returns (next_op, giveup_msg): next_op None = no viable alternative
-        (budget spent, or the orchestrator gave up)."""
+        (budget spent, or the planner gave up)."""
         nonlocal replans_used
         if replans_used >= MAX_REPLANS:
             return None, ""
@@ -896,7 +899,7 @@ async def _reactive_loop(
             pending_seed = None
 
         elif is_first:
-            # Fresh turn: the orchestrator drafts the full plan (request + capability
+            # Fresh turn: the planner drafts the full plan (request + capability
             # catalog, no schemas), the loop executes its first operation. The plan
             # is stashed in the transcript so decide/verify follow it, and emitted
             # to the UI for transparency.
@@ -905,11 +908,11 @@ async def _reactive_loop(
             independent_steps, dependent_steps = _split_dependent_tail(_raw_plan)
             if len(independent_steps) + len(dependent_steps) == 1 and not history:
                 # Faithfulness guard (code, not prompt): for a fresh single-step
-                # request the user's own message IS the step — the orchestrator's
+                # request the user's own message IS the step — the planner's
                 # paraphrase tends to echo the catalog description of whichever
                 # operation matches, and the step text feeds routing + tool
                 # selection downstream. With history present, keep the
-                # orchestrator's line: it may resolve references ("its members")
+                # planner's line: it may resolve references ("its members")
                 # that the raw text alone cannot.
                 independent_steps, dependent_steps = [user_text], []
             if summ_on:
@@ -1026,7 +1029,7 @@ async def _reactive_loop(
                 _write_llm_trace(trace)
                 return summary
             if not calls:
-                # Planner chose to answer in natural language (no tool fits).
+                # Tool-selection chose to answer in natural language (no tool fits).
                 trace["outcome"] = "no_tool"
                 _write_llm_trace(trace)
                 return content or ""
@@ -1066,7 +1069,7 @@ async def _reactive_loop(
                     mark_tainted(remains)
                 logger.info("Agent loop step %d done; continuing: %s", steps_executed, remains[:200])
             elif replan_line is not None:
-                # The last step's outcome contradicts the plan → orchestrator revises
+                # The last step's outcome contradicts the plan → planner revises
                 # with the capability catalog (a retry that CHANGES approach).
                 reason = replan_line.split(":", 1)[1].strip()
                 op, giveup = await _attempt_replan(reason)
@@ -1127,7 +1130,7 @@ async def _reactive_loop(
             if (not nav_tools) and nav_pkg and nav_pkg != "__unclear__":
                 nav_tools = _load_all_package_tools(nav_pkg)
             if not nav_tools:
-                # No drawer fits this op — let the orchestrator rephrase/reroute once.
+                # No drawer fits this op — let the planner rephrase/reroute once.
                 op, giveup = await _attempt_replan(f"no matching operation found for: {remains}")
                 if op:
                     next_op_override = op
@@ -1162,7 +1165,7 @@ async def _reactive_loop(
                     except Exception:  # noqa: BLE001
                         calls = []
             if not calls:
-                # The planner couldn't pick a tool for this op — orchestrator retry.
+                # The tool-selection call couldn't pick a tool for this op — planner retry (replan).
                 op, giveup = await _attempt_replan(f"could not pick an operation for: {remains}")
                 if op:
                     next_op_override = op
@@ -1241,7 +1244,7 @@ async def _reactive_loop(
                 return _loop_partial_message(steps_executed, remains, f"invalid argument for {tool_id}: {_ve.message}")
 
         logger.info("Tool selected: %s (mutates=%s)", tool_id, bool(meta.get("mutates")))
-        _log_json_truncated("Tool args (from planner)", args)
+        _log_json_truncated("Tool args (from tool selection)", args)
 
         # ------------------------------------------------------------------ gate
         if bool(meta.get("mutates")) and REQUIRE_MUTATION_CONFIRM:
@@ -1325,7 +1328,7 @@ async def call_llm_with_tools(
         Global env ALLOW_SUMMARIZATION is still a hard cap.
     pending_clarification:
         Carried-over clarification state from the previous turn (Step 7). When set,
-        the router is skipped and the planner re-runs constrained to the pinned tool
+        the router is skipped and the tool-selection call re-runs constrained to the pinned tool
         to merge the user's answer. Shape: {tool_id, missing_fields, filled_args, attempts}.
     pending_loop:
         Carried-over agentic-loop state from a turn that paused mid-loop for a
@@ -1468,7 +1471,7 @@ async def call_llm_with_tools(
     # 1b) Clarification resume (Step 7): skip routing, re-plan the pinned tool.
     # On the resume turn the latest user message is the answer to a prior
     # clarifying question, so routing on it alone would be unreliable. Instead we
-    # re-run the planner constrained to the one tool we were resolving, with
+    # re-run the tool-selection call constrained to the one tool we were resolving, with
     # tool_choice="auto" so a decline (the answer wasn't really an answer →
     # topic change) cleanly falls back to fresh routing.
     # -------------------------------------------------------------------------
@@ -1519,7 +1522,7 @@ async def call_llm_with_tools(
             else:
                 # Declined the pinned tool → maybe a topic change (enter fresh), or
                 # a non-answer (fresh routing will be unclear → re-ask via this state).
-                logger.info("Resume: planner declined %s — routing fresh.", _pc_tool_id)
+                logger.info("Resume: tool selection declined %s — routing fresh.", _pc_tool_id)
                 resume_clarification = pending_clarification
                 clarify_attempts_base = 0
 

@@ -90,7 +90,7 @@ Standard **plan-and-execute** architecture. The turn is one loop
 every turn. Full conceptual treatment (why narrow LLM calls, the verify design)
 lives in [`AGENT_ARCHITECTURE.md`](./AGENT_ARCHITECTURE.md).
 
-- **Orchestrator** (LLM) — drafts the plan from a compact capability catalog
+- **Planner** (LLM) — drafts the plan from a compact capability catalog
   (every tool as `tool_id: one-line description`, **no schemas**), orders steps
   by dependency, and tags steps that need an earlier step's result. Revises the
   plan when an approach fails (replan).
@@ -102,7 +102,7 @@ lives in [`AGENT_ARCHITECTURE.md`](./AGENT_ARCHITECTURE.md).
 
 ```mermaid
 flowchart TD
-  U[User prompt] --> ORC[ORCHESTRATOR<br/>plan from catalog · order by dependency]
+  U[User prompt] --> ORC[PLANNER<br/>plan from catalog · order by dependency]
   ORC --> S1[Step 1 · executor]
   ORC --> S2[Step 2 · executor]
   ORC --> S3[Step 3 · executor]
@@ -246,7 +246,7 @@ never by trusting the model.
 
 ```mermaid
 flowchart TD
-  A[User request] --> B[Orchestrator plans]
+  A[User request] --> B[Planner plans]
   B --> C[Execute independent steps]
   C --> D{Summarization allowed?}
   D -->|No| E[Skip dependent steps · metadata-only reply<br/>No tool DATA sent to LLM]
@@ -346,12 +346,12 @@ Typical SSE event types:
 2. **Backend API (`backend/api_server.py`) — API Gateway + SSE Transport**  
    HTTP entry point (`/health`, `/tools`, `/agent/turn`). For `/agent/turn`, it handles the **SSE transport** to the UI and delegates execution to the runtime.
 
-3. **Agent Runtime (`backend/runtime.py`) — Orchestrator Runtime / Session Manager**  
+3. **Agent Runtime (`backend/runtime.py`) — Session Manager / Turn Runtime**  
    Owns the per-UI-session runtime: a concurrency-safe session pool that maps `session_id → McpClient + configs`. Wires a per-turn progress callback used by backend SSE streaming.
 
-4. **LLM Layer (`backend/agent/llm_agent.py`) — Agentic Loop (Orchestrator + Executor + Critic)**  
+4. **LLM Layer (`backend/agent/llm_agent.py`) — the Orchestrator loop (Planner + Executor + Critic)**  
    This is the “agent brain” for a turn — the `_reactive_loop` (see §2.5):
-   - **Orchestrator:** drafts/replans the dependency-ordered plan from the capability catalog  
+   - **Planner:** drafts/replans the dependency-ordered plan from the capability catalog  
    - **Executor:** per step, two-stage routes then picks + runs ONE tool via the MCP client; independent steps fan out concurrently  
    - **Critic:** independent goal check before a "done" answer ships (summ-on)  
    - **Policy/Guardrails:** two-phase mutation approval + the recovery ladder (backtrack / replan / recheck)  
@@ -391,7 +391,7 @@ Typical SSE event types:
 - `backend/runtime.py`
   - session pool, long-lived MCP client per UI session, progress callback wiring
 - `backend/agent/llm_agent.py`
-  - the agentic loop: orchestrator (plan/replan), executor + fan-out, critic, mutation approvals, recovery ladder
+  - the agentic loop (the orchestrator): planner (plan/replan), executor + fan-out, critic, mutation approvals, recovery ladder
   - (split across `_config.py` / `_prompts.py` / `_registry.py` / `_routing.py`)
 - `backend/agent/mcp_client.py`
   - MCP JSON-RPC client, SSE parsing for MCP responses, session headers, retries/timeouts
@@ -405,8 +405,8 @@ Typical SSE event types:
 ```mermaid
 flowchart LR
   A[frontend/app.py<br/>Client UI - Session Controller] --> B[backend/api_server.py<br/>API Gateway - SSE Transport]
-  B --> C[backend/runtime.py<br/>Orchestrator Runtime - Session Manager]
-  C --> D[backend/agent/llm_agent.py<br/>Agent Orchestrator<br/>Planner - Policy - Summarizer optional]
+  B --> C[backend/runtime.py<br/>Session Manager - Turn Runtime]
+  C --> D[backend/agent/llm_agent.py<br/>Orchestrator loop<br/>Planner - Executor - Critic]
   D --> E[backend/agent/mcp_client.py<br/>Tool Transport Client<br/>MCP Streamable HTTP - SSE]
   E --> F[mcp_server/server.py<br/>Tool Host Transport<br/>POST mcp - SSE streaming]
   F --> G[mcp_server/tools_core.py<br/>Tool Router - Executor Adapter<br/>Registry to SDK dispatch - emit]

@@ -66,11 +66,14 @@ Mode is determined by `_select_tools_for_mode(mode)` in `api_server.py`, which f
 Industry-standard **plan-and-execute** shape. Named parts (session-invented
 terms in parentheses — kept out of docs, still live in some code identifiers):
 
-- **Orchestrator** (`_make_plan` / `_replan`) — sees a compact **capability
+- **Planner** (`_make_plan` / `_replan`) — sees a compact **capability
   catalog** (every tool as `tool_id: one-line description`, NO schemas — safe
   because it writes prose steps, never emits tool calls). Drafts a
   dependency-ordered plan and tags steps that need an earlier step's result
   with `[needs-prior-result]`.
+- **Orchestrator** — the loop (`_reactive_loop`) itself: reads the plan,
+  dispatches each step, decides the next move, replans on failure. The planner
+  is a step inside it, not the loop.
 - **Executor** — one route→select→validate→execute pipeline per step. Routing
   is two-stage hierarchical (L1 package → L2 mixin → ~10 tools) so the
   tool-selecting LLM never sees all 119 tools/schemas (hallucination control).
@@ -79,7 +82,7 @@ terms in parentheses — kept out of docs, still live in some code identifiers):
   ships. Summarization-ON only (judging goal completion needs the result data).
 
 Per turn:
-1. **Plan** — orchestrator drafts the ordered, dependency-tagged plan (shown in
+1. **Plan** — planner drafts the ordered, dependency-tagged plan (shown in
    the UI).
 2. **Fan-out** — independent (untagged) steps run **concurrently**
    (`_execute_branch` + `asyncio.gather`, width `FES_MAX_PARALLEL_STEPS`);
@@ -165,7 +168,7 @@ strategy, the critic fixes completeness.**
 | Mechanism | Granularity | Trigger | Changes | Who | Budget |
 |---|---|---|---|---|---|
 | **Backtrack** | one step | routing/selection miss (no tool) | same op, wider tool menu (whole package) | code | 1 retry/step |
-| **Replan** | request's remaining plan (triggered by a step) | step result contradicts the plan, or dead end | new approach — orchestrator rewrites what's left | LLM | `FES_MAX_REPLANS` |
+| **Replan** | request's remaining plan (triggered by a step) | step result contradicts the plan, or dead end | new approach — planner rewrites what's left | LLM | `FES_MAX_REPLANS` |
 | **Critic INCOMPLETE** | whole request, at "done" | maker declared done but something's missing | pushes +1 step (never rewrites) | LLM | `FES_VERIFY_MAX_RECHECKS` |
 
 There is no separate step-level replan (a step failure re-plans the *remaining*
@@ -192,7 +195,7 @@ observability).
 
 | Destination | Switch | What you get |
 |---|---|---|
-| **LangSmith** (external cloud) | `LANGSMITH_TRACING` (+ `FES_LANGSMITH_LOG_CONTENT` for result data in traces) | Trace tree per turn: root `agent_turn` → llm children (orchestrator/route/plan/decide/verify) + tool children (ok/rows/duration); Threads view groups a session; per-turn cost |
+| **LangSmith** (external cloud) | `LANGSMITH_TRACING` (+ `FES_LANGSMITH_LOG_CONTENT` for result data in traces) | Trace tree per turn: root `agent_turn` → llm children (planner/route/plan/decide/verify) + tool children (ok/rows/duration); Threads view groups a session; per-turn cost |
 | **Local CSVs** (`logs/`) | `FES_CSV_OBSERVABILITY` | `llm_traces.csv` (per turn), `llm_calls.csv` (per LLM call), `tool_calls.csv` (per tool execution) — grouped by per-turn `trace_id`, no cloud required |
 
 Hierarchy mapping (LangSmith ↔ app): Thread = UI session (`SESSION_POOL`),
@@ -262,7 +265,7 @@ calls + tool executions. Details: `AGENT_ARCHITECTURE.md` → "Observability".
 
 **Key functions:**
 - `call_llm_with_tools()` → `_reactive_loop()` — the plan→execute→replan loop
-- `_make_plan()` / `_replan()` — orchestrator (capability-catalog planners)
+- `_make_plan()` / `_replan()` — the planner (drafts/revises the plan from the capability catalog)
 - `_capability_catalog()` — one-liner catalog (name + description, no schemas)
 - `_split_dependent_tail()` — partitions plan into independent vs `[needs-prior-result]`
 - `_execute_branch()` — one fan-out branch (route→select→validate→execute)
@@ -340,7 +343,7 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 | `FES_CLARIFY_MAX_ATTEMPTS` | `2` | Max clarifying questions before the agent gives up and states what it needs |
 | `FES_VERIFY_GOAL` | `true` | Independent goal checker (verify #3): re-checks a "done" answer against the request before accepting it |
 | `FES_VERIFY_MAX_RECHECKS` | `1` | How many times the goal checker may push the loop to run one more step |
-| `FES_MAX_REPLANS` | `1` | How many times per turn the orchestrator may revise the plan after a failed approach (0 = off) |
+| `FES_MAX_REPLANS` | `1` | How many times per turn the planner may revise the plan after a failed approach (0 = off) |
 | `FES_MAX_PARALLEL_STEPS` | `3` | How many independent plan steps may execute concurrently (1 = off); mutations always sequential |
 | `FES_LANGSMITH_LOG_CONTENT` | `false` | Whether result data may appear in LangSmith traces (independent of summarization) — prompts shown, only data-bearing parts redacted; tool result payloads never go |
 | `FES_CSV_OBSERVABILITY` | `false` | Whether local CSV observability files are written (llm_traces / llm_calls / tool_calls); mutations audit log is always on |

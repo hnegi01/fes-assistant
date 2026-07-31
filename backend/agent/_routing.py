@@ -344,9 +344,9 @@ async def call_llm_raw(
     """
     Make a single LLM call via LiteLLM and return the response as a plain dict.
 
-    When tools are provided, tool_choice defaults to "required" so the planner
-    always selects a tool rather than answering in free text. Pass tool_choice
-    explicitly (e.g. "auto") to let the planner decline — used on the
+    When tools are provided, tool_choice defaults to "required" so the tool-selection
+    call always selects a tool rather than answering in free text. Pass tool_choice
+    explicitly (e.g. "auto") to let it decline — used on the
     clarification-resume turn, where a decline signals the user changed topic.
     Providers: azure, databricks, huggingface.
     """
@@ -367,7 +367,7 @@ async def call_llm_raw(
 
     if tools:
         kwargs["tools"] = tools
-        # "required" forces the planner to always emit a tool_call; "auto" lets it
+        # "required" forces the tool-selection call to always emit a tool_call; "auto" lets it
         # decline (return plain text). litellm.drop_params=True silently drops this
         # for providers that don't support it.
         kwargs["tool_choice"] = tool_choice or "required"
