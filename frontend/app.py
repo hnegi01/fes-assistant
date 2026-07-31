@@ -437,9 +437,10 @@ def _launch_migration_turn(
 
     def _run() -> None:
         try:
-            reply, tool_result = call_backend_turn(**call_kwargs)
+            reply, tool_result, step_results = call_backend_turn(**call_kwargs)
             ctx["reply"] = reply
             ctx["tool_result"] = tool_result
+            ctx["step_results"] = step_results
         except Exception as exc:
             logger.exception("Background migration turn failed: %s", exc)
             ctx["error_str"] = str(exc)
@@ -515,6 +516,7 @@ def call_backend_turn(
     if "text/event-stream" in ctype:
         final_reply: Optional[str] = None
         final_tool_result: Optional[Dict[str, Any]] = None
+        final_step_results: Optional[List[Dict[str, Any]]] = None
 
         run_log: Dict[str, Any] = {
             "started_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
@@ -566,6 +568,7 @@ def call_backend_turn(
             elif event == "result":
                 final_reply = data.get("reply", "")
                 final_tool_result = data.get("tool_result")
+                final_step_results = data.get("step_results")
 
             elif event == "error":
                 err = data.get("error") or "Unknown error"
@@ -588,14 +591,15 @@ def call_backend_turn(
         if final_reply is None and final_tool_result is None:
             raise RuntimeError("SSE stream ended without a final result.")
 
-        return final_reply or "", final_tool_result
+        return final_reply or "", final_tool_result, final_step_results
 
     # Fallback: backend returned JSON even though we asked for SSE
     _write_run_log(None, _run_log_out)
     data = resp.json()
     reply = data.get("reply", "")
     tool_result = data.get("tool_result")
-    return reply, tool_result
+    step_results = data.get("step_results")
+    return reply, tool_result, step_results
 
 
 # -----------------------------------------------------------------------------
@@ -678,6 +682,28 @@ def render_tool_result(tr: dict):
         if not tr.get("pending_confirmation"):
             st.markdown("**Tool error**")
             st.code(json.dumps(tr, indent=2), language="json")
+
+
+def render_results(step_results, fallback_tr=None):
+    """Show every step's raw result, labeled by tool, so a multi-step answer is
+    legible instead of surfacing only the last table. Falls back to the single
+    tool_result for older messages / single-step turns."""
+    steps = [s for s in (step_results or []) if isinstance(s, dict)]
+    if len(steps) > 1:
+        st.caption(f"This answer used {len(steps)} steps — raw output of each:")
+        for s in steps:
+            tid = s.get("tool_id", "?")
+            res = s.get("result") or {}
+            ok = res.get("ok", True) if isinstance(res, dict) else True
+            rows = res.get("result") if isinstance(res, dict) else None
+            n = f" · {len(rows)} rows" if isinstance(rows, list) else ""
+            mark = "" if ok else " ⚠️"
+            with st.expander(f"Step {s.get('step', '?')} · `{tid}`{n}{mark}", expanded=False):
+                render_tool_result(res)
+    elif len(steps) == 1:
+        render_tool_result(steps[0].get("result"))
+    elif fallback_tr:
+        render_tool_result(fallback_tr)
 
 
 # -----------------------------------------------------------------------------
@@ -1007,8 +1033,9 @@ if mode == MODE_CHAT:
         with st.chat_message(msg["role"]):
             if msg["role"] == "assistant":
                 tr = msg.get("tool_result")
-                if tr:
-                    render_tool_result(tr)
+                sr = msg.get("step_results")
+                if sr or tr:
+                    render_results(sr, fallback_tr=tr)
 
                 # Chat mode: do NOT render run log (no progress emitted for these tools)
 
@@ -1038,7 +1065,7 @@ if mode == MODE_CHAT:
                 _agent_ph = st.empty()
                 with st.spinner("Running approved action..."):
                     try:
-                        reply, tr = call_backend_turn(
+                        reply, tr, sr = call_backend_turn(
                             messages=st.session_state[CHAT_MESSAGES_KEY],
                             user_input="",
                             tenant_config=chat_tenant_config,
@@ -1061,7 +1088,7 @@ if mode == MODE_CHAT:
                 st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
 
                 st.session_state[CHAT_MESSAGES_KEY].append(
-                    {"role": "assistant", "content": reply, "tool_result": tr, "run_log": None}
+                    {"role": "assistant", "content": reply, "tool_result": tr, "step_results": sr, "run_log": None}
                 )
 
                 # Hide the previous user request on next render
@@ -1093,7 +1120,7 @@ if mode == MODE_CHAT:
             _call_failed = False
             with st.spinner("Thinking..."):
                 try:
-                    reply, tr = call_backend_turn(
+                    reply, tr, sr = call_backend_turn(
                         messages=st.session_state[CHAT_MESSAGES_KEY],
                         user_input=user_input,
                         tenant_config=chat_tenant_config,
@@ -1137,7 +1164,7 @@ if mode == MODE_CHAT:
                         _agent_ph2 = st.empty()
                         with st.spinner("Running approved action..."):
                             try:
-                                reply2, tr2 = call_backend_turn(
+                                reply2, tr2, sr2 = call_backend_turn(
                                     messages=st.session_state[CHAT_MESSAGES_KEY],
                                     user_input=user_input,
                                     tenant_config=chat_tenant_config,
@@ -1159,7 +1186,13 @@ if mode == MODE_CHAT:
                         st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
 
                         st.session_state[CHAT_MESSAGES_KEY].append(
-                            {"role": "assistant", "content": reply2, "tool_result": tr2, "run_log": None}
+                            {
+                                "role": "assistant",
+                                "content": reply2,
+                                "tool_result": tr2,
+                                "step_results": sr2,
+                                "run_log": None,
+                            }
                         )
 
                         st.session_state[CHAT_HIDE_USER_IDX_KEY] = st.session_state[CHAT_LAST_USER_IDX_KEY]
@@ -1175,7 +1208,7 @@ if mode == MODE_CHAT:
                         st.rerun()
             else:
                 st.session_state[CHAT_MESSAGES_KEY].append(
-                    {"role": "assistant", "content": reply, "tool_result": tr, "run_log": None}
+                    {"role": "assistant", "content": reply, "tool_result": tr, "step_results": sr, "run_log": None}
                 )
                 if not _call_failed:
                     st.rerun()
@@ -1355,6 +1388,7 @@ if mode == MODE_MIGRATION:
 
         reply = ctx.get("reply") or ""
         tr = ctx.get("tool_result")
+        sr = ctx.get("step_results")
 
         if isinstance(tr, dict) and tr.get("pending_confirmation"):
             st.session_state[MIG_PENDING_KEY] = tr["pending_confirmation"]
@@ -1362,7 +1396,7 @@ if mode == MODE_MIGRATION:
             if meta.get("clear_pending"):
                 st.session_state[MIG_PENDING_KEY] = None
             st.session_state[MIG_MESSAGES_KEY].append(
-                {"role": "assistant", "content": reply, "tool_result": tr, "run_log": run_log}
+                {"role": "assistant", "content": reply, "tool_result": tr, "step_results": sr, "run_log": run_log}
             )
 
     for i, msg in enumerate(st.session_state[MIG_MESSAGES_KEY]):
@@ -1373,8 +1407,9 @@ if mode == MODE_MIGRATION:
         with st.chat_message(msg["role"]):
             if msg["role"] == "assistant":
                 tr = msg.get("tool_result")
-                if tr:
-                    render_tool_result(tr)
+                sr = msg.get("step_results")
+                if sr or tr:
+                    render_results(sr, fallback_tr=tr)
                 render_run_log(msg.get("run_log"))
             st.markdown(msg.get("content", ""))
 

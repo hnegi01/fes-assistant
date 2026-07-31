@@ -248,10 +248,14 @@ class AgentTurnResponse(BaseModel):
         Natural-language assistant reply.
     tool_result
         The latest raw tool payload captured by llm_agent, if any.
+    step_results
+        Every tool result of the turn in order ([{step, tool_id, result}]), so the
+        UI can show the whole chain — not just the final tool_result.
     """
 
     reply: str
     tool_result: Optional[Dict[str, Any]] = None
+    step_results: Optional[List[Dict[str, Any]]] = None
 
 
 class CancelRequest(BaseModel):
@@ -363,11 +367,12 @@ async def agent_turn(request: Request, payload: AgentTurnRequest):
             )
 
             tool_result = getattr(llm_agent, "LAST_TOOL_RESULT", None)
+            step_results = list(getattr(llm_agent, "LAST_STEP_RESULTS", []) or [])
 
             logger.info("Agent turn completed successfully (JSON).")
             logger.debug("Reply (truncated): %s", reply[:500] if isinstance(reply, str) else repr(reply))
 
-            return AgentTurnResponse(reply=reply, tool_result=tool_result)
+            return AgentTurnResponse(reply=reply, tool_result=tool_result, step_results=step_results)
 
         except Exception as exc:
             logger.exception("Error while handling /agent/turn (JSON): %s", exc)
@@ -407,8 +412,9 @@ async def agent_turn(request: Request, payload: AgentTurnRequest):
             )
 
             tool_result = getattr(llm_agent, "LAST_TOOL_RESULT", None)
+            step_results = list(getattr(llm_agent, "LAST_STEP_RESULTS", []) or [])
 
-            await q.put(("result", {"reply": reply, "tool_result": tool_result}))
+            await q.put(("result", {"reply": reply, "tool_result": tool_result, "step_results": step_results}))
             await q.put(("status", {"phase": "completed"}))
 
         except asyncio.CancelledError:

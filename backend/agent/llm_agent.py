@@ -93,6 +93,12 @@ from .mcp_client import McpClient
 TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {}
 LAST_TOOL_RESULT: Optional[Dict[str, Any]] = None
 
+# Every tool result of the current turn, in order: [{step, tool_id, result}].
+# LAST_TOOL_RESULT is only the LAST one (a single slot); this keeps the whole
+# chain so the UI can show each step's output instead of just the final table.
+# Reset at turn start; appended at each execution. Read by the API layer.
+LAST_STEP_RESULTS: List[Dict[str, Any]] = []
+
 # Set when a turn pauses to ask the user for a missing required argument.
 # runtime.py reads this after each turn to persist/clear per-session clarification
 # state. Kept separate from LAST_TOOL_RESULT so the API layer does not surface it
@@ -584,7 +590,7 @@ async def _reactive_loop(
     exits stop-and-summarise instead (`_finalize_from_transcript`). Every exit
     returns readable text — never a silent stop.
     """
-    global LAST_TOOL_RESULT, LAST_PENDING_CLARIFICATION, LAST_PENDING_LOOP
+    global LAST_TOOL_RESULT, LAST_PENDING_CLARIFICATION, LAST_PENDING_LOOP, LAST_STEP_RESULTS
 
     transcript = transcript if transcript is not None else []
     raw_results = raw_results if raw_results is not None else []
@@ -668,6 +674,7 @@ async def _reactive_loop(
                 trace["outcome"] = "fallback"
                 summary, result = await _fallback_direct_tool(user_text, mcp_client)
                 LAST_TOOL_RESULT = result
+                LAST_STEP_RESULTS.append({"step": 1, "tool_id": result.get("tool_id", "fallback"), "result": result})
                 _write_llm_trace(trace)
                 return summary
             if not calls:
@@ -889,6 +896,7 @@ async def _reactive_loop(
         )
         result = await mcp_client.invoke_tool(tool_id, args)
         LAST_TOOL_RESULT = result
+        LAST_STEP_RESULTS.append({"step": step_number, "tool_id": tool_id, "result": result})
         raw_results.append((tool_id, result))
         transcript.extend(_transcript_step(call, tool_id, result, summ_on))
         if is_first:
@@ -943,7 +951,7 @@ async def call_llm_with_tools(
         tool+args, the gated tool executes directly and the loop resumes from the
         paused step. Shape: {transcript, steps_executed, tool_id, arguments}.
     """
-    global LAST_TOOL_RESULT, LAST_PENDING_CLARIFICATION, LAST_PENDING_LOOP
+    global LAST_TOOL_RESULT, LAST_PENDING_CLARIFICATION, LAST_PENDING_LOOP, LAST_STEP_RESULTS
 
     approved_mutations = approved_mutations or set()
 
@@ -954,6 +962,7 @@ async def call_llm_with_tools(
         allow_summarization_flag = ALLOW_SUMMARIZATION and bool(allow_summarization)
 
     LAST_TOOL_RESULT = None
+    LAST_STEP_RESULTS = []
     # Cleared each turn; set again only if this turn pauses for clarification.
     LAST_PENDING_CLARIFICATION = None
     # Cleared each turn; set again only if this turn pauses mid-loop for approval.
@@ -1033,6 +1042,7 @@ async def call_llm_with_tools(
             )
             result = await mcp_client.invoke_tool(_pl_tool_id, _pl_args)
             LAST_TOOL_RESULT = result
+            LAST_STEP_RESULTS.append({"step": _pl_step, "tool_id": _pl_tool_id, "result": result})
             await _emit_agent_progress(
                 {
                     "phase": "completed",
