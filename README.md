@@ -53,6 +53,7 @@ FES Assistant is an MCP-powered, agentic toolkit for Sisense environment operati
 
 ## Key Agentic Capabilities
 
+* **Multi-Step Planning & Self-Correction:** The agent breaks a request into steps, runs independent ones in parallel, chains dependent ones, and **replans** when an approach fails — verifying it actually met your goal before it answers.
 * **Autonomous Infrastructure Audits:** Ask the agent to find Many-to-Many relationships, unused datamodel fields, or orphaned assets across your entire environment.
 * **Zero-Touch Migrations:** Execute complex cross-tenant moves for dashboards and datamodels with built-in safety loops and confirmation steps.
 * **Protocol-First Integration:** Operates as a **Streamable HTTP MCP Server**, allowing you to use this UI or plug Sisense "tools" directly into external agents like Claude Desktop.
@@ -65,8 +66,8 @@ FES Assistant is an MCP-powered, agentic toolkit for Sisense environment operati
 
 The FES Assistant is built as a modular stack to ensure you can use the MCP server independently if desired:
 
-- **The Orchestrator:** A **Streamlit UI** (`frontend/app.py`) for mission control.
-- **The Brain:** A **Backend API + Agent Layer** (`backend/api_server.py`) that handles planning, tool selection, and confirmation loops.
+- **The Cockpit:** A **Streamlit UI** (`frontend/app.py`) for mission control.
+- **The Brain:** A **Backend API + Agent Layer** (`backend/api_server.py`, `backend/agent/`) running an **agentic loop** — an *orchestrator* plans the steps, *executors* run them (independent steps in parallel), and a *critic* verifies the goal before answering. Failed approaches trigger a replan. See [`AGENT_ARCHITECTURE.md`](./AGENT_ARCHITECTURE.md).
 - **The Bridge:** An **MCP Streamable HTTP Server** (`mcp_server/server.py`) that translates AI intent into [PySisense](https://github.com/sisense/pysisense) SDK actions.
 
 MCP Server docs: [Meta-Management MCP Server](mcp_server/README.md)
@@ -138,7 +139,7 @@ High-level flow:
 2. The UI calls the **backend API** (`backend/api_server.py`) over HTTP (for example `/health`, `/tools`, `/agent/turn`).
 3. The backend:
    - Manages **per-session MCP clients** and state in `backend/runtime.py`.
-   - Uses `backend/agent/llm_agent.py` for planning, tool selection, mutation approvals, and summarization.
+   - Runs the **agentic loop** in `backend/agent/llm_agent.py` — orchestrator (plan/replan), executors (route + tool selection, parallel fan-out), critic (goal verification), and mutation approvals. See [`AGENT_ARCHITECTURE.md`](./AGENT_ARCHITECTURE.md) / [`Execution_Flow.md`](./Execution_Flow.md).
    - Uses `backend/agent/mcp_client.py` to call the MCP server (JSON-RPC over Streamable HTTP).
    - Streams progress to the UI over SSE when the UI requests it.
 4. The **MCP Streamable HTTP server** (`mcp_server/server.py`):
@@ -158,7 +159,8 @@ Root/
   backend/
     agent/
       __init__.py
-      llm_agent.py        # LLM orchestration: planning, tool selection, approvals, optional summarization
+      llm_agent.py        # Agentic loop: orchestrator (plan/replan), executors + fan-out, critic, approvals
+      _config.py / _prompts.py / _registry.py / _routing.py  # loop sub-modules (env, prompts, registry I/O, routing)
       mcp_client.py       # MCP Streamable HTTP client (JSON-RPC over POST /mcp/, supports SSE tool progress)
     __init__.py
     runtime.py            # Session pool, long-lived McpClient per UI session, progress bridging

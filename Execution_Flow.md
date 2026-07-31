@@ -33,7 +33,7 @@ A single user request (“turn”) follows this lifecycle:
 2. UI calls backend **`POST /agent/turn`** with **Accept: `text/event-stream, application/json`**.
 3. Backend:
    - Retrieves/creates a long-lived MCP client for the session.
-   - Runs the agent orchestration (planning → tools → summarize).
+   - Runs the **agentic loop** (plan → execute → replan; see §2.5).
 4. Backend streams progress to UI (SSE) and ends with a final result.
 5. UI renders:
    - live progress lines
@@ -71,10 +71,69 @@ sequenceDiagram
   TC-->>MS: tool result (final)
   MS-->>MC: JSON response OR SSE stream (progress + final)
   MC-->>AG: tool result (+ forwarded notifications)
-  AG-->>BE: final assistant summary (+ LAST_TOOL_RESULT)
-  BE-->>UI: SSE event: result {reply, tool_result}
-  UI-->>UI: render summary, table/json, run log
+  Note over AG,SI: the loop repeats tools/call per step<br/>(fan-out runs independent steps concurrently)
+  AG-->>BE: final reply (+ LAST_TOOL_RESULT + LAST_STEP_RESULTS)
+  BE-->>UI: SSE event: result {reply, tool_result, step_results}
+  UI-->>UI: render plan, per-step results, table/json, run log
 ```
+
+> The single `tools/call` above is one lap. A turn runs the loop below until the
+> goal is met — a compound request executes several SDK calls, and independent
+> steps fan out concurrently.
+
+---
+
+## 2.5 The agentic loop inside a turn (plan → execute → replan)
+
+Standard **plan-and-execute** architecture. The turn is one loop
+(`_reactive_loop` in `backend/agent/llm_agent.py`); the same three roles run
+every turn. Full conceptual treatment (why narrow LLM calls, the verify design)
+lives in [`AGENT_ARCHITECTURE.md`](./AGENT_ARCHITECTURE.md).
+
+- **Orchestrator** (LLM) — drafts the plan from a compact capability catalog
+  (every tool as `tool_id: one-line description`, **no schemas**), orders steps
+  by dependency, and tags steps that need an earlier step's result. Revises the
+  plan when an approach fails (replan).
+- **Executor** (per step) — a two-stage route (119 tools → 1 package → ~10) then
+  picks ONE tool + args and runs it via MCP. The tool-selecting LLM never sees
+  all tools/schemas (hallucination control).
+- **Critic** (LLM, independent) — before a "done" answer ships, re-reads the
+  whole request against the results to catch skipped work. Summarization-ON only.
+
+```mermaid
+flowchart TD
+  U[User prompt] --> ORC[ORCHESTRATOR<br/>plan from catalog · order by dependency]
+  ORC --> S1[Step 1 · executor]
+  ORC --> S2[Step 2 · executor]
+  ORC --> S3[Step 3 · executor]
+  S1 --> J[(JOIN · plan order)]
+  S2 --> J
+  S3 --> J
+  J --> DEP[Dependent steps · executor<br/>sequential · mutations pause for approval]
+  DEP --> CR{CRITIC<br/>whole request achieved?}
+  CR -->|INCOMPLETE · +1 step| DEP
+  CR -->|COMPLETE| ANS[Reply]
+  DEP -.->|a step failed → REPLAN| ORC
+```
+
+**Independent steps run in parallel** (`asyncio.gather`, width
+`FES_MAX_PARALLEL_STEPS`); **dependent steps** run sequentially after the join,
+because they need earlier results.
+
+### The recovery ladder
+
+Three mechanisms at increasing altitude — each fires only when the cheaper one
+below can't help.
+
+| Mechanism | Trigger | Changes | Who | Budget |
+|---|---|---|---|---|
+| **Backtrack** | routing/selection miss | same op, wider tool menu | code | 1/step |
+| **Replan** | step result contradicts the plan | new approach for remaining work | LLM | `FES_MAX_REPLANS` |
+| **Critic INCOMPLETE** | "done" but something's missing | +1 step (never a rewrite) | LLM | `FES_VERIFY_MAX_RECHECKS` |
+
+Every stop is readable: goal met, step cap (`FES_MAX_AGENT_STEPS`) → partial +
+what remains, or a needed value the user never gave → answer from what was
+gathered.
 
 ---
 
@@ -172,22 +231,27 @@ sequenceDiagram
 
 ## 5. Privacy mode: summarization disabled
 
-When summarization is disabled, tool results are **not** sent to the LLM for follow-up summarization.
+`allow_summarization` is a **data-visibility switch**, not a loop on/off. It
+governs whether tool result **data** ever reaches the LLM — enforced in code,
+never by trusting the model.
 
 ### Behavior:
-- The planning call may still occur.
-- Tools still run.
-- The agent returns a **basic status message** locally (e.g., “ran tool X, got N rows”).
-- The tool result is still returned to the UI for table/JSON rendering.
+- **On** — result data reaches the loop. Adaptive (dependent) chains complete;
+  the critic runs.
+- **Off** — only metadata (`{tool, ok, count}`) reaches the LLM. The plan still
+  runs; independent multi-step still works; **dependent steps are skipped up
+  front** (the value they need is unreadable — the *dependency gate*) or stop
+  gracefully (`BLOCKED`), and the reply names what was skipped. The critic is
+  off. Tool results still render in the UI.
 
 ```mermaid
 flowchart TD
-  A[User request] --> B[Planning LLM call]
-  B -->|tool selected| C[Execute tool via MCP]
+  A[User request] --> B[Orchestrator plans]
+  B --> C[Execute independent steps]
   C --> D{Summarization allowed?}
-  D -->|No| E[Local status-only reply<br/>No tool data sent to LLM]
-  D -->|Yes| F[LLM summarization call<br/>Tool payload is size-limited]
-  E --> G[UI renders tool result + status]
+  D -->|No| E[Skip dependent steps · metadata-only reply<br/>No tool DATA sent to LLM]
+  D -->|Yes| F[Run dependent chain + critic<br/>Tool data size-limited to LLM]
+  E --> G[UI renders tool results + status]
   F --> G
 ```
 
@@ -285,13 +349,13 @@ Typical SSE event types:
 3. **Agent Runtime (`backend/runtime.py`) — Orchestrator Runtime / Session Manager**  
    Owns the per-UI-session runtime: a concurrency-safe session pool that maps `session_id → McpClient + configs`. Wires a per-turn progress callback used by backend SSE streaming.
 
-4. **LLM Layer (`backend/agent/llm_agent.py`) — Agent Orchestrator (Planner + Policy + Optional Summarizer)**  
-   This is the “agent brain” for a turn:
-   - **Planner:** selects tool(s) + arguments via LLM planning call  
-   - **Policy/Guardrails:** enforces mutation confirmation (two-phase approval)  
-   - **Executor loop coordinator:** invokes tools via the MCP client  
-   - **Summarizer (optional):** performs a follow-up LLM summary call when allowed  
-   - Produces `LAST_TOOL_RESULT` (including `pending_confirmation`)
+4. **LLM Layer (`backend/agent/llm_agent.py`) — Agentic Loop (Orchestrator + Executor + Critic)**  
+   This is the “agent brain” for a turn — the `_reactive_loop` (see §2.5):
+   - **Orchestrator:** drafts/replans the dependency-ordered plan from the capability catalog  
+   - **Executor:** per step, two-stage routes then picks + runs ONE tool via the MCP client; independent steps fan out concurrently  
+   - **Critic:** independent goal check before a "done" answer ships (summ-on)  
+   - **Policy/Guardrails:** two-phase mutation approval + the recovery ladder (backtrack / replan / recheck)  
+   - Produces `LAST_TOOL_RESULT` (incl. `pending_confirmation`), `LAST_STEP_RESULTS`, and pause state (`LAST_PENDING_CLARIFICATION` / `LAST_PENDING_LOOP`)
 
 5. **MCP Client (`backend/agent/mcp_client.py`) — Tool Transport Client (MCP Streamable HTTP)**  
    Executes tool calls over MCP Streamable HTTP:
@@ -327,7 +391,8 @@ Typical SSE event types:
 - `backend/runtime.py`
   - session pool, long-lived MCP client per UI session, progress callback wiring
 - `backend/agent/llm_agent.py`
-  - planning, tool execution loop, mutation approvals, summarization (optional)
+  - the agentic loop: orchestrator (plan/replan), executor + fan-out, critic, mutation approvals, recovery ladder
+  - (split across `_config.py` / `_prompts.py` / `_registry.py` / `_routing.py`)
 - `backend/agent/mcp_client.py`
   - MCP JSON-RPC client, SSE parsing for MCP responses, session headers, retries/timeouts
 - `mcp_server/server.py`

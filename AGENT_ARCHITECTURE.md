@@ -1,9 +1,10 @@
 # FES Assistant — Agent Architecture
 
-> **Status: WORK IN PROGRESS.** Living document describing how the agent
-> actually works, written to explain it to others once V2 is complete. Reflects
-> the codebase as of Step 8 (agentic loop) + plan→replan. Sections marked
-> _(planned)_ are not built yet.
+> Living document describing how the agent actually works. Reflects the current
+> V2 codebase: the agentic loop — plan → parallel fan-out → dependent chains →
+> recovery ladder → human-gated mutations → critic. Sections marked _(planned)_
+> — the LangGraph refactor — are not built yet; see `.claude/ROADMAP.md` for
+> what remains.
 
 ---
 
