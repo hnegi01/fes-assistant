@@ -446,6 +446,7 @@ part. This section is the glossary + the mapping to fill in after Step 10.
 |---|---|---|
 | **Plan (strategist)** | request + capability catalog (tool one-liners, NO schemas) → ordered plan; step 1 seeds the loop, plan shown in UI | `_make_plan` (in `_reactive_loop` when `steps==0`) |
 | **Replan (strategist)** | failed approach + catalog → revised plan for remaining work, or GIVEUP; budget `FES_MAX_REPLANS` | `_replan` / `_attempt_replan`; decide's `REPLAN:` verb + routing/planning dead-ends trigger it |
+| **Fan-out (level 1+2)** | independent (untagged) plan steps execute concurrently — per-branch route→plan→validate→execute, joined in plan order; mutations/missing-args/dead-ends defer to the sequential loop; width `FES_MAX_PARALLEL_STEPS` | `_execute_branch` + `asyncio.gather` in `_reactive_loop` |
 | **Route** | narrows 119 tools → one package → one mixin (~10 tools) | `_navigate_to_tools` (`_routing.py`) |
 | **Plan** | given one sub-task + ~10 tools, pick ONE tool + args | planning `call_llm_raw(..., tools=...)` |
 | **Execute** | run the chosen tool via MCP → Sisense | `mcp_client.invoke_tool` |
@@ -490,11 +491,13 @@ primitives, and makes each node independently testable."
   it can be a hosted, standalone connector. (See the separate
   `sisense-admin-mcp` brief.)
 - **Step 10 — LangGraph.** Refactor the hand-rolled loop into named graph nodes
-  (plan / execute / decide / approval); fold in the `next_step` merge. This is
-  also where **cross-package parallel fan-out** lands — decompose into
-  independent sub-goals, run their route→plan→execute pipelines concurrently,
-  join the results. That parallelism is the feature that graduates this from a
-  single-agent loop into a genuine multi-agent system.
+  (plan / execute / decide / approval / fan-out).
+- **Level-3 workers (true MAS)** — each independent sub-goal running its OWN
+  reactive loop (own transcript, own decide/replan, own budget) and reporting a
+  summary back to the orchestrator. Fan-out today (built — see below) is level
+  1+2: concurrent single-shot pipelines joining one shared transcript — one
+  agent doing parallel I/O, not multiple agents. The graduation test: count the
+  conversations, not the LLM calls.
 
 ---
 

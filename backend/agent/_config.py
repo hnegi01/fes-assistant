@@ -260,6 +260,11 @@ VERIFY_MAX_RECHECKS: int = int(os.getenv("FES_VERIFY_MAX_RECHECKS", "1"))
 # a step's outcome shows the approach can't work (failed / not found / wrong
 # kind of data). 0 disables replanning. The step cap still applies on top.
 MAX_REPLANS: int = int(os.getenv("FES_MAX_REPLANS", "1"))
+# Parallel fan-out: how many INDEPENDENT plan steps may execute concurrently
+# (each with its own route→plan→execute pipeline; results join into the shared
+# transcript). 1 disables fan-out. Concurrency downstream is bounded by the MCP
+# server's PYSISENSE_MAX_CONCURRENT_READ_TOOLS semaphore.
+MAX_PARALLEL_STEPS: int = int(os.getenv("FES_MAX_PARALLEL_STEPS", "3"))
 
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "databricks").strip().lower()
 logger.info("Using LLM_PROVIDER=%s", LLM_PROVIDER)

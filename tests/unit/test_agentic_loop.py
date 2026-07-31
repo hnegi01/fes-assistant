@@ -609,9 +609,31 @@ def test_summ_off_dependency_gate_skips_tagged_tail(monkeypatch):
     assert "[needs-prior-result]" not in low
 
 
+def _dispatch_mocks():
+    """Deterministic mocks for fan-out tests: routing + planning keyed on the
+    step text (concurrent branches make sequence-based side_effect lists
+    non-deterministic)."""
+
+    async def nav(step_message, history, trace_id):
+        text = step_message.get("content", "").lower()
+        if "dashboard" in text:
+            return (DASHBOARD_TOOLS, "dashboard", "core", 0)
+        return (GET_USER_TOOLS, "access_management", "users", 0)
+
+    async def raw(messages, tools=None, trace_id=None, tool_choice=None, label=""):
+        if tools:  # a planning call — pick by the step text (last message)
+            text = (messages[-1].get("content") or "").lower()
+            if "dashboard" in text:
+                return _plan_resp("dashboard.get_dashboards", "{}", call_id="cd")
+            return _plan_resp("access_management.get_user", '{"user_email":"a@b.com"}', call_id="cu")
+        return _text_resp("DONE")  # decide
+
+    return nav, raw
+
+
 def test_summ_off_gate_partitions_not_cuts(monkeypatch):
-    """independent, dependent, independent → the third (untagged) step still
-    runs; only the tagged middle step is skipped."""
+    """independent, dependent, independent → both untagged steps run (fanned
+    out concurrently); only the tagged middle step is skipped."""
 
     async def _tagged_plan(user_text, mode, history, trace_id):
         return [
@@ -622,29 +644,83 @@ def test_summ_off_gate_partitions_not_cuts(monkeypatch):
 
     monkeypatch.setattr(m, "_make_plan", _tagged_plan)
 
-    client = _fake_client(results=[{"ok": True, "result": [{"u": 1}]}, {"ok": True, "result": [{"d": 1}]}])
+    client = _fake_client()
     messages = [{"role": "user", "content": "user group stuff and also all dashboards"}]
-    nav = AsyncMock(
-        side_effect=[
-            (GET_USER_TOOLS, "access_management", "users", 0),
-            (DASHBOARD_TOOLS, "dashboard", "core", 0),
-        ]
-    )
-    raw = AsyncMock(
-        side_effect=[
-            _plan_resp("access_management.get_user", '{"user_email":"a@b.com"}'),  # step 1
-            _text_resp("CONTINUE: list all dashboards"),  # nodata decide
-            _plan_resp("dashboard.get_dashboards", "{}", call_id="c2"),  # step 2 plan
-            _text_resp("DONE"),  # nodata decide
-        ]
-    )
+    nav, raw = _dispatch_mocks()
     with patch.object(m, "_navigate_to_tools", new=nav), patch.object(m, "call_llm_raw", new=raw):
         reply = run(m.call_llm_with_tools(messages, GET_USER_TOOLS, client, allow_summarization=False))
 
     # BOTH untagged steps executed; only the tagged one was skipped.
     assert client.invoke_tool.await_count == 2
-    tools = [c.args[0] for c in client.invoke_tool.await_args_list]
+    tools = sorted(c.args[0] for c in client.invoke_tool.await_args_list)
     assert tools == ["access_management.get_user", "dashboard.get_dashboards"]
     low = reply.lower()
     assert "skipped" in low and "list users of that group" in low
     assert "list all dashboards" not in low.split("skipped")[1][:120]  # dashboards NOT in skip note
+
+
+# ---------------------------------------------------------------------------
+# 13) Fan-out: two independent steps execute concurrently, join in plan order,
+#     one decide afterwards.
+# ---------------------------------------------------------------------------
+
+
+def test_fanout_runs_independent_steps_concurrently(monkeypatch):
+    async def _plan2(user_text, mode, history, trace_id):
+        return ["Get the user record for a@b.com", "List all dashboards"]
+
+    monkeypatch.setattr(m, "_make_plan", _plan2)
+    monkeypatch.setattr(m, "MAX_PARALLEL_STEPS", 3)
+
+    client = _fake_client()
+    messages = [{"role": "user", "content": "user details and all dashboards"}]
+    nav, raw = _dispatch_mocks()
+    with patch.object(m, "_navigate_to_tools", new=nav), patch.object(m, "call_llm_raw", new=raw):
+        reply = run(m.call_llm_with_tools(messages, GET_USER_TOOLS, client, allow_summarization=True))
+
+    assert client.invoke_tool.await_count == 2
+    # Joined in PLAN order regardless of completion order.
+    steps = [(r["step"], r["tool_id"]) for r in m.LAST_STEP_RESULTS]
+    assert steps == [(1, "access_management.get_user"), (2, "dashboard.get_dashboards")]
+    assert isinstance(reply, str) and reply
+
+
+def test_fanout_defers_mutating_branch_to_sequential_gate(monkeypatch):
+    """A mutating step never executes inside a branch — it defers, the executed
+    sibling joins, and the sequential loop gates it properly."""
+
+    async def _plan2(user_text, mode, history, trace_id):
+        return ["List all dashboards", "Delete the user a@b.com"]
+
+    monkeypatch.setattr(m, "_make_plan", _plan2)
+    monkeypatch.setattr(m, "MAX_PARALLEL_STEPS", 3)
+
+    delete_tools = [_tool_def("access_management.delete_user", DELETE_USER_SCHEMA)]
+    client = _fake_client()
+    messages = [{"role": "user", "content": "all dashboards and delete a@b.com"}]
+
+    async def nav(step_message, history, trace_id):
+        text = step_message.get("content", "").lower()
+        if "delete" in text:
+            return (delete_tools, "access_management", "users", 0)
+        return (DASHBOARD_TOOLS, "dashboard", "core", 0)
+
+    async def raw(messages_, tools=None, trace_id=None, tool_choice=None, label=""):
+        if tools:
+            text = (messages_[-1].get("content") or "").lower()
+            if "delete" in text:
+                return _plan_resp("access_management.delete_user", '{"user_name":"a@b.com"}', call_id="cx")
+            return _plan_resp("dashboard.get_dashboards", "{}", call_id="cd")
+        if label == "decide":
+            return _text_resp("CONTINUE: delete the user a@b.com")
+        return _text_resp("This will permanently delete the user a@b.com.")  # mutation explanation
+
+    with patch.object(m, "_navigate_to_tools", new=nav), patch.object(m, "call_llm_raw", new=raw):
+        reply = run(m.call_llm_with_tools(messages, GET_USER_TOOLS, client, allow_summarization=True))
+
+    # Only the read tool executed (in the branch); the delete was gated sequentially.
+    client.invoke_tool.assert_awaited_once()
+    assert client.invoke_tool.await_args.args[0] == "dashboard.get_dashboards"
+    assert m.LAST_TOOL_RESULT["pending_confirmation"]["tool_id"] == "access_management.delete_user"
+    assert m.LAST_PENDING_LOOP is not None
+    assert "delete" in reply.lower()

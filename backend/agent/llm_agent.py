@@ -23,6 +23,7 @@ Dependency order (no circular imports):
 
 from __future__ import annotations
 
+import asyncio
 import datetime
 import json
 import uuid
@@ -39,6 +40,7 @@ from ._config import (
     LLM_PLANNING_HISTORY_TURNS,
     LLM_PROVIDER,
     MAX_AGENT_STEPS,
+    MAX_PARALLEL_STEPS,
     MAX_REPLANS,
     REQUIRE_MUTATION_CONFIRM,
     VERIFY_GOAL,
@@ -748,6 +750,99 @@ async def _reactive_loop(
         )
         return new_steps[0], ""
 
+    async def _execute_branch(op_text: str, branch_step: int) -> Dict[str, Any]:
+        """One independent plan step run concurrently (fan-out): its own
+        route→plan→validate→execute pipeline, blind to sibling branches; the
+        caller joins results into the shared transcript in plan order. NOT a
+        sub-agent — no loop, no own memory. Anything that needs one-at-a-time
+        handling (mutation gate, missing-arg clarification, dead ends) is
+        DEFERRED back to the sequential loop."""
+        step_message = {"role": "user", "content": op_text}
+        try:
+            nav_tools, nav_pkg, _nm, _ms = await _navigate_to_tools(step_message, [], turn_trace_id)
+            if (not nav_tools) and nav_pkg and nav_pkg != "__unclear__":
+                nav_tools = _load_all_package_tools(nav_pkg)
+            if not nav_tools:
+                return {"status": "deferred", "step": branch_step, "op": op_text, "why": "no route"}
+
+            planning_messages = [
+                {"role": "system", "content": PLANNING_SYSTEM_PROMPT},
+                {"role": "system", "content": planning_context},
+                latest_user_message,
+                step_message,
+            ]
+            plan_data = await call_llm_raw(planning_messages, tools=nav_tools, trace_id=turn_trace_id, label="plan")
+            _bc, bcalls = _pick_tool_calls_from_llm_response(plan_data)
+            if not bcalls:
+                return {"status": "deferred", "step": branch_step, "op": op_text, "why": "no tool"}
+
+            bcall = bcalls[0]
+            bfn = bcall.get("function") or {}
+            btool_id = str(bfn.get("name") or "")
+            bargs = _safe_json_loads(bfn.get("arguments", "{}"), default={})
+            if not isinstance(bargs, dict):
+                bargs = {}
+            bmeta = TOOL_REGISTRY.get(btool_id) or {}
+
+            bschema = bmeta.get("parameters")
+            if bschema:
+                try:
+                    jsonschema.validate(instance=bargs, schema=bschema, format_checker=jsonschema.FormatChecker())
+                except jsonschema.ValidationError:
+                    missing = _missing_required_fields(bargs, bschema)
+                    if missing:
+                        filled = {
+                            k: v for k, v in bargs.items() if not (v is None or (isinstance(v, str) and not v.strip()))
+                        }
+                        return {
+                            "status": "missing",
+                            "step": branch_step,
+                            "op": op_text,
+                            "tool_id": btool_id,
+                            "meta": bmeta,
+                            "missing": missing,
+                            "filled": filled,
+                        }
+                    return {"status": "deferred", "step": branch_step, "op": op_text, "why": "bad args"}
+
+            if bool(bmeta.get("mutates")) and REQUIRE_MUTATION_CONFIRM:
+                if _approval_key(btool_id, bargs) not in approved_mutations:
+                    # Gating needs one-at-a-time UX — the sequential loop handles it.
+                    return {"status": "deferred", "step": branch_step, "op": op_text, "why": "mutation gate"}
+            if bool(bmeta.get("mutates")):
+                audit_logger.info(
+                    "EXECUTING mutation tool=%s args=%s",
+                    btool_id,
+                    json.dumps(_scrub_secrets(bargs), ensure_ascii=False),
+                )
+
+            await _emit_agent_progress(
+                {"phase": "executing", "step": branch_step, "max_steps": MAX_AGENT_STEPS, "tool_id": btool_id}
+            )
+            bresult = await mcp_client.invoke_tool(btool_id, bargs)
+            await _emit_agent_progress(
+                {
+                    "phase": "completed",
+                    "step": branch_step,
+                    "max_steps": MAX_AGENT_STEPS,
+                    "tool_id": btool_id,
+                    "ok": bool(bresult.get("ok")) if isinstance(bresult, dict) else False,
+                }
+            )
+            return {
+                "status": "executed",
+                "step": branch_step,
+                "op": op_text,
+                "tool_id": btool_id,
+                "args": bargs,
+                "meta": bmeta,
+                "call": bcall,
+                "result": bresult,
+            }
+        except Exception as exc:  # noqa: BLE001 — a failed branch defers, never kills the turn
+            logger.warning("Fan-out branch %d failed (%s); deferring to sequential loop.", branch_step, exc)
+            return {"status": "deferred", "step": branch_step, "op": op_text, "why": "error"}
+
     while True:
         is_first = steps_executed == 0
         step_number = steps_executed + 1
@@ -767,23 +862,79 @@ async def _reactive_loop(
             # is stashed in the transcript so decide/verify follow it, and emitted
             # to the UI for transparency.
             await _emit_agent_progress({"phase": "planning", "step": 1, "max_steps": MAX_AGENT_STEPS})
-            plan_steps = await _make_plan(user_text, mode, history, turn_trace_id)
-            if not summ_on:
-                # Dependency gate: don't execute steps that need values from earlier
-                # RESULTS — the model can't read them with summarization off, so the
-                # call is doomed. Detected by the strategist at plan time (text
-                # reasoning only); enforced here in code. Saves the wasted call.
-                plan_steps, blocked_tail = _split_dependent_tail(plan_steps)
+            _raw_plan = await _make_plan(user_text, mode, history, turn_trace_id)
+            independent_steps, dependent_steps = _split_dependent_tail(_raw_plan)
+            if summ_on:
+                # Dependent steps run too — sequentially, after the results they
+                # need exist. Order: independents first (fan-out set), then tail.
+                plan_steps = independent_steps + dependent_steps
+                blocked_tail = []
+            else:
+                # Dependency gate: dependent steps need values the model can't
+                # read with summarization off — skip them (named in the reply).
+                plan_steps = independent_steps
+                blocked_tail = dependent_steps
                 if blocked_tail:
                     logger.info("Summ-off dependency gate: skipping %d dependent step(s).", len(blocked_tail))
-            else:
-                plan_steps = [st.replace(_DEP_MARKER, "").strip() for st in plan_steps]
             if len(plan_steps) > 1:
                 _plan_text = "\n".join(f"{i + 1}. {st}" for i, st in enumerate(plan_steps))
                 transcript.append({"role": "assistant", "content": f"PLAN:\n{_plan_text}"})
                 await _emit_agent_progress(
                     {"phase": "planned", "step": 1, "max_steps": MAX_AGENT_STEPS, "plan": _plan_text}
                 )
+
+            # ------------------------------------------ parallel fan-out (level 1+2)
+            # Independent steps need only the user's message, so they can run
+            # concurrently — each branch routes/plans/executes on its own, results
+            # join here in plan order. Mutations / missing args / dead ends defer
+            # to the sequential loop below. Downstream concurrency is bounded by
+            # the MCP server's read-tool semaphore.
+            _fan = independent_steps[:MAX_PARALLEL_STEPS] if MAX_PARALLEL_STEPS > 1 else []
+            if mode != "migration" and len(_fan) >= 2:
+                logger.info("Fan-out: running %d independent steps concurrently.", len(_fan))
+                _branches = await asyncio.gather(*[_execute_branch(op, i + 1) for i, op in enumerate(_fan)])
+                _clarify_branch = None
+                for _br in _branches:
+                    if _br["status"] == "executed":
+                        LAST_TOOL_RESULT = _br["result"]
+                        LAST_STEP_RESULTS.append(
+                            {"step": _br["step"], "tool_id": _br["tool_id"], "result": _br["result"]}
+                        )
+                        raw_results.append((_br["tool_id"], _br["result"]))
+                        transcript.extend(_transcript_step(_br["call"], _br["tool_id"], _br["result"], summ_on))
+                        if steps_executed == 0:
+                            first_tool_hint = (_br["tool_id"], _br["args"], _br["meta"])
+                        steps_executed += 1
+                        trace["tool_selected"] = trace["tool_selected"] or _br["tool_id"]
+                    elif _br["status"] == "missing" and _clarify_branch is None:
+                        _clarify_branch = _br
+                if _clarify_branch is not None:
+                    # A fanned step needs a value the user never gave → ask, like a
+                    # fresh-turn clarification (executed siblings' results are kept).
+                    question = await _generate_clarification_question(
+                        _clarify_branch["tool_id"],
+                        _clarify_branch["meta"],
+                        _clarify_branch["missing"],
+                        _clarify_branch["filled"],
+                        turn_trace_id,
+                    )
+                    LAST_PENDING_CLARIFICATION = {
+                        "tool_id": _clarify_branch["tool_id"],
+                        "missing_fields": _clarify_branch["missing"],
+                        "filled_args": _clarify_branch["filled"],
+                        "attempts": clarify_attempts_base + 1,
+                        "question": question,
+                    }
+                    trace["outcome"] = "awaiting_clarification"
+                    trace["agent_steps"] = steps_executed
+                    _write_llm_trace(trace)
+                    return question
+                if steps_executed > 0:
+                    # Joined — hand control to the decide loop for anything left
+                    # (deferred branches, dependent tail, goal check).
+                    continue
+                # All branches deferred → fall through to the sequential path.
+
             first_op = plan_steps[0] if plan_steps else user_text
             step_message = {"role": "user", "content": first_op if (first_op or "").strip() else user_text}
 
