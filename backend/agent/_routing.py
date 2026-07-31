@@ -372,9 +372,19 @@ async def call_llm_raw(
         kwargs["tool_choice"] = tool_choice or "required"
 
     if trace_id or label:
-        # Groups a turn's calls under one LangSmith trace and tags each with its
-        # kind (route / plan / decide / verify / ...). No credentials or data.
-        kwargs["metadata"] = {"trace_id": trace_id, "call_type": label or "unknown"}
+        # LangSmith metadata: name the run by its kind (route / plan / decide /
+        # verify / ...) and tag the turn id for filtering. We deliberately do NOT
+        # set the reserved `trace_id` key: LiteLLM would keep our turn id as the
+        # LangSmith trace_id while generating a different run_id with no parent,
+        # producing a dotted_order whose first segment != trace_id — which
+        # LangSmith rejects (HTTP 400). Omitting it lets LiteLLM default
+        # trace_id = run_id, so each call is a valid standalone trace. Per-turn
+        # grouping lives in llm_calls.csv (grouped by trace_id). No creds/data.
+        kwargs["metadata"] = {
+            "run_name": label or "llm-call",
+            "call_type": label or "unknown",
+            "turn_id": trace_id or "",
+        }
 
     logger.info(
         "LLM call start: kind=%s model=%s messages=%d tools=%d",
