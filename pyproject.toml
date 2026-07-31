@@ -1,3 +1,53 @@
+[project]
+name = "fes-assistant"
+version = "2.0.0"
+description = "Agentic AI assistant for Sisense administration (planner -> orchestrator loop -> critic over MCP/PySisense)"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "fastapi>=0.123,<0.124",
+    "uvicorn>=0.38,<0.39",
+    "httpx>=0.28,<0.29",
+    "requests>=2.32,<3",
+    "litellm>=1.89,<2",
+    "jsonschema>=4.23,<5",
+    "langsmith>=0.9,<1",
+    "streamlit>=1.52,<1.59",
+    "pysisense==1.0.2",
+    "mcp>=1.24,<1.25",
+    "python-dotenv>=1.0,<2",
+    "PyJWT>=2.10,<3",
+    "python-multipart>=0.0.20,<0.0.21",
+    "pydantic>=2.12,<2.13",
+    "pydantic-settings>=2.12,<2.13",
+    "sse-starlette>=3.0,<4",
+    "pandas>=2.3,<2.4",
+    "numpy>=2.3,<2.4",
+    "PyYAML>=6.0,<7",
+    "anyio==4.11.0",
+    "boto3>=1.35.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0,<10",
+    "ruff>=0.11,<1",
+]
+
+[tool.uv]
+# This repo is an application, not an installable package — uv manages the
+# environment/lock only and never tries to build fes-assistant itself.
+package = false
+# cryptography 49.x has no usable wheel for this platform combo (falls back to
+# a Rust source build that fails behind the corporate proxy); 48.x ships wheels
+# and is what the working environment runs. (Pulled in via mcp -> pyjwt[crypto].)
+constraint-dependencies = [
+    "cryptography<49",
+    # Lock to the litellm series this codebase is verified against (1.89.x);
+    # newer releases resolve to sdists here (wheels age-suppressed by the
+    # security proxy) and require a Rust toolchain build that fails offline.
+    "litellm<1.90",
+]
+
 [tool.ruff]
 target-version = "py311"
 line-length = 120

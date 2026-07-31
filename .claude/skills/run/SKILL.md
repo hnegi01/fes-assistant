@@ -14,7 +14,9 @@ UI (Streamlit :8501) → backend (FastAPI :8001) → MCP (Starlette :8002) → P
 
 Virtualenv: **`venv_pysisense_chatbot`**. Prefix every command with it
 (`source venv_pysisense_chatbot/bin/activate` once per shell, or call
-`venv_pysisense_chatbot/bin/<tool>` directly).
+`venv_pysisense_chatbot/bin/<tool>` directly). A reproducible alternative env
+exists via `uv sync` (creates `.venv` from `uv.lock`, Python pinned by
+`.python-version`); `uv run pytest tests/unit -q` works out of the box.
 
 ## Launch the stack
 

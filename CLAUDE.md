@@ -364,7 +364,11 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 ## Local Development
 
 ```bash
-# Install deps
+# Preferred: reproducible env from the lock file (Python 3.11 pinned)
+uv sync            # creates .venv from uv.lock
+uv run pytest tests/unit -q
+
+# Or classic pip flow (ranges, not exact pins)
 pip install -r requirements.txt
 
 # Set env vars
