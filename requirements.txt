@@ -4,9 +4,9 @@ uvicorn>=0.38,<0.39
 httpx>=0.28,<0.29
 requests>=2.32,<3
 
-litellm>=1.60,<2
+litellm>=1.89,<2
 jsonschema>=4.23,<5
-langsmith>=0.2,<1
+langsmith>=0.9,<1
 
 streamlit>=1.52,<1.59
 

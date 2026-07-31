@@ -21,6 +21,7 @@ Important Disclaimer: This tool is not part of the core Sisense product release 
 - Data Transmission: When the summarization feature is enabled, responses retrieved via the Sisense SDK may be sent to your chosen Large Language Model (LLM) provider for processing.
 - Third-Party Clients: When using the MCP Server with third-party clients (e.g., IDE agents or desktop assistants like Claude Desktop), data retrieved from Sisense is passed directly to the client’s LLM.
 - Customer Responsibility: Customers are responsible for selecting an LLM provider that meets their organization’s data privacy and security requirements.
+- Optional Observability (LangSmith): Tracing is **disabled by default** (`LANGSMITH_TRACING=false`). If you enable it, trace metadata is sent to LangSmith (a third-party SaaS by LangChain, Inc.) under **your own** LangSmith account/API key. Tool result payloads are never sent; prompt/response content is additionally gated by `FES_LANGSMITH_LOG_CONTENT` (default `false`). Local CSV logging (`FES_CSV_OBSERVABILITY`) is likewise opt-in and stays on your machine.
 
 ---
 
