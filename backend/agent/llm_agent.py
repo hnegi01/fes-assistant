@@ -90,7 +90,7 @@ from ._routing import (
 from ._routing import (
     planner_schema as _planner_schema,
 )
-from ._tracing import log_tool_child
+from ._tracing import log_tool_child, mark_tainted
 from .mcp_client import McpClient
 
 # -----------------------------------------------------------------------------
@@ -774,6 +774,12 @@ async def _reactive_loop(
         if not new_steps:
             return None, giveup
         plan_text = "\n".join(f"{i + 1}. {st}" for i, st in enumerate(new_steps))
+        if summ_on:
+            # Replan reasons over the data-bearing transcript — its steps and the
+            # failure reason may quote result values.
+            for _st in new_steps:
+                mark_tainted(_st)
+            mark_tainted(reason)
         transcript.append({"role": "assistant", "content": f"REVISED PLAN (after: {reason}):\n{plan_text}"})
         await _emit_agent_progress(
             {"phase": "replanned", "step": steps_executed, "max_steps": MAX_AGENT_STEPS, "plan": plan_text}
@@ -1054,6 +1060,10 @@ async def _reactive_loop(
 
             if continue_line is not None:
                 remains = continue_line.split(":", 1)[1].strip()
+                if summ_on:
+                    # Adaptive value-passing: this text may embed values lifted
+                    # from results → redact it in LangSmith traces (content off).
+                    mark_tainted(remains)
                 logger.info("Agent loop step %d done; continuing: %s", steps_executed, remains[:200])
             elif replan_line is not None:
                 # The last step's outcome contradicts the plan → orchestrator revises

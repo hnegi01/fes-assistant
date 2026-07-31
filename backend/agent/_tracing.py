@@ -12,12 +12,15 @@ service, a separate trust boundary from the answering LLM provider):
 
 - ``tool`` children NEVER carry result payloads — tool_id, scrubbed args,
   ok/error, row count, duration only.
-- ``llm`` children carry message/response CONTENT only when
-  ``FES_LANGSMITH_LOG_CONTENT=true``. Default is shape-only (roles + sizes +
-  token counts): decide/verify prompts embed tool result data via the
-  transcript, so content is closed by default even when summarization is on.
-- The root's final reply is likewise content-gated (a summ-on reply can quote
-  result data); the user's own prompt is always included (their words).
+- ``llm`` children always show their messages — system prompts, user text,
+  plan text carry no Sisense data. Only the DATA-BEARING parts are gated by
+  ``FES_LANGSMITH_LOG_CONTENT`` (default false): ``role:"tool"`` messages (tool
+  results embedded in decide/verify/finalize prompts for dependent tasks) and
+  prior assistant replies in history (they quote data), which are replaced by
+  ``[... hidden · N chars]`` placeholders. Outputs of answer-producing calls
+  (decide/finalize) are likewise length-only, since a final answer quotes data.
+- The root's final reply is content-gated for the same reason; the user's own
+  prompt is always included (their words).
 
 Every call in here is best-effort: tracing must never break or slow a turn, so
 failures are swallowed and logged at debug level. Enabled by
@@ -42,6 +45,19 @@ except ImportError:  # pragma: no cover — langsmith is in requirements
 # the parent context).
 _CURRENT_ROOT: contextvars.ContextVar[Optional["RunTree"]] = contextvars.ContextVar("fes_langsmith_root", default=None)
 
+# Result-DERIVED texts this turn (decide's CONTINUE ops, replan output): they
+# embed values from tool results (adaptive value-passing — "the group
+# 'Everyone'"), so with content off they must be redacted wherever they appear
+# in later prompts. Registered by the loop, checked by _sanitized_messages.
+_TAINTED: contextvars.ContextVar[tuple] = contextvars.ContextVar("fes_langsmith_tainted", default=())
+
+
+def mark_tainted(text: Optional[str]) -> None:
+    """Register a result-derived text fragment for redaction in traced prompts."""
+    t = (text or "").strip()
+    if len(t) >= 8:  # ignore trivial fragments that would over-redact
+        _TAINTED.set(_TAINTED.get() + (t,))
+
 
 def _enabled() -> bool:
     return RunTree is not None and os.getenv("LANGSMITH_TRACING", "").strip().lower() == "true"
@@ -53,9 +69,54 @@ def _log_content() -> bool:
     return os.getenv("FES_LANGSMITH_LOG_CONTENT", "false").strip().lower() == "true"
 
 
-def _message_shapes(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Privacy-safe view of a message list: roles and sizes, no content."""
-    return [{"role": str(m.get("role", "?")), "chars": len(str(m.get("content") or ""))} for m in messages or []]
+# Plan text stashed in the transcript is safe (orchestrator prose, no data);
+# any OTHER assistant text in a prompt is a prior reply, which quotes data.
+_SAFE_ASSISTANT_PREFIXES = ("PLAN:", "REVISED PLAN")
+
+# Calls whose OUTPUT derives from reading result data — final answers quote it
+# (decide/finalize), and verify/replan reason over the data-bearing transcript —
+# so their output content is gated like the root reply.
+_DATA_OUTPUT_LABELS = frozenset({"decide", "finalize", "verify", "replan"})
+
+_MSG_CAP = 8000  # per-message char cap so giant catalogs don't bloat ingestion
+
+
+def _sanitized_messages(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Message list with ONLY the data-bearing parts redacted.
+
+    System prompts, user text, and plan text carry no Sisense data → shown.
+    Redacted (length-only placeholders): role:"tool" messages (embedded tool
+    results — the dependent-task case) and prior assistant replies from history
+    (they quote data). Assistant tool_call stubs and PLAN text stay visible."""
+    out: List[Dict[str, Any]] = []
+    for m in messages or []:
+        role = str(m.get("role", "?"))
+        content = str(m.get("content") or "")
+        if role == "tool":
+            out.append(
+                {
+                    "role": "tool",
+                    "name": m.get("name"),
+                    "content": f"[tool result hidden · {len(content)} chars · FES_LANGSMITH_LOG_CONTENT=false]",
+                }
+            )
+        elif content and any(t in content for t in _TAINTED.get()):
+            # Derived step text (adaptive value-passing): decide/replan lifted a
+            # value out of a result ("the group 'Everyone'") into this text.
+            out.append({"role": role, "content": f"[result-derived text hidden · {len(content)} chars]"})
+        elif (
+            role == "assistant"
+            and content
+            and not content.startswith(_SAFE_ASSISTANT_PREFIXES)
+            and not m.get("tool_calls")
+        ):
+            out.append({"role": "assistant", "content": f"[prior reply hidden · {len(content)} chars]"})
+        else:
+            kept: Dict[str, Any] = {"role": role, "content": content[:_MSG_CAP]}
+            if m.get("tool_calls"):
+                kept["tool_calls"] = m.get("tool_calls")
+            out.append(kept)
+    return out
 
 
 def start_turn_trace(user_text: str, session_id: str, mode: str) -> None:
@@ -72,18 +133,30 @@ def start_turn_trace(user_text: str, session_id: str, mode: str) -> None:
         )
         root.post()
         _CURRENT_ROOT.set(root)
+        _TAINTED.set(())
     except Exception as exc:  # noqa: BLE001 — observability never breaks a turn
         logger.debug("LangSmith start_turn_trace failed: %s", exc)
 
 
-def end_turn_trace(reply: Optional[str] = None, outcome: str = "ok") -> None:
-    """End + patch the root run. Idempotent: the first call clears the context."""
+def end_turn_trace(
+    reply: Optional[str] = None,
+    outcome: str = "ok",
+    steps: Optional[int] = None,
+    tools: Optional[List[str]] = None,
+) -> None:
+    """End + patch the root run. Idempotent: the first call clears the context.
+    steps/tools are metadata (never data) → shown regardless of the flag, so the
+    collapsed row is scannable even in private mode."""
     root = _CURRENT_ROOT.get()
     if root is None:
         return
     _CURRENT_ROOT.set(None)
     try:
         outputs: Dict[str, Any] = {"outcome": outcome}
+        if steps is not None:
+            outputs["steps"] = steps
+        if tools:
+            outputs["tools"] = tools
         if reply is not None:
             if _log_content():
                 outputs["reply"] = reply[:4000]
@@ -109,9 +182,10 @@ def log_llm_child(
         return
     try:
         show = _log_content()
-        inputs: Dict[str, Any] = (
-            {"messages": messages} if show else {"messages": _message_shapes(messages), "n_tools": n_tools}
-        )
+        inputs: Dict[str, Any] = {
+            "messages": messages if show else _sanitized_messages(messages),
+            "n_tools": n_tools,
+        }
         outputs: Dict[str, Any] = {}
         usage = (response or {}).get("usage") or {}
         choices = (response or {}).get("choices") or []
@@ -119,10 +193,12 @@ def log_llm_child(
         tool_calls = msg.get("tool_calls") or []
         if tool_calls:
             outputs["tool_selected"] = [str(((tc.get("function") or {}).get("name")) or "?") for tc in tool_calls]
-        if show:
-            outputs["content"] = (msg.get("content") or "")[:4000]
+        content = msg.get("content") or ""
+        if show or (name or "") not in _DATA_OUTPUT_LABELS:
+            outputs["content"] = content[:4000]
         else:
-            outputs["content_chars"] = len(msg.get("content") or "")
+            # decide/finalize output IS the answer → quotes result data → gated.
+            outputs["content_chars"] = len(content)
         outputs["usage_metadata"] = {
             "input_tokens": usage.get("prompt_tokens", 0),
             "output_tokens": usage.get("completion_tokens", 0),

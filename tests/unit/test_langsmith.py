@@ -80,12 +80,26 @@ class TestTracingHelpers:
         monkeypatch.setenv("FES_LANGSMITH_LOG_CONTENT", "true")
         assert tracing_m._log_content() is True
 
-    def test_message_shapes_carry_no_content(self):
-        shapes = tracing_m._message_shapes(
-            [{"role": "system", "content": "SECRET DATA"}, {"role": "user", "content": "hi"}]
-        )
-        assert shapes == [{"role": "system", "chars": 11}, {"role": "user", "chars": 2}]
-        assert "SECRET" not in str(shapes)
+    def test_sanitizer_redacts_only_data_bearing_messages(self):
+        messages = [
+            {"role": "system", "content": "You are the orchestrator..."},
+            {"role": "user", "content": "which group does a@b.com belong to"},
+            {"role": "assistant", "content": "PLAN:\n1. Get the user record"},
+            {"role": "assistant", "content": "", "tool_calls": [{"id": "c1"}]},
+            {"role": "tool", "name": "get_user", "content": '{"GROUPS": ["SecretGroup"]}'},
+            {"role": "assistant", "content": "a@b.com belongs to SecretGroup"},  # prior reply
+        ]
+        out = tracing_m._sanitized_messages(messages)
+        text = str(out)
+        # data-bearing parts are gone...
+        assert "SecretGroup" not in text
+        assert "hidden" in out[4]["content"] and out[4]["name"] == "get_user"
+        assert "hidden" in out[5]["content"]
+        # ...everything else survives verbatim
+        assert out[0]["content"].startswith("You are the orchestrator")
+        assert out[1]["content"] == "which group does a@b.com belong to"
+        assert out[2]["content"].startswith("PLAN:")
+        assert out[3].get("tool_calls")
 
 
 class TestCallLlmWithTools:

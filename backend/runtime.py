@@ -518,7 +518,13 @@ async def _run_turn_once(
 
         logger.info("call_llm_with_tools completed successfully for session %s.", session_id)
         logger.debug("Agent reply (truncated): %s", reply[:500] if isinstance(reply, str) else repr(reply))
-        end_turn_trace(reply=reply if isinstance(reply, str) else None, outcome="ok")
+        _steps = getattr(llm_agent, "LAST_STEP_RESULTS", None) or []
+        end_turn_trace(
+            reply=reply if isinstance(reply, str) else None,
+            outcome="ok",
+            steps=len(_steps),
+            tools=[str(st.get("tool_id") or "?") for st in _steps],
+        )
         return reply
 
     except asyncio.CancelledError:
