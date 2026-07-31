@@ -54,6 +54,22 @@ EVAL_CASES = [
         "origin": "2026-07-31: enumerated all groups to find one user's membership",
     },
     {
+        "id": "group-membership-summ-off-blocks-honestly",
+        "prompt": "can you tell which group himanshu.negi@sisense.com belongs to "
+        "and then show all user belonging to that group",
+        "allow_summarization": False,
+        # Summ OFF: the group name lives in step 1's result, which the LLM must
+        # not see. Correct outcome = honest BLOCKED ("turn summarization on"),
+        # raw results shown. The reply must NEVER name the group — if "everyone"
+        # appears, result data leaked to the LLM or was fabricated.
+        "expect_tools_any": ["get_user"],
+        "forbid_tools": [],
+        "expect_reply_any": ["summarization", "can't see", "cannot see"],
+        "forbid_reply": ["everyone"],
+        "origin": "2026-07-31: nodata decide said CONTINUE instead of BLOCKED; planner "
+        "filled group_name with the user's email (doomed call) before blocking honestly",
+    },
+    {
         "id": "group-membership-typo-email-honest-failure",
         "prompt": "can you tell which group himanshu.negi@sisense belongs to "
         "and then show all user belonging to that group",
@@ -68,7 +84,7 @@ EVAL_CASES = [
 ]
 
 
-def _turn(backend_url, tenant_config, prompt):
+def _turn(backend_url, tenant_config, prompt, allow_summarization=True):
     resp = httpx.post(
         f"{backend_url}/agent/turn",
         json={
@@ -77,7 +93,7 @@ def _turn(backend_url, tenant_config, prompt):
             "user_input": prompt,
             "mode": "chat",
             "tenant_config": tenant_config,
-            "allow_summarization": True,  # evals exercise the full adaptive loop
+            "allow_summarization": allow_summarization,
         },
         timeout=180,
     )
@@ -89,7 +105,7 @@ def _turn(backend_url, tenant_config, prompt):
 @pytest.mark.eval
 @pytest.mark.parametrize("case", EVAL_CASES, ids=[c["id"] for c in EVAL_CASES])
 def test_planner_eval(backend_url, tenant_config, case):
-    body = _turn(backend_url, tenant_config, case["prompt"])
+    body = _turn(backend_url, tenant_config, case["prompt"], case.get("allow_summarization", True))
     reply = (body.get("reply") or "").lower()
     tools = [str(s.get("tool_id") or "") for s in (body.get("step_results") or [])]
 
