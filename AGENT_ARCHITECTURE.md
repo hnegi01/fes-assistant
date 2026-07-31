@@ -502,6 +502,62 @@ either way.
 
 ---
 
+## Observability — the trace tree
+
+Everything the agent does is reported to **LangSmith** as a proper trace tree
+(`backend/agent/_tracing.py`, via the LangSmith SDK — LiteLLM's bundled
+callback is deliberately not used: it drops custom metadata and posts every
+call as an isolated root run). Standard distributed-tracing vocabulary
+(trace / span / root / child / thread), and the hierarchy mirrors both the app's
+session model and the agent architecture exactly:
+
+```
+Project   fes_agent                        — the application
+└─ Thread    one chat session              — thread_id = the UI session_id (SESSION_POOL)
+   └─ Trace     one user prompt (a "turn") — root run `agent_turn` (run_type: chain)
+      └─ Runs      the work                — llm children (orchestrator/route/plan/decide/verify)
+                                             + tool children (each MCP execution: ok, rows, duration)
+```
+
+- **Tool executions are first-class spans** — tool_id, scrubbed args, ok, row
+  count, duration. "Why was this turn slow?" is almost always a tool span.
+- **Cost per turn**: each llm child carries `ls_provider`/`ls_model_name`, so
+  LangSmith prices every call from token usage and the root aggregates the
+  whole turn (something per-call logging can never show).
+- **Depth semantics**: our tree is deliberately flat (root=0, children=1) —
+  one agent, many hands. Depth measures *nesting of work units*, not agents; a
+  level-3 MAS worker would appear as a depth-1 chain with its own depth-2
+  children. Reading the tree IS reading the architecture.
+- Lifecycle: root opened/closed in `runtime._run_turn_once` (all exit paths);
+  llm children attach from `call_llm_raw`; tool children from
+  `_invoke_tool_traced`. Best-effort everywhere — tracing never breaks a turn.
+
+### The observability privacy boundary
+
+LangSmith is an **external cloud — a separate trust boundary from the LLM
+provider**, so it gets its own switch, independent of the summarization flag:
+`FES_LANGSMITH_LOG_CONTENT` (default **false**). The redaction is surgical, not
+blanket — prompts stay readable; only the parts that carry Sisense data are
+replaced with `[… hidden · N chars]` placeholders:
+
+| Content | flag=false | flag=true |
+|---|---|---|
+| System prompts, user text, plan text, route outputs, tokens/cost | shown | shown |
+| Tool results embedded in decide/verify prompts (`role: tool`) | hidden | shown |
+| **Result-derived text** (adaptive value-passing — decide/replan lift values like a group name into later step texts; taint-tracked via `mark_tainted`) | hidden | shown |
+| Outputs of answer-producing calls (decide/finalize/verify/replan) + final reply | length-only | shown |
+| Tool spans' result payloads | **never** | **never** |
+
+### Local CSV twins (no cloud required)
+
+| File | One row per | Grouped by |
+|---|---|---|
+| `logs/llm_calls.csv` | LLM call (type, tokens, latency, ok) | `trace_id` (one per turn) |
+| `logs/tool_calls.csv` | MCP tool execution (tool_id, ok, count, latency) | `trace_id` |
+| `logs/llm_traces.csv` | whole turn (outcome, steps, tool) | — |
+
+---
+
 ## Hand-rolled building blocks (and their LangGraph future)
 
 Everything is **hand-rolled** — plain Python control flow inside
