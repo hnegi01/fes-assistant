@@ -250,16 +250,15 @@ def _agent_progress_status_line(data: Dict[str, Any]) -> Optional[str]:
     """Map an agent_progress event to a human status line (None for 'completed')."""
     phase = data.get("phase")
     step = data.get("step")
-    max_steps = data.get("max_steps")
     tool_id = data.get("tool_id")
     if phase == "deciding":
         return "🤔 Checking progress against your request…"
     if phase == "verifying":
         return "🔎 Double-checking the result covers your whole request…"
     if phase == "planning":
-        return f"🧭 Planning step {step}/{max_steps}…"
+        return f"🧭 Planning step {step}…"
     if phase == "executing":
-        return f"⏳ Step {step}/{max_steps}: running `{tool_id}`…"
+        return f"⏳ Step {step}: running `{tool_id}`…"
     return None
 
 

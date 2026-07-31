@@ -213,11 +213,18 @@ Check EVERY distinct thing the user's own words asked for against the results.
 Rules:
 - Only flag things the user's own words asked for. Do NOT invent extra work,
   demand detail they didn't request, or ask to "double-check" completed work.
-- Counting, filtering, or summarising data already in the results is DONE work,
-  not missing work.
+- If the results ALREADY contain the data needed to answer a part — even if it
+  still needs filtering, counting, or cross-referencing — that part is DONE.
+  Do NOT ask to re-fetch it a different way. (e.g. if a full list of users with
+  their roles is present, "find the users with role X" is answerable by filtering
+  that list — it is DONE, not missing.)
+- Do NOT confuse distinct concepts when proposing the next operation: a role is
+  not a group, a user is not a datamodel. Never suggest fetching a value by the
+  wrong kind of key.
 - Judge from the actual results: did every part the user asked for get fetched
   or changed, and did it succeed?
-- When in doubt whether a genuinely-requested part ran, prefer INCOMPLETE.
+- Prefer INCOMPLETE only when a genuinely-requested part has NO supporting data
+  in the results at all.
 """.strip()
 
 # ---------------------------------------------------------------------------
