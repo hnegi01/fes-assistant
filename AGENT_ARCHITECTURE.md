@@ -2,8 +2,8 @@
 
 > **Status: WORK IN PROGRESS.** Living document describing how the agent
 > actually works, written to explain it to others once V2 is complete. Reflects
-> the codebase as of Step 8 (agentic loop). Sections marked _(planned)_ are not
-> built yet.
+> the codebase as of Step 8 (agentic loop) + plan→replan. Sections marked
+> _(planned)_ are not built yet.
 
 ---
 
@@ -28,8 +28,8 @@ Each LLM call sees only what it needs:
 Crucially, the **planner never sees the whole request and never sees more than
 ~10 tools.** It cannot "choose to call two tools across packages" because it
 never sees two packages at once. Multi-part requests are handled by the
-_decompose_ and _decide_ calls, one layer above the planner — not by the planner
-itself.
+_strategist_ (plan/replan) and _decide_ calls, one layer above the planner — not
+by the planner itself.
 
 Why build it this way? Because the full tool catalog is ~119 tools. Showing all
 of them to one call produces hallucinated tool names and noisy plans. The
@@ -69,6 +69,9 @@ flowchart TD
     U(["🧑 User message"]) --> WN
 
     WN{{"WHAT'S NEXT?<br/>step 0 · PLAN (strategist + catalog)<br/>step N · decide · REPLAN on failure"}}
+    WN -->|"REPLAN: approach failed"| RP["REPLAN<br/>strategist + catalog<br/>revise the plan"]
+    RP -->|"new approach"| WN
+    RP -->|"GIVEUP"| ANS
     WN -->|"DONE · final answer"| ANS(["💬 Reply to user"])
     WN -->|"BLOCKED · summ-off adaptive"| ANS
     WN -->|"CONTINUE: next op"| RT
@@ -96,17 +99,20 @@ flowchart TD
     class ASK,BLK,APR pause
     class EX exec
     class WN,VAL,GT dec
+    class RP dec
 ```
 
 Reading it: the diamond **WHAT'S NEXT?** is the only thing that changes by step —
-decompose on the first lap, decide after. Green = the turn ends with an answer;
+the strategist's plan on the first lap, decide after (with `REPLAN:` routing back
+through the strategist when an approach fails). Green = the turn ends with an answer;
 yellow = it pauses or blocks (and resumes/explains); blue = the one SDK call this
 lap. The dashed edge is the loop: append the result, ask "what's next?" again.
 
-- **DISCOVER / PLAN** = route + plan (pick one tool for one sub-task)
+- **DISCOVER / PLAN** = the strategist's plan, then route + tool-pick per step
 - **EXECUTE** = call the tool via MCP — one SDK call per lap
-- **VERIFY** = the decide call — reads the results and judges completion
-- **ITERATE** = a `CONTINUE:` reply feeds the next sub-task back through routing
+- **VERIFY** = the decide call (+ the independent goal checker at "done")
+- **ITERATE** = `CONTINUE:` feeds the next sub-task back through routing;
+  `REPLAN:` sends the failure back through the strategist for a new approach
 
 Stop conditions (every one returns something readable — never a silent stop):
 - decide returns a plain answer → goal met
@@ -121,7 +127,7 @@ Stop conditions (every one returns something readable — never a silent stop):
 
 | # | LLM call | Given | Result |
 |---|---|---|---|
-| 1 | Decompose | full message | _"List all datamodels"_ |
+| 1 | Plan (strategist) | full message + capability catalog | _"1. List all datamodels 2. List all user groups"_ — step 1 starts |
 | 2 | Route L1 | _"List all datamodels"_ | `datamodel` |
 | 3 | Route L2 | _"List all datamodels"_ | core |
 | 4 | Plan | sub-task + ~10 datamodel tools | `datamodel.get_all_datamodel` |
@@ -133,8 +139,9 @@ Stop conditions (every one returns something readable — never a silent stop):
 | — | _execute_ | | 35 groups |
 | 9 | Decide | full message + BOTH results | final answer combining both |
 
-The "break it into two" decision is split across **call 1** (pull out the first
-task) and **call 5** (notice the second task is still undone). The planner
+The "break it into two" decision lives in **call 1** (the strategist's plan)
+and is re-checked by **call 5** (decide notices what's still undone — and can
+say `REPLAN:` if a step's outcome shows the approach failed). The planner
 (calls 4, 8) only ever picks one tool from a small menu and never sees the
 compound request.
 
@@ -172,10 +179,11 @@ loop, until done:
 
 Each box is one LLM call except *validate/gate* (code) and *execute* (MCP). The
 only thing that differs by step is **WHAT'S NEXT?** — on the first pass the
-history is empty so it decomposes the request; on later passes the decide call
-reads goal + history and either ends the turn (its answer becomes the reply) or
-emits a `CONTINUE:` that feeds the next sub-task back into ROUTE. There is no
-separate step-1 code path — decompose and decide are the same loop position.
+strategist drafts the plan (request + capability catalog) and its first
+operation starts the loop; on later passes the decide call reads goal + history
+and ends the turn (its answer becomes the reply), emits `CONTINUE:` (next
+sub-task into ROUTE), or emits `REPLAN:` (the strategist revises the plan with
+the catalog + failure evidence). There is no separate step-1 code path.
 
 ### Detailed — an adaptive request, call by call
 
@@ -186,8 +194,9 @@ returns.
 For each call: the **prompt logic** (what it's told to do, not the full text),
 its **input**, and its **output**.
 
-**1 · DECOMPOSE** — _logic:_ output only the first operation; order by
-dependency, not sentence order; don't invent specifics.
+**1 · PLAN (strategist)** — _logic:_ draft the ordered plan using the capability
+catalog (tool one-liners, no schemas); dependency order, not sentence order;
+never promote a descriptive word into an object name.
 - in: the full user message
 - out: `"Get the details of user gowtham@sisense.com"`
   _(the prerequisite — you can't list by role until you have the role)_
@@ -290,7 +299,7 @@ needs the data.
 Non-adaptive compound — _"show all datamodels AND all groups"_:
 
 ```
-                    decompose → "list datamodels"
+                    plan (strategist) → "1. list datamodels 2. list groups"
 SUMM ON:   route→plan→exec(datamodels)  ─┐ history=full data
            decide: CONTINUE list groups  │
            route→plan→exec(groups)       │
@@ -319,10 +328,11 @@ Same first step; summ-on passes the value and finishes, summ-off blocks. (Verifi
 
 - **First LLM decision is a planner.** Step 1 and every later step are the same
   "what's next?" question, run by the **one** `_reactive_loop` — step 1 is not a
-  special path. On the first pass it decomposes the request to its first
-  sub-task; on later passes the decide call reads goal + history. (The old
-  `_decompose_first_step` + separate continuation loop were unified in Step 8's
-  refactor.)
+  special path. On the first pass the strategist (`_make_plan`) drafts the plan;
+  on later passes the decide call reads goal + history, with `REPLAN:` routing
+  back through the strategist when an approach fails. (The old
+  `_decompose_first_step` + separate continuation loop were unified, then
+  upgraded to plan→replan.)
 - **All reactive** — re-decide each step from goal + history — so unknown-shape
   tasks work (summ on).
 - Tradeoff: one LLM call per step (vs one up-front plan). Worth it — flexibility
@@ -450,7 +460,7 @@ you use LangGraph here?"_ Verify/adjust each row once Step 10 is built.
 | Our hand-rolled piece | Expected LangGraph primitive |
 |---|---|
 | `_reactive_loop` `while` loop | the **graph** itself (nodes + edges) |
-| Decompose+Decide (unified), Route, Plan, Execute | individual **nodes** |
+| Strategist (plan/replan), Decide, Route, Plan, Execute | individual **nodes** |
 | "`CONTINUE:` → loop back, else → answer" | a **conditional edge** |
 | `pending_loop` / `pending_clarification` in `SessionEntry` | **checkpointer** (persistent state / `thread_id`) |
 | Mutation gate → return, resume next turn | **interrupt** (human-in-the-loop) |
