@@ -436,6 +436,30 @@ there is no standing cross-turn goal.
 
 ---
 
+## The recovery ladder
+
+Three recovery mechanisms at increasing altitude — each fires only when the
+cheaper one below it can't help. **Backtrack fixes the step, replan fixes the
+strategy, the critic fixes completeness.**
+
+| Mechanism | Granularity | Trigger | What it changes | Who | Budget |
+|---|---|---|---|---|---|
+| **Backtrack** | within one step | routing/planning miss (no tool picked) | same op, **wider tool menu** (whole package instead of ~10) | code | 1 retry per step |
+| **Replan** | triggered by a step, revises the **request's remaining plan** | a step's result contradicts the plan (failed / found nothing / wrong data), or a dead end | **new approach** — the orchestrator + catalog rewrites what's left | LLM (orchestrator) | `FES_MAX_REPLANS` per turn |
+| **Critic INCOMPLETE** | whole request, at "done" | the maker declared done but something is missing | pushes **+1 step** (a missing op) — never rewrites the plan | LLM (critic) | `FES_VERIFY_MAX_RECHECKS` |
+
+Two clarifications that prevent a common misreading:
+
+- There is **no separate step-level replan**: when a step fails, the
+  orchestrator re-plans everything *remaining* for the request (catalog +
+  failure evidence) — one mechanism, one budget, three trigger points
+  (decide's `REPLAN:` verb, routing dead-end, planning dead-end).
+- There is **no standalone request-level replan** that fires without a step
+  failure. The closest thing is the critic — but it only *adds* a missing
+  step; it never rewrites the plan.
+
+---
+
 ## Mutation approval (carried from Step 7, extended in Step 8)
 
 A mutating tool never executes without explicit approval, **even mid-loop**.
