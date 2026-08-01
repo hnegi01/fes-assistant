@@ -23,9 +23,12 @@ SAME llm_agent helpers, selected by `FES_AGENT_ENGINE=custom|langgraph`
 (default custom). No checkpointer/DB/files — pauses END the run and persist via
 SessionEntry exactly like the custom loop. Parity: all 150 unit tests pass
 under BOTH engines (helpers accessed via module attributes, so the same mocks
-exercise both). Remaining before flipping the default: live eval battery +
-integration suite under langgraph (blocked 2026-07-31 by an expired trial-tenant
-token — rerun once refreshed), then a parallel-run observation period.
+exercise both). LIVE GATES PASSED under langgraph (2026-07-31, refreshed token): eval battery
+6/6, integration 17/17 (incl. mutation lifecycle + clarify-resume), SSE progress
+verified with concurrent fan-out phase interleaving. Remaining: a short
+parallel-run observation window (user drives the UI with
+FES_AGENT_ENGINE=langgraph in .env), then flip the repo default and retire
+_reactive_loop + the flag (decision already made: single engine, LangGraph).
 
 ## 2. Langfuse tracing backend — OPTIONAL, LATER
 Add a Langfuse implementation of our `_tracing.py` abstraction behind
