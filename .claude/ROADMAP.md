@@ -3,39 +3,41 @@
 V2 is feature-complete: the agentic loop (plan → parallel fan-out → dependent
 chains → recovery ladder → human-gated mutations → critic) is built, live-
 verified, and documented (`AGENT_ARCHITECTURE.md`, `Execution_Flow.md`).
+The LangGraph engine is BUILT (2026-07-31) and passed all live gates: 150/150
+unit tests under both engines, eval battery 6/6, integration 17/17 (incl.
+mutation lifecycle + clarify-resume), SSE progress with concurrent fan-out.
 
-## MCP OAuth — OUT OF SCOPE for this repo (decision 2026-07-31)
-This repo's MCP server stays **local and embedded in the FES stack**, by design:
-it is highly customized for the agent (multi-tenant per-call credential
-injection, session/cancel coupling, single-worker state) and is not meant to be
-a public connector. OAuth + Claude connector live in the separate
-**sisense-admin-mcp** project (standard-shaped, curated admin tools, auth modes
-none→bearer→oauth; the product team's TypeScript MCP proxies to it). Brief:
-https://claude.ai/code/artifact/83dd30e5-5e65-471f-8022-bfe018bb9fe5
+MCP OAuth is NOT part of this repo (decision 2026-07-31, seeded 2026-08-01):
+this repo's MCP server stays local and embedded in the FES stack (multi-tenant
+per-call credential injection, session/cancel coupling, single-worker state).
+The standard-shaped, OAuth-capable MCP server is its own project:
+**`~/Desktop/Sisense/fes_mcp`** (FastMCP, registry-driven tool factory, auth
+ladder none→bearer→oauth; see its `KICKOFF_PROMPT.md`).
 
 What remains in THIS repo:
 
-## 1. LangGraph engine — BUILT (2026-07-31), parallel-run in progress
-`backend/agent/graph_engine.py` implements the blueprint: StateGraph with
-nodes planner / branch+join (Send-API fan-out) / first_select / next_select /
-validator / gate / tools / decide(replanner+evaluator), thin wrappers over the
-SAME llm_agent helpers, selected by `FES_AGENT_ENGINE=custom|langgraph`
-(default custom). No checkpointer/DB/files — pauses END the run and persist via
-SessionEntry exactly like the custom loop. Parity: all 150 unit tests pass
-under BOTH engines (helpers accessed via module attributes, so the same mocks
-exercise both). LIVE GATES PASSED under langgraph (2026-07-31, refreshed token): eval battery
-6/6, integration 17/17 (incl. mutation lifecycle + clarify-resume), SSE progress
-verified with concurrent fan-out phase interleaving. Remaining: a short
-parallel-run observation window (user drives the UI with
-FES_AGENT_ENGINE=langgraph in .env), then flip the repo default and retire
-_reactive_loop + the flag (decision already made: single engine, LangGraph).
+## 1. V2 UI testing — including LangGraph → then retire the custom engine
+Drive the full V2 feature set from the Streamlit UI with
+`FES_AGENT_ENGINE=langgraph` in `.env` (already set): multi-step plans,
+fan-out, clarification pause/resume, mutation approval gate, summarization
+on/off, cancellation, SSE progress. If everything holds up, flip the repo
+default to langgraph and **remove `_reactive_loop` + the `FES_AGENT_ENGINE`
+flag** — decision already made: single engine, LangGraph.
 
-## 2. Langfuse tracing backend — OPTIONAL, LATER
-Add a Langfuse implementation of our `_tracing.py` abstraction behind
-`FES_TRACING_BACKEND=langsmith|langfuse` (redaction carries over untouched).
-Preferred route: a project on the product team's existing Langfuse instance
-(no new infra/account); fallback Langfuse Cloud. Self-hosting rejected — it
-requires Postgres+ClickHouse+Redis, conflicting with the no-database stance.
+## 2. Migration mode — full test pass (untouched since V1)
+Migration mode has had no dedicated testing since V1; everything since
+(agentic loop, fan-out, gates, critic, LangGraph) was validated in Chat mode.
+Needed: end-to-end runs in Migration mode against real source + target
+deployments — tool selection from the migration-only registry slice, dual
+credential injection (source_*/target_*), SSE progress for long migrations,
+cancellation mid-migration, and the mutation approval gate on migration tools.
+
+## Backlog (optional, later)
+- **Langfuse tracing backend** — a Langfuse implementation of `_tracing.py`
+  behind `FES_TRACING_BACKEND=langsmith|langfuse` (redaction carries over).
+  Preferred route: a project on the product team's existing Langfuse instance;
+  fallback Langfuse Cloud. Self-hosting rejected (needs Postgres+ClickHouse+
+  Redis — conflicts with the no-database stance).
 
 ---
 
