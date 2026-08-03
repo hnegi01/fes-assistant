@@ -2,9 +2,9 @@
 
 > Living document describing how the agent actually works. Reflects the current
 > V2 codebase: the agentic loop — plan → parallel fan-out → dependent chains →
-> recovery ladder → human-gated mutations → critic. Sections marked _(planned)_
-> — the LangGraph refactor — are not built yet; see `.claude/ROADMAP.md` for
-> what remains.
+> recovery ladder → human-gated mutations → critic. Both engines described here
+> are built and exercised by CI (the unit suite runs under each); see
+> "What's next" for the items that genuinely aren't built.
 
 ---
 
@@ -661,8 +661,10 @@ primitives, and makes each node independently testable."
 ## What's next _(planned)_
 
 - **LangGraph engine: BUILT** (`graph_engine.py`, `FES_AGENT_ENGINE` flag,
-  150/150 test parity). Remaining: live eval battery under `langgraph`, then a
-  parallel-run period before considering a default flip.
+  150/150 test parity — CI runs the unit suite under both engines on every
+  push). Live gates passed under `langgraph`: eval battery 6/6, integration
+  17/17, SSE progress with concurrent fan-out. Remaining: a UI observation
+  period, then flip the default and retire `_reactive_loop` + the flag.
 - ~~MCP OAuth + Claude connector~~ — **out of scope for this repo** (decision
   2026-07-31): this MCP server stays local/embedded (multi-tenant credential
   injection, agent-coupled session state). OAuth + connector belong to the

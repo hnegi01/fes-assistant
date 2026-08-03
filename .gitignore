@@ -43,3 +43,6 @@ screenshots/
 .claude/v2-v3-roadmap.html
 .claude/PROGRESS.md
 .claude/V3_BACKLOG.md
+# Internal planning doc — local development only, not for the public repo.
+# (Was tracked until 2026-08-03; earlier commits still contain it in history.)
+.claude/ROADMAP.md
