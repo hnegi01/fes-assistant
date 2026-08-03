@@ -51,9 +51,9 @@ def _gate_then_approve(backend_url, tenant_config, session_id, message, expect_t
     assert expect_tool in pc.get("tool_id", ""), f"unexpected gated tool: {pc.get('tool_id')!r}"
     assert pc.get("reason"), "gate must carry a plain-English explanation"
     # Only our throwaway asset may ever be targeted.
-    assert LIFECYCLE_EMAIL in json.dumps(
-        pc.get("arguments") or {}
-    ), f"gated args do not target the test asset: {pc.get('arguments')!r}"
+    assert LIFECYCLE_EMAIL in json.dumps(pc.get("arguments") or {}), (
+        f"gated args do not target the test asset: {pc.get('arguments')!r}"
+    )
 
     key = [pc["tool_id"], json.dumps(pc.get("arguments") or {}, sort_keys=True, ensure_ascii=False)]
     second = _turn(backend_url, tenant_config, session_id, message, approved_keys=[key])
@@ -75,7 +75,7 @@ def _force_delete(backend_url, tenant_config):
 @pytest.mark.integration
 def test_mutation_lifecycle_create_then_delete_own_asset(backend_url, tenant_config):
     create_msg = (
-        f"create a new user with email {LIFECYCLE_EMAIL} " "first name Integ last name Lifecycle with the viewer role"
+        f"create a new user with email {LIFECYCLE_EMAIL} first name Integ last name Lifecycle with the viewer role"
     )
     try:
         # --- create (gate → approve → execute) ---

@@ -55,9 +55,9 @@ class TestRegistryEmailFormat:
     def test_user_email_declares_email_format(self, tool_id):
         registry = self._load_registry()
         props = registry[tool_id]["parameters"]["properties"]
-        assert (
-            props["user_email"]["format"] == "email"
-        ), f"{tool_id}.user_email must declare format: email so a non-email value is blocked before execution"
+        assert props["user_email"]["format"] == "email", (
+            f"{tool_id}.user_email must declare format: email so a non-email value is blocked before execution"
+        )
 
 
 # ---------------------------------------------------------------------------

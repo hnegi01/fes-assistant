@@ -70,9 +70,9 @@ def test_off_topic_short_circuits(backend_url, tenant_config):
     body = _turn(backend_url, tenant_config, "what's the capital of France?")
     reply = (body.get("reply") or "").lower()
 
-    assert (
-        "understand" in reply or "help with" in reply
-    ), f"expected the off-topic short-circuit message, got: {reply!r}"
+    assert "understand" in reply or "help with" in reply, (
+        f"expected the off-topic short-circuit message, got: {reply!r}"
+    )
     assert body.get("tool_result") in (None, {}), "off-topic short-circuit must not execute any tool"
 
 

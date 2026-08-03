@@ -108,9 +108,9 @@ def test_approved_mutation_executes(backend_url, tenant_config):
     tool_result2 = second.get("tool_result") or {}
 
     # Gate passed — no another pending_confirmation on turn 2.
-    assert (
-        "pending_confirmation" not in tool_result2
-    ), "expected gate to pass on turn 2 with approved_keys, but got another pending_confirmation"
+    assert "pending_confirmation" not in tool_result2, (
+        "expected gate to pass on turn 2 with approved_keys, but got another pending_confirmation"
+    )
 
 
 @pytest.mark.integration

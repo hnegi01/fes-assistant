@@ -1,6 +1,10 @@
+# Keep `rev` in step with the ruff version pinned in uv.lock (currently 0.16.0,
+# check with `uv run ruff --version`). Ruff's formatter changes style between
+# releases, so a hook older than CI's ruff formats code on commit that CI then
+# rejects — the local-vs-CI equivalent of an unpinned dependency.
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.4
+    rev: v0.16.0
     hooks:
       - id: ruff
         args: [--fix]

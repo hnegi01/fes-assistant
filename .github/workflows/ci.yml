@@ -6,6 +6,12 @@ on:
   push:
     branches: [main, dev, v2]
 
+# Dependencies come from uv.lock via `uv sync --frozen` — the SAME resolution
+# the Docker images install (Dockerfile.*: uv sync --frozen --no-dev). CI must
+# test the exact versions we ship; a range-based `pip install` would silently
+# drift (e.g. test langgraph 1.3 while prod deploys 1.2.10). Bumping a dep is
+# therefore an explicit `uv lock --upgrade-package <name>` commit, reviewable as
+# a uv.lock diff, and CI gates that exact set before it reaches an image.
 jobs:
   # ── JOB 1: Lint ────────────────────────────────────────────────────────
   lint:
@@ -14,18 +20,18 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v6
+      - uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.11"
+          enable-cache: true
 
-      - name: Install dev dependencies
-        run: pip install -r requirements-dev.txt
+      - name: Install dependencies (locked)
+        run: uv sync --frozen
 
       - name: Check code style
-        run: ruff check .
+        run: uv run ruff check .
 
       - name: Check formatting
-        run: ruff format --check .
+        run: uv run ruff format --check .
 
   # ── JOB 2: Unit Tests ──────────────────────────────────────────────────
   test:
@@ -43,16 +49,25 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v6
+      - uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.11"
-          cache: pip
+          enable-cache: true
 
-      - name: Install dev dependencies
-        run: pip install -r requirements-dev.txt
+      - name: Install dependencies (locked)
+        run: uv sync --frozen
 
-      - name: Run tests
-        run: pytest tests/ -v
+      # Unit tier only. Integration/eval need a live stack + real Sisense and
+      # LLM creds, which never go in CI (firm policy) — the marker filter makes
+      # that explicit rather than leaning on conftest's skip-if-no-config guard.
+      - name: Run unit tests
+        run: uv run pytest tests/ -m "not integration and not eval" -v
+
+      # The LangGraph engine must stay at parity with the custom loop: the unit
+      # suite is the parity harness, so run it again with the flag flipped.
+      - name: Run unit tests (langgraph engine)
+        env:
+          FES_AGENT_ENGINE: langgraph
+        run: uv run pytest tests/ -m "not integration and not eval" -q
 
   # ── JOB 3: Docker Build Check ──────────────────────────────────────────
   docker-build:

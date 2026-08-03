@@ -52,6 +52,11 @@ constraint-dependencies = [
 [tool.ruff]
 target-version = "py311"
 line-length = 120
+# Ruff >=0.16 also formats Python code fences inside Markdown. Our docs use
+# deliberately compact illustrative snippets (e.g. the one-liner /agent/turn
+# harness in .claude/skills/run/SKILL.md); reformatting those adds churn and
+# would let a docs edit fail CI on style. Lint/format Python files only.
+extend-exclude = ["*.md"]
 
 [tool.ruff.lint]
 # E/W = pycodestyle  F = pyflakes  I = import order

@@ -32,7 +32,7 @@ import pytest
 EVAL_CASES = [
     {
         "id": "role-lookup-then-users-with-role",
-        "prompt": "what role does himanshu.negi@sisense.com has? " "Also find all the users belong to that role",
+        "prompt": "what role does himanshu.negi@sisense.com has? Also find all the users belong to that role",
         # Must resolve the user's record; a role is answered from user data.
         "expect_tools_any": ["get_user"],
         # 2026-07-30 failure: checker pushed users_per_group("admin") — treated
@@ -140,22 +140,22 @@ def test_planner_eval(backend_url, tenant_config, case):
     ctx = f"\n  origin: {case['origin']}\n  tools: {tools}\n  reply: {reply[:300]!r}"
 
     if case["expect_tools_any"]:
-        assert any(
-            frag in t for t in tools for frag in case["expect_tools_any"]
-        ), f"expected a tool matching one of {case['expect_tools_any']}{ctx}"
+        assert any(frag in t for t in tools for frag in case["expect_tools_any"]), (
+            f"expected a tool matching one of {case['expect_tools_any']}{ctx}"
+        )
     for frag in case.get("expect_tools_all", []):
         assert any(frag in t for t in tools), f"no executed tool matches {frag!r}{ctx}"
     if case.get("expect_min_steps"):
-        assert (
-            len(tools) >= case["expect_min_steps"]
-        ), f"expected >= {case['expect_min_steps']} executed steps, got {len(tools)}{ctx}"
+        assert len(tools) >= case["expect_min_steps"], (
+            f"expected >= {case['expect_min_steps']} executed steps, got {len(tools)}{ctx}"
+        )
     for frag in case["forbid_tools"]:
         # Exact-fragment check, but don't let e.g. "users_per_group" ban
         # "users_per_group_all" unless explicitly listed — match whole ids.
         assert not any(t.endswith(frag) or t == frag for t in tools), f"forbidden tool {frag!r} was executed{ctx}"
     if case["expect_reply_any"]:
-        assert any(
-            frag in reply for frag in case["expect_reply_any"]
-        ), f"reply lacks all of {case['expect_reply_any']}{ctx}"
+        assert any(frag in reply for frag in case["expect_reply_any"]), (
+            f"reply lacks all of {case['expect_reply_any']}{ctx}"
+        )
     for frag in case["forbid_reply"]:
         assert frag not in reply, f"reply contains forbidden {frag!r}{ctx}"

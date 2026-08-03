@@ -115,7 +115,7 @@ def _parse_class_docstring(klass: type) -> Dict[str, Any]:
             cur_name = None
             cur_desc = []
 
-    for line in lines[modules_start + 1:]:
+    for line in lines[modules_start + 1 :]:
         stripped = line.strip()
         indent = len(line) - len(line.lstrip())
 
@@ -147,6 +147,7 @@ def _parse_class_docstring(klass: type) -> Dict[str, Any]:
 # JSON write helper
 # ---------------------------------------------------------------------------
 
+
 def _write_json(path: Path, data: Any) -> None:
     with path.open("w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
@@ -155,6 +156,7 @@ def _write_json(path: Path, data: Any) -> None:
 # ---------------------------------------------------------------------------
 # Hierarchical registry builder
 # ---------------------------------------------------------------------------
+
 
 def build_registry_hierarchical(
     registry: List[Dict[str, Any]],
@@ -237,14 +239,16 @@ def build_registry_hierarchical(
                 info["modules"] = derived
 
     # Write top-level index.json (Level 1)
-    _write_json(reg_dir / "index.json", {
-        "sdk_version": sdk_version,
-        "updated_at": now_iso,
-        "packages": {
-            pkg: {"class": info["class"], "description": info["description"]}
-            for pkg, info in pkg_info.items()
+    _write_json(
+        reg_dir / "index.json",
+        {
+            "sdk_version": sdk_version,
+            "updated_at": now_iso,
+            "packages": {
+                pkg: {"class": info["class"], "description": info["description"]} for pkg, info in pkg_info.items()
+            },
         },
-    })
+    )
 
     # Write per-package files (Level 2 + Level 3)
     total_mod_files = 0
@@ -252,11 +256,14 @@ def build_registry_hierarchical(
         pkg_dir = reg_dir / pkg_name
         pkg_dir.mkdir(exist_ok=True)
 
-        _write_json(pkg_dir / "index.json", {
-            "package": pkg_name,
-            "class": info["class"],
-            "modules": info["modules"],
-        })
+        _write_json(
+            pkg_dir / "index.json",
+            {
+                "package": pkg_name,
+                "class": info["class"],
+                "modules": info["modules"],
+            },
+        )
 
         for mod_stem, tools in tools_by_pkg_mod.get(pkg_name, {}).items():
             if tools:
