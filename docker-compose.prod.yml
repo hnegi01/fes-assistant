@@ -1,3 +1,14 @@
+# Production stack. Images are pulled from Docker Hub, not built here.
+#
+# IMAGE TAG: defaults to the current version in pyproject.toml, which is what CD
+# publishes (cd.yml tags each image :latest, :<sha>, and :<version>). Override to
+# roll back or to pin a specific build:
+#   FES_IMAGE_TAG=2.0.0 docker compose -f docker-compose.prod.yml up -d
+#   FES_IMAGE_TAG=<git-sha> docker compose -f docker-compose.prod.yml up -d
+# Keep the default in step with pyproject's version when you cut a release.
+#
+# Only nginx publishes a host port; backend and mcp stay on the internal
+# `private` network and are unreachable from outside the compose network.
 services:
   nginx:
     image: nginx:alpine
@@ -13,7 +24,7 @@ services:
       - public
 
   fes-ui:
-    image: himanshusisense/fes-ui:0.1.1
+    image: himanshusisense/fes-ui:${FES_IMAGE_TAG:-2.0.0}
     container_name: fes-ui
     restart: unless-stopped
     env_file:
@@ -30,7 +41,7 @@ services:
       - private
 
   fes-backend:
-    image: himanshusisense/fes-backend:0.1.1
+    image: himanshusisense/fes-backend:${FES_IMAGE_TAG:-2.0.0}
     container_name: fes-backend
     restart: unless-stopped
     env_file:
@@ -45,7 +56,7 @@ services:
       - private
 
   fes-mcp:
-    image: himanshusisense/fes-mcp:0.1.1
+    image: himanshusisense/fes-mcp:${FES_IMAGE_TAG:-2.0.0}
     container_name: fes-mcp
     restart: unless-stopped
     env_file:
