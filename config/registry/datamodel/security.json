@@ -17,7 +17,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What are the datasecurity rules for the 'SalesAnalytics' data model?",
+        "user_query": "Show the data security rules for the 'SalesAnalytics' data model.",
         "arguments": {
           "datamodel_name": "SalesAnalytics"
         },
@@ -57,7 +57,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What are the datasecurity rules for the 'SalesAnalytics' data model?",
+        "user_query": "Show the detailed data security rules for the 'SalesAnalytics' data model, including share-level visibility.",
         "arguments": {
           "datamodel_name": "SalesAnalytics"
         },
@@ -105,7 +105,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I add multiple data security rules to the 'Sales_Live' datamodel?",
+        "user_query": "Add data security rules to the 'Sales_Live' datamodel: limit the Orders table's Region column to North and South, and exclude Premium in the Customers table's CustomerType column.",
         "arguments": {
           "datamodel_name": "Sales_Live",
           "rules": [
@@ -165,7 +165,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I update the datasecurity rules for the 'Sales_Elasticube' datamodel?",
+        "user_query": "Replace the data security rules on the 'Sales_Elasticube' datamodel: allow North America and Europe in the Orders table's Region column, and exclude Enterprise in the Customers table's CustomerType column.",
         "arguments": {
           "datamodel_name": "Sales_Elasticube",
           "datasecurity": [

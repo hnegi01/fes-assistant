@@ -152,6 +152,10 @@ def fake_registry_dir(tmp_path, monkeypatch):
     )
 
     monkeypatch.setattr(routing_m, "REGISTRY_DIR", reg_dir)
+    # These tool_ids are fabricated, so the real config/allowed_tools.txt would
+    # filter every one of them out. None = "no allowlist in force" — the
+    # allowlist itself is covered by test_tool_allowlist.py.
+    monkeypatch.setattr(routing_m, "allowed_tool_ids", lambda: None)
     return reg_dir
 
 

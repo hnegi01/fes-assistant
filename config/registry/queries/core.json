@@ -22,7 +22,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Fetch total sales by region for the current year.",
+        "user_query": "Fetch total sales by region for 2023 from the 'SalesElasticube' datasource.",
         "arguments": {
           "datasource_name": "SalesElasticube",
           "jaql_payload": {
@@ -148,7 +148,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Export sales data for Q3 2023 as a CSV file.",
+        "user_query": "Export Q3 2023 sales amounts from the 'sales_elasticube' datasource as CSV.",
         "arguments": {
           "datasource_name": "sales_elasticube",
           "jaql_payload": {

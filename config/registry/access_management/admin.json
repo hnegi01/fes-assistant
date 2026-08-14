@@ -48,7 +48,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I schedule a full build for the 'SalesDataModel' to run every Monday at 3:00 UTC?",
+        "user_query": "Schedule a full build for the 'SalesDataModel' data model every Monday at 3:00 UTC.",
         "arguments": {
           "datamodel_name": "SalesDataModel",
           "build_type": "FULL",

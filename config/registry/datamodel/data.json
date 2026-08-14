@@ -70,7 +70,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How many rows are in each table of the SalesData model?",
+        "user_query": "Count the rows in each table of the 'SalesData' model.",
         "arguments": {
           "datamodel_name": "SalesData"
         },

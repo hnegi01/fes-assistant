@@ -4,42 +4,20 @@
     "description": "Migrate all eligible users from the source environment to the target environment using the bulk endpoint.",
     "parameters": {
       "type": "object",
-      "properties": {
-        "emit": {
-          "type": "object",
-          "description": "Optional callback invoked with structured progress events. If not provided, the method emits no events and only returns a final result. Event payloads follow a consistent shape: - ``type``: str (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\") - ``step``: str logical step identifier - ``message``: str human-readable message - Additional fields depending on the step (counts, status_code, etc.)"
-        }
-      },
+      "properties": {},
       "required": []
     },
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I migrate all users from the source environment to the target environment and track progress?",
-        "arguments": {
-          "emit": {
-            "type": "progress",
-            "step": "fetch_users",
-            "message": "Fetching users from the source environment"
-          }
-        },
-        "notes": "This call migrates all eligible users from the source to the target environment and uses the emit callback to track progress at each step."
-      },
-      {
-        "user_query": "I want to migrate users but don't need progress updates. How can I do that?",
+        "user_query": "Migrate all users from the source environment to the target environment.",
         "arguments": {},
-        "notes": "This call migrates all eligible users without emitting progress events. Use this when you only need the final migration result."
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
       },
       {
-        "user_query": "Can I monitor detailed progress while migrating users to ensure everything is working correctly?",
-        "arguments": {
-          "emit": {
-            "type": "progress",
-            "step": "submit_payload",
-            "message": "Submitting bulk payload to the target environment"
-          }
-        },
-        "notes": "This call migrates users and provides detailed progress updates, including when the bulk payload is submitted to the target environment."
+        "user_query": "Copy every eligible user over to the new environment.",
+        "arguments": {},
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
       }
     ]
   },

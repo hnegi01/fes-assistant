@@ -31,7 +31,9 @@ fes-assistant/
 │   ├── server.py                     # Starlette MCP HTTP server (~866 lines)
 │   └── tools_core.py                 # Registry loading + SDK dispatch (~981 lines)
 ├── config/
-│   └── tools.registry.with_examples.json   # Tool metadata (tool_id, schema, mutates, module)
+│   ├── tools.registry.with_examples.json   # Tool metadata (tool_id, schema, mutates, module) — GENERATED from the SDK
+│   ├── registry/                           # Same tools as a 3-level tree (index → package → mixin) for routing
+│   └── allowed_tools.txt                   # HAND-EDITED curated surface: unlisted tool_ids are never exposed
 ├── docker-compose.yml                # Dev: 3 containers
 ├── docker-compose.prod.yml           # Prod: multi-worker backend + Nginx
 ├── Dockerfile.{backend,mcp,ui}
@@ -57,6 +59,75 @@ Two logical modes, selected in the UI sidebar:
 - **Migration**: source + target deployments — migration tools only
 
 Mode is determined by `_select_tools_for_mode(mode)` in `api_server.py`, which filters the tool registry by `meta.module == "migration"`.
+
+**The turn's tool universe is scoped once, at entry.** `call_llm_with_tools`
+re-filters the incoming `tools` by mode (`_tool_matches_mode`) and that list is
+what the loop uses — `_select_tools_for_mode` falls back to returning *all*
+tools when its filter comes up empty (a broken-registry safety valve), which
+would otherwise put chat tools into a migration turn. Historically mode was a
+rule each code path had to remember while the loop rebuilt its own menu from the
+full 119-tool registry; two paths forgot (later-step routing, and the keyword
+fallback's hardcoded tool IDs). Scope it once, then enforce at the execution
+choke point — don't re-derive it per call site.
+
+**Migration does not run the chat loop at all.** It has its own path
+(`backend/agent/migration_flow.py`), shared by both engines:
+
+```
+chat       plan → execute → "what next?" → execute → "what next?" → …
+migration  plan (ONE call, all 9 tools) → ONE approval → execute in order
+```
+
+The chat loop re-asks after every step because a step's RESULT can change the
+plan ("get user X, then list others with that same role" cannot name step 2's
+argument until step 1 runs). Nothing in migration works that way: no migration
+tool consumes a value another produces, and there are no read tools, so the plan
+is fully knowable from the request. A three-asset migration costs **one**
+planning call instead of one plan + three selects + two decides.
+
+- **Order is the planner's, from a principle — not a rank table.**
+  `MIGRATION_PLANNING_CONTEXT_PROMPT` states *migrate what is referenced before
+  what references it*, gives the reference directions to reason from (a user is
+  assigned to groups; a dashboard queries a datamodel; shares are granted to
+  both), and tells the model to judge each operation **by what it moves, not by
+  its name**. A ranked list — in the prompt or in code — needs editing for every
+  new migration tool and silently mis-ranks anything it doesn't recognise; a
+  principle places a tool nobody has written yet. Wrong order fails QUIETLY
+  (`migrate_users` preserves group assignments, so users migrated before their
+  groups arrive without them), so the approval dialog lists the exact sequence,
+  built in code from the calls that will run — never the model's summary.
+- **One approval per request, not per step.** The steps are sequential, not
+  dependent: nothing in step 1's result can change whether step 2 is wise, so
+  asking per step repeats the same question with no new information. The dialog
+  names every operation and its arguments — still explicit consent, gathered
+  once. Keyed on the ordered step list (`PLAN_TOOL_ID` + `plan_arguments`), so
+  editing or reordering a step re-gates; still single use.
+- **Validated before it is proposed** — every planned call is schema-checked up
+  front. Approving a plan whose third step cannot run wastes the approval, and
+  nothing has been written at plan time.
+- **Resume runs the approved plan, never replans** — re-asking the planner can
+  produce a different plan from the one that was shown and agreed to. A
+  per-step pause left over from the reactive loop (kill switch flipped
+  mid-session) is dropped rather than resumed.
+- **Stops on failure** and reports ran / failed / not-attempted. Migrating users
+  into groups that failed to migrate leaves a half-configured target.
+- Both engines share it. `FES_AGENT_ENGINE` models the chat loop's branching; a
+  linear sequence has none. Kill switch: `FES_MIGRATION_SINGLE_SHOT=false`
+  routes migration back through the reactive loop.
+
+**How migration mode differs inside the loop** (all four enforced in code, both engines):
+
+| | Chat | Migration |
+|---|---|---|
+| Routing | two-stage L1→L2 navigation | **bypassed** — `_navigate_for_step` hands over the turn's scoped tool list directly, on *every* step, not just the first. Routing exists to keep ~110 tools off the selection call; 9 already is a menu. The L1 index is not mode-aware, so walking it here can pick a chat tool, and chat tools get no credentials in migration mode (`_inject_credentials` sends non-migration tools down `_with_tenant`, and `tenant_config` is empty) |
+| Fan-out | independent steps run concurrently | **off** — every migration tool mutates, and the gate is one-at-a-time |
+| Planner catalog | non-migration tools | migration tools only (`_capability_catalog`) |
+| Context prompt | `CHAT_PLANNING_CONTEXT_PROMPT` | `MIGRATION_PLANNING_CONTEXT_PROMPT`, which carries the **dependency order**: groups → users → datamodels → dashboards. A Sisense invariant (a user cannot join a group that does not exist; a dashboard cannot resolve against an unmigrated datamodel), not a scenario patch — which is why it is allowed in a prompt at all |
+
+Migration mode has **no read tools**, so it cannot resolve a name to an ID
+mid-plan. `migrate_dashboard_shares` needs concrete ID lists, so a request that
+only names a dashboard dead-ends or clarifies. Adding read tools means also
+deciding which environment they read from and plumbing credentials for it.
 
 ### 3. The agentic loop — plan → execute → replan (llm_agent.py)
 
@@ -106,15 +177,61 @@ clarifying question) resolve with prior context.
 
 1. A mutating tool is selected → returns `pending_confirmation` dict inside `LAST_TOOL_RESULT` (with a plain-English `reason`)
 2. UI stores this and renders an approval dialog
-3. User approves → UI re-calls `/agent/turn` with `approved_keys` containing `(tool_id, args_json)`
-4. Backend checks `approved_mutations` set → executes the tool
+3. User approves → UI re-calls `/agent/turn` with `approved_keys` containing the ONE `(tool_id, args_json)` just approved
+4. Backend **consumes** the approval (`_consume_approval`) → executes the tool
+
+**Approvals are single use.** The key is `(tool_id, canonical-JSON args)`, and
+every gate — sequential, fan-out branch, pending-loop resume, both engines —
+goes through `_consume_approval()`, which discards the key as it authorises.
+Asking for the identical operation again gates again, whether that repeat comes
+later in the same turn (a decide `CONTINUE`, a critic push) or in a later turn.
+A dialog that silently stops appearing is worse than no dialog: the user has
+learned to expect it. Check-and-discard happens with no `await` between, so
+concurrent fan-out branches cannot both claim one approval.
+
+**The dialog discloses in code, not via the LLM** (`_approval_disclosure`), and
+discloses only what the tool definition states: which optional settings the
+schema declares, which this call left unset, and their enum values (`action`
+(skip / overwrite / duplicate)) — the model picks those silently otherwise.
+Appended on **every** path including the LLM-failure fallback template, because
+a model free to write prose is free to omit the overwrite choice.
+
+It says **nothing about scope or blast radius**. A tool definition does not
+record whether an empty target list means "everything", "nothing", or a hard
+error; that lives in SDK code the registry never sees, and it differs per tool.
+An earlier attempt inferred it from a naming convention and produced a warning
+that was confidently wrong ("this will run without a target list" for a call
+that raises). When the definition cannot confirm it, say nothing: let the call
+run and report the SDK's own error verbatim (`_describe_tool_result`).
+
+Optional params surface in exactly two places, both modes: a clarification
+question (inline) and this dialog (as a block). One selection function
+(`_optional_specs`) feeds two renderers so the two cannot drift.
+
+**Known gap — preconditions the registry does not carry.** Several SDK methods
+`raise ValueError` on argument combinations that JSON Schema `required` cannot
+describe: `migrate_dashboards` needs exactly one of `dashboard_names` /
+`dashboard_ids` (given neither it raises — it does **not** migrate everything),
+`change_ownership` only works with `migrate_share=True`, and
+`migrate_dashboard_shares` rejects id lists of unequal length. Every selector is
+optional in the generated schema, so such a call passes validation and fails
+inside the SDK with the SDK's own error rather than a clarifying question.
+
+Do **not** paper over this by hand-writing the rules into the registry or a code
+table. The registry is generated from the SDK; invented entries are data no
+rebuild reproduces and no reader can trace back to a source. If these should be
+enforced, the constraints have to come from the SDK itself — a machine-readable
+declaration on the methods, or generator logic that derives them — so a rebuild
+keeps them true. Until then the agent must not assert what a call will do when
+it cannot know.
 
 Mid-loop: if a mutation is reached partway through a multi-step turn, the loop
 **pauses** (`LAST_PENDING_LOOP` → `SessionEntry.pending_loop`); the approval
-turn resumes from the paused step instead of re-planning (Option A). In fan-out,
-mutating branches never execute concurrently — they **defer to the sequential
-loop** so the gate is handled one at a time. Mutations logged to
-`logs/mutations.log` (audit trail).
+turn resumes from the paused step instead of re-planning (Option A). Two
+mutations in one plan therefore produce two sequential dialogs, never one
+combined. In fan-out, mutating branches never execute concurrently — they
+**defer to the sequential loop** so the gate is handled one at a time. Mutations
+logged to `logs/mutations.log` (audit trail).
 
 ### 5. Progress Streaming (SSE)
 
@@ -164,6 +281,47 @@ Multi-layer best-effort:
 
 The backend uses mtime caching to avoid re-reading this file on every request.
 
+**The registry is generated, the surface is curated.** `scripts/01_build_registry_from_sdk.py`
+introspects the PySisense SDK, so a refresh can add methods that should never
+reach a user. `config/allowed_tools.txt` is the hand-edited gate: **only tool_ids
+listed there are exposed**, so new SDK methods stay invisible until someone adds
+a line. Enforced in three places reading the same file — the agent registry +
+planner catalog (`_registry.py::allowed_tool_ids`), the tool menu the selection
+LLM sees (`_routing.py::_load_mixin_tools`), and `TOOLS_BY_ID` in
+`mcp_server/tools_core.py` (the dispatch boundary — enforced independently so a
+delisted tool is unreachable even from a non-backend MCP client). A **missing**
+file means allow-all with a warning, never deny-all. The backend re-reads on
+mtime change; the MCP server reads once at import. Audit drift after a rebuild
+with `scripts/04_generate_tool_allowlist.py`.
+
+**Few-shot examples — `example[0]` is dual-purpose.** Every tool carries
+`user_query → arguments` examples. `example[0]` serves two consumers: it is
+shown to **users** (approval dialogs and clarification questions render it via
+`_example_hint` as *"For example, you could ask: …"* — always, no flag), and to
+the **model** when `FES_TOOL_EXAMPLES` ≥ 1 appends examples to tool descriptions
+on the **tool-selection call only** — the planner writes prose steps and never
+emits arguments. `example[0]` is therefore curated to a double bar (pass
+2026-08-14): an **imperative command**, never a question (it models what the
+user should type next), and every value its arguments set — identities AND
+numbers — is spoken in its query, which makes it teach *extraction* rather than
+*invention*, reinforcing `PLANNING_SYSTEM_PROMPT`'s no-placeholder rule.
+`examples[1..2]` are uncurated and question-phrased; they reach only the model
+at flag 2–3 — don't raise past 1 without curating them the same way.
+`tests/unit/test_tool_examples.py` fails if any property regresses; script 02
+preserves existing examples on rebuild. A/B any flag change against the eval
+battery — more examples is not automatically better.
+
+**Internal params never reach the model.** `INTERNAL_PARAMS` (`_routing.py`) is
+the set of signature params no caller can supply — currently `emit`, the SDK's
+progress callback, which the MCP server injects itself and drops if a client
+sends one. Because the registry is generated by introspecting the SDK, these
+leak in on every rebuild, so they are removed at three levels: the generator
+skips them (`scripts/01`), the shipped data carries none, and
+`planner_schema()`/`_format_tool_examples()` strip them at the boundary anyway.
+Showing the model a slot it cannot fill just invites it to invent a value —
+and an example that demonstrates filling it beats any rule forbidding it.
+Guarded by `tests/unit/test_internal_params.py`.
+
 ### 8. The recovery ladder
 
 Three recovery mechanisms at increasing altitude — each fires only when the
@@ -191,6 +349,19 @@ code (never LLM trust):
   (`BLOCKED`), and the reply names what was skipped. The critic is off.
 
 API/UI default is `false` when the field is omitted — set it explicitly.
+
+**Failure reasons are the one exception** (decided 2026-08-08). A failed step
+contributes `error` on top of `{tool, ok, count}`; a successful one never does.
+Without it the loop is blind exactly when it needs to think — a failed create left
+the decide call with `ok: false` alone and it invented a cause. A recovery
+reasoned from a guess is worse than one reasoned from the truth, and the
+alternative (a code table mapping failures to approved labels) replaces the
+agent's judgement with our enumeration of what can go wrong. Errors normally
+restate what the user already typed, so they rarely add anything the model has not
+seen; when they don't, that residual exposure is documented in README.md
+("Security & data handling") rather than hidden.
+`tests/unit/test_summarization_boundary.py` pins the scope — reason on failure,
+never a payload on success.
 
 ### 10. Observability — two destinations, each with its own switch
 
@@ -350,6 +521,8 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 | `FES_VERIFY_MAX_RECHECKS` | `1` | How many times the goal checker may push the loop to run one more step |
 | `FES_MAX_REPLANS` | `1` | How many times per turn the planner may revise the plan after a failed approach (0 = off) |
 | `FES_MAX_PARALLEL_STEPS` | `3` | How many independent plan steps may execute concurrently (1 = off); mutations always sequential |
+| `FES_MIGRATION_SINGLE_SHOT` | `true` | Migration turns plan every step in ONE call, sort by dependency in code, execute in sequence (`migration_flow.py`). `false` routes migration through the reactive loop — a kill switch, not a mode |
+| `FES_MIGRATION_COMPLETENESS_CHECK` | `false` | Opt-in second LLM call that checks a migration plan for omitted asset kinds (+1 re-plan if any). Off because the approval dialog's numbered step list is the human check; turn on for unattended/API use |
 | `FES_AGENT_ENGINE` | `custom` | Turn harness: `custom` (hand-rolled loop) or `langgraph` (StateGraph over the same helpers; in-memory, no checkpointer) |
 | `FES_LANGSMITH_LOG_CONTENT` | `false` | Whether result data may appear in LangSmith traces (independent of summarization) — prompts shown, only data-bearing parts redacted; tool result payloads never go |
 | `FES_CSV_OBSERVABILITY` | `false` | Whether local CSV observability files are written (llm_traces / llm_calls / tool_calls); mutations audit log is always on |
@@ -364,6 +537,8 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 | `MCP_TOOL_NAME_MODE` | `claude` | `claude` (underscores) vs `canonical` (dots) for tool names |
 | `PYSISENSE_USE_DEFAULT_TENANT` | `false` | Use env-defined default Sisense tenant |
 | `PYSISENSE_REGISTRY_PATH` | `config/tools.registry.with_examples.json` | Path to tool registry |
+| `FES_TOOL_ALLOWLIST` | `config/allowed_tools.txt` | Hand-edited curated tool surface — only listed tool_ids are exposed to the agent or the MCP server. Missing file = allow all (warns), never deny all |
+| `FES_TOOL_EXAMPLES` | `0` | Few-shot examples per tool on the tool-**selection** call: 0 = none (prompt byte-identical to pre-flag), 1 = the vetted `example[0]` (local `.env` runs at 1 since 2026-08-14), 2–3 = uncurated siblings. Model-facing only — users always see `example[0]` in dialogs/clarifications regardless. ~+35 tokens/tool |
 
 ---
 
@@ -406,8 +581,10 @@ pytest tests/unit -q
 # Integration — needs the live stack + real creds. Local only.
 pytest tests/integration -m integration -v
 
-# Eval battery — planner-behaviour regression prompts. Live + creds.
-pytest tests/integration/test_evals_planner.py -m eval -v
+# Eval batteries — regression prompts, one file per mode. Live + creds.
+pytest tests/integration -m eval -v                          # both
+pytest tests/integration/test_evals_planner.py -m eval -v    # chat
+pytest tests/integration/test_evals_migration.py -m eval -v  # migration
 ```
 
 - **Integration/eval are local-only and never in GitHub Actions** — we never put
@@ -415,6 +592,13 @@ pytest tests/integration/test_evals_planner.py -m eval -v
   `tests/integration/integration_config.yaml` (gitignored, real token).
 - **Eval battery = anti-whack-a-mole**: a prompt that once misbehaved becomes an
   `EVAL_CASES` entry, not a scenario-specific prompt rule.
+- **One battery per mode, each with its own harness.** They assert on different
+  evidence: chat cases on which tools *executed*, migration cases on which tool
+  was *gated* — every migration tool mutates, so a migration turn stops at the
+  approval dialog and executes nothing. Migration cases send no `approved_keys`
+  (enforced by an assertion in the file, not per case), so they never write to a
+  real target. Don't merge the two harnesses; sharing one bends the chat battery
+  out of shape for evidence it never produces.
 - **Mutation tests only ever mutate an asset they created** (create → gate →
   approve → delete that same asset → `finally:` force-delete). See
   `tests/integration/test_mutation_lifecycle.py`. Never touch a pre-existing asset.

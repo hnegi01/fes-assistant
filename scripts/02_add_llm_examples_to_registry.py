@@ -220,12 +220,23 @@ Each example should:
 - Use arguments that are consistent with both the JSON schema and the documentation text.
 - Use realistic Sisense object names and IDs (but do not reference any real customer data).
 
+The FIRST example is special — it is shown to end users as "how you could phrase this"
+AND to the model as a few-shot, so it must additionally satisfy ALL of these:
+- The user_query is an IMPERATIVE admin command ("Migrate all dashboards, skipping any
+  that already exist"), never a question ("How can I migrate…?").
+- Every argument value it sets is spoken in the user_query (an example whose arguments
+  contain a value the query never mentions teaches the model to invent values).
+- It sets required parameters, plus AT MOST one or two decision-relevant optional
+  parameters that the query explicitly mentions — never optional parameters the query
+  is silent about, and never tuning knobs (batch sizes, sleep times) at their defaults.
+The remaining examples may use natural question phrasing and vary freely.
+
 Return STRICT JSON ONLY with this top-level structure:
 
 {{
   "examples": [
     {{
-      "user_query": "natural language question from a Sisense user or admin",
+      "user_query": "for the first example an imperative admin command; questions allowed afterwards",
       "arguments": {{
         "...": "arguments JSON that match the parameters schema"
       }},

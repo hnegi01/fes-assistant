@@ -17,7 +17,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Add a new measure to calculate total sales for the 'sales_data' table.",
+        "user_query": "Add a measure 'total_sales' on the 'sales_data' table of the 'sales_db' datasource that sums the sales_amount column.",
         "arguments": {
           "measure": {
             "datasource": "sales_db",
@@ -86,7 +86,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What dimensions are available for the 'SalesData' datasource?",
+        "user_query": "List the saved dimensions for the 'SalesData' datasource.",
         "arguments": {
           "datasource": "SalesData"
         },
@@ -129,10 +129,9 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What measures are available in the Sales datasource?",
+        "user_query": "List the saved measures for the 'Sales' datasource.",
         "arguments": {
-          "datasource": "Sales",
-          "ds_full_name": null
+          "datasource": "Sales"
         },
         "notes": "This call retrieves all saved formula measures for the 'Sales' datasource using its identifier."
       },
@@ -165,7 +164,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What datasources can I access in my Sisense environment?",
+        "user_query": "List the datasources I can access in my Sisense environment.",
         "arguments": {},
         "notes": "This call retrieves a list of all datasources visible to the authenticated user. Use it to get an overview of available data connections."
       },

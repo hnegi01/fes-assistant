@@ -148,6 +148,62 @@ def _run_turn(*, llm_responses, nav_side_effect, client, user_msg="do the thing"
 
 
 # ---------------------------------------------------------------------------
+# 0) Tool selection always sees the request, not just the planner's sentence
+# ---------------------------------------------------------------------------
+class TestSelectionSeesTheRequest:
+    """The planner writes prose steps, and anything it leaves OUT of a step is
+    lost unless the selection call can still see the original request.
+
+    Live failure, 2026-08-07: "create a user x@y.com with the viewer role" was
+    planned as "1. Create a user with the email x@y.com / 2. Assign the viewer
+    role". Step 1's sentence contained no role, this call was shown only that
+    sentence, and the create went out with no role — the SDK rejected it with
+    "Role 'None' not found in roles_mapping". The value was in the user's own
+    words the whole time. Three of the four selection sites already passed it;
+    this was the one that did not.
+    """
+
+    def test_multi_step_plan_passes_the_request_alongside_the_step(self, monkeypatch):
+        async def _two_steps(user_text, mode, history, trace_id):
+            return ["Create a user with the email a@b.com", "Assign the viewer role to a@b.com"]
+
+        monkeypatch.setattr(m, "_make_plan", _two_steps)
+        monkeypatch.setattr(m, "MAX_PARALLEL_STEPS", 1)  # force the sequential path
+        client = _fake_client()
+        _reply, _nav, raw = _run_turn(
+            llm_responses=[
+                _plan_resp("access_management.get_user", '{"user_email":"a@b.com"}'),
+                _text_resp("Done."),
+            ],
+            nav_side_effect=[(GET_USER_TOOLS, "access_management", "users", 0)],
+            client=client,
+            user_msg="create a user a@b.com with the viewer role",
+        )
+        sent = raw.await_args_list[0].args[0]
+        contents = [str(msg.get("content") or "") for msg in sent]
+        assert any("with the viewer role" in c for c in contents), (
+            "the original request must reach tool selection — the planner's step text dropped the role"
+        )
+        assert any("Create a user with the email a@b.com" in c for c in contents), "step text must be there too"
+
+    def test_single_step_turn_does_not_send_the_request_twice(self, monkeypatch):
+        """The faithfulness guard makes the step text identical to the request on
+        a fresh single-step turn; sending it as two messages is pure waste."""
+        client = _fake_client()
+        _reply, _nav, raw = _run_turn(
+            llm_responses=[
+                _plan_resp("access_management.get_user", '{"user_email":"a@b.com"}'),
+                _text_resp("Done."),
+            ],
+            nav_side_effect=[(GET_USER_TOOLS, "access_management", "users", 0)],
+            client=client,
+            user_msg="get the user a@b.com",
+        )
+        sent = raw.await_args_list[0].args[0]
+        assert sum(1 for msg in sent if "get the user a@b.com" in str(msg.get("content") or "")) == 1
+
+
+# ---------------------------------------------------------------------------
 # 1) Single step: execute → decide returns final answer
 # ---------------------------------------------------------------------------
 

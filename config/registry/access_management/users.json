@@ -22,7 +22,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Reset the password for the user with ID 'user123'.",
+        "user_query": "Change the password for user 'user123' to 'NewSecurePassword123!'.",
         "arguments": {
           "user_id": "user123",
           "password": "NewSecurePassword123!"
@@ -65,7 +65,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Add a new user with the Viewer role and assign them to the Sales and Marketing groups.",
+        "user_query": "Create a Viewer user for Jane Doe at jane.doe@example.com, add them to the Sales and Marketing groups, and set their language to English and timezone to America/New_York.",
         "arguments": {
           "user_data": {
             "email": "jane.doe@example.com",
@@ -174,7 +174,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Who am I logged in as right now?",
+        "user_query": "Show which user I am currently logged in as.",
         "arguments": {},
         "notes": "This call retrieves the details of the currently authenticated user based on the API token. Useful for verifying the identity of the logged-in user."
       },
@@ -201,7 +201,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What roles are available in our Sisense instance?",
+        "user_query": "List all roles available in our Sisense instance.",
         "arguments": {},
         "notes": "This call retrieves all roles defined in the Sisense instance. Useful for understanding role configurations or preparing for role-based access control setup."
       },
@@ -337,7 +337,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Who are all the users in the system, and what roles and groups are they part of?",
+        "user_query": "List all users in the system along with their role names and group names.",
         "arguments": {},
         "notes": "This call retrieves a list of all users in the system, enriched with their role names and group names. Useful for auditing user access and group memberships."
       },
@@ -377,7 +377,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Update the email and role of a user with the email john.doe@example.com.",
+        "user_query": "Change john.doe@example.com's email address to john.doe.new@example.com and set their role to designer.",
         "arguments": {
           "user_email": "john.doe@example.com",
           "user_data": {

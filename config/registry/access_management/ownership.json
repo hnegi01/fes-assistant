@@ -37,7 +37,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I transfer ownership of the 'Sales Reports' folder to another user and ensure they also own the dashboards inside it?",
+        "user_query": "Transfer ownership of the 'Sales Reports' folder to jane.doe@example.com, running as admin@example.com, and transfer the dashboards inside it too — the previous owner should keep edit access.",
         "arguments": {
           "executing_user": "admin@example.com",
           "folder_name": "Sales Reports",

@@ -21,7 +21,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Restore the plugin configuration to match the snapshot we saved earlier.",
+        "user_query": "Restore the plugin snapshot containing data_connector_v2, custom_theme_manager and audit_logger, in one bulk operation.",
         "arguments": {
           "snapshot": {
             "plugins": [
@@ -72,7 +72,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I save the current state of enabled plugins so I can restore it later?",
+        "user_query": "Save the current enabled and disabled state of all plugins as a snapshot so it can be restored later.",
         "arguments": {},
         "notes": "This call captures the current enable/disable state of all plugins as a snapshot. Use this when you want to save the current plugin configuration for future restoration."
       },

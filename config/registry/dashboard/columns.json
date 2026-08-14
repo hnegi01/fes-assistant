@@ -17,7 +17,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What columns are used in the Sales Performance dashboard?",
+        "user_query": "List the columns used in the 'Sales Performance' dashboard.",
         "arguments": {
           "dashboard_name": "Sales Performance"
         },

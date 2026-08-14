@@ -25,7 +25,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I give view access to a dashboard for a specific user and a group?",
+        "user_query": "Give john.doe@example.com and the 'sales-team' group view access to dashboard 63f2c9e4b8a4e2001d3f9a23.",
         "arguments": {
           "dashboard_id": "63f2c9e4b8a4e2001d3f9a23",
           "shares": [
@@ -101,7 +101,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Who has access to the 'Sales Overview' dashboard?",
+        "user_query": "Show who has access to the 'Sales Overview' dashboard.",
         "arguments": {
           "dashboard_name": "Sales Overview"
         },
@@ -145,7 +145,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Who has access to the sales performance dashboard?",
+        "user_query": "Show who has access to dashboard 5f7d3a2b8e4b0c0012345678, using admin access.",
         "arguments": {
           "dashboard_id": "5f7d3a2b8e4b0c0012345678",
           "admin_access": true

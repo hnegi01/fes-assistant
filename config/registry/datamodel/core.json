@@ -22,7 +22,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I delete the 'Sales Data' model from the LocalHost server?",
+        "user_query": "Delete the 'Sales Data' model from the 'LocalHost' server.",
         "arguments": {
           "title": "Sales Data",
           "server": "LocalHost"
@@ -65,7 +65,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What is the structure of the 'Sales Analytics' data model?",
+        "user_query": "Describe the structure of the 'Sales Analytics' data model.",
         "arguments": {
           "datamodel_name": "Sales Analytics"
         },
@@ -105,7 +105,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What are the details of the 'Sales Analytics' data model?",
+        "user_query": "Show the detailed definition of the 'Sales Analytics' data model.",
         "arguments": {
           "datamodel_name": "Sales Analytics"
         },
@@ -138,7 +138,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What metadata is available for all data models in the system?",
+        "user_query": "List all data models in the system with their metadata.",
         "arguments": {},
         "notes": "This call retrieves metadata for all data models, including details like build status, size, and timestamps. Useful for auditing or understanding the state of all data models."
       },
@@ -172,7 +172,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Can you fetch the schema for the 'Sales Dashboard' data model?",
+        "user_query": "Fetch the data model titled 'Sales Dashboard'.",
         "arguments": {
           "datamodel_name": "Sales Dashboard"
         },
@@ -239,7 +239,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What is the schema of the Sales Analytics data model?",
+        "user_query": "Show the schema of the 'Sales Analytics' data model, including its tables and columns.",
         "arguments": {
           "datamodel_name": "Sales Analytics"
         },
@@ -283,7 +283,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "What is the OID for the data model titled 'Sales Dashboard'?",
+        "user_query": "Look up the OID of the data model titled 'Sales Dashboard' on the 'LocalHost' server.",
         "arguments": {
           "title": "Sales Dashboard",
           "server": "LocalHost"
@@ -326,7 +326,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What is the ID and title of the data model named 'Sales Analytics'?",
+        "user_query": "Resolve 'Sales Analytics' to its data model ID and title.",
         "arguments": {
           "datamodel_ref": "Sales Analytics"
         },

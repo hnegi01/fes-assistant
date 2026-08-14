@@ -66,7 +66,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How many widgets are on the dashboards 'Sales Overview' and 'Marketing Performance'?",
+        "user_query": "Count the widgets on the 'Sales Overview' and 'Marketing Performance' dashboards.",
         "arguments": {
           "dashboards": [
             "Sales Overview",
@@ -119,7 +119,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Find pivot widgets with too many fields on the Sales and Marketing dashboards.",
+        "user_query": "Find pivot widgets with more than 25 fields on the 'Sales Dashboard' and 'Marketing Dashboard' dashboards.",
         "arguments": {
           "dashboards": [
             "Sales Dashboard",

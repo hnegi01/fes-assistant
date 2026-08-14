@@ -31,7 +31,7 @@ import contextlib
 import json
 import logging
 import os
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
@@ -64,7 +64,7 @@ def _setup_logger() -> None:
     logger.setLevel(log_level)
     logger.propagate = False
 
-    if any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
+    if any(isinstance(h, TimedRotatingFileHandler) for h in logger.handlers):
         logger.info(
             "mcp_client logger already configured at level %s (env %s)",
             log_level_name,
@@ -72,10 +72,10 @@ def _setup_logger() -> None:
         )
         return
 
-    fh = RotatingFileHandler(
+    fh = TimedRotatingFileHandler(
         LOG_DIR / "mcp_client.log",
-        maxBytes=10 * 1024 * 1024,
-        backupCount=5,
+        when="midnight",  # daily file; 7 dated backups = 7 days kept, older deleted
+        backupCount=7,
         encoding="utf-8",
     )
     fh.setLevel(log_level)
@@ -145,19 +145,14 @@ def _scrub_secrets(obj: Any) -> Any:
     return obj
 
 
-def _log_json_truncated(label: str, obj: Any, max_chars: int = 2000) -> None:
-    """
-    Debug log JSON (scrubbed) and truncated to avoid huge log lines.
-    """
+def _log_json(label: str, obj: Any) -> None:
+    """Debug-log the FULL JSON (scrubbed). Truncation removed 2026-08-10 —
+    disk is bounded by the 7-day rotation, not by cutting payloads."""
     safe_obj = _scrub_secrets(obj)
     try:
         text = json.dumps(safe_obj, indent=2, default=str, ensure_ascii=False)
     except Exception:
         text = str(safe_obj)
-
-    if len(text) > max_chars:
-        text = text[:max_chars] + "... [truncated]"
-
     logger.debug("%s:\n%s", label, text)
 
 
@@ -460,8 +455,8 @@ class McpClient:
         headers["Mcp-Session-Id"] = sid
 
         payload = {"session_id": sid}
-        _log_json_truncated("HTTP POST /mcp/cancel headers", headers)
-        _log_json_truncated("HTTP POST /mcp/cancel json", payload)
+        _log_json("HTTP POST /mcp/cancel headers", headers)
+        _log_json("HTTP POST /mcp/cancel json", payload)
 
         try:
             resp = await self._http.post("/mcp/cancel", headers=headers, json=payload)
@@ -477,7 +472,7 @@ class McpClient:
             except ValueError:
                 data = {"ok": True, "session_id": sid}
 
-            _log_json_truncated("HTTP /mcp/cancel response", data)
+            _log_json("HTTP /mcp/cancel response", data)
             return data if isinstance(data, dict) else {"ok": True, "session_id": sid, "result": data}
 
         except Exception as exc:
@@ -496,8 +491,8 @@ class McpClient:
 
         headers = self._attach_session_header(self._mcp_headers())
 
-        _log_json_truncated("HTTP POST /mcp/ json", json_body)
-        _log_json_truncated("HTTP POST /mcp/ headers", headers)
+        _log_json("HTTP POST /mcp/ json", json_body)
+        _log_json("HTTP POST /mcp/ headers", headers)
 
         is_streaming_call = self._jsonrpc_is_streaming_call(json_body)
         client = self._http_sse if is_streaming_call else self._http
@@ -534,12 +529,12 @@ class McpClient:
 
                     if "text/event-stream" in content_type:
                         msgs = await _parse_sse_jsonrpc_messages(resp, on_message=self._handle_sse_message)
-                        _log_json_truncated("HTTP SSE messages", msgs)
+                        _log_json("HTTP SSE messages", msgs)
                         return msgs
 
                     raw = await resp.aread()
                     if not raw:
-                        _log_json_truncated("HTTP response JSON", None)
+                        _log_json("HTTP response JSON", None)
                         return None
 
                     try:
@@ -547,7 +542,7 @@ class McpClient:
                     except Exception:
                         data = None
 
-                    _log_json_truncated("HTTP response JSON", data)
+                    _log_json("HTTP response JSON", data)
                     return data
 
             except asyncio.CancelledError:
@@ -766,7 +761,7 @@ class McpClient:
         args_with_creds = self._inject_credentials(tool_id, arguments or {})
 
         logger.info("Calling MCP JSON-RPC tools/call name=%s", tool_id)
-        _log_json_truncated("tools/call arguments", args_with_creds)
+        _log_json("tools/call arguments", args_with_creds)
 
         result = await self._rpc_call("tools/call", {"name": tool_id, "arguments": args_with_creds})
 

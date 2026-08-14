@@ -42,7 +42,7 @@ import asyncio
 import contextlib
 import json
 import logging
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from typing import Any, AsyncIterator, Dict, List, Optional, Set, Tuple
 
 from fastapi import FastAPI, HTTPException, Request
@@ -78,7 +78,7 @@ def _setup_logger() -> None:
     logger.setLevel(log_level)
     logger.propagate = False
 
-    if any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
+    if any(isinstance(h, TimedRotatingFileHandler) for h in logger.handlers):
         logger.info(
             "backend.api logger already configured at level %s (env %s)",
             log_level_name,
@@ -86,10 +86,10 @@ def _setup_logger() -> None:
         )
         return
 
-    fh = RotatingFileHandler(
+    fh = TimedRotatingFileHandler(
         LOG_DIR / "backend_api.log",
-        maxBytes=10 * 1024 * 1024,
-        backupCount=5,
+        when="midnight",  # daily file; 7 dated backups = 7 days kept, older deleted
+        backupCount=7,
         encoding="utf-8",
     )
     fh.setLevel(log_level)

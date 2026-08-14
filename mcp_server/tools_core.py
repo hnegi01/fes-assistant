@@ -19,9 +19,9 @@ import json
 import logging
 import os
 import threading
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Tuple
+from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Set, Tuple
 
 import urllib3
 
@@ -130,7 +130,7 @@ def _setup_logger() -> None:
     logger.setLevel(log_level)
     logger.propagate = False
 
-    if any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
+    if any(isinstance(h, TimedRotatingFileHandler) for h in logger.handlers):
         logger.info(
             "mcp_server logger already configured at level %s (env %s)",
             log_level_name,
@@ -138,10 +138,10 @@ def _setup_logger() -> None:
         )
         return
 
-    fh = RotatingFileHandler(
+    fh = TimedRotatingFileHandler(
         LOG_DIR / "tools_core.log",
-        maxBytes=10 * 1024 * 1024,
-        backupCount=5,
+        when="midnight",  # daily file; 7 dated backups = 7 days kept, older deleted
+        backupCount=7,
         encoding="utf-8",
     )
     fh.setLevel(log_level)
@@ -159,18 +159,15 @@ def _setup_logger() -> None:
 _setup_logger()
 
 
-def _log_json_truncated(label: str, obj: Any, max_chars: int = 2000) -> None:
-    """
-    Log JSON at debug level, truncated to avoid huge log spam.
-    """
+def _log_json(label: str, obj: Any) -> None:
+    """Debug-log the FULL JSON, secrets scrubbed HERE — this helper used to dump
+    its input raw and rely on every caller remembering to scrub first. With full
+    payloads that is one forgotten call away from a token on disk, so scrubbing
+    is unconditional. Disk is bounded by the 7-day rotation."""
     try:
-        text = json.dumps(obj, indent=2, default=str)
+        text = json.dumps(_scrub_secrets(obj), indent=2, default=str)
     except Exception:
         text = str(obj)
-
-    if len(text) > max_chars:
-        text = text[:max_chars] + "... [truncated]"
-
     logger.debug("%s:\n%s", label, text)
 
 
@@ -231,6 +228,12 @@ ALLOW_MUTATIONS_ENV_VAR = "PYSISENSE_ALLOW_MUTATIONS"
 ALLOW_MUTATIONS_DEFAULT = "true"
 
 ALLOW_MODULES = {m.strip() for m in os.environ.get("ALLOW_MODULES", "").split(",") if m.strip()}
+
+# Curated tool surface. The backend reads the same file (see
+# backend/agent/_registry.py::allowed_tool_ids) but this process enforces it
+# independently: the MCP server is the dispatch boundary, so a delisted tool must
+# be unreachable even from a client that is not our backend.
+ALLOWLIST_PATH = os.environ.get("FES_TOOL_ALLOWLIST", "config/allowed_tools.txt")
 
 
 def _env_flag(name: str, default: str = "false") -> bool:
@@ -429,11 +432,44 @@ def _load_registry(path: str) -> List[Dict[str, Any]]:
     return payload
 
 
+def _load_allowlist(path: str) -> Optional[Set[str]]:
+    """
+    Read the curated tool allowlist: one tool_id per line, '#' starts a comment.
+
+    Returns None when the file is absent — meaning no allowlist is in force and
+    every registry tool is exposed. A missing file must not silently empty the
+    tool surface, so "absent" is allow-all, not deny-all.
+    """
+    p = Path(path)
+    if not p.is_absolute():
+        p = ROOT_DIR / p
+    if not p.exists():
+        logger.warning(
+            "Tool allowlist not found at %s — ALL registry tools are exposed. "
+            "Create it with: python scripts/04_generate_tool_allowlist.py --init",
+            p,
+        )
+        return None
+    try:
+        ids = set()
+        for line in p.read_text(encoding="utf-8").splitlines():
+            entry = line.split("#", 1)[0].strip()
+            if entry:
+                ids.add(entry)
+        logger.info("Loaded tool allowlist: %d tool(s) permitted (path=%s)", len(ids), p)
+        return ids
+    except Exception:
+        logger.exception("Failed to read tool allowlist %s — allowing all tools", p)
+        return None
+
+
 REGISTRY = _load_registry(REGISTRY_JSON)
+ALLOWED_TOOL_IDS = _load_allowlist(ALLOWLIST_PATH)
 
 TOOLS_BY_ID: Dict[str, Dict[str, Any]] = {}
 _skipped_missing = 0
 _skipped_module_filter = 0
+_skipped_allowlist = 0
 
 for row in REGISTRY:
     tool_id = row.get("tool_id")
@@ -442,6 +478,10 @@ for row in REGISTRY:
 
     if not tool_id or not module or not method:
         _skipped_missing += 1
+        continue
+
+    if ALLOWED_TOOL_IDS is not None and tool_id not in ALLOWED_TOOL_IDS:
+        _skipped_allowlist += 1
         continue
 
     if ALLOW_MODULES and module not in ALLOW_MODULES:
@@ -465,6 +505,7 @@ logger.info("Registry summary:")
 logger.info("  Total rows in JSON      : %d", len(REGISTRY))
 logger.info("  Loaded into TOOLS_BY_ID : %d", len(TOOLS_BY_ID))
 logger.info("  Skipped (missing fields): %d", _skipped_missing)
+logger.info("  Skipped (allowlist)     : %d", _skipped_allowlist)
 logger.info("  Skipped (ALLOW_MODULES) : %d", _skipped_module_filter)
 
 
@@ -726,7 +767,7 @@ def invoke_tool(tool_id: str, arguments: Optional[Dict[str, Any]] = None) -> Dic
         safe_args = dict(arguments or {})
 
     logger.info("Dispatching tool call: tool_id=%s", tool_id)
-    _log_json_truncated("Incoming arguments (scrubbed)", _scrub_secrets(safe_args))
+    _log_json("Incoming arguments (scrubbed)", _scrub_secrets(safe_args))
 
     try:
         func, meta, coerced = _resolve_sdk_callable(tool_id, safe_args)
@@ -739,7 +780,7 @@ def invoke_tool(tool_id: str, arguments: Optional[Dict[str, Any]] = None) -> Dic
             )
 
         result = func(**coerced)
-        _log_json_truncated("SDK method result (truncated)", result)
+        _log_json("SDK method result (full, scrubbed)", result)
 
         err = _sdk_error_payload(tool_id, result)
         if err:
@@ -782,7 +823,7 @@ def invoke_tool_with_emit(
         safe_args = dict(arguments or {})
 
     logger.info("Dispatching tool call (with emit): tool_id=%s", tool_id)
-    _log_json_truncated("Incoming arguments (scrubbed)", _scrub_secrets(safe_args))
+    _log_json("Incoming arguments (scrubbed)", _scrub_secrets(safe_args))
 
     try:
         func, meta, coerced = _resolve_sdk_callable(tool_id, safe_args)
@@ -809,7 +850,7 @@ def invoke_tool_with_emit(
             )
 
         result = func(**coerced)
-        _log_json_truncated("SDK method result (truncated)", result)
+        _log_json("SDK method result (full, scrubbed)", result)
 
         err = _sdk_error_payload(tool_id, result)
         if err:

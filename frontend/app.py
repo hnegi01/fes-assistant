@@ -38,7 +38,7 @@ import threading
 import time
 import uuid
 from datetime import datetime, timedelta
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 import pandas as pd
@@ -64,11 +64,11 @@ logger = logging.getLogger("app")
 logger.setLevel(log_level)
 logger.propagate = False
 
-if not any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
-    fh = RotatingFileHandler(
+if not any(isinstance(h, TimedRotatingFileHandler) for h in logger.handlers):
+    fh = TimedRotatingFileHandler(
         LOG_DIR / "app.log",
-        maxBytes=10 * 1024 * 1024,  # 10 MB per file
-        backupCount=5,  # keep 5 old files
+        when="midnight",  # daily file; 7 dated backups = 7 days kept, older deleted
+        backupCount=7,
         encoding="utf-8",
     )
     fh.setLevel(log_level)
@@ -212,6 +212,12 @@ _LAST_RUN_LOG_STATE_KEY = "_fes_last_run_log"
 _MIG_TURN_IN_PROGRESS_KEY = "_mig_turn_in_progress"
 _MIG_TURN_CTX_KEY = "_mig_turn_ctx"
 _MIG_PENDING_TURN_META_KEY = "_mig_pending_turn_meta"
+
+# Synthetic tool_id the backend uses to key a WHOLE-PLAN migration approval —
+# see PLAN_TOOL_ID in backend/agent/migration_flow.py. Duplicated rather than
+# imported: the UI is a separate process and imports nothing from the backend.
+# It is not a real tool and never appears in the registry.
+MIGRATION_PLAN_TOOL_ID = "migration.plan"
 
 
 def _write_run_log(run_log: Any, _run_log_out: Optional[Dict[str, Any]] = None) -> None:
@@ -422,6 +428,11 @@ def _launch_migration_turn(
         "error_str": None,
         "progress_lines": [],
         "run_log": None,
+        # Agentic-loop state, filled by the SSE reader on the worker thread and
+        # rendered by the polling block on the main thread (see call_backend_turn).
+        "agent_plan": None,
+        "agent_steps": [],
+        "agent_status": None,
     }
     st.session_state[_MIG_TURN_CTX_KEY] = ctx
     st.session_state[_MIG_PENDING_TURN_META_KEY] = meta
@@ -541,7 +552,15 @@ def call_backend_turn(
                 continue
 
             cleaned_payload = _extract_progress_payload(data)
-            run_log["events"].append({"event": event, "payload": cleaned_payload})
+            # The run log is the SDK's per-asset activity trail ("[fetch_users]
+            # Fetching users… (3 of 10)") plus errors — nothing else. Internal
+            # frames (status, result, the agent_progress checklist) used to be
+            # recorded too, and on turns with no SDK activity the expander
+            # showed only their type names as bullets: "update / agent_progress
+            # / update". With this filter such turns record nothing and the
+            # expander does not appear at all.
+            if event == "error" or (event == "progress" and data.get("type") != "agent_progress"):
+                run_log["events"].append({"event": event, "payload": cleaned_payload})
 
             # Agentic-loop step progress (Step 8) — dedicated checklist rendering.
             if event == "progress" and data.get("type") == "agent_progress":
@@ -554,7 +573,16 @@ def call_backend_turn(
                     _render_agent_progress(
                         progress_placeholder, agent_steps, _agent_progress_status_line(data), agent_plan
                     )
-                if progress_callback is not None:
+                # Migration runs this loop on a background thread, where touching
+                # a Streamlit placeholder is illegal — hand the same structured
+                # state to the polling block instead, which renders on the main
+                # thread. Plain dict writes only; no st.* calls off-thread.
+                if _run_log_out is not None:
+                    _run_log_out["agent_plan"] = agent_plan
+                    _run_log_out["agent_steps"] = list(agent_steps)
+                    _run_log_out["agent_status"] = _agent_progress_status_line(data)
+                elif progress_callback is not None:
+                    # No structured channel — fall back to a flat status line.
                     line = _agent_progress_status_line(data)
                     if line:
                         progress_callback(line)
@@ -712,7 +740,11 @@ def render_results(step_results, fallback_tr=None):
             rows = res.get("result") if isinstance(res, dict) else None
             n = f" · {len(rows)} rows" if isinstance(rows, list) else ""
             mark = "" if ok else " ⚠️"
-            with st.expander(f"Step {s.get('step', '?')} · `{tid}`{n}{mark}", expanded=False):
+            # A failed step opens by default. The written answer describes the
+            # failure in the model's words; the raw payload is the tool's own
+            # account of it, and that is the one worth reading when something
+            # went wrong — not worth hiding behind a click.
+            with st.expander(f"Step {s.get('step', '?')} · `{tid}`{n}{mark}", expanded=not ok):
                 render_tool_result(res)
     elif len(steps) == 1:
         render_tool_result(steps[0].get("result"))
@@ -929,8 +961,6 @@ migration_tools = st.session_state.migration_tools
 if mode == MODE_CHAT:
     CHAT_TENANT_KEY = "chat_tenant_config"
     CHAT_MESSAGES_KEY = "chat_messages"
-    CHAT_LAST_USER_IDX_KEY = "chat_last_user_idx"
-    CHAT_HIDE_USER_IDX_KEY = "chat_hide_user_idx"
     CHAT_PENDING_KEY = "chat_pending_confirmation"
     CHAT_APPROVED_KEY = "chat_approved_mutations"
 
@@ -982,10 +1012,6 @@ if mode == MODE_CHAT:
         ]
         logger.debug("[CHAT] Chat history initialized with greeting only (system prompt handled in backend).")
 
-    if CHAT_LAST_USER_IDX_KEY not in st.session_state:
-        st.session_state[CHAT_LAST_USER_IDX_KEY] = None
-    if CHAT_HIDE_USER_IDX_KEY not in st.session_state:
-        st.session_state[CHAT_HIDE_USER_IDX_KEY] = None
     if CHAT_PENDING_KEY not in st.session_state:
         st.session_state[CHAT_PENDING_KEY] = None
     if CHAT_APPROVED_KEY not in st.session_state:
@@ -1006,8 +1032,6 @@ if mode == MODE_CHAT:
             st.session_state[CHAT_TENANT_KEY] = None
             for key in [
                 CHAT_MESSAGES_KEY,
-                CHAT_LAST_USER_IDX_KEY,
-                CHAT_HIDE_USER_IDX_KEY,
                 CHAT_PENDING_KEY,
                 CHAT_APPROVED_KEY,
             ]:
@@ -1035,13 +1059,9 @@ if mode == MODE_CHAT:
             "your request — chaining multiple steps when needed."
         )
 
-    # Render chat history (with hide support for approved mutation reruns)
-    for i, msg in enumerate(st.session_state[CHAT_MESSAGES_KEY]):
+    # Render chat history
+    for msg in st.session_state[CHAT_MESSAGES_KEY]:
         if msg.get("role") not in ("user", "assistant"):
-            continue
-
-        # Apply the hide index in chat mode
-        if st.session_state[CHAT_HIDE_USER_IDX_KEY] is not None and i == st.session_state[CHAT_HIDE_USER_IDX_KEY]:
             continue
 
         with st.chat_message(msg["role"]):
@@ -1054,10 +1074,6 @@ if mode == MODE_CHAT:
                 # Chat mode: do NOT render run log (no progress emitted for these tools)
 
             st.markdown(msg.get("content", ""))
-
-    # Clear the one-shot hide flag after rendering once
-    if st.session_state[CHAT_HIDE_USER_IDX_KEY] is not None:
-        st.session_state[CHAT_HIDE_USER_IDX_KEY] = None
 
     # Pending mutation approval UX (Chat)
     pending = st.session_state[CHAT_PENDING_KEY]
@@ -1074,7 +1090,10 @@ if mode == MODE_CHAT:
         with cols[0]:
             if st.button("Approve", type="primary"):
                 key = _approval_key(pending["tool_id"], pending.get("arguments", {}))
-                st.session_state[CHAT_APPROVED_KEY].add(key)
+                # Replace, never accumulate: this turn carries exactly the one
+                # approval the user just gave. The backend consumes it on use, so
+                # the same operation asked for again gates again.
+                st.session_state[CHAT_APPROVED_KEY] = {key}
 
                 _agent_ph = st.empty()
                 with st.spinner("Running approved action..."):
@@ -1105,8 +1124,6 @@ if mode == MODE_CHAT:
                     {"role": "assistant", "content": reply, "tool_result": tr, "step_results": sr, "run_log": None}
                 )
 
-                # Hide the previous user request on next render
-                st.session_state[CHAT_HIDE_USER_IDX_KEY] = st.session_state[CHAT_LAST_USER_IDX_KEY]
                 st.session_state[CHAT_PENDING_KEY] = None
                 st.rerun()
 
@@ -1122,7 +1139,6 @@ if mode == MODE_CHAT:
     if user_input:
         logger.debug("[CHAT] User question: %s", user_input)
 
-        st.session_state[CHAT_LAST_USER_IDX_KEY] = len(st.session_state[CHAT_MESSAGES_KEY])
         st.session_state[CHAT_MESSAGES_KEY].append({"role": "user", "content": user_input})
 
         with st.chat_message("user"):
@@ -1173,7 +1189,7 @@ if mode == MODE_CHAT:
                 with cols[0]:
                     if st.button("Approve", type="primary"):
                         key = _approval_key(pc["tool_id"], pc.get("arguments", {}))
-                        st.session_state[CHAT_APPROVED_KEY].add(key)
+                        st.session_state[CHAT_APPROVED_KEY] = {key}  # single-use; see above
 
                         _agent_ph2 = st.empty()
                         with st.spinner("Running approved action..."):
@@ -1209,7 +1225,6 @@ if mode == MODE_CHAT:
                             }
                         )
 
-                        st.session_state[CHAT_HIDE_USER_IDX_KEY] = st.session_state[CHAT_LAST_USER_IDX_KEY]
                         st.session_state[CHAT_PENDING_KEY] = None
                         st.rerun()
 
@@ -1235,8 +1250,6 @@ if mode == MODE_MIGRATION:
     MIG_SRC_KEY = "migration_source_config"
     MIG_TGT_KEY = "migration_target_config"
     MIG_MESSAGES_KEY = "migration_messages"
-    MIG_LAST_USER_IDX_KEY = "migration_last_user_idx"
-    MIG_HIDE_USER_IDX_KEY = "migration_hide_user_idx"
     MIG_PENDING_KEY = "migration_pending_confirmation"
     MIG_APPROVED_KEY = "migration_approved_mutations"
 
@@ -1365,10 +1378,6 @@ if mode == MODE_MIGRATION:
         ]
         logger.debug("[MIGRATION] Chat history initialized with greeting only (system prompt handled in backend).")
 
-    if MIG_LAST_USER_IDX_KEY not in st.session_state:
-        st.session_state[MIG_LAST_USER_IDX_KEY] = None
-    if MIG_HIDE_USER_IDX_KEY not in st.session_state:
-        st.session_state[MIG_HIDE_USER_IDX_KEY] = None
     if MIG_PENDING_KEY not in st.session_state:
         st.session_state[MIG_PENDING_KEY] = None
     if MIG_APPROVED_KEY not in st.session_state:
@@ -1413,10 +1422,8 @@ if mode == MODE_MIGRATION:
                 {"role": "assistant", "content": reply, "tool_result": tr, "step_results": sr, "run_log": run_log}
             )
 
-    for i, msg in enumerate(st.session_state[MIG_MESSAGES_KEY]):
+    for msg in st.session_state[MIG_MESSAGES_KEY]:
         if msg.get("role") not in ("user", "assistant"):
-            continue
-        if st.session_state[MIG_HIDE_USER_IDX_KEY] is not None and i == st.session_state[MIG_HIDE_USER_IDX_KEY]:
             continue
         with st.chat_message(msg["role"]):
             if msg["role"] == "assistant":
@@ -1426,9 +1433,6 @@ if mode == MODE_MIGRATION:
                     render_results(sr, fallback_tr=tr)
                 render_run_log(msg.get("run_log"))
             st.markdown(msg.get("content", ""))
-
-    if st.session_state[MIG_HIDE_USER_IDX_KEY] is not None:
-        st.session_state[MIG_HIDE_USER_IDX_KEY] = None
 
     # -------------------------------------------------------------------------
     # Turn-in-progress polling block
@@ -1448,11 +1452,22 @@ if mode == MODE_MIGRATION:
                 )
                 st.rerun()
         with _col_status:
-            prog = ctx.get("progress_lines", [])
+            # The plan checklist, same as chat mode — a migration is exactly
+            # where seeing the ordered steps up front matters most. Rendered
+            # here on the main thread from state the worker collected.
+            _render_agent_progress(
+                st.empty(),
+                ctx.get("agent_steps") or [],
+                ctx.get("agent_status"),
+                ctx.get("agent_plan"),
+            )
+            # Then the SDK's own per-asset progress ("migrated 12 of 40...").
+            # Agent phase lines are not in here — they go to the checklist above.
+            prog = ctx.get("progress_lines") or []
             if prog:
                 tail = prog[-20:]
                 st.markdown("**Progress**\n\n" + "\n".join([f"- {x}" for x in tail]))
-            else:
+            elif not ctx.get("agent_plan") and not ctx.get("agent_status"):
                 st.markdown("*Planning migration...*")
 
         if ctx.get("done"):
@@ -1467,15 +1482,22 @@ if mode == MODE_MIGRATION:
             pending_mig.get("reason")
             or "This migration action requires approval before it can make changes to your Sisense deployments."
         )
-        with st.expander("View operation details", expanded=True):
-            st.markdown("**Tool:** `{}`".format(pending_mig.get("tool_id", "")))
-            st.code(json.dumps(pending_mig.get("arguments", {}), indent=2), language="json")
+        # A whole-plan approval already lists every step and its arguments in the
+        # message above, in plain English. Repeating it as JSON under a synthetic
+        # tool name (`migration.plan` is not a real tool) adds nothing but noise
+        # in front of a destructive action. Single-tool approvals still get it.
+        if pending_mig.get("tool_id") != MIGRATION_PLAN_TOOL_ID:
+            with st.expander("View operation details", expanded=True):
+                st.markdown("**Tool:** `{}`".format(pending_mig.get("tool_id", "")))
+                st.code(json.dumps(pending_mig.get("arguments", {}), indent=2), language="json")
 
         cols = st.columns([1, 1])
         with cols[0]:
             if st.button("Approve migration", type="primary"):
                 key = _approval_key(pending_mig["tool_id"], pending_mig.get("arguments", {}))
-                st.session_state[MIG_APPROVED_KEY].add(key)
+                # Single-use, as in chat mode — and it matters more here: a
+                # silently-repeated migration writes to the target twice.
+                st.session_state[MIG_APPROVED_KEY] = {key}
                 _launch_migration_turn(
                     meta={"kind": "approval", "clear_pending": True},
                     messages=st.session_state[MIG_MESSAGES_KEY],
@@ -1501,7 +1523,6 @@ if mode == MODE_MIGRATION:
 
     if mig_input and not st.session_state.get(_MIG_TURN_IN_PROGRESS_KEY):
         logger.debug("[MIGRATION] User request: %s", mig_input)
-        st.session_state[MIG_LAST_USER_IDX_KEY] = len(st.session_state[MIG_MESSAGES_KEY])
         st.session_state[MIG_MESSAGES_KEY].append({"role": "user", "content": mig_input})
         _launch_migration_turn(
             meta={"kind": "input", "clear_pending": False},

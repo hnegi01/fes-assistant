@@ -17,7 +17,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I disable the 'plugin-advanced-analytics' plugin?",
+        "user_query": "Disable the 'plugin-advanced-analytics' plugin.",
         "arguments": {
           "plugin": "plugin-advanced-analytics"
         },
@@ -64,7 +64,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I disable the 'plugin-advanced-viz' and 'plugin-data-export' plugins?",
+        "user_query": "Disable the 'plugin-advanced-viz' and 'plugin-data-export' plugins in one bulk operation.",
         "arguments": {
           "plugins": [
             "plugin-advanced-viz",
@@ -115,7 +115,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I enable the 'plugin-sample' plugin?",
+        "user_query": "Enable the 'plugin-sample' plugin.",
         "arguments": {
           "plugin": "plugin-sample"
         },
@@ -162,7 +162,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I enable the 'plugin-advanced-charts' and 'plugin-data-export' plugins?",
+        "user_query": "Enable the 'plugin-advanced-charts' and 'plugin-data-export' plugins in one bulk operation.",
         "arguments": {
           "plugins": [
             "plugin-advanced-charts",
@@ -206,7 +206,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What plugins are currently installed on my Sisense instance?",
+        "user_query": "List all plugins installed on my Sisense instance.",
         "arguments": {},
         "notes": "This call retrieves a complete list of all plugins installed on the Sisense instance, including their names, folder paths, and activation status."
       },

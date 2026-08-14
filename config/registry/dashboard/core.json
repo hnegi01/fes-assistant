@@ -17,7 +17,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Can I take ownership of the dashboard with ID '12345abcde'?",
+        "user_query": "Check whether I can take ownership of the dashboard with ID '12345abcde'.",
         "arguments": {
           "dashboard_id": "12345abcde"
         },
@@ -57,7 +57,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I export the definition of the sales dashboard?",
+        "user_query": "Export the definition of dashboard 5f7d3b2e4c8b9a0012345678.",
         "arguments": {
           "dashboard_id": "5f7d3b2e4c8b9a0012345678"
         },
@@ -90,7 +90,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I list all dashboards available on the Sisense server?",
+        "user_query": "List all dashboards available on the Sisense server.",
         "arguments": {},
         "notes": "This call retrieves all dashboards accessible to the user, including their metadata."
       },
@@ -124,7 +124,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I retrieve the dashboard with ID '5f7d3a2e4b8c9a0012345678'?",
+        "user_query": "Fetch the dashboard with ID '5f7d3a2e4b8c9a0012345678'.",
         "arguments": {
           "dashboard_id": "5f7d3a2e4b8c9a0012345678"
         },
@@ -204,7 +204,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What widgets are included in the dashboard titled 'Sales Overview'?",
+        "user_query": "List the widgets in the dashboard titled 'Sales Overview'.",
         "arguments": {
           "dashboard_ref": "Sales Overview"
         },
@@ -296,7 +296,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I move the 'Sales Overview' dashboard into the 'Q4 Reports' folder?",
+        "user_query": "Move dashboard dashboard_12345 into folder folder_67890.",
         "arguments": {
           "dashboard_id": "dashboard_12345",
           "folder_id": "folder_67890"
@@ -349,9 +349,7 @@
       {
         "user_query": "Publish the dashboard with ID 'dashboard_12345'.",
         "arguments": {
-          "dashboard_id": "dashboard_12345",
-          "admin_access": true,
-          "force": false
+          "dashboard_id": "dashboard_12345"
         },
         "notes": "This call republishes the specified dashboard with admin access enabled. Use this when the caller has access but is not the owner."
       },
@@ -398,7 +396,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How do I rename the sales dashboard to 'Q3 Sales Performance'?",
+        "user_query": "Rename dashboard 62f1a2b3c4d5e6f7890abc12 to 'Q3 Sales Performance'.",
         "arguments": {
           "dashboard_id": "62f1a2b3c4d5e6f7890abc12",
           "title": "Q3 Sales Performance"
@@ -441,7 +439,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What is the ID and title of the dashboard named 'Sales Overview'?",
+        "user_query": "Resolve 'Sales Overview' to its dashboard ID and title.",
         "arguments": {
           "dashboard_ref": "Sales Overview"
         },

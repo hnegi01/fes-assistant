@@ -17,7 +17,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What columns are available in the 'SalesAnalytics' DataModel?",
+        "user_query": "Show the columns available in the 'SalesAnalytics' DataModel.",
         "arguments": {
           "datamodel_name": "SalesAnalytics"
         },
@@ -57,7 +57,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Which columns in the 'Sales_Analytics' DataModel are not being used in any dashboards?",
+        "user_query": "Find the columns in the 'Sales_Analytics' DataModel that are not used in any dashboards.",
         "arguments": {
           "datamodel_name": "Sales_Analytics"
         },
@@ -98,7 +98,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Which columns are unused in the 'Sales Data' and 'Marketing Analytics' data models?",
+        "user_query": "Find the unused columns in the 'Sales Data' and 'Marketing Analytics' data models.",
         "arguments": {
           "datamodels": [
             "Sales Data",

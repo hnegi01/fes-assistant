@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from ._config import ROOT_DIR, _make_module_logger
 
@@ -26,12 +26,84 @@ REGISTRY_PATH: Path = (
     Path(_registry_env) if _registry_env else ROOT_DIR / "config" / "tools.registry.with_examples.json"
 )
 
+_allowlist_env = os.getenv("FES_TOOL_ALLOWLIST")
+ALLOWLIST_PATH: Path = Path(_allowlist_env) if _allowlist_env else ROOT_DIR / "config" / "allowed_tools.txt"
+
+_allowlist_cache_mtime: Optional[float] = None
+_allowlist_cache_ids: Optional[Set[str]] = None
+_allowlist_missing_warned = False
+
+
+def allowed_tool_ids() -> Optional[Set[str]]:
+    """Tool ids the curated allowlist permits, or None when there is no allowlist.
+
+    None means "no allowlist in force — allow everything the registry has".
+    Deleting config/allowed_tools.txt therefore DISABLES the filter rather than
+    hiding every tool, so a missing file can never silently empty the surface.
+
+    mtime-cached like the registry itself, so hand-editing the file takes effect
+    on the next turn without restarting the backend.
+    """
+    global _allowlist_cache_mtime, _allowlist_cache_ids, _allowlist_missing_warned
+
+    if not ALLOWLIST_PATH.exists():
+        if not _allowlist_missing_warned:
+            logger.warning(
+                "Tool allowlist not found at %s — ALL registry tools are exposed. "
+                "Create it with: python scripts/04_generate_tool_allowlist.py --init",
+                ALLOWLIST_PATH.resolve(),
+            )
+            _allowlist_missing_warned = True
+        _allowlist_cache_mtime = None
+        _allowlist_cache_ids = None
+        return None
+
+    try:
+        mtime = ALLOWLIST_PATH.stat().st_mtime
+    except Exception:
+        mtime = None
+
+    if mtime is not None and _allowlist_cache_mtime == mtime and _allowlist_cache_ids is not None:
+        return _allowlist_cache_ids
+
+    try:
+        ids: Set[str] = set()
+        for line in ALLOWLIST_PATH.read_text(encoding="utf-8").splitlines():
+            # Strip trailing comments ("tool_id  # [write] description") and blanks.
+            entry = line.split("#", 1)[0].strip()
+            if entry:
+                ids.add(entry)
+    except Exception as exc:
+        logger.exception("Failed to read tool allowlist (%s) — allowing all tools: %s", ALLOWLIST_PATH, exc)
+        _allowlist_cache_mtime = mtime
+        _allowlist_cache_ids = None
+        return None
+
+    _allowlist_cache_mtime = mtime
+    _allowlist_cache_ids = ids
+    logger.info("Loaded tool allowlist: %d tool(s) permitted (path=%s)", len(ids), ALLOWLIST_PATH.resolve())
+    return ids
+
+
+def _filter_by_allowlist(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Drop registry rows whose tool_id is not on the curated allowlist."""
+    allowed = allowed_tool_ids()
+    if allowed is None:
+        return list(rows)
+    return [r for r in rows if r.get("tool_id") in allowed]
+
+
 _registry_cache_mtime: Optional[float] = None
 _registry_cache_rows: List[Dict[str, Any]] = []
 
 
 def _load_registry_rows() -> List[Dict[str, Any]]:
-    """Load tool registry JSON from disk with a simple mtime cache."""
+    """Load tool registry JSON from disk with a simple mtime cache.
+
+    Rows are filtered through the curated allowlist on the way out (not on the
+    way into the cache), so an allowlist edit is picked up even when the registry
+    file itself has not changed.
+    """
     global _registry_cache_mtime, _registry_cache_rows
 
     if not REGISTRY_PATH.exists():
@@ -46,7 +118,7 @@ def _load_registry_rows() -> List[Dict[str, Any]]:
         mtime = None
 
     if mtime is not None and _registry_cache_mtime == mtime and _registry_cache_rows:
-        return list(_registry_cache_rows)
+        return _filter_by_allowlist(_registry_cache_rows)
 
     try:
         raw = REGISTRY_PATH.read_text(encoding="utf-8")
@@ -59,7 +131,7 @@ def _load_registry_rows() -> List[Dict[str, Any]]:
         _registry_cache_rows = data
         _registry_cache_mtime = mtime
         logger.info("Loaded registry with %d entries (path=%s)", len(data), REGISTRY_PATH.resolve())
-        return list(data)
+        return _filter_by_allowlist(data)
     except Exception as exc:
         logger.exception("Failed to load registry JSON: %s", exc)
         _registry_cache_rows = []
@@ -73,7 +145,12 @@ def _describe_tool_result(tool_name: str, result: Optional[Dict[str, Any]]) -> s
         return f"`{tool_name}` ran. Result shown above."
 
     if not result.get("ok", True):
-        return f"`{tool_name}` failed. Details shown above."
+        # Surface the tool's OWN words. When a schema cannot express a
+        # precondition, the SDK's error is the only accurate account of what
+        # went wrong — swallowing it leaves the user with "failed" and nothing
+        # actionable. Code path, so this never sends result data to the LLM.
+        err = str(result.get("error") or "").strip()
+        return f"`{tool_name}` failed — {err}" if err else f"`{tool_name}` failed. Details shown above."
 
     data = result.get("result")
 
@@ -88,7 +165,10 @@ def _describe_tool_result(tool_name: str, result: Optional[Dict[str, Any]]) -> s
         return f"Found {n} {noun} from `{tool_name}`. Results shown above."
 
     if isinstance(data, dict):
-        return f"Got a response from `{tool_name}`. Details shown above."
+        # "Got a response" reads as uncertainty. `ok` was true, so say so —
+        # this is the line a user sees after approving a create or an update
+        # with summarization off, and it should confirm the thing happened.
+        return f"`{tool_name}` succeeded. Details shown above."
 
     return f"`{tool_name}` completed. Result shown above."
 

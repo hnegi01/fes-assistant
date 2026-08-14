@@ -37,10 +37,6 @@
             "overwrite",
             "duplicate"
           ]
-        },
-        "emit": {
-          "type": "object",
-          "description": "Optional callback invoked with structured progress events. If not provided, the method emits no events and only returns a final result. Event payloads follow a consistent shape: - ``type``: str (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\") - ``step``: str logical step identifier - ``message``: str human-readable message - Additional fields depending on the step (counts, status_code, etc.)"
         }
       },
       "required": []
@@ -48,17 +44,13 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I migrate all data models with data security and formulas included, overwriting existing models in the target environment?",
+        "user_query": "Migrate all data models with data security and formulas included, and overwrite any existing models in the target environment.",
         "arguments": {
           "dependencies": [
             "dataSecurity",
             "formulas"
           ],
-          "shares": false,
-          "batch_size": 10,
-          "sleep_time": 5,
-          "action": "overwrite",
-          "emit": null
+          "action": "overwrite"
         },
         "notes": "This call migrates all data models in batches of 10, including data security and formulas, and overwrites existing models in the target environment if they are found."
       },
@@ -69,13 +61,12 @@
           "shares": true,
           "batch_size": 20,
           "sleep_time": 10,
-          "action": "duplicate",
-          "emit": null
+          "action": "duplicate"
         },
         "notes": "This call migrates all data models in batches of 20, includes shares, and duplicates any existing models in the target environment by appending \" (Duplicate)\" to their names."
       },
       {
-        "user_query": "Can I migrate drill hierarchies and perspectives while monitoring progress with a callback?",
+        "user_query": "Migrate all data models with drill hierarchies and perspectives, overwriting existing models, in batches of 5 with a 2 second pause between batches.",
         "arguments": {
           "dependencies": [
             "hierarchies",
@@ -84,12 +75,7 @@
           "shares": false,
           "batch_size": 5,
           "sleep_time": 2,
-          "action": "overwrite",
-          "emit": {
-            "type": "progress",
-            "step": "migration_step",
-            "message": "Migration in progress"
-          }
+          "action": "overwrite"
         },
         "notes": "This call migrates drill hierarchies and perspectives in batches of 5, overwriting existing models in the target environment, and uses a callback to monitor progress."
       }
@@ -147,10 +133,6 @@
         "new_title": {
           "type": "string",
           "description": "New name for the duplicated data model. Used only when `action='duplicate'`."
-        },
-        "emit": {
-          "type": "object",
-          "description": "Optional callback invoked with structured progress events. If not provided, the method emits no events and only returns a final result. Event payloads follow a consistent shape: - ``type``: str (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\") - ``step``: str logical step identifier - ``message``: str human-readable message - Additional fields depending on the step (counts, status_code, etc.)"
         }
       },
       "required": []
@@ -158,20 +140,14 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Migrate the data models 'SalesData' and 'CustomerAnalytics' to the target environment, ensuring all dependencies are included and overwriting any existing models.",
+        "user_query": "Migrate the data models 'SalesData' and 'CustomerAnalytics' along with their shares to the target environment, and overwrite any existing models.",
         "arguments": {
           "datamodel_names": [
             "SalesData",
             "CustomerAnalytics"
           ],
-          "dependencies": [
-            "dataSecurity",
-            "formulas",
-            "hierarchies",
-            "perspectives"
-          ],
-          "action": "overwrite",
-          "shares": true
+          "shares": true,
+          "action": "overwrite"
         },
         "notes": "This call migrates two specific data models by name, includes all dependencies, and overwrites any existing models in the target environment."
       },

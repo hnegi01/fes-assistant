@@ -33,10 +33,6 @@
         "sleep_time": {
           "type": "integer",
           "description": "Time (in seconds) to sleep between batches. Default: 10 seconds."
-        },
-        "emit": {
-          "type": "object",
-          "description": "Optional callback invoked with structured progress events. If not provided, the method emits no events and only returns a final result. Event payloads follow a consistent shape: - ``type``: str (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\") - ``step``: str logical step identifier - ``message``: str human-readable message - Additional fields depending on the step (counts, status_code, etc.)"
         }
       },
       "required": []
@@ -44,14 +40,9 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I migrate all dashboards to the target environment but skip any dashboards that already exist there?",
+        "user_query": "Migrate all dashboards to the target environment, skipping any that already exist there.",
         "arguments": {
-          "action": "skip",
-          "republish": false,
-          "migrate_share": false,
-          "change_ownership": false,
-          "batch_size": 10,
-          "sleep_time": 10
+          "action": "skip"
         },
         "notes": "This call migrates all dashboards from the source to the target environment, skipping any dashboards that already exist in the target. Shares and ownership are not migrated."
       },
@@ -114,7 +105,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I migrate shares from dashboards in the source environment to their equivalents in the target environment?",
+        "user_query": "Migrate shares from source dashboards dash123, dash456 and dash789 to target dashboards dashABC, dashDEF and dashGHI, without changing ownership.",
         "arguments": {
           "source_dashboard_ids": [
             "dash123",
@@ -202,10 +193,6 @@
         "change_ownership": {
           "type": "boolean",
           "description": "If True and `migrate_share=True`, attempts to change ownership on the target dashboards."
-        },
-        "emit": {
-          "type": "object",
-          "description": "Optional callback invoked with structured progress events. If not provided, no events are emitted and only the final result is returned. Event payloads carry a ``type`` (\"started\" | \"progress\" | \"warning\" | \"error\" | \"completed\"), a ``step`` identifier, a human-readable ``message``, and additional step-specific fields."
         }
       },
       "required": []
@@ -213,16 +200,13 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I migrate dashboards with IDs 'dash123' and 'dash456' to the target environment, skipping any that already exist?",
+        "user_query": "Migrate the dashboards with IDs 'dash123' and 'dash456' to the target environment, skipping any that already exist.",
         "arguments": {
           "dashboard_ids": [
             "dash123",
             "dash456"
           ],
-          "action": "skip",
-          "republish": false,
-          "migrate_share": false,
-          "change_ownership": false
+          "action": "skip"
         },
         "notes": "This call migrates the specified dashboards by their IDs, skipping any that already exist in the target environment. It does not republish dashboards or migrate shares."
       },

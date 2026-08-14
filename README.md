@@ -25,6 +25,101 @@ Important Disclaimer: This tool is not part of the core Sisense product release 
 
 ---
 
+## Security & data handling — exactly what the LLM sees
+
+The summarization switch decides whether **data returned from Sisense** may be
+sent to your LLM provider. It is enforced in code at a single point
+(`_transcript_step` → `_metadata_record` in `backend/agent/llm_agent.py`), not by
+instructing the model — a prompt can be ignored, this cannot.
+
+### Defaults and control
+
+| | |
+|---|---|
+| Default | **OFF.** `ALLOW_SUMMARIZATION=true` in `.env` only sets the UI checkbox's starting position; the API treats a missing `allow_summarization` field as `false` |
+| Per request | Every `/agent/turn` call carries its own `allow_summarization`. Two users, or two turns by the same user, can differ |
+| User control | A checkbox in the UI sidebar, sent with each turn. Hide it with `FES_ALLOW_SUMMARIZATION_TOGGLE=false` to force whatever the caller sends |
+| Scope | One turn. It is never remembered or inferred, and no model output can change it |
+
+### Summarization OFF
+
+Per executed step, the model's history receives **only**:
+
+```json
+{"tool": "access_management.get_user", "ok": true, "count": 12}
+```
+
+`count` appears only for list results. **No rows, no field values, no payload** —
+for a successful call the model never learns anything Sisense returned, only that
+something was returned and how many.
+
+The model still sees, as it must to function at all:
+
+- **your request**, verbatim — it cannot pick a tool or fill arguments otherwise
+- **prior turns** of the conversation (`LLM_PLANNING_HISTORY_TURNS`, default 5)
+- **tool names, descriptions and parameter schemas** for the ~10 tools routing selected
+- **the arguments it proposes**, which derive from your words, not from results
+- **the failure reason when a step fails** — see below
+
+What the loop gives up in this mode:
+
+- **Adaptive chains are refused, not attempted.** A step needing a value from an
+  earlier result (`[needs-prior-result]`) is skipped up front, or the turn stops
+  with `BLOCKED` and says so. It never guesses the value.
+- **The critic is off.** Judging whether a goal was met requires reading results.
+- **Answers are rendered locally.** The final reply is built in code from the raw
+  results (`_describe_results_local`) — the data goes to your screen, not to the model.
+
+### The one exception: failure reasons
+
+When a step fails, its `error` string is included:
+
+```json
+{"tool": "access_management.create_user", "ok": false,
+ "error": "username/email already exists"}
+```
+
+**Why.** Without it the agent is blind exactly when it needs to think. Observed
+2026-08-08: a create failed, the decide call saw `ok: false` and nothing else, and
+it *invented* a cause — "ensure the email is not already in use." It happened to
+be right. A recovery reasoned from a guess is worse than one reasoned from the
+truth, and the alternative (a code table translating failures into approved
+labels) replaces the agent's judgement with our own list of what can go wrong.
+
+**The residual exposure, stated plainly.** An error usually restates what you
+already typed — "username/email already exists" for the address *you* supplied —
+so it rarely carries anything the model has not seen in your request. Not never:
+an error raised deeper in the stack can quote a value you did not supply, such as
+a row from a failing query or a name from a list the tool had fetched. If your
+threat model cannot accept that, run with summarization off **and** treat the
+error channel as in-scope for review; the behaviour is one function
+(`_metadata_record`) and `tests/unit/test_summarization_boundary.py` pins it.
+
+### Summarization ON
+
+Tool results are sent to your LLM provider, shrunk first
+(`_shrink_for_llm`: caps on list length, object keys, depth, string length and
+total size — a size guard, not a privacy one). Assume **any field of any record a
+tool returned may reach your provider**. In exchange the agent can complete
+adaptive chains, verify its own work with the critic, and write answers in prose.
+
+### Everything else, regardless of the switch
+
+- **Credentials are never sent.** Domain, token and SSL settings are stripped
+  from arguments before any LLM call and scrubbed from audit logs.
+- **Mutations require explicit approval.** Nothing that writes runs without a
+  dialog naming the operation and its arguments. Approvals are **single use** — the
+  same request again asks again. Every execution is recorded in `logs/mutations.log`.
+- **Observability is opt-in.** `LANGSMITH_TRACING=false` and
+  `FES_CSV_OBSERVABILITY=false` by default. With LangSmith on, tool result
+  payloads are never sent and prompt content is further gated by
+  `FES_LANGSMITH_LOG_CONTENT`. CSV logs stay on your machine.
+- **Third-party MCP clients bypass all of this.** Point Claude Desktop or an IDE
+  agent at the MCP server and results go straight to that client's model — the
+  summarization switch lives in this backend and is not in that path.
+
+---
+
 ## Recommended Usage Guidelines
 - Environment: Use the tool primarily in sandbox or non-production environments.
 - Access: Utilize a dedicated Sisense service account with limited privileges.

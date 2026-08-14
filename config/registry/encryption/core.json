@@ -17,7 +17,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I decrypt the encrypted database password stored in my datamodel?",
+        "user_query": "Decrypt the value 'ENCRYPTED_PASSWORD_12345'.",
         "arguments": {
           "payload": {
             "value": "ENCRYPTED_PASSWORD_12345"
@@ -63,7 +63,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I encrypt a database password before saving it in Sisense?",
+        "user_query": "Encrypt the value 'my_secure_password_123' so it can be stored safely.",
         "arguments": {
           "payload": {
             "value": "my_secure_password_123"

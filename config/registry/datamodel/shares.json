@@ -25,7 +25,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I give edit access to the Sales team and read access to John Doe for the 'Revenue Analysis' data model?",
+        "user_query": "Give the 'Sales Team' group edit access and john.doe@example.com read access to the 'Revenue Analysis' data model.",
         "arguments": {
           "datamodel_name": "Revenue Analysis",
           "shares": [
@@ -96,7 +96,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Who has access to the 'Sales_Analytics' data model?",
+        "user_query": "Show who has access to the 'Sales_Analytics' data model.",
         "arguments": {
           "datamodel_name": "Sales_Analytics"
         },

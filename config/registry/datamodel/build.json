@@ -40,7 +40,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Create a new data model called 'Sales Analytics' using an Elasticube.",
+        "user_query": "Create a new extract (Elasticube) data model called 'Sales Analytics'.",
         "arguments": {
           "datamodel_name": "Sales Analytics",
           "datamodel_type": "extract"
@@ -102,7 +102,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Create a dataset for the sales data model using the 'SalesDB' connection and the 'public' schema.",
+        "user_query": "Create a dataset named 'SalesDataset' in the 'SalesDataModel' data model, using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema.",
         "arguments": {
           "datamodel_name": "SalesDataModel",
           "connection_name": "SalesDB",
@@ -273,7 +273,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I fully rebuild the 'Sales_Analytics' data model?",
+        "user_query": "Run a full build of the 'Sales_Analytics' data model.",
         "arguments": {
           "datamodel_name": "Sales_Analytics",
           "build_type": "full"
@@ -421,7 +421,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Create a new live data model for our sales data using the 'SalesDB' connection.",
+        "user_query": "Set up a live data model called 'Sales_Live_Model' with dataset 'Sales_Live_Dataset', using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema, including the customers and orders tables.",
         "arguments": {
           "datamodel_name": "Sales_Live_Model",
           "datamodel_type": "live",
@@ -430,20 +430,10 @@
           "schema_name": "public",
           "tables": [
             {
-              "table_name": "customers",
-              "description": "Customer details including demographics and contact information.",
-              "tags": [
-                "sales",
-                "customers"
-              ]
+              "table_name": "customers"
             },
             {
-              "table_name": "orders",
-              "description": "Order details including products, quantities, and prices.",
-              "tags": [
-                "sales",
-                "orders"
-              ]
+              "table_name": "orders"
             }
           ],
           "dataset_name": "Sales_Live_Dataset"

@@ -15,8 +15,16 @@ You are a tool-selection assistant for a Sisense tool-calling agent.
 
 Your ONLY job is to decide which function tool to call and with what JSON arguments.
 You are given:
-- A natural-language user request.
 - A list of tools (functions) with names and JSON parameter schemas.
+- The user's ORIGINAL request, then the ONE STEP to perform now (the last
+  message). On a single-step request these are the same message.
+
+Do the LAST message — that is the step, and it is the only operation to call a
+tool for. The original request is there so you can fill in values the step's
+wording leaves out: a planner rephrases the request into steps and can drop a
+detail the user did state. Take such values from the original request, never
+invent them. Do NOT do work described in the original request that this step
+does not cover — other steps handle the rest.
 
 Global rules:
 - Prefer calling a single tool that best matches the request.
@@ -57,31 +65,131 @@ The user is working with a single Sisense deployment (chat mode).
 When selecting tools, assume there is exactly one active deployment configured.
 """.strip()
 
+# Migration plans EVERY operation in one call (backend/agent/migration_flow.py),
+# with this single system prompt — everything stated ONCE.
+#
+# History, honestly told: this began as two system messages (plan prompt + mode
+# context) that restated the ordering rule twice. Small-sample tests (6–12 runs)
+# suggested the duplication was load-bearing, but 9/12 vs 12/12 is not
+# statistically significant — noise read as signal. A clean single prompt that
+# says everything once was never actually tested until 2026-08-10. If plans
+# start dropping calls or mis-ordering, measure with 30+ runs per arrangement
+# before concluding anything.
+MIGRATION_PLAN_SYSTEM_PROMPT = """
+You plan a Sisense MIGRATION. The user has a configured source deployment and a
+configured target deployment; every operation copies assets from source to
+target. You are given the user's request and the migration tools available.
+
+Count the distinct KINDS of asset the user asked to migrate — the tools
+available to you define what kinds exist — and emit EXACTLY one tool call per
+kind, all in this single response. Three kinds named means three calls; four
+means four. There is no second chance to add one: a call you leave out is
+silently dropped from the user's request, and they will believe that part was
+migrated. Do not emit a call for anything they did not ask for.
+
+THE ORDER OF YOUR TOOL CALLS IS THE ORDER THEY WILL RUN IN. Migrate what is
+referenced before whatever references it. In Sisense the references run one way:
+
+- a user is assigned to groups, so groups are referenced by users
+- shares and ownership are granted to users and groups, so both must exist
+  before anything that shares an asset
+- a dashboard queries a datamodel, so datamodels are referenced by dashboards
+
+So: identities and containers first (groups, then users), then what they use
+(datamodels, then dashboards), and anything that grants access or shares last.
+Emit them in that order no matter what order the user listed
+them in — getting it backwards silently breaks the target (users migrated before
+their groups exist arrive with no group memberships, and nothing reports an
+error). Judge each operation by what it actually moves, not by its name — a tool
+you have not seen before still belongs somewhere in that chain. If an operation
+moves something nothing else in the plan references, its position does not
+matter; keep the user's order for those.
+
+Choosing between a targeted tool and its bulk equivalent:
+- The user named specific assets → the targeted tool, passing exactly the names
+  or ids they gave, as a JSON array.
+- The user said "all" of something, or named none → the "all" tool for that
+  asset kind; it takes no target list.
+
+Arguments must match each tool's JSON Schema: arrays as JSON arrays, booleans as
+true/false, enum values only from the allowed set. Only pass a value the user
+actually provided — never invent one, never use placeholders like
+"user@example.com"; omit it instead and the user will be asked. Omit optional
+parameters the user did not mention.
+
+If the request names no migratable asset at all, or is too vague to act on,
+reply in natural language asking what they want migrated. Do not guess.
+""".strip()
+
+# Completeness check for a migration plan — a maker/checker split, same shape as
+# VERIFY_GOAL_SYSTEM_PROMPT. The planner emits every tool call in ONE response,
+# and its reliability degrades with the number of simultaneous calls: measured
+# 2026-08-08, a four-kind request came back with only two calls in 2 of 6 runs,
+# always stopping at exactly two. Prompt emphasis fixed the three-kind case and
+# not the four-kind one. There is no second chance inside the plan, so a dropped
+# call silently loses part of the request — hence a separate pair of eyes that
+# only has to COUNT, not plan.
+MIGRATION_COMPLETENESS_SYSTEM_PROMPT = """
+You are checking a Sisense migration plan for OMISSIONS. You did not write it.
+
+You are given the user's request and the list of operations the plan will run.
+Your only job: name any kind of asset the user asked to migrate that the plan
+does NOT cover.
+
+A "kind" is a category of migratable asset the user named (for example groups,
+users, datamodels, dashboards, shares — but judge from their words, not from
+this list; new kinds may exist).
+
+Reply with EXACTLY one of:
+- COMPLETE
+- MISSING: <comma-separated kinds>
+
+Rules:
+- Judge only against what the user actually asked for. If they never mentioned
+  datamodels, datamodels are not missing.
+- An operation named "migrate all X" covers kind X completely — do not report X
+  as missing just because the user said "the X" rather than "all X".
+- Ignore ordering, arguments, and tool naming. Only whether a KIND is absent.
+- Do not suggest improvements, extra work, or anything the user did not request.
+- Output only that one line. No explanation.
+""".strip()
+
+# Used ONLY by the kill-switch path (FES_MIGRATION_SINGLE_SHOT=false → the
+# reactive loop), where it rides alongside the generic tool-selection prompt.
+# The single-shot flow sends MIGRATION_PLAN_SYSTEM_PROMPT alone.
 MIGRATION_PLANNING_CONTEXT_PROMPT = """
 The user is working in migration mode with a configured source and target
-Sisense deployment. Prefer tools that migrate users, groups, datamodels, and dashboards.
+Sisense deployment. Every operation copies assets from the source to the target.
 """.strip()
 
 # ---------------------------------------------------------------------------
 # Clarification loop (Step 7)
 # ---------------------------------------------------------------------------
-CLARIFY_QUESTION_SYSTEM_PROMPT = """
-You help a Sisense admin assistant ask the user for information it still needs
-before it can run an operation.
+# Answers a user's QUESTION ABOUT a pending clarification (e.g. "is
+# change_ownership a yes/no flag?") from the operation's own definition, before
+# the structured question is re-asked. Grounded in the schema only — no results,
+# no invention. Added 2026-08-10 after the deterministic re-ask alone just
+# repeated itself at a user who had asked something answerable.
+CLARIFY_ANSWER_SYSTEM_PROMPT = """
+A user was asked to provide missing information for a Sisense operation, and
+instead replied with a QUESTION about the operation or one of its settings.
 
-You are given the operation's purpose, the required information that is still
-missing, and (optionally) extra details the user could provide. Write ONE short,
-friendly question (1-2 sentences) asking the user to supply the missing required
-information.
+You are given the operation's definition — its purpose and its parameters with
+their descriptions and defaults — and the user's question. Answer the question
+in one to three short sentences, using ONLY what the definition states. Plain
+language: say "yes/no setting, default no" rather than schema jargon. If the
+definition does not answer it, say you don't know rather than guessing.
 
-Rules:
-- Use natural language drawn from the field descriptions (e.g. "which datamodel"),
-  not raw parameter names, JSON, or schema/type jargon.
-- Ask for ALL missing required items in the single question.
-- If optional extras are given, mention them briefly as optional ("you can also…").
-- Do NOT mention tools, functions, LLMs, routing, or any internal machinery.
-- Output only the question text — no preamble, no quotes.
+Do NOT re-ask for the missing information, do NOT list the parameters, and do
+NOT mention tools, functions, JSON, or internals — the structured request for
+the missing values is appended after your answer by the system.
 """.strip()
+
+# CLARIFY_QUESTION_SYSTEM_PROMPT removed 2026-08-10: the clarifying question is
+# now rendered in code (_generate_clarification_question in llm_agent.py) —
+# structured like the approval dialog, one bullet per missing field, zero LLM
+# calls. The LLM version compressed multiple missing fields into one run-on
+# paragraph.
 
 MUTATION_EXPLAIN_SYSTEM_PROMPT = """
 You explain, for a Sisense admin about to approve an action, exactly what the
@@ -125,6 +233,15 @@ Rules:
   "List all <X>", NOT the catalog description of whichever operation matches.)
 - Fewest steps that cover the request — one step for a single ask. Never add
   work the user did not ask for.
+- Plan the operation the user ASKED FOR, and never substitute a different one
+  because you expect it to work better. "Create X" stays a create even when
+  earlier turns in this conversation show that X already exists, or that the
+  same request failed before. Do not turn it into a lookup, an update, or a
+  check-first-then-decide. A requested operation that fails with a clear reason
+  IS a useful answer; a different operation they never asked for is not, and it
+  leaves them unsure whether the thing they wanted was even attempted. Prior
+  turns are context for resolving what the user MEANS ("its members", "that
+  datamodel") — never grounds for overriding what they asked to DO.
 - Order by dependency, not by sentence order: steps whose inputs come from an
   earlier step's result come after it.
 - Resolve the named entity FIRST, not the collection. To find what property,
@@ -185,6 +302,13 @@ this turn. Decide whether the request is fully satisfied.
   wrong kind of data — do not push forward on a broken path. Reply EXACTLY:
   REPLAN: <one short sentence on what failed and what is still needed>
 
+  REPLAN only when another approach could still get the user what they asked
+  for. If the failure already explains itself, REPORT it — give the final answer
+  naming the reason — do NOT run more operations to investigate something the
+  error has already told you. "Already exists", "not found", "permission
+  denied" and the like are answers, not puzzles: fetching the object to confirm
+  what the error just said spends the user's time and changes nothing.
+
 - Otherwise reply with the final answer to the user, based only on the
   operation results:
   - Do not invent objects that are not in the results.
@@ -235,6 +359,12 @@ You are given the user's request and that operation log. Decide the next move:
 - If the LAST operation FAILED (ok=false) and a requested part therefore cannot
   be satisfied on the current path, reply EXACTLY:
   REPLAN: <one short sentence on what failed and what is still needed>
+
+  You are shown the failure reason even though data is hidden. REPLAN only when
+  another approach could still get the user what they asked for. If the reason
+  already explains itself — "already exists", "not found", "permission denied" —
+  reply DONE and let the failure be reported as it stands. Do NOT run another
+  operation to confirm what the error has already said.
 
 - If every distinct operation the user asked for has already run, reply EXACTLY:
   DONE

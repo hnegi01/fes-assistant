@@ -11,7 +11,7 @@ What lives here:
   - Mutation and summarization control flags
   - _LlmConfig dataclass and _build_llm_config() factory
   - LLM_CONFIG singleton (built at import)
-  - Observability helpers: _scrub_secrets, _log_json_truncated
+  - Observability helpers: _scrub_secrets, _log_json
   - _LLM_TRACE_COLUMNS, _write_llm_trace (CSV tracing)
 """
 
@@ -24,7 +24,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -100,11 +100,11 @@ logger = logging.getLogger("backend.agent.llm_agent")
 logger.setLevel(_log_level)
 logger.propagate = False
 
-if not any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
-    _fh = RotatingFileHandler(
+if not any(isinstance(h, TimedRotatingFileHandler) for h in logger.handlers):
+    _fh = TimedRotatingFileHandler(
         LOG_DIR / "llm_agent.log",
-        maxBytes=10 * 1024 * 1024,
-        backupCount=5,
+        when="midnight",  # daily file; 7 dated backups = 7 days kept, older deleted
+        backupCount=7,
         encoding="utf-8",
     )
     _fh.setLevel(_log_level)
@@ -119,11 +119,11 @@ def _make_module_logger(name: str, filename: str) -> logging.Logger:
     mod_logger = logging.getLogger(name)
     mod_logger.setLevel(_log_level)
     mod_logger.propagate = False
-    if not any(isinstance(h, RotatingFileHandler) for h in mod_logger.handlers):
-        _fh = RotatingFileHandler(
+    if not any(isinstance(h, TimedRotatingFileHandler) for h in mod_logger.handlers):
+        _fh = TimedRotatingFileHandler(
             LOG_DIR / filename,
-            maxBytes=10 * 1024 * 1024,
-            backupCount=5,
+            when="midnight",  # daily file; 7 dated backups = 7 days kept, older deleted
+            backupCount=7,
             encoding="utf-8",
         )
         _fh.setLevel(_log_level)
@@ -275,6 +275,43 @@ MAX_REPLANS: int = int(os.getenv("FES_MAX_REPLANS", "1"))
 # transcript). 1 disables fan-out. Concurrency downstream is bounded by the MCP
 # server's PYSISENSE_MAX_CONCURRENT_READ_TOOLS semaphore.
 MAX_PARALLEL_STEPS: int = int(os.getenv("FES_MAX_PARALLEL_STEPS", "3"))
+# Migration turns plan every step in ONE call, sort them into dependency order in
+# code, and execute in sequence (backend/agent/migration_flow.py). No migration
+# tool consumes a value another produces, so the chat loop's per-step "what
+# next?" calls buy nothing there. Set false to route migration through the
+# reactive loop instead — a kill switch for a path that writes to live targets,
+# not a mode anyone should need.
+MIGRATION_SINGLE_SHOT: bool = _cfg_flag("FES_MIGRATION_SINGLE_SHOT", "true")
+# Optional second pair of eyes on a migration plan: one extra LLM call asking a
+# fresh reader "which asset kinds did the user request that this plan omits?",
+# with one re-plan if it names any. OFF by default (2026-08-10): the root causes
+# of dropped calls were fixed (dedicated planning prompt, no history), and every
+# plan is shown to a human as a numbered step list before anything runs — you
+# asked for three kinds and see two steps, you cancel. Turn on for unattended
+# or API-driven use, where nobody is reading the dialog.
+MIGRATION_COMPLETENESS_CHECK: bool = _cfg_flag("FES_MIGRATION_COMPLETENESS_CHECK", "false")
+
+
+def _env_int_clamped(name: str, default: int, lo: int, hi: int) -> int:
+    """Read an int env var, clamping to [lo, hi]; falls back to default if unparseable."""
+    raw = os.getenv(name)
+    if raw is None or not raw.strip():
+        return default
+    try:
+        return max(lo, min(hi, int(raw.strip())))
+    except ValueError:
+        logger.warning("%s=%r is not an integer — using %d", name, raw, default)
+        return default
+
+
+# Few-shot examples on the tool-SELECTION call: how many of each tool's curated
+# `user_query → arguments` examples (from the registry) to append to its
+# description. 0 = none, which reproduces the pre-flag prompt byte for byte.
+# Only example[0] has been curated to never invent a value the query didn't
+# supply, so 1 is the vetted setting; 2-3 pull in less-vetted siblings.
+# Examples go ONLY to the tool-selection call — the planner writes prose steps
+# and never emits arguments, so they would be pure cost there.
+TOOL_EXAMPLES_COUNT: int = _env_int_clamped("FES_TOOL_EXAMPLES", 0, 0, 3)
 
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "databricks").strip().lower()
 logger.info("Using LLM_PROVIDER=%s", LLM_PROVIDER)
@@ -408,14 +445,18 @@ def _scrub_secrets(obj: Any) -> Any:
     return obj
 
 
-def _log_json_truncated(title: str, obj: Any, max_len: int = 2000) -> None:
-    """Log a JSON representation of obj, truncated for readability."""
+def _log_json(title: str, obj: Any) -> None:
+    """Log the FULL JSON representation of obj, secrets scrubbed.
+
+    Full by decision (2026-08-10): payloads used to be cut at 2,000 chars, which
+    made incidents undiagnosable from disk — the whole reason a live turn had to
+    be re-captured in-process to be read. Disk is bounded by time instead: every
+    log file rotates daily and keeps 7 days. Scrubbing stays unconditional —
+    completeness is for payloads, never credentials."""
     try:
         text = json.dumps(_scrub_secrets(obj), indent=2, ensure_ascii=False, default=str)
     except Exception:
         text = repr(obj)
-    if len(text) > max_len:
-        text = text[:max_len] + "... [truncated]"
     logger.debug("%s:\n%s", title, text)
 
 

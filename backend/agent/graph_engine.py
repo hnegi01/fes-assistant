@@ -251,7 +251,7 @@ async def node_branch(s: Dict[str, Any]) -> Dict[str, Any]:
         bschema = bmeta.get("parameters")
         if bschema:
             try:
-                jsonschema.validate(instance=bargs, schema=bschema, format_checker=jsonschema.FormatChecker())
+                A._validate_tool_args(bschema, bargs)
             except jsonschema.ValidationError:
                 missing = A._missing_required_fields(bargs, bschema)
                 if missing:
@@ -276,7 +276,7 @@ async def node_branch(s: Dict[str, Any]) -> Dict[str, Any]:
                 }
 
         if bool(bmeta.get("mutates")) and A.REQUIRE_MUTATION_CONFIRM:
-            if A._approval_key(btool_id, bargs) not in s["approved_mutations"]:
+            if not A._consume_approval(s["approved_mutations"], btool_id, bargs):
                 return {
                     "branch_results": [
                         {"status": "deferred", "step": branch_step, "op": op_text, "why": "mutation gate"}
@@ -290,7 +290,7 @@ async def node_branch(s: Dict[str, Any]) -> Dict[str, Any]:
         await A._emit_agent_progress(
             {"phase": "executing", "step": branch_step, "max_steps": A.MAX_AGENT_STEPS, "tool_id": btool_id}
         )
-        bresult = await A._invoke_tool_traced(s["mcp_client"], btool_id, bargs)
+        bresult = await A._invoke_tool_traced(s["mcp_client"], btool_id, bargs, s["mode"])
         await A._emit_agent_progress(
             {
                 "phase": "completed",
@@ -365,14 +365,14 @@ async def node_first_select(s: GraphState) -> Dict[str, Any]:
     step_message = {"role": "user", "content": first_op if (first_op or "").strip() else s["user_text"]}
 
     if s["mode"] == "migration":
-        nav_tools = A._load_all_package_tools("migration") or s["passed_tools"]
+        nav_tools = list(s["passed_tools"]) or A._load_all_package_tools("migration")
         nav_pkg, nav_mixin = "migration", "all"
     else:
         nav_tools, nav_pkg, nav_mixin, _ms = await A._navigate_to_tools(step_message, s["history"], s["turn_trace_id"])
         if nav_pkg == "__unclear__":
             if s.get("resume_clarification"):
                 reply = await A._reask_clarification_or_giveup(
-                    s["resume_clarification"], s["turn_trace_id"], s["trace"]
+                    s["resume_clarification"], s["turn_trace_id"], s["trace"], s["user_text"]
                 )
                 return {"reply": reply}
             _write_trace(s, "unclear_intent", with_steps=False)
@@ -386,10 +386,19 @@ async def node_first_select(s: GraphState) -> Dict[str, Any]:
             nav_tools = s["passed_tools"]
 
     s["trace"]["routing_module"] = f"{nav_pkg}/{nav_mixin}" if nav_mixin else nav_pkg
+    # The request goes alongside the step text — same reasoning as the custom
+    # loop's first-select path (see llm_agent). `history` is prior TURNS, so
+    # without this the call sees only the planner's sentence, and anything the
+    # planner left out of it is unrecoverable. Skipped when they are identical
+    # (the single-step faithfulness guard makes them so).
+    _same = (step_message.get("content") or "").strip() == (
+        (s["latest_user_message"] or {}).get("content") or ""
+    ).strip()
     planning_messages = [
         {"role": "system", "content": A.PLANNING_SYSTEM_PROMPT},
         {"role": "system", "content": s["planning_context"]},
         *s["history"],
+        *([] if _same else [s["latest_user_message"]]),
         step_message,
     ]
     try:
@@ -398,7 +407,7 @@ async def node_first_select(s: GraphState) -> Dict[str, Any]:
     except Exception as exc:  # noqa: BLE001 — planning failure → keyword fallback
         logger.warning("Planning LLM call failed (%s). Using fallback direct tool.", exc)
         s["trace"]["outcome"] = "fallback"
-        summary, result = await A._fallback_direct_tool(s["user_text"], s["mcp_client"])
+        summary, result = await A._fallback_direct_tool(s["user_text"], s["mcp_client"], s["mode"])
         A.LAST_TOOL_RESULT = result
         A.LAST_STEP_RESULTS.append({"step": 1, "tool_id": result.get("tool_id", "fallback"), "result": result})
         A._write_llm_trace(s["trace"])
@@ -490,7 +499,9 @@ async def node_next_select(s: GraphState) -> Dict[str, Any]:
     step_number = s["steps_executed"] + 1
     await A._emit_agent_progress({"phase": "planning", "step": step_number, "max_steps": A.MAX_AGENT_STEPS})
     step_message = {"role": "user", "content": remains}
-    nav_tools, nav_pkg, nav_mixin, _ms = await A._navigate_to_tools(step_message, [], s["turn_trace_id"])
+    nav_tools, nav_pkg, nav_mixin, _ms = await A._navigate_for_step(
+        step_message, s["mode"], s["turn_trace_id"], s["passed_tools"]
+    )
     if (not nav_tools) and nav_pkg and nav_pkg != "__unclear__":
         nav_tools = A._load_all_package_tools(nav_pkg)
     if not nav_tools:
@@ -560,7 +571,7 @@ async def node_validator(s: GraphState) -> Dict[str, Any]:
     tool_schema = meta.get("parameters")
     if tool_schema:
         try:
-            jsonschema.validate(instance=args, schema=tool_schema, format_checker=jsonschema.FormatChecker())
+            A._validate_tool_args(tool_schema, args)
         except jsonschema.ValidationError as _ve:
             missing = A._missing_required_fields(args, tool_schema)
             if missing and is_first:
@@ -607,7 +618,7 @@ async def node_validator(s: GraphState) -> Dict[str, Any]:
             }
 
     logger.info("Tool selected: %s (mutates=%s)", tool_id, bool(meta.get("mutates")))
-    A._log_json_truncated("Tool args (from tool selection)", args)
+    A._log_json("Tool args (from tool selection)", args)
     return {}
 
 
@@ -627,8 +638,7 @@ async def node_gate(s: GraphState) -> Dict[str, Any]:
     meta = A.TOOL_REGISTRY.get(tool_id) or {}
 
     if bool(meta.get("mutates")) and A.REQUIRE_MUTATION_CONFIRM:
-        key = A._approval_key(tool_id, args)
-        if key not in s["approved_mutations"]:
+        if not A._consume_approval(s["approved_mutations"], tool_id, args):
             explanation = await A._generate_mutation_explanation(tool_id, meta, args, s["turn_trace_id"])
             A.LAST_TOOL_RESULT = {
                 "ok": False,
@@ -669,7 +679,7 @@ async def node_tools(s: GraphState) -> Dict[str, Any]:
     await A._emit_agent_progress(
         {"phase": "executing", "step": step_number, "max_steps": A.MAX_AGENT_STEPS, "tool_id": tool_id}
     )
-    result = await A._invoke_tool_traced(s["mcp_client"], tool_id, args)
+    result = await A._invoke_tool_traced(s["mcp_client"], tool_id, args, s["mode"])
     n, hint = _record_execution(s, call, tool_id, args, meta, result, s["steps_executed"], s.get("first_tool_hint"))
     await A._emit_agent_progress(
         {

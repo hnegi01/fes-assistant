@@ -17,7 +17,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I remove a custom Blox action called 'export_to_csv' from my Sisense instance?",
+        "user_query": "Remove the custom Blox action called 'export_to_csv' from my Sisense instance.",
         "arguments": {
           "action_type": "export_to_csv"
         },
@@ -50,7 +50,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What custom Blox actions are available in my Sisense instance?",
+        "user_query": "List the custom Blox actions available in my Sisense instance.",
         "arguments": {},
         "notes": "This call retrieves all custom Blox actions configured in the Sisense instance. Use this to review available actions for dashboards or widgets."
       },
@@ -84,7 +84,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I save a new custom action for my dashboard's export button?",
+        "user_query": "Save a custom Blox action named 'ExportDashboardAction' that exports dashboard dashboard_12345 to PDF.",
         "arguments": {
           "action": {
             "name": "ExportDashboardAction",

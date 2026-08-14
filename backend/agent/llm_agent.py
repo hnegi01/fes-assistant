@@ -27,6 +27,7 @@ import asyncio
 import datetime
 import json
 import os
+import re
 import time
 import uuid
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -44,10 +45,12 @@ from ._config import (
     MAX_AGENT_STEPS,
     MAX_PARALLEL_STEPS,
     MAX_REPLANS,
+    MIGRATION_COMPLETENESS_CHECK,  # noqa: F401 — late-bound as A.MIGRATION_COMPLETENESS_CHECK (migration_flow); tests monkeypatch it here
+    MIGRATION_SINGLE_SHOT,
     REQUIRE_MUTATION_CONFIRM,
     VERIFY_GOAL,
     VERIFY_MAX_RECHECKS,
-    _log_json_truncated,
+    _log_json,
     _scrub_secrets,
     _write_llm_trace,
     audit_logger,
@@ -63,7 +66,9 @@ from ._prompts import (
     AGENT_PLAN_SYSTEM_PROMPT,
     AGENT_REPLAN_SYSTEM_PROMPT,
     CHAT_PLANNING_CONTEXT_PROMPT,
-    CLARIFY_QUESTION_SYSTEM_PROMPT,
+    CLARIFY_ANSWER_SYSTEM_PROMPT,
+    MIGRATION_COMPLETENESS_SYSTEM_PROMPT,  # noqa: F401 — late-bound as A.MIGRATION_COMPLETENESS_SYSTEM_PROMPT (migration_flow)
+    MIGRATION_PLAN_SYSTEM_PROMPT,  # noqa: F401 — late-bound as A.MIGRATION_PLAN_SYSTEM_PROMPT (migration_flow)
     MIGRATION_PLANNING_CONTEXT_PROMPT,
     MUTATION_EXPLAIN_SYSTEM_PROMPT,
     PLANNING_SYSTEM_PROMPT,
@@ -204,6 +209,26 @@ def _approval_key(tool_id: str, args: Dict[str, Any]) -> Tuple[str, str]:
     return tool_id, json.dumps(args or {}, sort_keys=True, ensure_ascii=False)
 
 
+def _consume_approval(approved: Set[Tuple[str, str]], tool_id: str, args: Dict[str, Any]) -> bool:
+    """Check-and-consume one mutation approval. Returns True if this execution is authorised.
+
+    Approvals are SINGLE USE. An approval authorises exactly one execution of
+    exactly these arguments; the same operation requested again — later in the
+    turn, or later in the session — gates again. A confirmation dialog that
+    silently stops appearing is worse than none, because the user has learned to
+    expect it, and a destructive op (delete, cross-environment migrate) repeated
+    silently is precisely the failure the gate exists to prevent.
+
+    There is no await between the membership test and the discard, so concurrent
+    fan-out branches cannot both claim the same approval.
+    """
+    key = _approval_key(tool_id, args)
+    if key in approved:
+        approved.discard(key)
+        return True
+    return False
+
+
 _CREDENTIAL_FIELDS: frozenset = frozenset(
     {
         "domain",
@@ -231,32 +256,198 @@ def _optional_arg_hint(tool_id: str, used_args: Dict[str, Any], tool_meta: Dict[
 
 
 # -----------------------------------------------------------------------------
+# Approval-dialog disclosure — only what the tool definition actually states
+# -----------------------------------------------------------------------------
+# The dialog reports FACTS the registry can back: which optional settings the
+# schema declares, which of them this call leaves unset, and their allowed
+# values. It does not predict what the operation will DO with them.
+#
+# Anything about scope or blast radius is deliberately absent. A tool definition
+# does not say whether an empty target list means "everything", "nothing", or a
+# hard error — that lives in SDK code the registry never sees, and it differs
+# per tool (migrate_dashboards raises; migrate_all_dashboards is unbounded by
+# design). Guessing from a naming convention produced a warning that was
+# confidently wrong. When the definition cannot confirm it, say nothing: let the
+# call run and report the SDK's own error verbatim (_describe_tool_result).
+def _is_filled(value: Any) -> bool:
+    """A value the user actually supplied — not absent, blank, or an empty list."""
+    if value is None:
+        return False
+    if isinstance(value, (str, list, dict, tuple, set)):
+        return bool(value) and not (isinstance(value, str) and not value.strip())
+    return True
+
+
+def _example_hint(meta: Dict[str, Any]) -> str:
+    """The curated example's user_query as a phrasing demo — how to ask in
+    plain English — never a claim about what the current call will do. Only
+    example[0] is held to the curation bar (test_tool_examples.py), so only it
+    is ever shown to a user."""
+    examples = meta.get("examples") or []
+    query = (examples[0].get("user_query") or "").strip() if examples else ""
+    return f'*For example, you could ask: "{query}"*' if query else ""
+
+
+def _options_note(
+    tool_id: str,
+    meta: Dict[str, Any],
+    args: Dict[str, Any],
+    with_call_to_action: bool = True,
+    heading: Optional[str] = None,
+) -> str:
+    """Unset optional settings, with their allowed values where the schema
+    declares an enum. Runs before an irreversible action, so it lists more than a
+    clarification question does — a migration's `action` choice is skip vs
+    overwrite, and the model picks it silently.
+
+    Target-selecting params (`dashboard_ids`, `dashboard_names`) are included
+    like any other: the schema marks them optional and this call left them
+    unset, which is a fact. What the operation will do about that is not stated
+    anywhere we can read, so it is not claimed.
+
+    `heading` lets a multi-step plan dialog attribute the block to its step;
+    the default suits a single-tool dialog.
+    """
+    specs = _optional_specs(meta.get("parameters") or {}, args or {}, _OPTIONALS_IN_APPROVAL)
+    if not specs:
+        return ""
+    note = (heading or "**Optional settings, not set**") + "\n" + _optionals_block(specs)
+    hint = _example_hint(meta)
+    if hint:
+        note += f"\n\n{hint}"
+    if not with_call_to_action:
+        # Inside a multi-step plan the dialog has already said how to approve;
+        # repeating it per tool puts two "Approve to…" sentences on screen.
+        return note
+    return (
+        note + "\n\nApprove to run as described, or cancel and ask again including any of the optional settings above."
+    )
+
+
+def _approval_disclosure(
+    tool_id: str,
+    meta: Dict[str, Any],
+    args: Dict[str, Any],
+    with_call_to_action: bool = True,
+    heading: Optional[str] = None,
+) -> str:
+    """Deterministic notes appended to the LLM's plain-English explanation."""
+    note = _options_note(tool_id, meta, args, with_call_to_action, heading=heading)
+    return f"\n\n{note}" if note else ""
+
+
+# -----------------------------------------------------------------------------
 # Clarification loop (Step 7) — ask for missing required args, resume next turn
 # -----------------------------------------------------------------------------
 def _missing_required_fields(args: Dict[str, Any], schema: Dict[str, Any]) -> List[str]:
     """Required schema fields absent or empty in args, excluding injected credential fields.
 
-    The tool-selection call sometimes sends `""` or null for a value the user never provided instead
-    of omitting the key — treat those as missing so they trigger clarification, not
-    a format-validation hard block.
+    The tool-selection call sometimes sends `""`, null, or `[]` for a value the
+    user never provided instead of omitting the key — treat those as missing so
+    they trigger clarification, not a schema-valid call carrying nothing (seen
+    live 2026-08-14: migrate_dashboard_shares gated with empty ID lists).
+    Emptiness is judged by `_is_filled`, the same rule the optionals use.
     """
     required = schema.get("required") or []
-
-    def _is_missing(f: str) -> bool:
-        if f not in args:
-            return True
-        v = args[f]
-        return v is None or (isinstance(v, str) and not v.strip())
-
-    return [f for f in required if f not in _CREDENTIAL_FIELDS and _is_missing(f)]
+    return [f for f in required if f not in _CREDENTIAL_FIELDS and not _is_filled(args.get(f))]
 
 
-def _curated_optionals(schema: Dict[str, Any], filled_args: Dict[str, Any], limit: int = 3) -> List[str]:
-    """Up to `limit` optional, non-credential, currently-unfilled params (same selection as the hint)."""
+def _validate_tool_args(schema: Dict[str, Any], args: Dict[str, Any]) -> None:
+    """The one validation entry point for tool arguments.
+
+    Validates against the generated schema and nothing else. Some SDK methods
+    enforce argument combinations the schema cannot express (`migrate_dashboards`
+    raises unless exactly one of dashboard_names/dashboard_ids is given), but
+    those constraints are not present in the registry, and the registry is
+    generated — hand-written rules here would be invented data that a rebuild
+    silently drops. Such a call reaches the SDK and its own error surfaces.
+    """
+    jsonschema.validate(instance=args, schema=schema, format_checker=jsonschema.FormatChecker())
+
+
+# Optional params are surfaced in exactly two places, in BOTH modes:
+#   1. a clarification question — "I need X; you can also give me Y"
+#   2. a mutation approval dialog — "approve, or cancel and re-ask with Y"
+# Both draw from the same selection and render the same way, so they read as one
+# feature rather than two that drifted. The approval list is longer because it
+# precedes an irreversible action, and cancelling to re-ask is cheap.
+_OPTIONALS_IN_QUESTION = 3
+_OPTIONALS_IN_APPROVAL = 6
+
+
+def _clean_desc(text: str) -> str:
+    """Strip reStructuredText ``literal`` markup carried over from SDK docstrings."""
+    return re.sub(r"``([^`]+)``", r"'\1'", str(text or "")).strip()
+
+
+def _curated_optionals(
+    schema: Dict[str, Any], filled_args: Dict[str, Any], limit: int = _OPTIONALS_IN_QUESTION
+) -> List[str]:
+    """Up to `limit` optional, non-credential, currently-unfilled param NAMES."""
     props = schema.get("properties") or {}
     required = set(schema.get("required") or [])
-    optionals = [k for k in props if k not in required and k not in _CREDENTIAL_FIELDS and k not in filled_args]
+    optionals = [
+        k for k in props if k not in required and k not in _CREDENTIAL_FIELDS and not _is_filled(filled_args.get(k))
+    ]
     return optionals[:limit]
+
+
+def _param_summary(prop: Dict[str, Any]) -> str:
+    """One line a user can act on: the description's first sentence, plus the
+    SDK's own `Default: …` sentence when the description states one elsewhere.
+    Defaults usually live in sentence two ("Whether to republish dashboards
+    after migration. Default: False."), and in an approval dialog the default
+    IS the decision — it is what happens if the user approves without it.
+    """
+    text = _clean_desc(prop.get("description"))
+    if not text:
+        return ""
+    first = text.split(". ")[0].rstrip(".")
+    if "default" not in first.lower():
+        m = re.search(r"Default:\s*[^.\n]*", text, flags=re.IGNORECASE)
+        if m:
+            return f"{first}. {m.group(0).rstrip('.')}"
+    return first
+
+
+def _optional_specs(
+    schema: Dict[str, Any], filled_args: Dict[str, Any], limit: int
+) -> List[Tuple[str, Optional[List[Any]], str]]:
+    """The single source of truth for 'which optional params to offer': each is
+    its NAME, its allowed values when the schema declares an enum, and a
+    one-line summary from the schema's own description.
+
+    The name is what the user has to say back to us. The two surfaces below
+    render this same list differently — inline inside a question, as a block in
+    a dialog — but they must never disagree about WHICH params they name.
+    """
+    props = schema.get("properties") or {}
+    return [
+        (name, (props.get(name) or {}).get("enum"), _param_summary(props.get(name) or {}))
+        for name in _curated_optionals(schema, filled_args, limit)
+    ]
+
+
+def _optionals_inline(specs: List[Tuple[str, Optional[List[Any]], str]]) -> str:
+    """Comma-run for use mid-sentence (clarification questions). Summaries are
+    deliberately dropped: a question is one sentence, not a settings manual."""
+    return ", ".join(f"`{n}` ({' / '.join(str(e) for e in enum)})" if enum else f"`{n}`" for n, enum, _ in specs)
+
+
+def _optionals_block(specs: List[Tuple[str, Optional[List[Any]], str]]) -> str:
+    """Markdown list for use as its own section (approval dialogs). `st.info()`
+    renders markdown in both dialogs, and an enum buried in a comma-run is an
+    enum nobody reads. Each line carries the schema's own one-line summary so
+    the user can judge a setting without leaving the dialog."""
+    lines = []
+    for n, enum, summary in specs:
+        parts = [f"`{n}`"]
+        if enum:
+            parts.append(" / ".join(str(e) for e in enum))
+        if summary:
+            parts.append(summary)
+        lines.append("- " + " — ".join(parts))
+    return "\n".join(lines)
 
 
 def _tool_def_for(tool_id: str) -> Optional[Dict[str, Any]]:
@@ -281,44 +472,54 @@ async def _generate_clarification_question(
     filled_args: Dict[str, Any],
     trace_id: Optional[str],
 ) -> str:
-    """Ask the LLM for one friendly question covering the missing required fields
-    (and curated optionals). Falls back to a deterministic template on any failure."""
+    """The clarifying question, rendered in code — structured like the approval
+    dialog, and zero LLM calls.
+
+    This used to be an LLM call whose prompt demanded ONE question covering
+    every missing item, so a tool with two required fields plus an optional got
+    a cramped run-on paragraph (seen live on migrate_dashboard_shares,
+    2026-08-10). Format is structure, and structure is code: a lead line, one
+    bullet per missing item from the schema's own descriptions, optionals on
+    their own line. Deterministic, testable, and one less call per clarify.
+
+    Kept async and under the old name so call sites and test monkeypatches
+    across both engines are untouched.
+    """
     schema = meta.get("parameters") or {}
     props = schema.get("properties") or {}
-    optionals = _curated_optionals(schema, filled_args)
 
     def _desc(field: str) -> str:
-        return (props.get(field) or {}).get("description") or field
+        # First sentence only: some schema descriptions are whole docstrings
+        # (user_data enumerates every supported key), and a bullet is a
+        # question, not a manual page.
+        text = _clean_desc((props.get(field) or {}).get("description"))
+        if not text:
+            return field.replace("_", " ")
+        return text.split(". ")[0].rstrip(".")
 
-    req_lines = "\n".join(f"- {_desc(f)}" for f in missing_fields)
-    user_parts = [f"Operation purpose: {meta.get('description', '')}", "Required information still needed:", req_lines]
-    if optionals:
-        opt_lines = "\n".join(f"- {_desc(o)}" for o in optionals)
-        user_parts += ["Optional extras the user could also provide:", opt_lines]
-    user_msg = "\n".join(user_parts)
+    purpose = _clean_desc((meta.get("description") or "").strip().splitlines()[0] if meta.get("description") else "")
+    purpose = purpose.rstrip(".")
 
-    try:
-        data = await call_llm_raw(
-            [
-                {"role": "system", "content": CLARIFY_QUESTION_SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg},
-            ],
-            tools=None,
-            trace_id=trace_id,
-            label="clarify",
-        )
-        content, _ = _pick_tool_calls_from_llm_response(data)
-        if content and content.strip():
-            return content.strip()
-    except Exception as exc:  # noqa: BLE001 — any LLM failure falls back to the template
-        logger.warning("Clarification question generation failed (%s); using template.", exc)
-
-    # Deterministic fallback — describes the missing fields in plain words.
-    req_part = "; ".join(_desc(f) for f in missing_fields)
-    msg = f"I need a bit more information to do that: {req_part}."
-    if optionals:
-        msg += f" You can optionally also provide: {', '.join(_desc(o) for o in optionals)}."
-    return msg
+    lines = ["I need a bit more information to run this.", ""]
+    if purpose:
+        lines.append(f"**{purpose}** needs:")
+    else:
+        lines.append("Still needed:")
+    for f in missing_fields:
+        lines.append(f"- {_desc(f)}")
+    inline = _optionals_inline(_optional_specs(schema, filled_args, _OPTIONALS_IN_QUESTION))
+    if inline:
+        lines += ["", f"Optionally, you can also include: {inline}."]
+    # The registry's curated example — example[0]'s query names every value its
+    # arguments use (pinned by test_tool_examples), which makes it a phrasing
+    # template the user can copy with their own values. Worth its lines when a
+    # question needs shape, not just names: "paired positionally" says little;
+    # "from source dashboards A, B to target dashboards X, Y" shows it.
+    # Same renderer as the approval dialog so the two surfaces cannot drift.
+    hint = _example_hint(meta)
+    if hint:
+        lines += ["", hint]
+    return "\n".join(lines)
 
 
 def _clarification_giveup_message(tool_id: str, meta: Dict[str, Any], missing_fields: List[str]) -> str:
@@ -340,7 +541,12 @@ async def _generate_mutation_explanation(
 ) -> str:
     """Plain-English description of what a mutating tool will do, for the approval
     dialog. One LLM call; falls back to a generic-but-safe template on failure.
-    Credential fields are stripped before the args reach the LLM."""
+    Credential fields are stripped before the args reach the LLM.
+
+    The scope/options disclosure is appended in code on every path — an approver
+    must not depend on the LLM having chosen to mention that no targets were
+    named, and the fallback template needs it just as much as the LLM answer."""
+    disclosure = _approval_disclosure(tool_id, meta, args)
     safe_args = {k: v for k, v in (args or {}).items() if k not in _CREDENTIAL_FIELDS}
     user_msg = (
         f"Operation purpose: {meta.get('description', '')}\n"
@@ -358,18 +564,44 @@ async def _generate_mutation_explanation(
         )
         content, _ = _pick_tool_calls_from_llm_response(data)
         if content and content.strip():
-            return content.strip()
+            return content.strip() + disclosure
     except Exception as exc:  # noqa: BLE001 — any LLM failure falls back to the template
         logger.warning("Mutation explanation generation failed (%s); using template.", exc)
 
     purpose = (meta.get("description") or "").rstrip(".")
     base = purpose or "This will modify your Sisense deployment"
-    return f"{base}. Review the details below before approving."
+    return f"{base}. Review the details below before approving." + disclosure
 
 
 # -----------------------------------------------------------------------------
 # Agentic loop (Step 8) — decide → route → plan → execute, until done or capped
 # -----------------------------------------------------------------------------
+async def _navigate_for_step(
+    step_message: Dict[str, Any],
+    mode: str,
+    trace_id: Optional[str],
+    mode_tools: Optional[List[Dict[str, Any]]] = None,
+) -> Tuple[List[Dict[str, Any]], str, str, int]:
+    """Pick the tool menu for one loop step.
+
+    Routing exists to keep ~110 chat tools away from the tool-selection call.
+    Migration mode has 9 — that IS a menu — so there is nothing to narrow and
+    no tree to walk. It uses the turn's already-scoped tool list directly: the
+    same 9 definitions the API filtered from the UI's mode radio, byte for byte,
+    without re-reading four JSON files to rebuild them.
+
+    Skipping the walk also closes a hole. The L1 index is not mode-aware, so
+    routing in migration mode could land on a chat package — and chat tools get
+    no credentials there (the client injects source_*/target_* for the migration
+    module and tenant_config for everything else, and tenant_config is empty in
+    migration mode), so the call would fail at the SDK boundary with something
+    unhelpful.
+    """
+    if mode == "migration":
+        return list(mode_tools or _load_all_package_tools("migration")), "migration", "all", 0
+    return await _navigate_to_tools(step_message, [], trace_id)
+
+
 def _capability_catalog(mode: str) -> str:
     """One line per tool — `tool_id: first line of description` — for the
     planner (plan/replan). NO schemas: the planner writes prose steps, it
@@ -494,7 +726,29 @@ async def _replan(
 def _metadata_record(tool_id: str, result: Any) -> Dict[str, Any]:
     """The privacy-safe view of a tool result for summarization-OFF turns: what
     ran and whether it worked — never the data itself. This is what goes into the
-    LLM's history when data must not reach the model."""
+    LLM's history when data must not reach the model.
+
+    `{tool, ok, count}`, plus `error` when the step FAILED — a deliberate, narrow
+    exception, decided 2026-08-08.
+
+    Result data stays withheld; the failure reason does not. Without it the loop
+    is blind exactly when it needs to think: a failed create left the decide call
+    with `ok: false` and nothing else, and it invented a cause ("ensure the email
+    is not already in use") that happened to be right. A recovery reasoned from a
+    guess is worse than one reasoned from the truth, and the alternative — a code
+    table classifying failures into safe labels — replaces the agent's judgement
+    with our own enumeration of what can go wrong.
+
+    The exception is narrow because an error normally restates what the user
+    already told us ("username/email already exists" for the address THEY typed),
+    so it rarely carries anything the model has not already seen in the request.
+    Not never, though: an error raised deeper down can quote a value the user
+    never supplied — a row in a failing query, a name from a list the tool
+    fetched. That residual exposure is accepted and documented in README.md
+    ("Security & data handling"), not hidden.
+
+    Successful results are unaffected: no payload, no rows, no field values.
+    """
     rec: Dict[str, Any] = {"tool": tool_id, "ok": bool(result.get("ok")) if isinstance(result, dict) else False}
     if isinstance(result, dict):
         payload = result.get("result")
@@ -505,11 +759,46 @@ def _metadata_record(tool_id: str, result: Any) -> Dict[str, Any]:
     return rec
 
 
-async def _invoke_tool_traced(mcp_client: McpClient, tool_id: str, args: Dict[str, Any]) -> Dict[str, Any]:
+def _tool_matches_mode(tool_id: str, mode: str) -> bool:
+    """Is this tool reachable in this mode at all?
+
+    Migration mode may use ONLY the migration module, and chat mode may not
+    touch it. Mode was previously enforced by every call site remembering to
+    filter — the catalog filtered, routing filtered, the API filtered — which
+    means one missed check anywhere puts an unreachable tool back in play. It
+    already did: the routing bypass covered step 1 only, so step 2 of a
+    multi-asset migration could select a chat tool.
+    """
+    is_migration_tool = (TOOL_REGISTRY.get(tool_id) or {}).get("module") == "migration"
+    return is_migration_tool == (mode == "migration")
+
+
+async def _invoke_tool_traced(
+    mcp_client: McpClient, tool_id: str, args: Dict[str, Any], mode: str = "chat"
+) -> Dict[str, Any]:
     """Execute one MCP tool call with observability: a `tool` child run in the
     LangSmith trace and a row in tool_calls.csv. Both carry METADATA ONLY
     (tool_id, scrubbed args, ok, count, duration) — result payloads never leave
-    for either destination. Errors from the tool propagate unchanged."""
+    for either destination. Errors from the tool propagate unchanged.
+
+    This is the one place every execution path converges, so the mode boundary
+    is enforced here rather than trusted upstream. A violation is a bug in the
+    caller, not user error: refuse it, log it loudly, and hand the loop an
+    ordinary failed result so the turn degrades instead of dying — and so the
+    tool never goes out with the wrong credentials attached (chat tools get
+    `tenant_config`, which is empty in migration mode).
+    """
+    if not _tool_matches_mode(tool_id, mode):
+        logger.error(
+            "Mode violation: %s is not reachable in %s mode — refusing to execute.",
+            tool_id,
+            mode,
+        )
+        return {
+            "ok": False,
+            "tool_id": tool_id,
+            "error": f"{tool_id} is not available in {mode} mode.",
+        }
     meta = TOOL_REGISTRY.get(tool_id) or {}
     t0 = time.perf_counter()
     try:
@@ -652,15 +941,54 @@ async def _finalize_from_transcript(
     return _describe_results_local(raw_results)
 
 
-async def _reask_clarification_or_giveup(resume_clar: Dict[str, Any], turn_trace_id: str, trace: Dict[str, Any]) -> str:
+async def _answer_clarify_question(pc_meta: Dict[str, Any], user_text: str, trace_id: Optional[str]) -> str:
+    """Answer a user's question ABOUT a pending clarification from the tool's own
+    definition (description + parameter docs + defaults). One LLM call, schema
+    only — no result data, so it is safe in both summarization modes. Returns ""
+    on any failure: the structured re-ask below stands on its own."""
+    if not (user_text or "").strip():
+        return ""
+    definition = {
+        "purpose": (pc_meta.get("description") or "").strip(),
+        "parameters": pc_meta.get("parameters") or {},
+    }
+    try:
+        data = await call_llm_raw(
+            [
+                {"role": "system", "content": CLARIFY_ANSWER_SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": "Operation definition:\n"
+                    + json.dumps(_scrub_secrets(definition), ensure_ascii=False, indent=1)
+                    + f"\n\nThe user's question:\n{user_text}",
+                },
+            ],
+            tools=None,
+            trace_id=trace_id,
+            label="clarify_answer",
+        )
+        content, _ = _pick_tool_calls_from_llm_response(data)
+        return (content or "").strip()
+    except Exception as exc:  # noqa: BLE001 — an unanswered question must not block the re-ask
+        logger.warning("Clarify-question answer failed (%s); re-asking without it.", exc)
+        return ""
+
+
+async def _reask_clarification_or_giveup(
+    resume_clar: Dict[str, Any], turn_trace_id: str, trace: Dict[str, Any], user_text: str = ""
+) -> str:
     """Declined-clarification resume whose answer had no clear intent either — it
-    was a non-answer ("I'm not sure"), not a topic change. Re-ask (counting the
-    attempt) or give up at the cap. Sets LAST_PENDING_CLARIFICATION when re-asking."""
+    was a non-answer ("I'm not sure") or a question about the operation, not a
+    topic change. Answer their question if they asked one (from the tool's own
+    definition), then re-ask (counting the attempt) or give up at the cap. Sets
+    LAST_PENDING_CLARIFICATION when re-asking."""
     global LAST_PENDING_CLARIFICATION
     pc_tool_id = resume_clar.get("tool_id") or ""
     pc_meta = TOOL_REGISTRY.get(pc_tool_id) or {}
     pc_missing = resume_clar.get("missing_fields") or []
     pc_filled = resume_clar.get("filled_args") or {}
+    answer = await _answer_clarify_question(pc_meta, user_text, turn_trace_id)
+    prefix = f"{answer}\n\n" if answer else ""
     attempts = int(resume_clar.get("attempts", 1)) + 1
     if attempts > CLARIFY_MAX_ATTEMPTS:
         logger.info(
@@ -668,8 +996,9 @@ async def _reask_clarification_or_giveup(resume_clar: Dict[str, Any], turn_trace
         )
         trace["outcome"] = "clarification_exhausted"
         _write_llm_trace(trace)
-        return _clarification_giveup_message(pc_tool_id, pc_meta, pc_missing)
+        return prefix + _clarification_giveup_message(pc_tool_id, pc_meta, pc_missing)
     question = await _generate_clarification_question(pc_tool_id, pc_meta, pc_missing, pc_filled, turn_trace_id)
+    question = prefix + question
     LAST_PENDING_CLARIFICATION = {
         "tool_id": pc_tool_id,
         "missing_fields": pc_missing,
@@ -687,12 +1016,26 @@ async def _reask_clarification_or_giveup(resume_clar: Dict[str, Any], turn_trace
 # dispatch a step, run it, decide the next move, replan on failure. The planner
 # (_make_plan) drafts; this loop orchestrates.
 async def _run_loop_engine(**kwargs: Any) -> str:
-    """Engine dispatch: the same turn contract, two interchangeable harnesses.
+    """Turn dispatch.
 
-    FES_AGENT_ENGINE=custom (default) → the hand-rolled `_reactive_loop`.
-    FES_AGENT_ENGINE=langgraph        → graph_engine.run_graph_loop (LangGraph
-    StateGraph over the SAME helpers — thin nodes, no checkpointer/DB/files).
-    Read dynamically so tests can flip engines per run without reimport."""
+    Migration mode takes its own path (`migration_flow`): plan once, order in
+    code, execute in sequence. It is shared by both engines — FES_AGENT_ENGINE
+    exists to model the chat loop's branching, and a linear sequence has none.
+
+    Chat mode picks a harness, same contract either way:
+      FES_AGENT_ENGINE=custom (default) → the hand-rolled `_reactive_loop`.
+      FES_AGENT_ENGINE=langgraph        → graph_engine.run_graph_loop (LangGraph
+      StateGraph over the SAME helpers — thin nodes, no checkpointer/DB/files).
+    Read dynamically so tests can flip engines per run without reimport.
+    """
+    # Only migration_flow understands a whole-plan pause; the loop re-derives.
+    pending_plan = kwargs.pop("pending_plan", None)
+
+    if kwargs.get("mode") == "migration" and MIGRATION_SINGLE_SHOT:
+        from . import migration_flow  # lazy: avoids circular import at module load
+
+        return await migration_flow.run(pending_plan=pending_plan, **kwargs)
+
     if os.getenv("FES_AGENT_ENGINE", "custom").strip().lower() == "langgraph":
         from . import graph_engine  # lazy: avoids circular import at module load
 
@@ -844,7 +1187,7 @@ async def _reactive_loop(
             bschema = bmeta.get("parameters")
             if bschema:
                 try:
-                    jsonschema.validate(instance=bargs, schema=bschema, format_checker=jsonschema.FormatChecker())
+                    _validate_tool_args(bschema, bargs)
                 except jsonschema.ValidationError:
                     missing = _missing_required_fields(bargs, bschema)
                     if missing:
@@ -863,7 +1206,7 @@ async def _reactive_loop(
                     return {"status": "deferred", "step": branch_step, "op": op_text, "why": "bad args"}
 
             if bool(bmeta.get("mutates")) and REQUIRE_MUTATION_CONFIRM:
-                if _approval_key(btool_id, bargs) not in approved_mutations:
+                if not _consume_approval(approved_mutations, btool_id, bargs):
                     # Gating needs one-at-a-time UX — the sequential loop handles it.
                     return {"status": "deferred", "step": branch_step, "op": op_text, "why": "mutation gate"}
             if bool(bmeta.get("mutates")):
@@ -876,7 +1219,7 @@ async def _reactive_loop(
             await _emit_agent_progress(
                 {"phase": "executing", "step": branch_step, "max_steps": MAX_AGENT_STEPS, "tool_id": btool_id}
             )
-            bresult = await _invoke_tool_traced(mcp_client, btool_id, bargs)
+            bresult = await _invoke_tool_traced(mcp_client, btool_id, bargs, mode)
             await _emit_agent_progress(
                 {
                     "phase": "completed",
@@ -1005,8 +1348,10 @@ async def _reactive_loop(
             step_message = {"role": "user", "content": first_op if (first_op or "").strip() else user_text}
 
             if mode == "migration":
-                nav_tools = _load_all_package_tools("migration") or passed_tools
-                nav_pkg, nav_mixin = "migration", "all"
+                # The 9 tools, already scoped for this turn — no tree walk.
+                nav_tools, nav_pkg, nav_mixin, _ = await _navigate_for_step(
+                    step_message, mode, turn_trace_id, passed_tools
+                )
             else:
                 nav_tools, nav_pkg, nav_mixin, _routing_ms = await _navigate_to_tools(
                     step_message, history, turn_trace_id
@@ -1014,7 +1359,9 @@ async def _reactive_loop(
                 if nav_pkg == "__unclear__":
                     if resume_clarification:
                         # Declined clarification + no fresh intent = a non-answer.
-                        return await _reask_clarification_or_giveup(resume_clarification, turn_trace_id, trace)
+                        return await _reask_clarification_or_giveup(
+                            resume_clarification, turn_trace_id, trace, user_text
+                        )
                     trace["outcome"] = "unclear_intent"
                     _write_llm_trace(trace)
                     return (
@@ -1026,10 +1373,26 @@ async def _reactive_loop(
 
             _trace_pkg = f"{nav_pkg}/{nav_mixin}" if nav_mixin else nav_pkg
             trace["routing_module"] = _trace_pkg
+            # The request itself goes alongside the step text, as it does in the
+            # fan-out branch, the steps>0 path and both graph-engine nodes — this
+            # was the one selection site missing it.
+            #
+            # `history` is prior TURNS, not the current message, so without this
+            # the call saw only the planner's sentence. Anything the planner left
+            # out of that sentence was then unrecoverable: a request for "a user
+            # with the viewer role" planned as "1. Create a user with the email
+            # X / 2. Assign the viewer role" produced a create with no role at
+            # all, and the SDK rejected it. The value still existed in the user's
+            # own words; we simply were not showing them.
+            #
+            # Skipped when the step text IS the request (the single-step
+            # faithfulness guard sets them equal) — no point sending it twice.
+            _same = (step_message.get("content") or "").strip() == (latest_user_message.get("content") or "").strip()
             planning_messages = [
                 {"role": "system", "content": PLANNING_SYSTEM_PROMPT},
                 {"role": "system", "content": planning_context},
                 *history,
+                *([] if _same else [latest_user_message]),
                 step_message,
             ]
             try:
@@ -1038,7 +1401,7 @@ async def _reactive_loop(
             except Exception as exc:  # noqa: BLE001 — planning failure → keyword fallback
                 logger.warning("Planning LLM call failed (%s). Using fallback direct tool.", exc)
                 trace["outcome"] = "fallback"
-                summary, result = await _fallback_direct_tool(user_text, mcp_client)
+                summary, result = await _fallback_direct_tool(user_text, mcp_client, mode)
                 LAST_TOOL_RESULT = result
                 LAST_STEP_RESULTS.append({"step": 1, "tool_id": result.get("tool_id", "fallback"), "result": result})
                 _write_llm_trace(trace)
@@ -1141,7 +1504,9 @@ async def _reactive_loop(
 
             await _emit_agent_progress({"phase": "planning", "step": step_number, "max_steps": MAX_AGENT_STEPS})
             step_message = {"role": "user", "content": remains}
-            nav_tools, nav_pkg, nav_mixin, _ms = await _navigate_to_tools(step_message, [], turn_trace_id)
+            nav_tools, nav_pkg, nav_mixin, _ms = await _navigate_for_step(
+                step_message, mode, turn_trace_id, passed_tools
+            )
             if (not nav_tools) and nav_pkg and nav_pkg != "__unclear__":
                 nav_tools = _load_all_package_tools(nav_pkg)
             if not nav_tools:
@@ -1208,7 +1573,7 @@ async def _reactive_loop(
         tool_schema = meta.get("parameters")
         if tool_schema:
             try:
-                jsonschema.validate(instance=args, schema=tool_schema, format_checker=jsonschema.FormatChecker())
+                _validate_tool_args(tool_schema, args)
             except jsonschema.ValidationError as _ve:
                 missing = _missing_required_fields(args, tool_schema)
                 if missing and is_first:
@@ -1259,12 +1624,11 @@ async def _reactive_loop(
                 return _loop_partial_message(steps_executed, remains, f"invalid argument for {tool_id}: {_ve.message}")
 
         logger.info("Tool selected: %s (mutates=%s)", tool_id, bool(meta.get("mutates")))
-        _log_json_truncated("Tool args (from tool selection)", args)
+        _log_json("Tool args (from tool selection)", args)
 
         # ------------------------------------------------------------------ gate
         if bool(meta.get("mutates")) and REQUIRE_MUTATION_CONFIRM:
-            key = _approval_key(tool_id, args)
-            if key not in approved_mutations:
+            if not _consume_approval(approved_mutations, tool_id, args):
                 explanation = await _generate_mutation_explanation(tool_id, meta, args, turn_trace_id)
                 LAST_TOOL_RESULT = {
                     "ok": False,
@@ -1294,7 +1658,7 @@ async def _reactive_loop(
         await _emit_agent_progress(
             {"phase": "executing", "step": step_number, "max_steps": MAX_AGENT_STEPS, "tool_id": tool_id}
         )
-        result = await _invoke_tool_traced(mcp_client, tool_id, args)
+        result = await _invoke_tool_traced(mcp_client, tool_id, args, mode)
         LAST_TOOL_RESULT = result
         LAST_STEP_RESULTS.append({"step": step_number, "tool_id": tool_id, "result": result})
         raw_results.append((tool_id, result))
@@ -1374,6 +1738,14 @@ async def call_llm_with_tools(
     mode = _infer_mode_from_tools(tools)
     planning_context = MIGRATION_PLANNING_CONTEXT_PROMPT if mode == "migration" else CHAT_PLANNING_CONTEXT_PROMPT
 
+    # Scope the turn's tool universe ONCE, here, rather than asking every code
+    # path downstream to remember the mode. `tools` already arrives filtered by
+    # the UI's mode radio → _select_tools_for_mode, but that function falls back
+    # to returning ALL tools if its filter comes up empty (a broken-registry
+    # safety valve), which in migration mode would put chat tools back in play.
+    # Re-filter so what the loop holds is authoritative, not advisory.
+    tools = [t for t in (tools or []) if _tool_matches_mode(((t.get("function") or {}).get("name") or ""), mode)]
+
     # One UUID per agent turn — groups planning + summarization LLM calls into a
     # single LangSmith trace. Contains no credentials or customer data.
     turn_trace_id = str(uuid.uuid4())
@@ -1425,11 +1797,39 @@ async def call_llm_with_tools(
     # loop with the saved transcript. Any other input drops the paused loop and
     # processes normally (typing something else = implicit cancel).
     # -------------------------------------------------------------------------
+    # A migration pause under single-shot is a whole PLAN, not one tool —
+    # migration_flow owns matching the approval and running the sequence.
+    if mode == "migration" and MIGRATION_SINGLE_SHOT and pending_loop and pending_loop.get("plan") is None:
+        # A per-step pause left over from the reactive loop (kill switch flipped
+        # mid-session, or an older deploy). Executing it here and then handing on
+        # would make the flow replan and re-propose work that just ran, so drop
+        # it and treat this as a fresh request.
+        logger.info("Dropping a per-step migration pause; single-shot plans and approves as a whole.")
+        pending_loop = None
+
+    if pending_loop and pending_loop.get("plan") is not None:
+        return await _run_loop_engine(
+            latest_user_message=latest_user_message,
+            history=_history,
+            planning_context=planning_context,
+            mode=mode,
+            passed_tools=tools,
+            user_text=user_text,
+            mcp_client=mcp_client,
+            approved_mutations=approved_mutations,
+            summ_on=allow_summarization_flag,
+            turn_trace_id=turn_trace_id,
+            trace=_trace,
+            transcript=list(pending_loop.get("transcript") or []),
+            raw_results=list(pending_loop.get("raw_results") or []),
+            steps_executed=int(pending_loop.get("steps_executed", 0)),
+            pending_plan=pending_loop,
+        )
+
     if pending_loop:
         _pl_tool_id = str(pending_loop.get("tool_id") or "")
         _pl_args = pending_loop.get("arguments") or {}
-        _pl_key = _approval_key(_pl_tool_id, _pl_args)
-        if _pl_key in approved_mutations and _pl_tool_id in TOOL_REGISTRY:
+        if _pl_tool_id in TOOL_REGISTRY and _consume_approval(approved_mutations, _pl_tool_id, _pl_args):
             _pl_meta = TOOL_REGISTRY.get(_pl_tool_id) or {}
             audit_logger.info(
                 "EXECUTING mutation (loop resume) tool=%s args=%s",
@@ -1440,7 +1840,7 @@ async def call_llm_with_tools(
             await _emit_agent_progress(
                 {"phase": "executing", "step": _pl_step, "max_steps": MAX_AGENT_STEPS, "tool_id": _pl_tool_id}
             )
-            result = await _invoke_tool_traced(mcp_client, _pl_tool_id, _pl_args)
+            result = await _invoke_tool_traced(mcp_client, _pl_tool_id, _pl_args, mode)
             LAST_TOOL_RESULT = result
             LAST_STEP_RESULTS.append({"step": _pl_step, "tool_id": _pl_tool_id, "result": result})
             await _emit_agent_progress(

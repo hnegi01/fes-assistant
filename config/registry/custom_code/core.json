@@ -21,21 +21,12 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Create a new Python notebook for data analysis with the name 'Sales Analysis 2023'.",
+        "user_query": "Create a new Python notebook named 'Sales Analysis 2023'.",
         "arguments": {
           "notebook_data": {
             "notebookType": "python",
-            "displayName": "Sales Analysis 2023",
-            "manifest": {
-              "description": "Notebook for analyzing sales data for 2023",
-              "tags": [
-                "sales",
-                "analysis",
-                "2023"
-              ]
-            }
-          },
-          "use_internal_header": true
+            "displayName": "Sales Analysis 2023"
+          }
         },
         "notes": "This call creates a Python notebook named 'Sales Analysis 2023' with metadata describing its purpose."
       },
@@ -95,7 +86,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I delete the notebook with ID 'abc123'?",
+        "user_query": "Delete the notebook with ID 'abc123'.",
         "arguments": {
           "notebook_id": "abc123"
         },
@@ -135,7 +126,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I export the notebook definition for the sales analysis notebook?",
+        "user_query": "Export the notebook definition for notebook 123e4567-e89b-12d3-a456-426614174000.",
         "arguments": {
           "notebook_id": "123e4567-e89b-12d3-a456-426614174000"
         },
@@ -219,7 +210,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What files are in the 'data-analysis' notebook folder?",
+        "user_query": "List the files in the 'data-analysis' notebook folder.",
         "arguments": {
           "folder_id": "data-analysis"
         },
@@ -264,7 +255,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I rename the notebook file 'analysis.ipynb' to 'sales_analysis.ipynb'?",
+        "user_query": "Rename the notebook file at 'notebooks/custom_code_notebooks/12345/analysis.ipynb' to 'sales_analysis.ipynb'.",
         "arguments": {
           "resource_path": "notebooks/custom_code_notebooks/12345/analysis.ipynb",
           "payload": {
@@ -319,7 +310,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I rename the 'DataScienceProjects' notebook folder to 'MLProjects'?",
+        "user_query": "Rename the 'DataScienceProjects' notebook folder to 'MLProjects'.",
         "arguments": {
           "old_id": "DataScienceProjects",
           "payload": {
@@ -377,14 +368,13 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I update the title and description of a notebook?",
+        "user_query": "Update notebook 123e4567-e89b-12d3-a456-426614174000 — set its title to 'Updated Sales Analysis' and its description to 'Notebook with updated insights for Q4 sales.'",
         "arguments": {
           "notebook_id": "123e4567-e89b-12d3-a456-426614174000",
           "notebook_data": {
             "title": "Updated Sales Analysis",
             "description": "Notebook with updated insights for Q4 sales."
-          },
-          "use_internal_header": true
+          }
         },
         "notes": "This call updates the title and description of the specified notebook. Use this when you need to modify metadata for an existing notebook."
       },

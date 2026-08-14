@@ -17,12 +17,11 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I create a new connection for a PostgreSQL database?",
+        "user_query": "Create a PostgreSQL connection named 'SalesDB Connection' pointing at host sales-db.example.com on port 5432, database 'sales', with username analytics_user and password securepassword123, created by admin_user, enabled for live and elasticube models.",
         "arguments": {
           "connection_payload": {
             "provider": "postgresql",
             "name": "SalesDB Connection",
-            "description": "Connection to the Sales database for analytics.",
             "parameters": {
               "host": "sales-db.example.com",
               "port": 5432,
@@ -112,7 +111,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How do I create a connection payload for an Athena data source?",
+        "user_query": "Build an Athena connection payload named 'Athena_Connection_1' for region us-west-2 with S3 output location s3://athena-query-results/, schema 'default', workgroup 'primary', using access key AKIAEXAMPLE and secret SECRETEXAMPLE.",
         "arguments": {
           "datasource_type": "Athena",
           "connection_params": {
@@ -121,7 +120,6 @@
             "s3_output_location": "s3://athena-query-results/",
             "aws_access_key": "AKIAEXAMPLE",
             "aws_secret_key": "SECRETEXAMPLE",
-            "description": "Connection to Athena for analytics",
             "schema": "default",
             "additional_parameters": {
               "workgroup": "primary"
@@ -219,7 +217,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "How can I see all the connections available in my Sisense environment?",
+        "user_query": "List all the connections available in my Sisense environment.",
         "arguments": {},
         "notes": "This call retrieves a list of all connections configured in the Sisense instance. Use it to review available data sources."
       },
@@ -268,7 +266,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What is the schema of the 'sales_data' table in the 'analytics_db' database?",
+        "user_query": "Show the schema of the 'sales_data' table in the 'analytics_db' database, 'public' schema, on the 'primary_data_source' connection.",
         "arguments": {
           "connection_name": "primary_data_source",
           "database_name": "analytics_db",
@@ -322,7 +320,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I update the name and parameters of an existing connection?",
+        "user_query": "Update connection conn_12345 — rename it to 'Updated Connection Name' and point it at host new-database-host.example.com on port 5432.",
         "arguments": {
           "connection_id": "conn_12345",
           "connection_data": {

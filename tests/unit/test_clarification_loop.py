@@ -159,14 +159,16 @@ def test_missing_required_asks_and_records_pending():
     client = _fake_client()
     reply, _nav, _raw = _run_turn(
         pending=None,
-        # 1st call_llm_raw = planning (tool chosen, no args); 2nd = clarification question.
-        llm_responses=[_plan_resp("access_management.get_user", "{}"), _text_resp("Which user's email?")],
+        # 1st call_llm_raw = planning (tool chosen, no args). The clarification
+        # question itself is rendered in code — no second LLM call.
+        llm_responses=[_plan_resp("access_management.get_user", "{}")],
         nav_tools=[_tool_def("access_management.get_user", GET_USER_SCHEMA)],
         client=client,
     )
 
     client.invoke_tool.assert_not_called()
-    assert reply == "Which user's email?"
+    assert reply.startswith("I need a bit more information")
+    assert "Email of the user" in reply, "the bullet comes from the schema's own description"
     assert m.LAST_PENDING_CLARIFICATION is not None
     assert m.LAST_PENDING_CLARIFICATION["tool_id"] == "access_management.get_user"
     assert m.LAST_PENDING_CLARIFICATION["missing_fields"] == ["user_email"]
@@ -474,3 +476,70 @@ def test_approved_mutation_executes():
     assert m.LAST_PENDING_CLARIFICATION is None
     assert m.LAST_TOOL_RESULT is not None
     assert m.LAST_TOOL_RESULT.get("ok") is True
+
+
+def test_clarification_shows_the_registry_example_as_a_phrasing_template():
+    """ "Paired positionally" tells the user little; the curated example[0]
+    query shows the shape to copy. Code-appended from the registry — no LLM."""
+    import asyncio
+
+    meta = {
+        "description": "Migrate shares for specific dashboards from the source to the target environment.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "source_dashboard_ids": {"type": "array", "description": "Dashboard IDs from the source environment."},
+                "target_dashboard_ids": {"type": "array", "description": "Dashboard IDs from the target environment."},
+            },
+            "required": ["source_dashboard_ids", "target_dashboard_ids"],
+        },
+        "examples": [
+            {
+                "user_query": "Migrate shares from source dashboards dash123 to target dashboards dashABC.",
+                "arguments": {"source_dashboard_ids": ["dash123"], "target_dashboard_ids": ["dashABC"]},
+            }
+        ],
+    }
+    q = asyncio.get_event_loop().run_until_complete(
+        m._generate_clarification_question(
+            "migration.migrate_dashboard_shares", meta, ["source_dashboard_ids", "target_dashboard_ids"], {}, "t"
+        )
+    )
+    # Same renderer as the approval dialog (_example_hint) — one format, no drift.
+    assert '*For example, you could ask: "Migrate shares from source dashboards dash123' in q
+
+
+def test_clarification_without_examples_omits_the_example_line():
+    meta = {"description": "Get a user.", "parameters": GET_USER_SCHEMA}
+    import asyncio
+
+    q = asyncio.get_event_loop().run_until_complete(
+        m._generate_clarification_question("access_management.get_user", meta, ["user_email"], {}, "t")
+    )
+    assert "For example" not in q
+
+
+def test_empty_containers_count_as_missing_required():
+    """The model expresses "the user gave me nothing" three ways: omitting the
+    key, null/"", or an EMPTY LIST. All three must clarify. Seen live
+    2026-08-14: migrate_dashboard_shares gated with source/target id lists of
+    [] — schema-valid, missing-check-blind, and an approval dialog proposing a
+    migration of nothing. Emptiness now shares _is_filled with the optionals."""
+    schema = {
+        "type": "object",
+        "properties": {
+            "source_dashboard_ids": {"type": "array"},
+            "target_dashboard_ids": {"type": "array"},
+            "change_ownership": {"type": "boolean"},
+        },
+        "required": ["source_dashboard_ids", "target_dashboard_ids"],
+    }
+    assert m._missing_required_fields({}, schema) == ["source_dashboard_ids", "target_dashboard_ids"]
+    assert m._missing_required_fields({"source_dashboard_ids": [], "target_dashboard_ids": []}, schema) == [
+        "source_dashboard_ids",
+        "target_dashboard_ids",
+    ]
+    assert m._missing_required_fields({"source_dashboard_ids": ["d1"], "target_dashboard_ids": []}, schema) == [
+        "target_dashboard_ids"
+    ]
+    assert m._missing_required_fields({"source_dashboard_ids": ["d1"], "target_dashboard_ids": ["dA"]}, schema) == []

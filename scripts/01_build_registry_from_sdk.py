@@ -345,6 +345,13 @@ def _split_format_marker(description: str) -> tuple:
 # ---------------------------------------------------------------------------
 
 
+# Signature params that must never reach the registry: no caller can supply them.
+# `emit` is the SDK's progress callback — the MCP server injects it for streaming
+# tools and drops any client-supplied value. Leaving it in the schema only gives
+# the tool-selection LLM a slot to invent a fake callback for.
+_INTERNAL_PARAMS = {"self", "emit"}
+
+
 def json_schema_from_signature(
     sig: inspect.Signature,
     doc: str,
@@ -361,7 +368,7 @@ def json_schema_from_signature(
     doc_meta = _parse_param_doc_meta(doc)
 
     for name, p in sig.parameters.items():
-        if name == "self":
+        if name in _INTERNAL_PARAMS:
             continue
 
         # Start with type from default

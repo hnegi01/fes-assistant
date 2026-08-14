@@ -17,7 +17,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What are the details of the 'Data Analysts' group?",
+        "user_query": "Show the details of the 'Data Analysts' group.",
         "arguments": {
           "name": "Data Analysts"
         },
@@ -57,7 +57,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Who are the members of the 'Data Analysts' group?",
+        "user_query": "List the members of the 'Data Analysts' group.",
         "arguments": {
           "group_name": "Data Analysts"
         },
@@ -90,7 +90,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "Which groups are associated with all users in the system?",
+        "user_query": "Show all groups with the users belonging to each.",
         "arguments": {},
         "notes": "This call retrieves all groups and their associated users, excluding system-wide groups like 'Everyone' and 'All users in system'. Useful for auditing user-group mappings."
       },

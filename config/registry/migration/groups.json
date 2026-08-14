@@ -4,40 +4,20 @@
     "description": "Migrate groups from the source environment to the target environment using the bulk endpoint.",
     "parameters": {
       "type": "object",
-      "properties": {
-        "emit": {
-          "type": "object",
-          "description": "Optional callback invoked with structured progress events. If not provided, the method behaves like a standard synchronous call and only returns a final result. Each emitted event is a dictionary that typically includes: - ``type``: str, event type (e.g., \"started\", \"progress\", \"completed\", \"error\") - ``step``: str, logical step name - ``message``: str, human-readable message - Additional fields depending on the event (counts, status_code, etc.)"
-        }
-      },
+      "properties": {},
       "required": []
     },
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I migrate all user groups from the old environment to the new one and track progress?",
-        "arguments": {
-          "emit": {
-            "type": "function",
-            "description": "Callback function to handle progress events."
-          }
-        },
-        "notes": "This call migrates all user groups from the source environment to the target environment and uses the 'emit' callback to provide real-time progress updates."
-      },
-      {
-        "user_query": "I need to migrate groups between environments but don't need progress updates. How can I do that?",
+        "user_query": "Migrate all user groups from the source environment to the target environment.",
         "arguments": {},
-        "notes": "This call migrates all user groups without providing progress updates. Use this when synchronous execution is sufficient."
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
       },
       {
-        "user_query": "Can I migrate groups and log progress events for debugging purposes?",
-        "arguments": {
-          "emit": {
-            "type": "function",
-            "description": "Callback function that logs progress events to a file."
-          }
-        },
-        "notes": "This call migrates all user groups and logs progress events for debugging or auditing purposes."
+        "user_query": "Copy every group over to the new environment.",
+        "arguments": {},
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
       }
     ]
   },
@@ -62,7 +42,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "How can I migrate the 'Sales Team' and 'Marketing Team' groups to the new environment?",
+        "user_query": "Migrate the 'Sales Team' and 'Marketing Team' groups to the target environment.",
         "arguments": {
           "group_name_list": [
             "Sales Team",

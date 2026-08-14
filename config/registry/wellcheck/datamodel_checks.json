@@ -210,7 +210,7 @@
     "mutates": false,
     "examples": [
       {
-        "user_query": "What are the datatypes of the columns used in RLS rules for the 'Sales Dashboard' data model?",
+        "user_query": "Check the datatypes of the columns used in RLS rules for the 'Sales Dashboard' data model.",
         "arguments": {
           "datamodels": [
             "Sales Dashboard"
