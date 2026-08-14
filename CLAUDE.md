@@ -535,7 +535,6 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 | `PYSISENSE_MAX_CONCURRENT_MIGRATIONS` | `3` | Max parallel migrations |
 | `PYSISENSE_MAX_CONCURRENT_READ_TOOLS` | `5` | Max parallel read-tool calls |
 | `MCP_TOOL_NAME_MODE` | `claude` | `claude` (underscores) vs `canonical` (dots) for tool names |
-| `PYSISENSE_USE_DEFAULT_TENANT` | `false` | Use env-defined default Sisense tenant |
 | `PYSISENSE_REGISTRY_PATH` | `config/tools.registry.with_examples.json` | Path to tool registry |
 | `FES_TOOL_ALLOWLIST` | `config/allowed_tools.txt` | Hand-edited curated tool surface — only listed tool_ids are exposed to the agent or the MCP server. Missing file = allow all (warns), never deny all |
 | `FES_TOOL_EXAMPLES` | `0` | Few-shot examples per tool on the tool-**selection** call: 0 = none (prompt byte-identical to pre-flag), 1 = the vetted `example[0]` (local `.env` runs at 1 since 2026-08-14), 2–3 = uncurated siblings. Model-facing only — users always see `example[0]` in dialogs/clarifications regardless. ~+35 tokens/tool |

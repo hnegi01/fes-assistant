@@ -573,22 +573,18 @@ Steps:
 
 Restart Claude Desktop after saving the file.
 
-### 3) Avoid exposing Sisense credentials in Claude
+### 3) Credentials must come from the caller
 
-To avoid putting your Sisense domain/token inside Claude, set them as environment variables on the machine where the MCP server is running (for example in that machine’s `.env`).
+Every tool call must carry its Sisense credentials (`domain`/`token`, or
+`source_*`/`target_*` for migration tools). The FES backend injects these from
+the UI sidebar on every call; a client that omits them gets an error.
 
-The MCP server’s tools_core.py includes optional default-tenant fallback logic that fills in the Sisense domain and token from environment variables when the client omits them, before invoking the underlying SDK method.
-
-Add these env vars on the MCP server host:
-
-```bash
-PYSISENSE_USE_DEFAULT_TENANT=true
-PYSISENSE_DEFAULT_DOMAIN="https://your-sisense-domain"
-PYSISENSE_DEFAULT_TOKEN="your-api-token"
-PYSISENSE_DEFAULT_SSL=false
-```
-
-Important: You do not need to tell Claude to pass empty domain/token fields. If default-tenant fallback is enabled on the MCP server, the server can fill them in from its environment.
+> An env-based default-tenant fallback (`PYSISENSE_USE_DEFAULT_TENANT` /
+> `PYSISENSE_USE_DEFAULT_MIGRATION_TENANTS`) existed for credential-less
+> clients such as Claude Desktop. It was removed 2026-08-14: with the
+> assistant as the only supported client, a fallback silently redirects
+> operations — including migration writes — to whatever environment the
+> server's env last pointed at. Missing credentials should fail loudly.
 
 Note on SSE in Claude Desktop:
 - The MCP server supports SSE progress streaming.

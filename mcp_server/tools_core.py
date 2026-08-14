@@ -243,16 +243,6 @@ def _env_flag(name: str, default: str = "false") -> bool:
     return os.getenv(name, default).strip().lower() in ("1", "true", "yes", "y", "on")
 
 
-def _env_bool(name: str, default: bool) -> bool:
-    """
-    Parse a boolean-ish environment variable with a Python bool default.
-    """
-    raw = os.getenv(name)
-    if raw is None or raw.strip() == "":
-        return default
-    return raw.strip().lower() in ("1", "true", "yes", "y", "on")
-
-
 ALLOW_MUTATIONS = _env_flag(ALLOW_MUTATIONS_ENV_VAR, ALLOW_MUTATIONS_DEFAULT)
 
 logger.info("Config:")
@@ -272,23 +262,6 @@ if not any(isinstance(h, logging.FileHandler) for h in audit_logger.handlers):
     audit_fmt = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     audit_fh.setFormatter(audit_fmt)
     audit_logger.addHandler(audit_fh)
-
-
-# -----------------------------------------------------------------------------
-# Default tenant env fallbacks (useful for Claude Desktop)
-# -----------------------------------------------------------------------------
-DEFAULT_TENANT_ENABLED_ENV_VAR = "PYSISENSE_USE_DEFAULT_TENANT"
-DEFAULT_TENANT_DOMAIN_ENV_VAR = "PYSISENSE_DEFAULT_DOMAIN"
-DEFAULT_TENANT_TOKEN_ENV_VAR = "PYSISENSE_DEFAULT_TOKEN"
-DEFAULT_TENANT_SSL_ENV_VAR = "PYSISENSE_DEFAULT_SSL"
-
-DEFAULT_MIGRATION_TENANTS_ENABLED_ENV_VAR = "PYSISENSE_USE_DEFAULT_MIGRATION_TENANTS"
-DEFAULT_SOURCE_DOMAIN_ENV_VAR = "PYSISENSE_DEFAULT_SOURCE_DOMAIN"
-DEFAULT_SOURCE_TOKEN_ENV_VAR = "PYSISENSE_DEFAULT_SOURCE_TOKEN"
-DEFAULT_SOURCE_SSL_ENV_VAR = "PYSISENSE_DEFAULT_SOURCE_SSL"
-DEFAULT_TARGET_DOMAIN_ENV_VAR = "PYSISENSE_DEFAULT_TARGET_DOMAIN"
-DEFAULT_TARGET_TOKEN_ENV_VAR = "PYSISENSE_DEFAULT_TARGET_TOKEN"
-DEFAULT_TARGET_SSL_ENV_VAR = "PYSISENSE_DEFAULT_TARGET_SSL"
 
 
 # -----------------------------------------------------------------------------
@@ -564,31 +537,16 @@ def _extract_tenant_from_arguments(arguments: Dict[str, Any]) -> Dict[str, Any]:
     if ssl is None:
         ssl = True
 
-    # Optional default tenant for clients that cannot easily provide args (e.g., Claude Desktop).
-    if (not domain or not token) and _env_flag(DEFAULT_TENANT_ENABLED_ENV_VAR, "false"):
-        env_domain = os.getenv(DEFAULT_TENANT_DOMAIN_ENV_VAR)
-        env_token = os.getenv(DEFAULT_TENANT_TOKEN_ENV_VAR)
-        env_ssl = _env_bool(DEFAULT_TENANT_SSL_ENV_VAR, default=ssl)
-
-        if not domain:
-            domain = env_domain
-        if not token:
-            token = env_token
-        ssl = env_ssl
-
-        if domain and token:
-            logger.info("Using DEFAULT tenant connection from env: domain=%s ssl=%s", domain, ssl)
-
+    # Credentials come from the caller (the backend injects the UI's sidebar
+    # config) — NEVER from env. An env fallback existed for credential-less
+    # clients (Claude Desktop); removed 2026-08-14: with the assistant as the
+    # only client, a fallback just turns "creds missing" into a silent write
+    # against whatever the env last pointed at.
     if domain and token:
         logger.info("Using tenant connection: domain=%s ssl=%s", domain, ssl)
         return {"domain": domain, "token": token, "ssl": ssl}
 
-    logger.error(
-        "Missing tenant domain/token. Pass domain/token in tool args or set %s=true and %s/%s in env.",
-        DEFAULT_TENANT_ENABLED_ENV_VAR,
-        DEFAULT_TENANT_DOMAIN_ENV_VAR,
-        DEFAULT_TENANT_TOKEN_ENV_VAR,
-    )
+    logger.error("Missing tenant domain/token. Pass domain/token in tool args.")
     raise RuntimeError("Tenant domain and token are required for SisenseClient.from_connection.")
 
 
@@ -606,26 +564,12 @@ def _extract_migration_tenants_from_arguments(arguments: Dict[str, Any]) -> Tupl
     tgt_token = arguments.pop("target_token", None)
     tgt_ssl_raw = arguments.pop("target_ssl", _MISSING)
 
-    # Respect explicit caller values
+    # Respect explicit caller values. Source/target credentials come from the
+    # caller only — the env fallback (PYSISENSE_USE_DEFAULT_MIGRATION_TENANTS)
+    # was removed 2026-08-14: a silent default TARGET is where migration
+    # writes land when config is missing, which is exactly the wrong failure mode.
     src_ssl = True if src_ssl_raw is _MISSING else bool(src_ssl_raw)
     tgt_ssl = True if tgt_ssl_raw is _MISSING else bool(tgt_ssl_raw)
-
-    if _env_flag(DEFAULT_MIGRATION_TENANTS_ENABLED_ENV_VAR, "false"):
-        if not src_domain:
-            src_domain = os.getenv(DEFAULT_SOURCE_DOMAIN_ENV_VAR)
-        if not src_token:
-            src_token = os.getenv(DEFAULT_SOURCE_TOKEN_ENV_VAR)
-
-        if src_ssl_raw is _MISSING:
-            src_ssl = _env_bool(DEFAULT_SOURCE_SSL_ENV_VAR, default=src_ssl)
-
-        if not tgt_domain:
-            tgt_domain = os.getenv(DEFAULT_TARGET_DOMAIN_ENV_VAR)
-        if not tgt_token:
-            tgt_token = os.getenv(DEFAULT_TARGET_TOKEN_ENV_VAR)
-
-        if tgt_ssl_raw is _MISSING:
-            tgt_ssl = _env_bool(DEFAULT_TARGET_SSL_ENV_VAR, default=tgt_ssl)
 
     src = {"domain": src_domain, "token": src_token, "ssl": src_ssl}
     tgt = {"domain": tgt_domain, "token": tgt_token, "ssl": tgt_ssl}
