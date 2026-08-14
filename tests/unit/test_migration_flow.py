@@ -720,9 +720,15 @@ class TestDialogReadability:
 
     def test_arguments_render_without_json_punctuation(self):
         out = mf._humanise_args({"group_name_list": ["Sales Team", "Ops"], "migrate_share": True})
-        assert out == "group name list: Sales Team, Ops · migrate share: yes"
+        assert out == "group names: Sales Team, Ops · migrate share: yes"
         for ch in '{}[]"':
             assert ch not in out
+
+    def test_list_suffix_dropped_and_singular_for_one_value(self):
+        """`_list` is a code artifact, not information (user feedback, live M5
+        2026-08-14: 'group name list: assaf_test_2' reads weird)."""
+        assert mf._humanise_args({"group_name_list": ["assaf_test_2"]}) == "group name: assaf_test_2"
+        assert mf._humanise_args({"dashboard_ids": ["d1", "d2"]}) == "dashboard ids: d1, d2"
 
     def test_no_arguments_renders_as_nothing(self):
         assert mf._humanise_args({}) == ""

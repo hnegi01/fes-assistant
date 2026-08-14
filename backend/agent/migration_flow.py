@@ -113,21 +113,26 @@ def _step_label(tool_id: str) -> str:
 def _humanise_args(args: Dict[str, Any]) -> str:
     """Arguments as readable pairs rather than a JSON blob.
 
-    `{"group_name_list": ["Sales Team"]}` reads as `group name list: Sales Team`.
+    `{"group_name_list": ["Sales Team"]}` reads as `group name: Sales Team`.
     The parameter NAMES stay recognisable on purpose — they are what the user has
-    to say back to us to change one ("...with action overwrite").
+    to say back to us to change one ("...with action overwrite") — but the
+    `_list` suffix is a code artifact, not information, so it is dropped (and
+    the label pluralised when several values follow: `group names: A, B`).
     """
     if not args:
         return ""
     parts = []
     for key, value in args.items():
+        name = key[: -len("_list")] if key.endswith("_list") else key
         if isinstance(value, list):
             shown = ", ".join(str(v) for v in value)
+            if len(value) > 1 and not name.endswith("s"):
+                name += "s"
         elif isinstance(value, bool):
             shown = "yes" if value else "no"
         else:
             shown = str(value)
-        parts.append(f"{key.replace('_', ' ')}: {shown}")
+        parts.append(f"{name.replace('_', ' ')}: {shown}")
     return " · ".join(parts)
 
 
