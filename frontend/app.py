@@ -611,8 +611,11 @@ def call_backend_turn(
 
             if event == "progress":
                 # Run log (above) already recorded the event; the live sidebar
-                # shows milestones only.
-                if not _is_sidebar_progress(data):
+                # shows milestones only. The step name lives in the EXTRACTED
+                # payload — `data` is the MCP notification envelope, which has
+                # no `step` key (the filter's first version tested `data` and
+                # therefore never fired; caught live 2026-08-14).
+                if not _is_sidebar_progress(cleaned_payload):
                     continue
                 msg = data.get("message") or data.get("detail")
                 if isinstance(msg, str) and msg.strip():
