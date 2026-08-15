@@ -316,6 +316,18 @@ def _extract_progress_payload(data: Any) -> Any:
     return data
 
 
+# Per-item narration — one line per exported/imported asset — drowns the
+# batch-level story in the live sidebar (875 of ~1,060 events in one real run,
+# 2026-08-14). Hidden from the LIVE view only: the run-log expander and the
+# server logs keep every event for troubleshooting.
+_SIDEBAR_HIDDEN_STEPS = {"import_datamodels", "export_datamodels"}
+
+
+def _is_sidebar_progress(payload: Any) -> bool:
+    """Should this progress event appear in the live sidebar?"""
+    return not (isinstance(payload, dict) and payload.get("step") in _SIDEBAR_HIDDEN_STEPS)
+
+
 def _format_progress_line(payload: Any) -> str:
     """
     Render one progress payload as a single human-readable line.
@@ -598,6 +610,10 @@ def call_backend_turn(
                 continue
 
             if event == "progress":
+                # Run log (above) already recorded the event; the live sidebar
+                # shows milestones only.
+                if not _is_sidebar_progress(data):
+                    continue
                 msg = data.get("message") or data.get("detail")
                 if isinstance(msg, str) and msg.strip():
                     new_line = msg.strip()

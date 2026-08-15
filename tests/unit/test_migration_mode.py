@@ -276,7 +276,8 @@ def test_migration_mode_skips_two_stage_routing(engine):
     load_all.assert_not_called(), "the 9 tools are already in hand — no need to re-read the registry tree"
     # The tool-selection call got exactly the turn's scoped tool list.
     assert raw.await_args_list[0].kwargs["tools"] == MIGRATION_TOOLS
-    assert reply == "Migrated the Sales Team group."
+    # Code-built final answer (2026-08-14) — no LLM finalize in migration mode.
+    assert "`migration.migrate_groups` succeeded" in reply
 
 
 def test_turn_tool_list_is_rescoped_to_the_mode(engine):

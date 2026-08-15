@@ -292,10 +292,14 @@ def test_approving_runs_every_step_without_asking_again():
         _call("migration.migrate_users", USER_ARGS, "c2"),
     ]
     approved = {m._approval_key(mf.PLAN_TOOL_ID, mf.plan_arguments(plan_calls))}
-    reply, _ = _turn([_multi_resp(*plan_calls), _text_resp("Migrated 1 group and 1 user.")], client, approved=approved)
+    reply, raw = _turn([_multi_resp(*plan_calls)], client, approved=approved)
     assert client.invoke_tool.await_count == 2
     assert m.LAST_PENDING_LOOP is None
-    assert reply == "Migrated 1 group and 1 user."
+    # The final answer is code-built (2026-08-14): deterministic per-step lines,
+    # and the finalize LLM call is gone — planning was the ONLY llm call.
+    assert "`migration.migrate_groups` succeeded" in reply
+    assert "`migration.migrate_users` succeeded" in reply
+    assert raw.await_count == 1, "plan call only — no LLM finalize for migration replies"
 
 
 def test_resume_runs_the_approved_plan_without_replanning():
@@ -315,14 +319,15 @@ def test_resume_runs_the_approved_plan_without_replanning():
         "plan_arguments": plan_args,
     }
     reply, raw = _turn(
-        [_text_resp("Migrated 1 group and 1 user.")],
+        [],  # resume needs NO llm at all: no replan, no finalize
         client,
         approved={m._approval_key(mf.PLAN_TOOL_ID, plan_args)},
         pending_loop=pending_loop,
     )
     assert client.invoke_tool.await_count == 2
-    assert "migration_plan" not in [c.kwargs.get("label") for c in raw.await_args_list], "must not replan"
-    assert reply == "Migrated 1 group and 1 user."
+    assert raw.await_count == 0, "an approved resume is zero LLM calls end to end"
+    assert "`migration.migrate_groups` succeeded" in reply
+    assert "`migration.migrate_users` succeeded" in reply
 
 
 def test_the_approval_covers_that_exact_plan_only():

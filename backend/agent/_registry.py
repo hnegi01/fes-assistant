@@ -185,6 +185,23 @@ def _payload_failure_reason(payload: Any) -> str:
     return str(status).strip() if status else ""
 
 
+def _failed_titles_sample(payload: Any, limit: int = 3) -> str:
+    """Up to `limit` failed item titles from the SDK's own `failed` list, as a
+    parenthetical (" (failures include: A, B, C, …)"). Empty string when the
+    payload has no such list — never inferred from anything else."""
+    if not isinstance(payload, dict):
+        return ""
+    failed = payload.get("failed")
+    if not isinstance(failed, list):
+        return ""
+    titles = [str(f.get("title")) for f in failed if isinstance(f, dict) and f.get("title")]
+    if not titles:
+        return ""
+    shown = ", ".join(titles[:limit])
+    more = f", +{len(titles) - limit} more" if len(titles) > limit else ""
+    return f" (failures include: {shown}{more})"
+
+
 def _describe_tool_result(tool_name: str, result: Optional[Dict[str, Any]]) -> str:
     """Generate a human-readable result description without calling the LLM."""
     if not result or not isinstance(result, dict):
@@ -207,14 +224,16 @@ def _describe_tool_result(tool_name: str, result: Optional[Dict[str, Any]]) -> s
         reason = _payload_failure_reason(data)
         succeeded = data.get("succeeded_count", data.get("success_count")) if isinstance(data, dict) else None
         failed = data.get("failed_count") if isinstance(data, dict) else None
+        sample = _failed_titles_sample(data)
         if succeeded and failed:
             return (
-                f"`{tool_name}` completed with failures — {succeeded} succeeded, {failed} failed. Details shown above."
+                f"`{tool_name}` completed with failures — {succeeded} succeeded, {failed} failed{sample}. "
+                "Details shown above."
             )
         return (
-            f"`{tool_name}` failed — {reason}. Details shown above."
+            f"`{tool_name}` failed — {reason}{sample}. Details shown above."
             if reason
-            else (f"`{tool_name}` failed. Details shown above.")
+            else (f"`{tool_name}` failed{sample}. Details shown above.")
         )
 
     if isinstance(data, dict) and "error" in data:
@@ -228,6 +247,15 @@ def _describe_tool_result(tool_name: str, result: Optional[Dict[str, Any]]) -> s
         return f"Found {n} {noun} from `{tool_name}`. Results shown above."
 
     if isinstance(data, dict):
+        # A successful report that carries the SDK's own counters gets them in
+        # the line — "295 of 295 migrated" is the deterministic summary a user
+        # asked for after approving a bulk write; no LLM, no interpretation.
+        succeeded = data.get("succeeded_count", data.get("success_count"))
+        total = data.get("total_count")
+        if succeeded is not None and total is not None:
+            return f"`{tool_name}` succeeded — {succeeded} of {total} migrated. Details shown above."
+        if succeeded is not None:
+            return f"`{tool_name}` succeeded — {succeeded} migrated. Details shown above."
         # "Got a response" reads as uncertainty. `ok` was true, so say so —
         # this is the line a user sees after approving a create or an update
         # with summarization off, and it should confirm the thing happened.

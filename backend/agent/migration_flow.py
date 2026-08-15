@@ -556,15 +556,10 @@ async def run(
         done.append(tool_id)
 
     # ----------------------------------------------------------------- done
-    if not summ_on:
-        return _finish("ok", A._describe_results_local(raw_results))
-    answer = await A._finalize_from_transcript(
-        latest_user_message=latest_user_message,
-        history=history,
-        transcript=transcript,
-        raw_results=raw_results,
-        summ_on=summ_on,
-        turn_trace_id=turn_trace_id,
-    )
-    trace["summarization_used"] = True
-    return _finish("ok", answer)
+    # The final answer is code-built in BOTH summarization modes (decided
+    # 2026-08-14, same principle as the code-built dialog): migration results
+    # are structured reports with the SDK's own counters, and a screen that
+    # says what was WRITTEN must be deterministic. This also makes the reply
+    # one LLM call cheaper. Chat mode keeps its LLM summarization — data
+    # answers need prose; write reports need accuracy.
+    return _finish("ok", A._describe_results_local(raw_results))

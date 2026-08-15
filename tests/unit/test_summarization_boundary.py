@@ -127,6 +127,23 @@ class TestPayloadVerdict:
         assert "completed with failures" in text
         assert "228 succeeded" in text and "67 failed" in text
 
+    def test_describe_uses_the_sdks_counters_on_success_too(self):
+        """The deterministic 'what was migrated' summary — counters from the
+        payload, no LLM, no interpretation."""
+        ok_result = {"ok": True, "result": {"ok": True, "succeeded_count": 295, "total_count": 295}}
+        text = m._describe_tool_result("migration.migrate_all_datamodels", ok_result)
+        assert "295 of 295 migrated" in text
+
+    def test_failed_titles_come_from_the_sdks_own_list_capped_at_three(self):
+        payload = {
+            "ok": False,
+            "failed_count": 5,
+            "failed": [{"title": f"Model {i}"} for i in range(5)],
+        }
+        text = m._describe_tool_result("migration.migrate_all_datamodels", {"ok": True, "result": payload})
+        assert "failures include: Model 0, Model 1, Model 2, +2 more" in text
+        assert "Model 3" not in text
+
 
 # ---------------------------------------------------------------------------
 # _transcript_step — the single point the boundary is enforced at
