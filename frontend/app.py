@@ -1478,6 +1478,12 @@ if mode == MODE_MIGRATION:
             if st.button("⏹ Stop", key="mig_stop_btn"):
                 _cancel_backend_turn(session_id)
                 st.session_state[_MIG_TURN_IN_PROGRESS_KEY] = False
+                # The approval that launched this run is spent — leaving it in
+                # state re-renders the dialog under the "stopped" message, and
+                # re-approving would run the whole migration AGAIN (seen live
+                # 2026-08-14). A stopped run ends the exchange; ask again to redo.
+                st.session_state[MIG_PENDING_KEY] = None
+                st.session_state[MIG_APPROVED_KEY] = set()
                 st.session_state[MIG_MESSAGES_KEY].append(
                     {"role": "assistant", "content": "Migration stopped by user."}
                 )
