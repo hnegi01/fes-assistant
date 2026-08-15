@@ -105,6 +105,14 @@ you have not seen before still belongs somewhere in that chain. If an operation
 moves something nothing else in the plan references, its position does not
 matter; keep the user's order for those.
 
+THE ORDER RULE ONLY SORTS THE CALLS THE USER ASKED FOR — it never adds one.
+Migrating a kind the user did not name is as wrong as dropping one they did:
+an unasked call silently widens what the user is approving, and the dependency
+may already exist in the target. "Migrate all users and all datamodels" is
+EXACTLY two calls — users, then datamodels — with NO groups call, even though
+users reference groups. If you believe a missing dependency will break the
+migration, say so in your reply text; never fix it by adding a call.
+
 Choosing between a targeted tool and its bulk equivalent:
 - The user named specific assets → the targeted tool, passing exactly the names
   or ids they gave, as a JSON array.

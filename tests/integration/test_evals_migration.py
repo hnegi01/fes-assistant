@@ -199,6 +199,28 @@ EVAL_CASES = [
         "origin": "2026-08-14: live M6 run — both steps executed sequentially off a single "
         "approval; this eval pins the plan shape that makes that possible.",
     },
+    {
+        "id": "unasked-asset-kinds-are-not-added-to-the-plan",
+        "prompt": "migrate all users and all datamodels to the target environment",
+        # Two kinds asked = two steps. The planner added migrate_all_groups
+        # unasked, pulled by the dependency guidance ("groups before users") —
+        # the same improvisation family as the bare-shares case. The contract
+        # (MIGRATION_PLANNING_CONTEXT_PROMPT) is explicit: never emit a call
+        # for something the user did not ask for; the dialog exists so a HUMAN
+        # can widen scope, the planner must not do it silently.
+        "expect_steps_any": [],
+        "forbid_steps": [
+            "migration.migrate_all_groups",
+            "migration.migrate_groups",
+            "migration.migrate_all_dashboards",
+            "migration.migrate_dashboards",
+        ],
+        "expect_step_order": ["user", "datamodel"],
+        "expect_reply_any": [],
+        "forbid_reply": [],
+        "origin": "2026-08-14: live progress-test run — 'migrate all users and datamodels' "
+        "planned THREE steps (groups added unasked). Caught by the user in the dialog.",
+    },
 ]
 
 
