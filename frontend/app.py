@@ -742,6 +742,20 @@ def render_tool_result(tr: dict):
             st.code(json.dumps(tr, indent=2), language="json")
 
 
+def _render_result_expander(label: str, res: Any) -> None:
+    """Every raw result lives in a collapsed expander — payloads can run to
+    hundreds of lines (a bulk migration report), and scrolling past one to
+    reach the answer buries the answer (user feedback, live 2026-08-14).
+    A FAILED result opens by default: the raw payload is the tool's own
+    account of what went wrong — not worth hiding behind a click."""
+    ok = res.get("ok", True) if isinstance(res, dict) else True
+    rows = res.get("result") if isinstance(res, dict) else None
+    n = f" · {len(rows)} rows" if isinstance(rows, list) else ""
+    mark = "" if ok else " ⚠️"
+    with st.expander(f"{label}{n}{mark}", expanded=not ok):
+        render_tool_result(res)
+
+
 def render_results(step_results, fallback_tr=None):
     """Show every step's raw result, labeled by tool, so a multi-step answer is
     legible instead of surfacing only the last table. Falls back to the single
@@ -750,22 +764,12 @@ def render_results(step_results, fallback_tr=None):
     if len(steps) > 1:
         st.caption(f"This answer used {len(steps)} steps — raw output of each:")
         for s in steps:
-            tid = s.get("tool_id", "?")
-            res = s.get("result") or {}
-            ok = res.get("ok", True) if isinstance(res, dict) else True
-            rows = res.get("result") if isinstance(res, dict) else None
-            n = f" · {len(rows)} rows" if isinstance(rows, list) else ""
-            mark = "" if ok else " ⚠️"
-            # A failed step opens by default. The written answer describes the
-            # failure in the model's words; the raw payload is the tool's own
-            # account of it, and that is the one worth reading when something
-            # went wrong — not worth hiding behind a click.
-            with st.expander(f"Step {s.get('step', '?')} · `{tid}`{n}{mark}", expanded=not ok):
-                render_tool_result(res)
+            _render_result_expander(f"Step {s.get('step', '?')} · `{s.get('tool_id', '?')}`", s.get("result") or {})
     elif len(steps) == 1:
-        render_tool_result(steps[0].get("result"))
+        s = steps[0]
+        _render_result_expander(f"Result · `{s.get('tool_id', '?')}`", s.get("result") or {})
     elif fallback_tr:
-        render_tool_result(fallback_tr)
+        _render_result_expander("Result", fallback_tr)
 
 
 # -----------------------------------------------------------------------------
