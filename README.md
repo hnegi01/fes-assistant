@@ -234,6 +234,32 @@ MCP Server docs: [Meta-Management MCP Server](mcp_server/README.md)
 
 ## Architecture
 
+### The MCP layer, honestly framed
+
+The tool layer is a real MCP server — it implements `initialize`, `tools/list`,
+`tools/call`, sessions, and streaming notifications, and any MCP client can
+connect to it. **Our agent is currently its only client**, and because the
+server is in-house we have deliberately extended it beyond the spec where the
+agent needed more:
+
+- **Per-call multi-tenant credentials** (chat `domain`/`token`, migration
+  `source_*`/`target_*`) injected by the backend on every call — instead of
+  MCP's per-user OAuth model. Missing credentials are an error, never an env
+  fallback.
+- **Session-scoped cancellation** (`POST /mcp/cancel` + `Mcp-Session-Id`) —
+  the spec's `notifications/cancelled` is per-request and in-band; our
+  cancellations originate *outside* the MCP conversation (a Stop click, a
+  browser disconnect) and target "whatever this session is running".
+- **A curated allowlist enforced at dispatch** (`config/allowed_tools.txt`),
+  independent of what any client asks for.
+
+Think of this repo as the **proving ground**: what a production Sisense MCP
+actually needs — tool curation, approval gating, honest failure reporting,
+long-running progress, cancellation — was discovered and battle-tested here.
+The productized, spec-faithful server (standard MCP, OAuth, any client) is the
+separate `sisense-admin-mcp` project; this one is free to keep drifting from
+the spec wherever the agent needs it to.
+
 High-level flow:
 
 1. User interacts with **Streamlit** in `frontend/app.py`.
