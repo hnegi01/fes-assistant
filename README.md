@@ -247,9 +247,12 @@ agent needed more:
   MCP's per-user OAuth model. Missing credentials are an error, never an env
   fallback.
 - **Session-scoped cancellation** (`POST /mcp/cancel` + `Mcp-Session-Id`) —
-  the spec's `notifications/cancelled` is per-request and in-band; our
-  cancellations originate *outside* the MCP conversation (a Stop click, a
-  browser disconnect) and target "whatever this session is running".
+  the spec's `notifications/cancelled` targets one request by id and would
+  have worked, but our cancellations originate outside the MCP conversation
+  (a Stop click, a browser disconnect) where only the session id is known,
+  and fan-out can have several requests in flight; one session-keyed flag was
+  the cheaper spelling of the same thing. A spec-faithful server (clients we
+  don't control) must implement the real mechanism.
 - **A curated allowlist enforced at dispatch** (`config/allowed_tools.txt`),
   independent of what any client asks for.
 
