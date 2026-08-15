@@ -1457,12 +1457,20 @@ if mode == MODE_MIGRATION:
                 render_run_log(msg.get("run_log"))
             st.markdown(msg.get("content", ""))
 
+    # One position-stable slot for the approval dialog. The polling branch
+    # clears it EXPLICITLY every frame: script runs that end in st.rerun()
+    # never reach Streamlit's stale-element pruning, so a dialog drawn by the
+    # Approve click-run otherwise lingers as ghost widgets — visible but inert
+    # — below the live progress (seen live 2026-08-14, twice).
+    mig_dialog_slot = st.empty()
+
     # -------------------------------------------------------------------------
     # Turn-in-progress polling block
     # Shown while a background migration thread is running.
     # Calls st.rerun() to poll until done; blocks the rest of the UI meanwhile.
     # -------------------------------------------------------------------------
     if st.session_state.get(_MIG_TURN_IN_PROGRESS_KEY):
+        mig_dialog_slot.empty()
         ctx = st.session_state.get(_MIG_TURN_CTX_KEY, {})
 
         _col_status, _col_stop = st.columns([5, 1])
@@ -1505,46 +1513,47 @@ if mode == MODE_MIGRATION:
     # click from a user who thinks the run is stuck (seen live 2026-08-14 —
     # only Streamlit's rerun timing prevented a duplicate approval turn).
     if pending_mig and isinstance(pending_mig, dict) and not st.session_state.get(_MIG_TURN_IN_PROGRESS_KEY):
-        st.info(
-            pending_mig.get("reason")
-            or "This migration action requires approval before it can make changes to your Sisense deployments."
-        )
-        # A whole-plan approval already lists every step and its arguments in the
-        # message above, in plain English. Repeating it as JSON under a synthetic
-        # tool name (`migration.plan` is not a real tool) adds nothing but noise
-        # in front of a destructive action. Single-tool approvals still get it.
-        if pending_mig.get("tool_id") != MIGRATION_PLAN_TOOL_ID:
-            with st.expander("View operation details", expanded=True):
-                st.markdown("**Tool:** `{}`".format(pending_mig.get("tool_id", "")))
-                st.code(json.dumps(pending_mig.get("arguments", {}), indent=2), language="json")
+        with mig_dialog_slot.container():
+            st.info(
+                pending_mig.get("reason")
+                or "This migration action requires approval before it can make changes to your Sisense deployments."
+            )
+            # A whole-plan approval already lists every step and its arguments in the
+            # message above, in plain English. Repeating it as JSON under a synthetic
+            # tool name (`migration.plan` is not a real tool) adds nothing but noise
+            # in front of a destructive action. Single-tool approvals still get it.
+            if pending_mig.get("tool_id") != MIGRATION_PLAN_TOOL_ID:
+                with st.expander("View operation details", expanded=True):
+                    st.markdown("**Tool:** `{}`".format(pending_mig.get("tool_id", "")))
+                    st.code(json.dumps(pending_mig.get("arguments", {}), indent=2), language="json")
 
-        cols = st.columns([1, 1])
-        with cols[0]:
-            if st.button("Approve migration", type="primary"):
-                key = _approval_key(pending_mig["tool_id"], pending_mig.get("arguments", {}))
-                # Single-use, as in chat mode — and it matters more here: a
-                # silently-repeated migration writes to the target twice.
-                st.session_state[MIG_APPROVED_KEY] = {key}
-                _launch_migration_turn(
-                    meta={"kind": "approval", "clear_pending": True},
-                    messages=st.session_state[MIG_MESSAGES_KEY],
-                    user_input="",
-                    tenant_config=None,
-                    approved_keys=st.session_state[MIG_APPROVED_KEY],
-                    migration_config=migration_config,
-                    session_id=session_id,
-                    allow_summarization=st.session_state["allow_summarization"],
-                    mode=BACKEND_MODE_MIGRATION,
-                )
-                st.rerun()
+            cols = st.columns([1, 1])
+            with cols[0]:
+                if st.button("Approve migration", type="primary"):
+                    key = _approval_key(pending_mig["tool_id"], pending_mig.get("arguments", {}))
+                    # Single-use, as in chat mode — and it matters more here: a
+                    # silently-repeated migration writes to the target twice.
+                    st.session_state[MIG_APPROVED_KEY] = {key}
+                    _launch_migration_turn(
+                        meta={"kind": "approval", "clear_pending": True},
+                        messages=st.session_state[MIG_MESSAGES_KEY],
+                        user_input="",
+                        tenant_config=None,
+                        approved_keys=st.session_state[MIG_APPROVED_KEY],
+                        migration_config=migration_config,
+                        session_id=session_id,
+                        allow_summarization=st.session_state["allow_summarization"],
+                        mode=BACKEND_MODE_MIGRATION,
+                    )
+                    st.rerun()
 
-        with cols[1]:
-            if st.button("Cancel migration"):
-                st.session_state[MIG_PENDING_KEY] = None
-                st.session_state[MIG_MESSAGES_KEY].append(
-                    {"role": "assistant", "content": "Migration action cancelled."}
-                )
-                st.rerun()
+            with cols[1]:
+                if st.button("Cancel migration"):
+                    st.session_state[MIG_PENDING_KEY] = None
+                    st.session_state[MIG_MESSAGES_KEY].append(
+                        {"role": "assistant", "content": "Migration action cancelled."}
+                    )
+                    st.rerun()
 
     mig_input = st.chat_input("Describe what you want to migrate...")
 
