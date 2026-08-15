@@ -765,6 +765,35 @@ class TestPayloadVerdictStopsTheFlow:
         assert "username/email already exists" in reply, "the SDK's own words, not ours"
         assert "migration.migrate_groups" in reply, "the not-attempted step is named"
 
+    def test_single_step_partial_failure_reports_without_stopped(self):
+        """'Stopped' is only meaningful when later steps were cut short. A
+        single-step plan that partially succeeded (SDK migrates what it can)
+        gets the per-step counters line alone — live 2026-08-14: 'Stopped —
+        failed: 232 of 295 succeeded' read as a contradiction."""
+        payload = {"ok": False, "status": "failed", "succeeded_count": 232, "failed_count": 63, "total_count": 295}
+        client = _client({"ok": True, "result": payload})
+        plan_calls = [_call("migration.migrate_users", USER_ARGS, "c1")]
+        approved = {m._approval_key(mf.PLAN_TOOL_ID, mf.plan_arguments(plan_calls))}
+        reply, _ = _turn([_multi_resp(*plan_calls)], client, approved=approved)
+        assert "Stopped" not in reply
+        assert "Not attempted" not in reply
+        assert "completed with failures — 232 succeeded, 63 failed" in reply
+
+    def test_failure_body_is_deterministic_with_summarization_on(self):
+        """The failure report carries the per-step lines in BOTH summ modes —
+        summ-on used to return the Stopped header with an empty body."""
+        client = _client({"ok": True, "result": dict(self.FAILED_PAYLOAD)})
+        plan_calls = [
+            _call("migration.migrate_users", USER_ARGS, "c1"),
+            _call("migration.migrate_groups", GROUP_ARGS, "c2"),
+        ]
+        approved = {m._approval_key(mf.PLAN_TOOL_ID, mf.plan_arguments(plan_calls))}
+        # _turn runs with allow_summarization=True — exactly the mode whose
+        # failure body used to be empty.
+        reply, _ = _turn([_multi_resp(*plan_calls)], client, approved=approved)
+        assert "Stopped" in reply, "later steps were cut short — header applies"
+        assert "`migration.migrate_users` failed — username/email already exists" in reply
+
     def test_no_arguments_renders_as_nothing(self):
         assert mf._humanise_args({}) == ""
 

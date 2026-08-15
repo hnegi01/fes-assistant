@@ -139,7 +139,11 @@ def _humanise_args(args: Dict[str, Any]) -> str:
 def _report(done: List[str], failed: Optional[Tuple[str, str]], not_attempted: List[str], body: str) -> str:
     """Stop-and-report: what ran, what broke, what was deliberately left alone."""
     lines = []
-    if failed:
+    if failed and not_attempted:
+        # "Stopped" is only meaningful when something was cut short. A failure
+        # on the only (or last) step has nothing to stop — the per-step line in
+        # the body already carries the SDK's counters, and "Stopped — failed:
+        # 232 of 295 succeeded" read as a contradiction (live 2026-08-14).
         tool_id, reason = failed
         lines.append(f"**Stopped** — `{tool_id}` failed: {reason}")
     if done:
@@ -550,7 +554,9 @@ async def run(
             ).strip()
             skipped = [_tool_id_of(c) for c in calls[idx + 1 :]]
             logger.warning("Migration stopped at %s: %s (skipping %d)", tool_id, reason[:200], len(skipped))
-            body = A._describe_results_local(raw_results) if not summ_on else ""
+            # Deterministic in BOTH summ modes, like the success path — the
+            # failure report is exactly where accuracy matters most.
+            body = A._describe_results_local(raw_results)
             return _finish("migration_failed", _report(done, (tool_id, reason), skipped, body))
 
         done.append(tool_id)
