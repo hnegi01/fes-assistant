@@ -14,6 +14,13 @@ plan (migration_flow), so a migration turn stops at the dialog having executed
 nothing, with the proposed steps in `pending_confirmation.arguments.steps`.
 These cases send no `approved_keys`, deliberately and always: the agent's CHOICE
 is what is under test, and nothing is ever written to a real target environment.
+
+Because every case stops at the gate (or a clarification), credentials are
+never used: this battery needs a running stack and LLM credentials, but the
+migration_config in integration_config.yaml can be PLACEHOLDER values. The
+execution mechanics behind the gate (approval consume, sequential run,
+single-use re-gate, cancel-drop) are unit-tested with everything mocked —
+tests/unit/test_migration_flow.py and test_approval_single_use.py.
 Do not add an approving case here — mutation lifecycle belongs in
 test_mutation_lifecycle.py, which creates the asset it later destroys.
 
@@ -138,6 +145,59 @@ EVAL_CASES = [
         "origin": "2026-08-14: planner emitted migrate_all_users({}) for a bare shares request "
         "(~1 in 6 runs); two other runs gated migrate_dashboard_shares with EMPTY id lists, "
         "which passed the missing-required check until _is_missing learned that [] means absent.",
+    },
+    {
+        "id": "three-kinds-all-planned-bulk-and-ordered",
+        "prompt": "migrate the dashboards, the users and the groups to the target environment",
+        # The completeness probe (M2 in the live battery): three asset kinds
+        # named means three steps — a dropped kind fails SILENTLY (the user
+        # believes it migrated). Nothing specific named, so all three must be
+        # the bulk tools, ordered groups → users → dashboards regardless of the
+        # order the user said them in.
+        "expect_steps_any": [],
+        "forbid_steps": [
+            "migration.migrate_groups",
+            "migration.migrate_users",
+            "migration.migrate_dashboards",
+        ],
+        "expect_step_order": ["group", "user", "dashboard"],
+        "expect_reply_any": [],
+        "forbid_reply": [],
+        "origin": "2026-08-14: live M2 run — verified three bulk steps in dependency order; "
+        "kept as the automated completeness check (an omitted kind is the quiet failure mode "
+        "FES_MIGRATION_COMPLETENESS_CHECK exists for, and this eval is the always-on guard).",
+    },
+    {
+        "id": "named-group-picks-targeted-tool-with-exact-name",
+        "prompt": "migrate the QA Team group to the target environment",
+        # A named asset must use the targeted tool and pass EXACTLY the name
+        # given — not the bulk tool (blast radius: everything), not a variant
+        # of the name (extraction, never invention).
+        "expect_steps_any": ["migration.migrate_groups"],
+        "forbid_steps": ["migration.migrate_all_groups"],
+        "expect_step_args": [["migrate_groups", "group_name_list", ["QA Team"]]],
+        "expect_reply_any": [],
+        "forbid_reply": [],
+        "origin": "2026-08-14: live M5 run (throwaway group) — the single-step write path; "
+        "the gate showed exactly the named group and executed only it on approval.",
+    },
+    {
+        "id": "two-named-assets-one-plan-group-before-user",
+        "prompt": "migrate the QA Team group and the user qa.user@example.com to the target environment",
+        # Two named assets = ONE plan with both steps (a second dialog after the
+        # first step means batch approval broke), targeted tools with the exact
+        # names, group ordered before user.
+        "expect_steps_any": [],
+        "forbid_steps": ["migration.migrate_all_groups", "migration.migrate_all_users"],
+        "expect_step_order": ["group", "user"],
+        "expect_step_args": [
+            ["migrate_groups", "group_name_list", ["QA Team"]],
+            ["migrate_users", "user_name_list", ["qa.user@example.com"]],
+        ],
+        "expect_reply_any": [],
+        "forbid_reply": [],
+        "origin": "2026-08-14: live M6 run — both steps executed sequentially off a single "
+        "approval; this eval pins the plan shape that makes that possible.",
     },
 ]
 
