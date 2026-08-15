@@ -603,7 +603,10 @@ redesign. This section is the glossary + that mapping.
 ### Mapping to LangGraph _(BUILT — `graph_engine.py`, engine flag)_
 
 Built 2026-07-31 as a **second interchangeable engine**, not a replacement:
-`FES_AGENT_ENGINE=custom|langgraph` selects the harness (default `custom`).
+`FES_AGENT_ENGINE=custom|langgraph` selects the harness (default `langgraph`
+since 2026-08-15; `custom` remains the dependency-free kill switch until the
+retirement criterion — one langgraph upgrade survived + further live
+write-path use — is met).
 Both are thin control flow over the SAME `llm_agent` helpers — accessed via
 module attributes, so the unit suite's mocks exercise both engines identically:
 **all 150 unit tests pass under each**. No checkpointer, no database, no files —

@@ -1029,8 +1029,10 @@ async def _run_loop_engine(**kwargs: Any) -> str:
     exists to model the chat loop's branching, and a linear sequence has none.
 
     Chat mode picks a harness, same contract either way:
-      FES_AGENT_ENGINE=custom (default) → the hand-rolled `_reactive_loop`.
-      FES_AGENT_ENGINE=langgraph        → graph_engine.run_graph_loop (LangGraph
+      FES_AGENT_ENGINE=langgraph (default) → graph_engine.run_graph_loop (LangGraph
+      FES_AGENT_ENGINE=custom             → the hand-rolled `_reactive_loop` —
+      kept as the dependency-free kill switch until the retirement criterion is
+      met (one langgraph upgrade + more live write-path use; decided 2026-08-15)
       StateGraph over the SAME helpers — thin nodes, no checkpointer/DB/files).
     Read dynamically so tests can flip engines per run without reimport.
     """
@@ -1042,7 +1044,7 @@ async def _run_loop_engine(**kwargs: Any) -> str:
 
         return await migration_flow.run(pending_plan=pending_plan, **kwargs)
 
-    if os.getenv("FES_AGENT_ENGINE", "custom").strip().lower() == "langgraph":
+    if os.getenv("FES_AGENT_ENGINE", "langgraph").strip().lower() != "custom":
         from . import graph_engine  # lazy: avoids circular import at module load
 
         return await graph_engine.run_graph_loop(**kwargs)

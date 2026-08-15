@@ -523,7 +523,7 @@ Loads tool registry → builds SDK client from tool args → dispatches to PySis
 | `FES_MAX_PARALLEL_STEPS` | `3` | How many independent plan steps may execute concurrently (1 = off); mutations always sequential |
 | `FES_MIGRATION_SINGLE_SHOT` | `true` | Migration turns plan every step in ONE call, sort by dependency in code, execute in sequence (`migration_flow.py`). `false` routes migration through the reactive loop — a kill switch, not a mode |
 | `FES_MIGRATION_COMPLETENESS_CHECK` | `false` | Opt-in second LLM call that checks a migration plan for omitted asset kinds (+1 re-plan if any). Off because the approval dialog's numbered step list is the human check; turn on for unattended/API use |
-| `FES_AGENT_ENGINE` | `custom` | Turn harness: `custom` (hand-rolled loop) or `langgraph` (StateGraph over the same helpers; in-memory, no checkpointer) |
+| `FES_AGENT_ENGINE` | `langgraph` | Turn harness: `langgraph` (StateGraph over shared helpers; in-memory, no checkpointer — default since 2026-08-15, after carrying the full live M-battery) or `custom` (the hand-rolled loop, kept as the dependency-free kill switch until one langgraph upgrade + further live write-path use pass) |
 | `FES_LANGSMITH_LOG_CONTENT` | `false` | Whether result data may appear in LangSmith traces (independent of summarization) — prompts shown, only data-bearing parts redacted; tool result payloads never go |
 | `FES_CSV_OBSERVABILITY` | `false` | Whether local CSV observability files are written (llm_traces / llm_calls / tool_calls); mutations audit log is always on |
 | `LANGSMITH_TRACING` | `false` | Master switch for the LangSmith trace tree (root agent_turn + llm/tool children) |
