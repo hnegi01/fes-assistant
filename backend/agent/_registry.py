@@ -139,6 +139,52 @@ def _load_registry_rows() -> List[Dict[str, Any]]:
         return []
 
 
+def _effective_ok(result: Any) -> bool:
+    """A tool call is only as successful as the SDK says it is.
+
+    The wrapper's `ok` means "the call executed" — transport truth. Some SDK
+    methods additionally return their own verdict inside the payload
+    (`ok`/`status`): a bulk migration that writes nothing raises no exception,
+    it RETURNS a failure report. Found live 2026-08-14: migrate_all_users
+    failed 66/66 ("username/email already exists"), the payload said
+    `ok: false, status: failed`, and the run log printed "succeeded" because
+    only the wrapper was consulted. When the payload explicitly carries a
+    verdict, believe it; when it carries none, the wrapper's word stands.
+    """
+    if not isinstance(result, dict) or not result.get("ok"):
+        return False
+    payload = result.get("result")
+    if isinstance(payload, dict):
+        if payload.get("ok") is False:
+            return False
+        status = payload.get("status")
+        if isinstance(status, str) and status.strip().lower() == "failed":
+            return False
+    return True
+
+
+def _payload_failure_reason(payload: Any) -> str:
+    """The SDK's own account of a payload-level failure, in its own words —
+    never our interpretation. Empty string when the payload offers none."""
+    if not isinstance(payload, dict):
+        return ""
+    raw = payload.get("raw_error")
+    if isinstance(raw, dict):
+        err = raw.get("error")
+        msg = (err or {}).get("message") if isinstance(err, dict) else raw.get("message")
+        if msg:
+            return str(msg).strip()
+    succeeded = payload.get("succeeded_count", payload.get("success_count"))
+    failed = payload.get("failed_count")
+    if failed is not None:
+        total = payload.get("total_count")
+        if succeeded is not None and total is not None:
+            return f"{succeeded} of {total} succeeded, {failed} failed"
+        return f"{failed} failed"
+    status = payload.get("status")
+    return str(status).strip() if status else ""
+
+
 def _describe_tool_result(tool_name: str, result: Optional[Dict[str, Any]]) -> str:
     """Generate a human-readable result description without calling the LLM."""
     if not result or not isinstance(result, dict):
@@ -153,6 +199,23 @@ def _describe_tool_result(tool_name: str, result: Optional[Dict[str, Any]]) -> s
         return f"`{tool_name}` failed — {err}" if err else f"`{tool_name}` failed. Details shown above."
 
     data = result.get("result")
+
+    # The call executed, but the SDK's own report says it failed (or partially
+    # failed). Say so in the SDK's words — "succeeded" over a payload that
+    # reads `ok: false` is the lie a user cannot detect without opening JSON.
+    if not _effective_ok(result):
+        reason = _payload_failure_reason(data)
+        succeeded = data.get("succeeded_count", data.get("success_count")) if isinstance(data, dict) else None
+        failed = data.get("failed_count") if isinstance(data, dict) else None
+        if succeeded and failed:
+            return (
+                f"`{tool_name}` completed with failures — {succeeded} succeeded, {failed} failed. Details shown above."
+            )
+        return (
+            f"`{tool_name}` failed — {reason}. Details shown above."
+            if reason
+            else (f"`{tool_name}` failed. Details shown above.")
+        )
 
     if isinstance(data, dict) and "error" in data:
         return f"`{tool_name}` returned an error — {data['error']}"

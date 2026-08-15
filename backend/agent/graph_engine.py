@@ -297,7 +297,7 @@ async def node_branch(s: Dict[str, Any]) -> Dict[str, Any]:
                 "step": branch_step,
                 "max_steps": A.MAX_AGENT_STEPS,
                 "tool_id": btool_id,
-                "ok": bool(bresult.get("ok")) if isinstance(bresult, dict) else False,
+                "ok": A._effective_ok(bresult),
             }
         )
         return {
@@ -687,7 +687,7 @@ async def node_tools(s: GraphState) -> Dict[str, Any]:
             "step": step_number,
             "max_steps": A.MAX_AGENT_STEPS,
             "tool_id": tool_id,
-            "ok": bool(result.get("ok")) if isinstance(result, dict) else False,
+            "ok": A._effective_ok(result),
         }
     )
     return {"calls": [], "steps_executed": n, "first_tool_hint": hint}

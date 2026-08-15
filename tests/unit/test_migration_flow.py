@@ -730,6 +730,36 @@ class TestDialogReadability:
         assert mf._humanise_args({"group_name_list": ["assaf_test_2"]}) == "group name: assaf_test_2"
         assert mf._humanise_args({"dashboard_ids": ["d1", "d2"]}) == "dashboard ids: d1, d2"
 
+
+class TestPayloadVerdictStopsTheFlow:
+    """The SDK can fail by RETURNING a failure report instead of raising —
+    found live 2026-08-14: migrate_all_users wrote nothing (66/66 'already
+    exists', payload ok:false), the wrapper said ok:true, the run log said
+    'succeeded', and step 2 ran anyway. The payload's own verdict must fail
+    the step so stop-on-failure and honest reporting fire."""
+
+    FAILED_PAYLOAD = {
+        "ok": False,
+        "status": "failed",
+        "success_count": 0,
+        "failed_count": 66,
+        "raw_error": {"error": {"message": "username/email already exists", "status": 400}},
+    }
+
+    def test_payload_verdict_fails_the_step_and_skips_the_rest(self):
+        client = _client({"ok": True, "result": dict(self.FAILED_PAYLOAD)})
+        plan_calls = [
+            _call("migration.migrate_users", USER_ARGS, "c1"),
+            _call("migration.migrate_groups", GROUP_ARGS, "c2"),
+        ]
+        approved = {m._approval_key(mf.PLAN_TOOL_ID, mf.plan_arguments(plan_calls))}
+        reply, _ = _turn([_multi_resp(*plan_calls)], client, approved=approved)
+        # Step 1 executed, step 2 never attempted.
+        assert client.invoke_tool.await_count == 1
+        assert "Stopped" in reply and "migration.migrate_users" in reply
+        assert "username/email already exists" in reply, "the SDK's own words, not ours"
+        assert "migration.migrate_groups" in reply, "the not-attempted step is named"
+
     def test_no_arguments_renders_as_nothing(self):
         assert mf._humanise_args({}) == ""
 

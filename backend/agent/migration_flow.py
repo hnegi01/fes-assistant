@@ -522,7 +522,7 @@ async def run(
             {"phase": "executing", "step": step_number, "max_steps": A.MAX_AGENT_STEPS, "tool_id": tool_id}
         )
         result = await A._invoke_tool_traced(mcp_client, tool_id, args, mode)
-        ok = bool(result.get("ok")) if isinstance(result, dict) else False
+        ok = A._effective_ok(result)
 
         A.LAST_TOOL_RESULT = result
         A.LAST_STEP_RESULTS.append({"step": step_number, "tool_id": tool_id, "result": result})
@@ -541,7 +541,13 @@ async def run(
         )
 
         if not ok:
-            reason = str((result or {}).get("error") or "no reason reported").strip()
+            # Wrapper error if the call failed; otherwise the SDK's own report
+            # (payload-level ok:false) — its words, never our interpretation.
+            reason = str(
+                (result or {}).get("error")
+                or A._payload_failure_reason((result or {}).get("result"))
+                or "no reason reported"
+            ).strip()
             skipped = [_tool_id_of(c) for c in calls[idx + 1 :]]
             logger.warning("Migration stopped at %s: %s (skipping %d)", tool_id, reason[:200], len(skipped))
             body = A._describe_results_local(raw_results) if not summ_on else ""

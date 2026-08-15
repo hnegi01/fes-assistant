@@ -78,7 +78,9 @@ from ._prompts import (
 # --- _registry ---
 from ._registry import (
     _describe_tool_result,
+    _effective_ok,
     _load_registry_rows,
+    _payload_failure_reason,
     _safe_json_loads,  # re-exported: test_smoke.py imports from llm_agent
     _shrink_for_llm,  # re-exported: test_smoke.py imports from llm_agent
 )
@@ -749,13 +751,17 @@ def _metadata_record(tool_id: str, result: Any) -> Dict[str, Any]:
 
     Successful results are unaffected: no payload, no rows, no field values.
     """
-    rec: Dict[str, Any] = {"tool": tool_id, "ok": bool(result.get("ok")) if isinstance(result, dict) else False}
+    ok = _effective_ok(result)
+    rec: Dict[str, Any] = {"tool": tool_id, "ok": ok}
     if isinstance(result, dict):
         payload = result.get("result")
         if isinstance(payload, list):
             rec["count"] = len(payload)
-        if not result.get("ok"):
-            rec["error"] = result.get("error")
+        if not ok:
+            # Wrapper error when the call itself failed; the SDK's own report
+            # when the call ran but its payload says failed. Same narrow
+            # reason-on-failure exception either way.
+            rec["error"] = result.get("error") or _payload_failure_reason(payload) or None
     return rec
 
 
@@ -1226,7 +1232,7 @@ async def _reactive_loop(
                     "step": branch_step,
                     "max_steps": MAX_AGENT_STEPS,
                     "tool_id": btool_id,
-                    "ok": bool(bresult.get("ok")) if isinstance(bresult, dict) else False,
+                    "ok": _effective_ok(bresult),
                 }
             )
             return {
@@ -1672,7 +1678,7 @@ async def _reactive_loop(
                 "step": step_number,
                 "max_steps": MAX_AGENT_STEPS,
                 "tool_id": tool_id,
-                "ok": bool(result.get("ok")) if isinstance(result, dict) else False,
+                "ok": _effective_ok(result),
             }
         )
 
@@ -1849,7 +1855,7 @@ async def call_llm_with_tools(
                     "step": _pl_step,
                     "max_steps": MAX_AGENT_STEPS,
                     "tool_id": _pl_tool_id,
-                    "ok": bool(result.get("ok")) if isinstance(result, dict) else False,
+                    "ok": _effective_ok(result),
                 }
             )
 

@@ -1477,7 +1477,11 @@ if mode == MODE_MIGRATION:
         st.rerun()
 
     pending_mig = st.session_state[MIG_PENDING_KEY]
-    if pending_mig and isinstance(pending_mig, dict):
+    # Never render the approval dialog while a migration turn is in flight:
+    # Approve was already clicked, so showing live buttons invites a second
+    # click from a user who thinks the run is stuck (seen live 2026-08-14 —
+    # only Streamlit's rerun timing prevented a duplicate approval turn).
+    if pending_mig and isinstance(pending_mig, dict) and not st.session_state.get(_MIG_TURN_IN_PROGRESS_KEY):
         st.info(
             pending_mig.get("reason")
             or "This migration action requires approval before it can make changes to your Sisense deployments."

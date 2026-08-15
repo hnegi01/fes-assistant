@@ -80,6 +80,55 @@ class TestMetadataRecord:
 
 
 # ---------------------------------------------------------------------------
+# The payload's own verdict — the SDK can fail by RETURNING a failure report
+# (found live 2026-08-14: migrate_all_users 66/66 failed, wrapper ok:true,
+# run log said "succeeded"). The wrapper proves the call executed; the payload
+# says what actually happened, and what-actually-happened is what users get.
+# ---------------------------------------------------------------------------
+PAYLOAD_FAILED = {
+    "ok": True,  # wrapper: the call executed
+    "result": {
+        "ok": False,  # the SDK's verdict
+        "status": "failed",
+        "success_count": 0,
+        "failed_count": 66,
+        "results": [{"name": SECRET, "status": "Failed"}],
+        "raw_error": {"error": {"message": "username/email already exists", "status": 400}},
+    },
+}
+PAYLOAD_PARTIAL = {
+    "ok": True,
+    "result": {"ok": False, "status": "failed", "succeeded_count": 228, "failed_count": 67, "total_count": 295},
+}
+
+
+class TestPayloadVerdict:
+    def test_effective_ok_believes_the_payload(self):
+        assert m._effective_ok(PAYLOAD_FAILED) is False
+        assert m._effective_ok({"ok": True, "result": {"ok": True}}) is True
+        assert m._effective_ok({"ok": True, "result": [1, 2]}) is True, "no verdict → wrapper stands"
+        assert m._effective_ok({"ok": True, "result": {"rows": 3}}) is True, "no verdict → wrapper stands"
+        assert m._effective_ok({"ok": False, "result": {"ok": True}}) is False, "wrapper failure is final"
+
+    def test_metadata_carries_the_sdk_reason_and_nothing_more(self):
+        rec = m._metadata_record("migration.migrate_all_users", PAYLOAD_FAILED)
+        assert rec["ok"] is False
+        assert rec["error"] == "username/email already exists"
+        assert SECRET not in json.dumps(rec), "the reason crosses; the rows never do"
+
+    def test_describe_says_failed_in_the_sdks_words(self):
+        text = m._describe_tool_result("migration.migrate_all_users", PAYLOAD_FAILED)
+        assert "failed" in text
+        assert "username/email already exists" in text
+        assert "succeeded" not in text.split("—")[0], "never label a failed payload 'succeeded'"
+
+    def test_describe_reports_partial_failure_with_the_sdks_counts(self):
+        text = m._describe_tool_result("migration.migrate_all_datamodels", PAYLOAD_PARTIAL)
+        assert "completed with failures" in text
+        assert "228 succeeded" in text and "67 failed" in text
+
+
+# ---------------------------------------------------------------------------
 # _transcript_step — the single point the boundary is enforced at
 # ---------------------------------------------------------------------------
 class TestTranscriptBoundary:
