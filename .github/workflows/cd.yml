@@ -30,14 +30,11 @@ name: CD
 # repos private on Docker Hub if the source itself should not be pullable.
 
 on:
-  # push trigger deliberately DISABLED until the first dry run passes on main.
-  # GitHub only registers dispatchable workflows from the default branch, so the
-  # dry run can't happen before this file lands there — but landing it with the
-  # push trigger live would make that very merge the first-ever (unverified)
-  # deploy. Rollout order: merge → dry run from the Actions tab → green →
-  # uncomment these two lines in a follow-up commit; THAT push is release one.
-  # push:
-  #   branches: [main]   # deploy only when code lands on main
+  # Enabled 2026-08-21 after the first dry run passed on main (run 32512643768):
+  # builds + Docker Hub login verified, nothing pushed. From here every push to
+  # main (i.e. every dev → main merge) is a real release.
+  push:
+    branches: [main]   # deploy only when code lands on main
   workflow_dispatch:
     inputs:
       dry_run:
