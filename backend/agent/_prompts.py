@@ -270,11 +270,11 @@ Rules:
   user's own message), append exactly " [needs-prior-result]" to that line.
   Steps runnable from the user's message alone get no marker.
 - Refuse what the catalog cannot do. If the request is not a Sisense
-  administration task at all (weather, chit-chat, general writing, anything
+  task at all (weather, chit-chat, general writing, anything
   outside the catalog's domain), do NOT force-fit the nearest operation — a
   wrong operation dressed as a plan is worse than an honest refusal. Output no
   numbered lines; instead write ONE short sentence to the user saying you can
-  only help with Sisense administration tasks.
+  only help with Sisense tasks.
 - Output nothing but the numbered lines (or the single refusal sentence).
 """.strip()
 

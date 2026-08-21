@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A production-style AI assistant for Sisense administration. Users type natural language ("migrate all dashboards from staging to prod", "show me all users in the Sales group") and the agent selects the right PySisense SDK tool, executes it, and returns results or a summary.
+A production-style AI assistant for Sisense. Token-scoped, not admin-only: the agent can do exactly what the supplied Sisense token's permissions allow. Users type natural language ("migrate all dashboards from staging to prod", "show me all users in the Sales group") and the agent selects the right PySisense SDK tool, executes it, and returns results or a summary.
 
 Three separate processes communicate over HTTP:
 
