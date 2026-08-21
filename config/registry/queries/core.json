@@ -1,0 +1,218 @@
+[
+  {
+    "tool_id": "queries.elasticube_run_jaql_query",
+    "description": "Run a JAQL query against a datasource (elasticube).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datasource_name": {
+          "type": "string",
+          "description": "Datasource / elasticube name."
+        },
+        "jaql_payload": {
+          "type": "object",
+          "description": "JAQL query body (for example ``metadata``, ``datasource``, and related fields as required by the API)."
+        }
+      },
+      "required": [
+        "datasource_name",
+        "jaql_payload"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Fetch total sales by region for 2023 from the 'SalesElasticube' datasource.",
+        "arguments": {
+          "datasource_name": "SalesElasticube",
+          "jaql_payload": {
+            "metadata": [
+              {
+                "field": "[Region]",
+                "type": "dim",
+                "title": "Region"
+              },
+              {
+                "field": "[Sales]",
+                "type": "measure",
+                "title": "Total Sales",
+                "aggregation": "sum"
+              }
+            ],
+            "datasource": "SalesElasticube",
+            "filters": [
+              {
+                "field": "[Year]",
+                "type": "filter",
+                "operator": "equals",
+                "value": "2023"
+              }
+            ]
+          }
+        },
+        "notes": "This query retrieves the total sales aggregated by region for the year 2023 from the 'SalesElasticube' datasource."
+      },
+      {
+        "user_query": "Get the top 5 products by revenue for Q1 2023.",
+        "arguments": {
+          "datasource_name": "ProductAnalytics",
+          "jaql_payload": {
+            "metadata": [
+              {
+                "field": "[Product]",
+                "type": "dim",
+                "title": "Product"
+              },
+              {
+                "field": "[Revenue]",
+                "type": "measure",
+                "title": "Revenue",
+                "aggregation": "sum"
+              }
+            ],
+            "datasource": "ProductAnalytics",
+            "filters": [
+              {
+                "field": "[Quarter]",
+                "type": "filter",
+                "operator": "equals",
+                "value": "Q1 2023"
+              }
+            ],
+            "options": {
+              "limit": 5,
+              "sort": [
+                {
+                  "field": "[Revenue]",
+                  "order": "desc"
+                }
+              ]
+            }
+          }
+        },
+        "notes": "This query retrieves the top 5 products by revenue for the first quarter of 2023 from the 'ProductAnalytics' datasource."
+      },
+      {
+        "user_query": "Retrieve monthly website traffic for the last 12 months.",
+        "arguments": {
+          "datasource_name": "WebTrafficElasticube",
+          "jaql_payload": {
+            "metadata": [
+              {
+                "field": "[Month]",
+                "type": "dim",
+                "title": "Month"
+              },
+              {
+                "field": "[Visits]",
+                "type": "measure",
+                "title": "Website Visits",
+                "aggregation": "sum"
+              }
+            ],
+            "datasource": "WebTrafficElasticube",
+            "filters": [
+              {
+                "field": "[Date]",
+                "type": "filter",
+                "operator": "last",
+                "value": "12 months"
+              }
+            ]
+          }
+        },
+        "notes": "This query retrieves the total website visits grouped by month for the last 12 months from the 'WebTrafficElasticube' datasource."
+      }
+    ]
+  },
+  {
+    "tool_id": "queries.elasticubes_run_jaql_csv",
+    "description": "Run a JAQL query and return CSV output.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datasource_name": {
+          "type": "string",
+          "description": "Datasource / elasticube name."
+        },
+        "jaql_payload": {
+          "type": "object",
+          "description": "JAQL query body."
+        }
+      },
+      "required": [
+        "datasource_name",
+        "jaql_payload"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Export Q3 2023 sales amounts from the 'sales_elasticube' datasource as CSV.",
+        "arguments": {
+          "datasource_name": "sales_elasticube",
+          "jaql_payload": {
+            "fields": [
+              {
+                "dimension": "sales.date",
+                "filter": {
+                  "members": [
+                    "2023-Q3"
+                  ]
+                }
+              },
+              {
+                "dimension": "sales.amount",
+                "aggregation": "sum"
+              }
+            ]
+          }
+        },
+        "notes": "This call retrieves aggregated sales data for Q3 2023 from the 'sales_elasticube' datasource and exports it as a CSV file."
+      },
+      {
+        "user_query": "Generate a CSV report of customer demographics segmented by age group.",
+        "arguments": {
+          "datasource_name": "customer_insights",
+          "jaql_payload": {
+            "fields": [
+              {
+                "dimension": "customers.age_group"
+              },
+              {
+                "dimension": "customers.count",
+                "aggregation": "count"
+              }
+            ]
+          }
+        },
+        "notes": "This call extracts customer demographic data segmented by age group from the 'customer_insights' datasource and returns it as a CSV file."
+      },
+      {
+        "user_query": "Extract product performance metrics for the last 6 months.",
+        "arguments": {
+          "datasource_name": "product_performance",
+          "jaql_payload": {
+            "fields": [
+              {
+                "dimension": "products.name"
+              },
+              {
+                "dimension": "products.sales",
+                "aggregation": "sum"
+              },
+              {
+                "dimension": "products.date",
+                "filter": {
+                  "from": "2023-04-01",
+                  "to": "2023-09-30"
+                }
+              }
+            ]
+          }
+        },
+        "notes": "This call retrieves product performance metrics, including sales data for the last 6 months, from the 'product_performance' datasource and exports it as a CSV file."
+      }
+    ]
+  }
+]

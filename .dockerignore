@@ -9,16 +9,23 @@
 # --------------------------------------------------
 # Python cache / build artifacts
 # --------------------------------------------------
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-.build/
-dist/
-*.egg-info/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
+# NOTE ON PATTERNS: .dockerignore is NOT .gitignore. Patterns here are matched
+# against the context ROOT, so a bare `__pycache__/` excludes only the one at
+# the top level — `backend/__pycache__/` would still be copied in by
+# `COPY backend ./backend`. Anything that must be excluded at every depth needs
+# an explicit `**/` prefix. (This bit us: built images shipped
+# mcp_server/__pycache__ with stale .pyc files for modules that no longer
+# exist, e.g. http_server and server_for_claude, plus a Python 3.9 .pyc.)
+**/__pycache__/
+**/*.py[cod]
+**/*.pyo
+**/*.pyd
+**/.build/
+**/dist/
+**/*.egg-info/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
 
 # --------------------------------------------------
 # Virtual environments
@@ -41,17 +48,34 @@ docs_src/
 # VCS / IDE / OS noise
 # --------------------------------------------------
 .git
-.vscode/
-.idea/
-.DS_Store
+.github/
+**/.vscode/
+**/.idea/
+**/.DS_Store
 
 # Local lint/config artifacts
 .flake8
 
 # --------------------------------------------------
-# Repo docs / scripts not needed in containers
+# Repo docs / scripts / tests not needed in containers
 # --------------------------------------------------
-README.md
+**/*.md
 LICENSE
 refresh_registry.sh
 scripts/
+tests/
+.claude/
+docker-compose*.yml
+Dockerfile*
+nginx/
+
+# --------------------------------------------------
+# Build intermediates
+# --------------------------------------------------
+# tools.registry.json is the SDK-introspection output that
+# scripts/02_add_llm_examples_to_registry.py consumes to produce
+# tools.registry.with_examples.json. Only the *with_examples* file is read at
+# runtime (backend/agent/_registry.py, mcp_server/tools_core.py), so the base
+# file is ~200KB of dead weight in every image. The regeneration scripts that
+# need it are excluded from images too.
+config/tools.registry.json

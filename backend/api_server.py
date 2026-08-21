@@ -20,8 +20,8 @@ Notes
 
 from __future__ import annotations
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 # -----------------------------------------------------------------------------
 # Optional .env loading (local/dev only; safe for Docker/prod)
@@ -42,16 +42,16 @@ import asyncio
 import contextlib
 import json
 import logging
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from typing import Any, AsyncIterator, Dict, List, Optional, Set, Tuple
 
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
-from backend.runtime import run_turn_once
 from backend.agent import llm_agent
-
+from backend.agent._config import pop_turn_usage
+from backend.runtime import cancel_active_turn, run_turn_once
 
 # -----------------------------------------------------------------------------
 # Logging (dedicated file for backend API)
@@ -79,7 +79,7 @@ def _setup_logger() -> None:
     logger.setLevel(log_level)
     logger.propagate = False
 
-    if any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
+    if any(isinstance(h, TimedRotatingFileHandler) for h in logger.handlers):
         logger.info(
             "backend.api logger already configured at level %s (env %s)",
             log_level_name,
@@ -87,10 +87,10 @@ def _setup_logger() -> None:
         )
         return
 
-    fh = RotatingFileHandler(
+    fh = TimedRotatingFileHandler(
         LOG_DIR / "backend_api.log",
-        maxBytes=10 * 1024 * 1024,
-        backupCount=5,
+        when="midnight",  # daily file; 7 dated backups = 7 days kept, older deleted
+        backupCount=7,
         encoding="utf-8",
     )
     fh.setLevel(log_level)
@@ -203,7 +203,7 @@ def _sse_pack(data: Dict[str, Any], event: str = "message") -> str:
         payload = json.dumps(data, ensure_ascii=False, default=str)
     except Exception:
         payload = json.dumps({"ok": False, "error": "Failed to JSON encode SSE payload."})
-    return f"event: {event}\n" f"data: {payload}\n\n"
+    return f"event: {event}\ndata: {payload}\n\n"
 
 
 # -----------------------------------------------------------------------------
@@ -217,16 +217,14 @@ class AgentTurnRequest(BaseModel):
     messages: List[Dict[str, Any]]
     user_input: str = ""
 
-    # Client may send tools, but server selects tools per mode from registry.
-    tools: List[Dict[str, Any]] = []
-
     # Chat mode: single Sisense deployment config
     tenant_config: Optional[Dict[str, Any]] = None
 
     # Migration mode: source/target deployment config
     migration_config: Optional[Dict[str, Any]] = None
 
-    # Approved mutating tool calls (keyed by (tool_id, call_id) or similar)
+    # Approved mutating tool calls, keyed (tool_id, canonical-JSON args) —
+    # must match llm_agent._approval_key exactly (sort_keys=True JSON)
     approved_keys: Optional[List[Tuple[str, str]]] = None
 
     # Long-lived session identifier from the UI
@@ -249,10 +247,28 @@ class AgentTurnResponse(BaseModel):
         Natural-language assistant reply.
     tool_result
         The latest raw tool payload captured by llm_agent, if any.
+    step_results
+        Every tool result of the turn in order ([{step, tool_id, result}]), so the
+        UI can show the whole chain — not just the final tool_result.
+    trace_id
+        The turn's trace id — the same id that groups this turn's rows in
+        llm_calls.csv / llm_traces.csv. The UI attaches it to user feedback
+        (thumbs up/down) so a vote joins back to the exact calls it judges.
     """
 
     reply: str
     tool_result: Optional[Dict[str, Any]] = None
+    step_results: Optional[List[Dict[str, Any]]] = None
+    trace_id: Optional[str] = None
+    usage: Optional[Dict[str, Any]] = None  # {tokens_in, tokens_out, cost} — cost None = pricing unknown
+    # Screen-only lines the UI renders under the reply, NEVER stored in a
+    # message's content (so they can't re-enter LLM prompts via history) —
+    # e.g. clarification option names, shown in every summarization mode.
+    display_hints: Optional[List[str]] = None
+
+
+class CancelRequest(BaseModel):
+    session_id: str
 
 
 # -----------------------------------------------------------------------------
@@ -260,7 +276,7 @@ class AgentTurnResponse(BaseModel):
 # -----------------------------------------------------------------------------
 app = FastAPI(
     title="FES Assistant Backend API",
-    version="0.1.0",
+    version="2.0.0",  # keep in sync with pyproject.toml [project] version
     description="HTTP API for running FES agent turns with MCP tools.",
 )
 
@@ -294,6 +310,14 @@ def list_tools() -> Dict[str, Any]:
         }
 
     return {"tools": tools, "registry": registry_public}
+
+
+@app.post("/agent/cancel")
+async def cancel_agent_turn(req: CancelRequest) -> Dict[str, Any]:
+    """Cancel any active agent turn for the given session."""
+    await cancel_active_turn(req.session_id)
+    logger.info("Cancel requested for session %s", req.session_id)
+    return {"cancelled": True, "session_id": req.session_id}
 
 
 @app.post("/agent/turn")
@@ -340,7 +364,7 @@ async def agent_turn(request: Request, payload: AgentTurnRequest):
     # -------------------------------------------------------------------------
     if not wants_sse:
         try:
-            reply = await run_turn_once(
+            turn = await run_turn_once(
                 session_id=payload.session_id,
                 messages=payload.messages,
                 user_input=payload.user_input,
@@ -351,12 +375,26 @@ async def agent_turn(request: Request, payload: AgentTurnRequest):
                 allow_summarization=effective_allow,
             )
 
-            tool_result = getattr(llm_agent, "LAST_TOOL_RESULT", None)
+            # Everything comes from the turn's own snapshot — never from
+            # llm_agent module globals, which another session's turn may have
+            # overwritten by the time this coroutine resumes.
+            reply = turn["reply"]
+            tool_result = turn["tool_result"]
+            step_results = turn["step_results"]
+            trace_id = turn["trace_id"]
+            usage = pop_turn_usage(trace_id or "")
 
             logger.info("Agent turn completed successfully (JSON).")
             logger.debug("Reply (truncated): %s", reply[:500] if isinstance(reply, str) else repr(reply))
 
-            return AgentTurnResponse(reply=reply, tool_result=tool_result)
+            return AgentTurnResponse(
+                reply=reply,
+                tool_result=tool_result,
+                step_results=step_results,
+                trace_id=trace_id,
+                usage=usage,
+                display_hints=turn.get("display_hints") or None,
+            )
 
         except Exception as exc:
             logger.exception("Error while handling /agent/turn (JSON): %s", exc)
@@ -383,7 +421,7 @@ async def agent_turn(request: Request, payload: AgentTurnRequest):
         try:
             await q.put(("status", {"phase": "started"}))
 
-            reply = await run_turn_once(
+            turn = await run_turn_once(
                 session_id=payload.session_id,
                 messages=payload.messages,
                 user_input=payload.user_input,
@@ -395,9 +433,26 @@ async def agent_turn(request: Request, payload: AgentTurnRequest):
                 progress_cb=_progress_cb,
             )
 
-            tool_result = getattr(llm_agent, "LAST_TOOL_RESULT", None)
+            # Same rule as the JSON path: read the turn snapshot, not globals.
+            reply = turn["reply"]
+            tool_result = turn["tool_result"]
+            step_results = turn["step_results"]
+            trace_id = turn["trace_id"]
+            usage = pop_turn_usage(trace_id or "")
 
-            await q.put(("result", {"reply": reply, "tool_result": tool_result}))
+            await q.put(
+                (
+                    "result",
+                    {
+                        "reply": reply,
+                        "tool_result": tool_result,
+                        "step_results": step_results,
+                        "trace_id": trace_id,
+                        "usage": usage,
+                        "display_hints": turn.get("display_hints") or None,
+                    },
+                )
+            )
             await q.put(("status", {"phase": "completed"}))
 
         except asyncio.CancelledError:

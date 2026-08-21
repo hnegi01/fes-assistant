@@ -1,0 +1,7 @@
+{
+  "package": "custom_code",
+  "class": "CustomCode",
+  "modules": {
+    "core": "Notebook lifecycle — get, create, update, delete, and export notebooks; list folder contents; rename notebook files and folders."
+  }
+}

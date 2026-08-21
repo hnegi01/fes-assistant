@@ -1,0 +1,75 @@
+[
+  {
+    "tool_id": "migration.migrate_all_groups",
+    "description": "Migrate groups from the source environment to the target environment using the bulk endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all user groups from the source environment to the target environment.",
+        "arguments": {},
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
+      },
+      {
+        "user_query": "Copy every group over to the new environment.",
+        "arguments": {},
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
+      }
+    ]
+  },
+  {
+    "tool_id": "migration.migrate_groups",
+    "description": "Migrate specific groups from the source environment to the target environment.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "group_name_list": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The group names to migrate."
+        }
+      },
+      "required": [
+        "group_name_list"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate the 'Sales Team' and 'Marketing Team' groups to the target environment.",
+        "arguments": {
+          "group_name_list": [
+            "Sales Team",
+            "Marketing Team"
+          ]
+        },
+        "notes": "This call migrates the 'Sales Team' and 'Marketing Team' groups from the source environment to the target environment. Use this when you need to move specific groups to a new Sisense instance."
+      },
+      {
+        "user_query": "I need to transfer the 'Admin' and 'Data Analysts' groups to our updated Sisense server. How do I do that?",
+        "arguments": {
+          "group_name_list": [
+            "Admin",
+            "Data Analysts"
+          ]
+        },
+        "notes": "This call migrates the 'Admin' and 'Data Analysts' groups to the target environment. Useful for ensuring key user groups are available in the new setup."
+      },
+      {
+        "user_query": "Can I move the 'Support Team' group to the new Sisense environment?",
+        "arguments": {
+          "group_name_list": [
+            "Support Team"
+          ]
+        },
+        "notes": "This call migrates the 'Support Team' group to the target environment. Ideal for transferring a single group when preparing the new environment."
+      }
+    ]
+  }
+]

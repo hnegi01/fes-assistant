@@ -1,0 +1,265 @@
+[
+  {
+    "tool_id": "plugins.disable_plugin",
+    "description": "Disable a single plugin by name or folder name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "type": "string",
+          "description": "Plugin name or ``folderName`` to disable. The ``\"plugin-\"`` prefix is optional."
+        }
+      },
+      "required": [
+        "plugin"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Disable the 'plugin-advanced-analytics' plugin.",
+        "arguments": {
+          "plugin": "plugin-advanced-analytics"
+        },
+        "notes": "This call disables the 'advanced-analytics' plugin, preventing it from being used in Sisense. Use this when the plugin is no longer needed or causing issues."
+      },
+      {
+        "user_query": "I need to turn off the 'custom-dashboard' plugin. How do I do that?",
+        "arguments": {
+          "plugin": "custom-dashboard"
+        },
+        "notes": "This call disables the 'custom-dashboard' plugin by its folder name. Use this when you want to temporarily or permanently deactivate the plugin."
+      },
+      {
+        "user_query": "Can I disable the 'plugin-data-export' plugin?",
+        "arguments": {
+          "plugin": "plugin-data-export"
+        },
+        "notes": "This call disables the 'data-export' plugin. Use this if the plugin is causing conflicts or is no longer required for your workflows."
+      }
+    ]
+  },
+  {
+    "tool_id": "plugins.disable_plugins",
+    "description": "Disable one or more plugins by name or folder name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more plugin names or folder names. The ``\"plugin-\"`` prefix is optional and is stripped before matching."
+        },
+        "bulk": {
+          "type": "boolean",
+          "description": "When ``True`` (default), all updates are sent in a single PATCH request. When ``False``, one PATCH request is made per plugin."
+        }
+      },
+      "required": [
+        "plugins"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Disable the 'plugin-advanced-viz' and 'plugin-data-export' plugins in one bulk operation.",
+        "arguments": {
+          "plugins": [
+            "plugin-advanced-viz",
+            "plugin-data-export"
+          ],
+          "bulk": true
+        },
+        "notes": "This call disables the 'plugin-advanced-viz' and 'plugin-data-export' plugins in a single PATCH request. Use this when you want to disable multiple plugins efficiently."
+      },
+      {
+        "user_query": "I want to disable the 'plugin-custom-theme' plugin but ensure each plugin update is handled individually. How can I do that?",
+        "arguments": {
+          "plugins": [
+            "plugin-custom-theme"
+          ],
+          "bulk": false
+        },
+        "notes": "This call disables the 'plugin-custom-theme' plugin, sending one PATCH request for this plugin. Use this when you want granular control over each plugin update."
+      },
+      {
+        "user_query": "Can I disable multiple plugins like 'plugin-user-audit' and 'plugin-dashboard-tools' without using the 'plugin-' prefix?",
+        "arguments": {
+          "plugins": [
+            "user-audit",
+            "dashboard-tools"
+          ],
+          "bulk": true
+        },
+        "notes": "This call disables the 'plugin-user-audit' and 'plugin-dashboard-tools' plugins in a single PATCH request. The 'plugin-' prefix is optional and automatically stripped during matching."
+      }
+    ]
+  },
+  {
+    "tool_id": "plugins.enable_plugin",
+    "description": "Enable a single plugin by name or folder name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "type": "string",
+          "description": "Plugin name or ``folderName`` to enable. The ``\"plugin-\"`` prefix is optional."
+        }
+      },
+      "required": [
+        "plugin"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Enable the 'plugin-sample' plugin.",
+        "arguments": {
+          "plugin": "plugin-sample"
+        },
+        "notes": "This call enables the 'plugin-sample' plugin if it is currently disabled. Use this when you want to activate this specific plugin."
+      },
+      {
+        "user_query": "I need to enable a plugin called 'custom-visualization'. How do I do that?",
+        "arguments": {
+          "plugin": "custom-visualization"
+        },
+        "notes": "This call enables the 'custom-visualization' plugin by its folder name. Use this when you know the folder name of the plugin you want to activate."
+      },
+      {
+        "user_query": "Can I enable the 'plugin-advanced-filters' plugin?",
+        "arguments": {
+          "plugin": "plugin-advanced-filters"
+        },
+        "notes": "This call enables the 'plugin-advanced-filters' plugin. Use this when you need to activate this plugin for advanced filtering capabilities."
+      }
+    ]
+  },
+  {
+    "tool_id": "plugins.enable_plugins",
+    "description": "Enable one or more plugins by name or folder name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more plugin names or folder names. The ``\"plugin-\"`` prefix is optional and is stripped before matching."
+        },
+        "bulk": {
+          "type": "boolean",
+          "description": "When ``True`` (default), all updates are sent in a single PATCH request. When ``False``, one PATCH request is made per plugin."
+        }
+      },
+      "required": [
+        "plugins"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Enable the 'plugin-advanced-charts' and 'plugin-data-export' plugins in one bulk operation.",
+        "arguments": {
+          "plugins": [
+            "plugin-advanced-charts",
+            "plugin-data-export"
+          ],
+          "bulk": true
+        },
+        "notes": "This call enables the 'plugin-advanced-charts' and 'plugin-data-export' plugins in bulk mode, sending a single PATCH request."
+      },
+      {
+        "user_query": "I want to enable the 'plugin-custom-theme' plugin, but I need to ensure each plugin is updated individually. How can I do that?",
+        "arguments": {
+          "plugins": [
+            "plugin-custom-theme"
+          ],
+          "bulk": false
+        },
+        "notes": "This call enables the 'plugin-custom-theme' plugin in non-bulk mode, sending one PATCH request for this plugin."
+      },
+      {
+        "user_query": "Can I enable multiple plugins like 'plugin-user-management' and 'plugin-dashboard-enhancer' at once?",
+        "arguments": {
+          "plugins": [
+            "plugin-user-management",
+            "plugin-dashboard-enhancer"
+          ],
+          "bulk": true
+        },
+        "notes": "This call enables the 'plugin-user-management' and 'plugin-dashboard-enhancer' plugins in bulk mode, sending a single PATCH request for efficiency."
+      }
+    ]
+  },
+  {
+    "tool_id": "plugins.get_all_plugins",
+    "description": "Retrieve all plugins installed on the Sisense instance.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "List all plugins installed on my Sisense instance.",
+        "arguments": {},
+        "notes": "This call retrieves a complete list of all plugins installed on the Sisense instance, including their names, folder paths, and activation status."
+      },
+      {
+        "user_query": "Can you show me all the plugins available on the server?",
+        "arguments": {},
+        "notes": "Use this to fetch details about all plugins, which can help in identifying active and inactive plugins or troubleshooting plugin-related issues."
+      },
+      {
+        "user_query": "I need to audit the plugins installed on our Sisense instance. How can I get a full list?",
+        "arguments": {},
+        "notes": "This call is useful for auditing purposes, providing a flat list of all plugins along with their metadata."
+      }
+    ]
+  },
+  {
+    "tool_id": "plugins.get_plugin",
+    "description": "Get a single plugin by its name or folder name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "type": "string",
+          "description": "Plugin name or ``folderName`` to look up. The ``\"plugin-\"`` prefix is optional and is stripped before matching."
+        }
+      },
+      "required": [
+        "plugin"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Find the plugin named 'plugin-custom-theme'.",
+        "arguments": {
+          "plugin": "plugin-custom-theme"
+        },
+        "notes": "This call retrieves the plugin object for a custom theme plugin. Use this when you need details about the plugin or to verify its existence."
+      },
+      {
+        "user_query": "Get the plugin using its folder name 'custom-theme'.",
+        "arguments": {
+          "plugin": "custom-theme"
+        },
+        "notes": "This call fetches the plugin object by its folder name. Useful when the folder name is known but the full plugin name is not."
+      },
+      {
+        "user_query": "Look up the plugin named 'plugin-data-connector'.",
+        "arguments": {
+          "plugin": "plugin-data-connector"
+        },
+        "notes": "This call retrieves the plugin object for a data connector plugin. Use this to confirm the plugin's availability or inspect its configuration."
+      }
+    ]
+  }
+]

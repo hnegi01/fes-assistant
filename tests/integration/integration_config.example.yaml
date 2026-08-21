@@ -1,0 +1,40 @@
+# Integration test configuration — TEMPLATE
+#
+# Copy this file to `integration_config.yaml` (same folder) and fill in real
+# values. `integration_config.yaml` is gitignored — never commit credentials.
+#
+# Integration tests load this file via tests/integration/conftest.py. If the
+# file is absent or still contains these placeholder values, the integration
+# tests are SKIPPED (not failed), so CI and unconfigured machines stay green.
+
+# Backend under test.
+backend_url: "http://localhost:8001"
+
+# Chat mode: a single Sisense deployment.
+tenant_config:
+  domain: "https://your-sisense-instance.example.com"
+  token: "your-real-token"
+  verify_ssl: true
+
+# Migration mode: source + target deployments.
+# Only needed if you run migration integration tests; leave as-is otherwise.
+migration_config:
+  source_url: "https://source.example.com"
+  source_token: "your-source-token"
+  source_verify_ssl: true
+  target_url: "https://target.example.com"
+  target_token: "your-target-token"
+  target_verify_ssl: true
+
+# Chat eval battery (test_evals_planner.py): two REAL users on the tenant whose
+# facts the cases assert on. Committed cases carry {user_a_email}-style
+# placeholders — this repo is public, so real identities live only here.
+#   user_a: any real user; the battery asserts the group they belong to and
+#           their role as those words appear in replies (case-insensitive).
+#   user_b: any real user with a distinctive role (e.g. sysadmin).
+eval_identities:
+  user_a_email: "some.user@your-domain.com"
+  user_a_group: "Everyone"
+  user_a_role: "admin"
+  user_b_email: "another.user@your-domain.com"
+  user_b_role: "sysadmin"

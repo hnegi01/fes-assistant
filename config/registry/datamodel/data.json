@@ -1,0 +1,95 @@
+[
+  {
+    "tool_id": "datamodel.get_data",
+    "description": "Retrieve data from a specific table in a data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the data model."
+        },
+        "table_name": {
+          "type": "string",
+          "description": "Name of the table to retrieve data from."
+        },
+        "query": {
+          "type": "string",
+          "description": "Optional SQL query to filter the data. When omitted, all rows of the table are selected."
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "table_name"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Fetch all rows from the 'sales_data' table in the 'ecommerce_model'.",
+        "arguments": {
+          "datamodel_name": "ecommerce_model",
+          "table_name": "sales_data"
+        },
+        "notes": "This call retrieves all rows from the 'sales_data' table without applying any filters. Use this when you need the complete dataset."
+      },
+      {
+        "user_query": "Get data from the 'customer_info' table in the 'crm_model' where the country is 'USA'.",
+        "arguments": {
+          "datamodel_name": "crm_model",
+          "table_name": "customer_info",
+          "query": "SELECT * FROM customer_info WHERE country = 'USA'"
+        },
+        "notes": "This call retrieves rows from the 'customer_info' table filtered by the SQL query to include only customers from the USA. Use this for targeted data extraction."
+      },
+      {
+        "user_query": "Retrieve all rows from the 'inventory' table in the 'warehouse_model'.",
+        "arguments": {
+          "datamodel_name": "warehouse_model",
+          "table_name": "inventory"
+        },
+        "notes": "This call fetches all rows from the 'inventory' table in the 'warehouse_model'. Useful for analyzing the entire inventory dataset."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.get_row_count",
+    "description": "Retrieve the row count for each table in a specific data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the data model."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Count the rows in each table of the 'SalesData' model.",
+        "arguments": {
+          "datamodel_name": "SalesData"
+        },
+        "notes": "This retrieves the row count for all tables in the 'SalesData' data model, useful for understanding the size of the dataset."
+      },
+      {
+        "user_query": "Can you give me the row counts for all tables in the CustomerAnalytics model?",
+        "arguments": {
+          "datamodel_name": "CustomerAnalytics"
+        },
+        "notes": "This call provides a breakdown of row counts for each table in the 'CustomerAnalytics' data model, helping to analyze its structure."
+      },
+      {
+        "user_query": "I need to check the row counts for the tables in the InventoryTracking data model.",
+        "arguments": {
+          "datamodel_name": "InventoryTracking"
+        },
+        "notes": "This is used to fetch the row counts for each table in the 'InventoryTracking' data model, which can assist in monitoring data growth."
+      }
+    ]
+  }
+]

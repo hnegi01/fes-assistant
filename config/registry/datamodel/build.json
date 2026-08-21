@@ -1,0 +1,523 @@
+[
+  {
+    "tool_id": "datamodel.create_datamodel",
+    "description": "Create a new data model in Sisense.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the data model."
+        },
+        "datamodel_type": {
+          "type": "string",
+          "description": "Either 'extract' (Elasticube/EC) or 'live'. If user says 'elasticube' or 'ec', normalize to 'extract'.",
+          "enum": [
+            "extract",
+            "live"
+          ],
+          "x-aliases": {
+            "extract": [
+              "ec",
+              "elasticube",
+              "elastic cube",
+              "cube",
+              "elastic-cube"
+            ],
+            "live": [
+              "realtime",
+              "real-time",
+              "live model"
+            ]
+          }
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "datamodel_type"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create a new extract (Elasticube) data model called 'Sales Analytics'.",
+        "arguments": {
+          "datamodel_name": "Sales Analytics",
+          "datamodel_type": "extract"
+        },
+        "notes": "This call creates a new data model named 'Sales Analytics' using the 'extract' type, which corresponds to an Elasticube."
+      },
+      {
+        "user_query": "Set up a live data model for real-time analysis named 'Customer Insights'.",
+        "arguments": {
+          "datamodel_name": "Customer Insights",
+          "datamodel_type": "live"
+        },
+        "notes": "This call creates a live data model named 'Customer Insights' for real-time data analysis."
+      },
+      {
+        "user_query": "I need a new Elasticube data model for 'Marketing Dashboard'.",
+        "arguments": {
+          "datamodel_name": "Marketing Dashboard",
+          "datamodel_type": "extract"
+        },
+        "notes": "This call creates a new data model named 'Marketing Dashboard' using the 'extract' type for an Elasticube."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.create_dataset",
+    "description": "Create a new dataset in the specified data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the data model where the dataset will be created."
+        },
+        "connection_name": {
+          "type": "string",
+          "description": "Name of the connection to use.",
+          "x-options-tool": "datamodel.get_connections",
+          "x-options-note": "Or let me know if you want to create a new connection first."
+        },
+        "database_name": {
+          "type": "string",
+          "description": "Name of the data source database."
+        },
+        "schema_name": {
+          "type": "string",
+          "description": "Name of the data source schema."
+        },
+        "dataset_name": {
+          "type": "string",
+          "description": "Name of the dataset. Defaults to the schema name if not provided."
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "connection_name",
+        "database_name",
+        "schema_name"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create a dataset named 'SalesDataset' in the 'SalesDataModel' data model, using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema.",
+        "arguments": {
+          "datamodel_name": "SalesDataModel",
+          "connection_name": "SalesDB",
+          "database_name": "SalesDatabase",
+          "schema_name": "public",
+          "dataset_name": "SalesDataset"
+        },
+        "notes": "This call creates a dataset named 'SalesDataset' in the 'SalesDataModel' data model using the 'public' schema from the 'SalesDB' connection."
+      },
+      {
+        "user_query": "Add a dataset to the 'MarketingAnalytics' data model using the 'MarketingDB' connection and default to the schema name.",
+        "arguments": {
+          "datamodel_name": "MarketingAnalytics",
+          "connection_name": "MarketingDB",
+          "database_name": "MarketingDatabase",
+          "schema_name": "campaigns"
+        },
+        "notes": "This call creates a dataset in the 'MarketingAnalytics' data model using the 'campaigns' schema from the 'MarketingDB' connection. The dataset name defaults to the schema name, 'campaigns'."
+      },
+      {
+        "user_query": "Create a dataset in the 'FinanceModel' using the 'FinanceConnection' and the 'accounts' schema, but name it 'AccountDataset'.",
+        "arguments": {
+          "datamodel_name": "FinanceModel",
+          "connection_name": "FinanceConnection",
+          "database_name": "FinanceDB",
+          "schema_name": "accounts",
+          "dataset_name": "AccountDataset"
+        },
+        "notes": "This call creates a dataset named 'AccountDataset' in the 'FinanceModel' data model using the 'accounts' schema from the 'FinanceConnection'."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.create_table",
+    "description": "Create a new table in the specified data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the data model where the table will be created."
+        },
+        "table_name": {
+          "type": "string",
+          "description": "Name of the table to create."
+        },
+        "database_name": {
+          "type": "string",
+          "description": "Name of the data source database. If not provided, inferred from the data model's dataset."
+        },
+        "schema_name": {
+          "type": "string",
+          "description": "Name of the data source schema. If not provided, inferred from the data model's dataset."
+        },
+        "dataset_id": {
+          "type": "string",
+          "description": "ID of the dataset where the table will be created. If not provided, inferred from the data model (requires a single dataset)."
+        },
+        "import_query": {
+          "type": "string",
+          "description": "SQL statement used as a custom import query. Defaults to ``None``."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description for the table. Defaults to an empty string."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of tags to apply to the table. Defaults to ``None``."
+        },
+        "build_behavior_config": {
+          "type": "object",
+          "description": "Build behavior configuration applied for EXTRACT models. Supported fields: ``mode`` (one of ``\"replace\"``, ``\"replace_changes\"``, ``\"append\"``, ``\"increment\"``) and, when ``mode`` is ``\"increment\"``, ``column_name`` (the incremental column)."
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "table_name"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create a new table named 'sales_summary' in the 'ecommerce_data' data model.",
+        "arguments": {
+          "datamodel_name": "ecommerce_data",
+          "table_name": "sales_summary"
+        },
+        "notes": "This call creates a new table named 'sales_summary' in the 'ecommerce_data' data model, inferring the database, schema, and dataset from the data model."
+      },
+      {
+        "user_query": "Add a table named 'customer_orders' to the 'retail_analytics' data model using a custom SQL query.",
+        "arguments": {
+          "datamodel_name": "retail_analytics",
+          "table_name": "customer_orders",
+          "import_query": "SELECT * FROM orders WHERE order_date >= '2023-01-01'"
+        },
+        "notes": "This call creates a table named 'customer_orders' in the 'retail_analytics' data model, using a custom SQL query to filter data from the source."
+      },
+      {
+        "user_query": "Create a table named 'daily_transactions' in the 'finance_data' data model with incremental build behavior.",
+        "arguments": {
+          "datamodel_name": "finance_data",
+          "table_name": "daily_transactions",
+          "build_behavior_config": {
+            "mode": "increment",
+            "column_name": "transaction_date"
+          }
+        },
+        "notes": "This call creates a table named 'daily_transactions' in the 'finance_data' data model and configures it for incremental builds based on the 'transaction_date' column."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.deploy_datamodel",
+    "description": "Deploy (build or publish) the specified data model based on its type.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the data model to deploy."
+        },
+        "build_type": {
+          "type": "string",
+          "description": "Build strategy for extract models. Omit for live/publish.",
+          "enum": [
+            "full",
+            "by_table",
+            "schema_changes"
+          ],
+          "x-aliases": {
+            "full": [
+              "build",
+              "rebuild",
+              "start",
+              "run",
+              "execute",
+              "refresh"
+            ],
+            "by_table": [
+              "by-table",
+              "table-wise",
+              "incremental-tables"
+            ],
+            "schema_changes": [
+              "schema-changes",
+              "changes-only",
+              "delta"
+            ]
+          }
+        },
+        "row_limit": {
+          "type": "integer",
+          "description": "Maximum number of rows to process for EXTRACT builds. Defaults to ``0`` (no limit). Ignored for LIVE models.",
+          "minimum": 1
+        },
+        "schema_origin": {
+          "type": "string",
+          "description": "Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen in the Data page, the default) or ``\"running\"`` (last successfully built version). Ignored for LIVE models.",
+          "enum": [
+            "latest",
+            "running"
+          ]
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Run a full build of the 'Sales_Analytics' data model.",
+        "arguments": {
+          "datamodel_name": "Sales_Analytics",
+          "build_type": "full"
+        },
+        "notes": "This call triggers a full rebuild of the 'Sales_Analytics' data model, which is useful for ensuring all data is refreshed and up-to-date."
+      },
+      {
+        "user_query": "I want to incrementally build the 'Marketing_Performance' data model with a row limit of 100,000. How can I do that?",
+        "arguments": {
+          "datamodel_name": "Marketing_Performance",
+          "build_type": "by_table",
+          "row_limit": 100000
+        },
+        "notes": "This call performs an incremental build of the 'Marketing_Performance' data model, processing up to 100,000 rows per table. This is ideal for large datasets where a full rebuild is unnecessary."
+      },
+      {
+        "user_query": "Can I deploy the 'Customer_Insights' data model using the latest schema?",
+        "arguments": {
+          "datamodel_name": "Customer_Insights",
+          "build_type": "full",
+          "schema_origin": "latest"
+        },
+        "notes": "This call deploys the 'Customer_Insights' data model using the latest schema configuration. It ensures the model reflects the most recent changes made in the Data page."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.setup_datamodel",
+    "description": "Set up a data model end to end using an existing connection.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the data model."
+        },
+        "datamodel_type": {
+          "type": "string",
+          "description": "Type of the data model. Should be either ``\"extract\"`` (for Elasticube) or ``\"live\"`` (for Live).",
+          "enum": [
+            "extract",
+            "live"
+          ],
+          "x-aliases": {
+            "extract": [
+              "ec",
+              "elasticube",
+              "elastic cube",
+              "cube",
+              "elastic-cube"
+            ],
+            "live": [
+              "realtime",
+              "real-time",
+              "live model"
+            ]
+          }
+        },
+        "connection_name": {
+          "type": "string",
+          "description": "Name of the connection to use.",
+          "x-options-tool": "datamodel.get_connections",
+          "x-options-note": "Or let me know if you want to create a new connection first."
+        },
+        "database_name": {
+          "type": "string",
+          "description": "Name of the data source database."
+        },
+        "schema_name": {
+          "type": "string",
+          "description": "Name of the data source schema."
+        },
+        "tables": {
+          "type": "array",
+          "description": "List of tables to add. For 'live' models, build_behavior_config is ignored. For 'extract' models, set build_behavior_config as needed.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "database_name": {
+                "type": "string",
+                "description": "Optional override of the table's database. Defaults to top-level database_name if omitted."
+              },
+              "schema_name": {
+                "type": "string",
+                "description": "Optional override of the table's schema. Defaults to top-level schema_name if omitted."
+              },
+              "table_name": {
+                "type": "string",
+                "description": "Physical table name to add, or a logical name when using import_query."
+              },
+              "import_query": {
+                "type": "string",
+                "description": "Optional custom SQL (executed as-is). Use fully-qualified tables: schema.table (Databricks: `schema`.`table`)."
+              },
+              "description": {
+                "type": "string",
+                "description": "Optional table description."
+              },
+              "tags": {
+                "type": "array",
+                "description": "Optional list of tags for the table.",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "build_behavior_config": {
+                "type": "object",
+                "description": "Extract models only; omit for 'live'. For 'increment' mode, column_name is required.",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "replace",
+                      "replace_changes",
+                      "append",
+                      "increment"
+                    ],
+                    "description": "Table build behavior for extract models."
+                  },
+                  "column_name": {
+                    "type": "string",
+                    "description": "Required when mode='increment'; ignored otherwise."
+                  }
+                }
+              }
+            },
+            "required": [
+              "table_name"
+            ]
+          },
+          "minItems": 1
+        },
+        "dataset_name": {
+          "type": "string",
+          "description": "Name of the dataset. Defaults to the schema name if not provided."
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "datamodel_type",
+        "connection_name",
+        "database_name",
+        "schema_name",
+        "tables"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Set up a live data model called 'Sales_Live_Model' with dataset 'Sales_Live_Dataset', using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema, including the customers and orders tables.",
+        "arguments": {
+          "datamodel_name": "Sales_Live_Model",
+          "datamodel_type": "live",
+          "connection_name": "SalesDB",
+          "database_name": "SalesDatabase",
+          "schema_name": "public",
+          "tables": [
+            {
+              "table_name": "customers"
+            },
+            {
+              "table_name": "orders"
+            }
+          ],
+          "dataset_name": "Sales_Live_Dataset"
+        },
+        "notes": "This call sets up a live data model for sales data, pulling from the 'SalesDB' connection and including the 'customers' and 'orders' tables."
+      },
+      {
+        "user_query": "Set up an Elasticube for our marketing data with incremental builds for the 'campaigns' table.",
+        "arguments": {
+          "datamodel_name": "Marketing_Elasticube",
+          "datamodel_type": "extract",
+          "connection_name": "MarketingDB",
+          "database_name": "MarketingDatabase",
+          "schema_name": "analytics",
+          "tables": [
+            {
+              "table_name": "campaigns",
+              "description": "Marketing campaign performance data.",
+              "tags": [
+                "marketing",
+                "campaigns"
+              ],
+              "build_behavior_config": {
+                "mode": "increment",
+                "column_name": "updated_at"
+              }
+            },
+            {
+              "table_name": "leads",
+              "description": "Lead generation data from various campaigns.",
+              "tags": [
+                "marketing",
+                "leads"
+              ],
+              "build_behavior_config": {
+                "mode": "replace"
+              }
+            }
+          ],
+          "dataset_name": "Marketing_Dataset"
+        },
+        "notes": "This call creates an Elasticube for marketing data with incremental builds for the 'campaigns' table based on the 'updated_at' column."
+      },
+      {
+        "user_query": "Create a live data model for the finance team using the 'FinanceDB' connection and include custom SQL for the 'transactions' table.",
+        "arguments": {
+          "datamodel_name": "Finance_Live_Model",
+          "datamodel_type": "live",
+          "connection_name": "FinanceDB",
+          "database_name": "FinanceDatabase",
+          "schema_name": "financials",
+          "tables": [
+            {
+              "table_name": "accounts",
+              "description": "Account details including balances and account types.",
+              "tags": [
+                "finance",
+                "accounts"
+              ]
+            },
+            {
+              "table_name": "transactions",
+              "import_query": "SELECT account_id, amount, transaction_date FROM financials.transactions WHERE amount > 0",
+              "description": "Filtered transactions with positive amounts.",
+              "tags": [
+                "finance",
+                "transactions"
+              ]
+            }
+          ],
+          "dataset_name": "Finance_Live_Dataset"
+        },
+        "notes": "This call sets up a live data model for financial data, including a custom SQL query for the 'transactions' table to filter only positive amounts."
+      }
+    ]
+  }
+]

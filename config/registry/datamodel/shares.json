@@ -1,0 +1,121 @@
+[
+  {
+    "tool_id": "datamodel.add_datamodel_shares",
+    "description": "Add share entries (users and groups) to a data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the data model to add shares to."
+        },
+        "shares": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of share definitions to add. Each dictionary should include: ``name`` (user email or group name), ``type`` (``\"user\"`` or ``\"group\"``), and ``permission`` (one of ``\"EDIT\"``, ``\"READ\"``, ``\"USE\"``)."
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "shares"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Give the 'Sales Team' group edit access and john.doe@example.com read access to the 'Revenue Analysis' data model.",
+        "arguments": {
+          "datamodel_name": "Revenue Analysis",
+          "shares": [
+            {
+              "name": "Sales Team",
+              "type": "group",
+              "permission": "EDIT"
+            },
+            {
+              "name": "john.doe@example.com",
+              "type": "user",
+              "permission": "READ"
+            }
+          ]
+        },
+        "notes": "This call adds edit access for the Sales team and read access for John Doe to the 'Revenue Analysis' data model."
+      },
+      {
+        "user_query": "I need to grant usage permissions to the Marketing group for the 'Customer Insights' data model.",
+        "arguments": {
+          "datamodel_name": "Customer Insights",
+          "shares": [
+            {
+              "name": "Marketing",
+              "type": "group",
+              "permission": "USE"
+            }
+          ]
+        },
+        "notes": "This call grants usage permissions to the Marketing group for the 'Customer Insights' data model."
+      },
+      {
+        "user_query": "Can I add both read access for Jane Smith and edit access for the Admin group to the 'Product Performance' data model?",
+        "arguments": {
+          "datamodel_name": "Product Performance",
+          "shares": [
+            {
+              "name": "jane.smith@example.com",
+              "type": "user",
+              "permission": "READ"
+            },
+            {
+              "name": "Admin Group",
+              "type": "group",
+              "permission": "EDIT"
+            }
+          ]
+        },
+        "notes": "This call adds read access for Jane Smith and edit access for the Admin group to the 'Product Performance' data model."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.get_datamodel_shares",
+    "description": "Retrieve all share entries (users and groups) for a given data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name of the data model to retrieve shares for."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Show who has access to the 'Sales_Analytics' data model.",
+        "arguments": {
+          "datamodel_name": "Sales_Analytics"
+        },
+        "notes": "Retrieves all users and groups with access to the 'Sales_Analytics' data model, including their permission levels."
+      },
+      {
+        "user_query": "List all shares for the 'Marketing_Performance' data model.",
+        "arguments": {
+          "datamodel_name": "Marketing_Performance"
+        },
+        "notes": "Returns a detailed list of users and groups who can access the 'Marketing_Performance' data model, along with their permissions."
+      },
+      {
+        "user_query": "Can you show me the sharing details for the 'Customer_Segmentation' model?",
+        "arguments": {
+          "datamodel_name": "Customer_Segmentation"
+        },
+        "notes": "Provides a breakdown of all share entries for the 'Customer_Segmentation' data model, including resolved user/group names and permission levels."
+      }
+    ]
+  }
+]

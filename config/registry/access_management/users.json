@@ -1,0 +1,414 @@
+[
+  {
+    "tool_id": "access_management.change_user_password",
+    "description": "Change a user's password.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "description": "Internal user ID (``_id``) to update."
+        },
+        "password": {
+          "type": "string",
+          "description": "New password for the user. Must not be empty."
+        }
+      },
+      "required": [
+        "user_id",
+        "password"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Change the password for user 'user123' to 'NewSecurePassword123!'.",
+        "arguments": {
+          "user_id": "user123",
+          "password": "NewSecurePassword123!"
+        },
+        "notes": "This call updates the password for the user with ID 'user123' to a new secure value. Use this when a user requests a password reset or if their account security is compromised."
+      },
+      {
+        "user_query": "Change the password for the admin user with ID 'admin001' to a new value.",
+        "arguments": {
+          "user_id": "admin001",
+          "password": "AdminPass2023!"
+        },
+        "notes": "This call changes the password for the admin user with ID 'admin001'. This is useful for enforcing password updates for administrative accounts."
+      },
+      {
+        "user_query": "Update the password for the user with ID 'teamlead45' to a stronger one.",
+        "arguments": {
+          "user_id": "teamlead45",
+          "password": "Str0ngP@ssw0rd!"
+        },
+        "notes": "This call sets a stronger password for the user with ID 'teamlead45'. Use this to improve account security for key team members."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.create_user",
+    "description": "Create a new user in Sisense.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_data": {
+          "type": "object",
+          "description": "Dictionary containing the user details. Supported fields use canonical Sisense payload field names: - ``email`` : str — the user's email address. - ``firstName`` : str — the user's first name. - ``lastName`` : str — the user's last name. - ``role`` : str — role name to assign (resolved to ``roleId``). - ``groups`` : list[str] — group names to assign (resolved to IDs). - ``preferences`` : dict — user preference settings."
+        }
+      },
+      "required": [
+        "user_data"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create a Viewer user for Jane Doe at jane.doe@example.com, add them to the Sales and Marketing groups, and set their language to English and timezone to America/New_York.",
+        "arguments": {
+          "user_data": {
+            "email": "jane.doe@example.com",
+            "firstName": "Jane",
+            "lastName": "Doe",
+            "role": "VIEWER",
+            "groups": [
+              "Sales",
+              "Marketing"
+            ],
+            "preferences": {
+              "language": "en",
+              "timezone": "America/New_York"
+            }
+          }
+        },
+        "notes": "This call creates a new user named Jane Doe with the Viewer role, assigns them to the Sales and Marketing groups, and sets their preferences for language and timezone."
+      },
+      {
+        "user_query": "Create a new Designer user and assign them to the Data Analysts group.",
+        "arguments": {
+          "user_data": {
+            "email": "john.smith@example.com",
+            "firstName": "John",
+            "lastName": "Smith",
+            "role": "DESIGNER",
+            "groups": [
+              "Data Analysts"
+            ],
+            "preferences": {
+              "language": "en",
+              "timezone": "Europe/London"
+            }
+          }
+        },
+        "notes": "This call creates a new user named John Smith with the Designer role, assigns them to the Data Analysts group, and configures their preferences for language and timezone."
+      },
+      {
+        "user_query": "Add a new admin user with no group assignments.",
+        "arguments": {
+          "user_data": {
+            "email": "admin.user@example.com",
+            "firstName": "Admin",
+            "lastName": "User",
+            "role": "ADMIN",
+            "groups": [],
+            "preferences": {
+              "language": "en",
+              "timezone": "UTC"
+            }
+          }
+        },
+        "notes": "This call creates a new user named Admin User with the Admin role, does not assign them to any groups, and sets their preferences for language and timezone."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.delete_user",
+    "description": "Delete a user by their email (username).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "The email or username of the user to be deleted.",
+          "format": "email"
+        }
+      },
+      "required": [
+        "user_name"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Remove the user with the email john.doe@example.com from the system.",
+        "arguments": {
+          "user_name": "john.doe@example.com"
+        },
+        "notes": "This call deletes the user account associated with the email john.doe@example.com. Use this when a user is no longer part of the organization or should no longer have access."
+      },
+      {
+        "user_query": "Delete the account for jane.smith@company.com.",
+        "arguments": {
+          "user_name": "jane.smith@company.com"
+        },
+        "notes": "This operation removes the user jane.smith@company.com from the system. Use this to revoke access for a specific user permanently."
+      },
+      {
+        "user_query": "I need to delete the user with the email admin@org.com.",
+        "arguments": {
+          "user_name": "admin@org.com"
+        },
+        "notes": "This deletes the user admin@org.com from the system. Ensure that this user is not critical for administrative tasks before proceeding."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.get_my_user",
+    "description": "Retrieve the currently logged-in user for the API token.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Show which user I am currently logged in as.",
+        "arguments": {},
+        "notes": "This call retrieves the details of the currently authenticated user based on the API token. Useful for verifying the identity of the logged-in user."
+      },
+      {
+        "user_query": "Can you fetch the user details for the current API token?",
+        "arguments": {},
+        "notes": "This call returns the user object associated with the API token, including information like email, username, and internal ID. Ideal for debugging or auditing purposes."
+      },
+      {
+        "user_query": "What is the email address of the user associated with this token?",
+        "arguments": {},
+        "notes": "This retrieves the logged-in user's information, which can be used to confirm the email address or other identifying details of the API token owner."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.get_roles",
+    "description": "Retrieve all Sisense roles.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "List all roles available in our Sisense instance.",
+        "arguments": {},
+        "notes": "This call retrieves all roles defined in the Sisense instance. Useful for understanding role configurations or preparing for role-based access control setup."
+      },
+      {
+        "user_query": "Can you list all the roles so I can map them to user groups in our system?",
+        "arguments": {},
+        "notes": "This call fetches the complete list of roles, which can be used to map Sisense roles to external user groups during integration or migration workflows."
+      },
+      {
+        "user_query": "I need to see all roles to verify if a new role needs to be created.",
+        "arguments": {},
+        "notes": "Use this call to review the existing roles and determine if additional roles are necessary for new user access requirements."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.get_user",
+    "description": "Retrieve a user's details by email address, expanding group and role information.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_email": {
+          "type": "string",
+          "description": "Email address of the user to retrieve.",
+          "format": "email"
+        }
+      },
+      "required": [
+        "user_email"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Find details for the user with email john.doe@example.com.",
+        "arguments": {
+          "user_email": "john.doe@example.com"
+        },
+        "notes": "This call retrieves detailed information about John Doe, including their groups and roles."
+      },
+      {
+        "user_query": "Get user information for jane.smith@company.com.",
+        "arguments": {
+          "user_email": "jane.smith@company.com"
+        },
+        "notes": "Use this to fetch Jane Smith's user details, including expanded group and role data."
+      },
+      {
+        "user_query": "Retrieve the profile for admin@organization.org.",
+        "arguments": {
+          "user_email": "admin@organization.org"
+        },
+        "notes": "This call is useful for verifying the admin user's access and role assignments."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.get_user_with_role_and_group_names",
+    "description": "Retrieve a single user by email/username with role and group details.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "The email or username of the user to be retrieved.",
+          "format": "email"
+        }
+      },
+      "required": [
+        "user_name"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Find the user details for john.doe@example.com, including their roles and groups.",
+        "arguments": {
+          "user_name": "john.doe@example.com"
+        },
+        "notes": "This call retrieves detailed information about the user with the email 'john.doe@example.com', including their role and group names. Use this to verify user permissions or group memberships."
+      },
+      {
+        "user_query": "What are the roles and groups associated with jane.smith@company.com?",
+        "arguments": {
+          "user_name": "jane.smith@company.com"
+        },
+        "notes": "This call fetches the user details for 'jane.smith@company.com', including their assigned roles and groups. Useful for auditing user access or troubleshooting group assignments."
+      },
+      {
+        "user_query": "Get the role and group information for admin@domain.com.",
+        "arguments": {
+          "user_name": "admin@domain.com"
+        },
+        "notes": "This call retrieves the role and group details for the user 'admin@domain.com'. Ideal for checking administrative user configurations or resolving access issues."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.get_users_all",
+    "description": "Retrieve all users with group and role information.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Show me all the users in the system along with their roles and group memberships.",
+        "arguments": {},
+        "notes": "This call retrieves a list of all users in the system, including their associated roles and group memberships. Useful for auditing or managing user access."
+      },
+      {
+        "user_query": "I need to see which groups and roles are assigned to each user.",
+        "arguments": {},
+        "notes": "This call provides detailed information about each user's group and role assignments. It excludes the 'Everyone' group if the user belongs to other groups."
+      },
+      {
+        "user_query": "Can I get a full list of users with their roles and groups for reporting purposes?",
+        "arguments": {},
+        "notes": "This call generates a comprehensive list of users, including their roles and group memberships, which can be used for reporting or compliance checks."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.get_users_with_role_names_and_group_names",
+    "description": "Retrieve all users enriched with role names and group names.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "List all users in the system along with their role names and group names.",
+        "arguments": {},
+        "notes": "This call retrieves a list of all users in the system, enriched with their role names and group names. Useful for auditing user access and group memberships."
+      },
+      {
+        "user_query": "Can I get a detailed list of users along with their roles and group memberships for reporting purposes?",
+        "arguments": {},
+        "notes": "This call provides a comprehensive list of users with their associated roles and groups, which can be used for generating access management reports."
+      },
+      {
+        "user_query": "I need to verify which users belong to specific roles and groups. How can I get this information?",
+        "arguments": {},
+        "notes": "This call fetches all users along with their role and group details, making it easier to cross-check user assignments against roles and groups."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.update_user",
+    "description": "Update an existing Sisense user identified by their email address.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_email": {
+          "type": "string",
+          "description": "Email address of the user to update (used to locate the user).",
+          "format": "email"
+        },
+        "user_data": {
+          "type": "object",
+          "description": "Dictionary of fields to update. Only include fields you want to change. Supported fields ---------------- - email : str Update the user's email address. - userName : str Update the user's username/login name. - firstName : str Update the user's first name. - lastName : str Update the user's last name. - role : str Role name (e.g., \"viewer\", \"designer\"). This is resolved to ``roleId`` before sending the API request. - groups : list[str] List of group names to apply. Group names are resolved to group IDs before sending the API request. If ``groups`` is explicitly provided as an empty list (``[]``), group memberships are cleared (tenant defaults may still apply)."
+        }
+      },
+      "required": [
+        "user_email",
+        "user_data"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Change john.doe@example.com's email address to john.doe.new@example.com and set their role to designer.",
+        "arguments": {
+          "user_email": "john.doe@example.com",
+          "user_data": {
+            "email": "john.doe.new@example.com",
+            "role": "designer"
+          }
+        },
+        "notes": "This call updates the user's email address and assigns them the 'designer' role."
+      },
+      {
+        "user_query": "Change the username and clear all group memberships for jane.smith@example.com.",
+        "arguments": {
+          "user_email": "jane.smith@example.com",
+          "user_data": {
+            "userName": "jane.smith.new",
+            "groups": []
+          }
+        },
+        "notes": "This call updates the user's username and removes all group memberships."
+      },
+      {
+        "user_query": "Update the first and last name of a user with the email admin.user@example.com.",
+        "arguments": {
+          "user_email": "admin.user@example.com",
+          "user_data": {
+            "firstName": "Admin",
+            "lastName": "User"
+          }
+        },
+        "notes": "This call updates the user's first and last name while leaving other fields unchanged."
+      }
+    ]
+  }
+]
