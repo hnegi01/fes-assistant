@@ -1,6 +1,9 @@
 # Env / secrets
 .env
 
+# Integration test credentials (copy from integration_config.example.yaml)
+tests/integration/integration_config.yaml
+
 # Logs
 logs/
 *.log
@@ -33,3 +36,13 @@ venv_pysisense_chatbot/
 
 # Local docs clone (pysisense repo)
 docs_src/
+screenshots/
+
+# Claude Code — machine-specific settings, local artifacts, and dev-phase progress tracker
+.claude/settings.local.json
+.claude/v2-v3-roadmap.html
+.claude/PROGRESS.md
+.claude/V3_BACKLOG.md
+# Internal planning doc — local development only, not for the public repo.
+# (Was tracked until 2026-08-03; earlier commits still contain it in history.)
+.claude/ROADMAP.md

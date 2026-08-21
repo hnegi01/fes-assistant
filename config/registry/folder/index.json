@@ -1,0 +1,7 @@
+{
+  "package": "folder",
+  "class": "Folder",
+  "modules": {
+    "core": "Folder operations — create, update, and delete folders; look up a folder ID by name; retrieve the flat or tree folder structure; get a folder's ancestor chain."
+  }
+}

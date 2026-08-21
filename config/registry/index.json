@@ -1,0 +1,54 @@
+{
+  "sdk_version": "1.0.2",
+  "updated_at": "2026-08-21T17:34:34Z",
+  "packages": {
+    "access_management": {
+      "class": "AccessManagement",
+      "description": "Manage Sisense users, groups, permissions, and access control.\n\nCovers user lifecycle (create, update, deactivate), group membership,\nrole assignment, folder and dashboard ownership transfer, column-level\nsecurity restrictions, and administrative reporting on dashboard shares\nand scheduled builds."
+    },
+    "blox": {
+      "class": "Blox",
+      "description": "Manage custom Blox actions on a Sisense instance.\n\nProvides read, write, and delete access to Blox custom actions. Fetch\noperations are supported on both Linux and Windows deployments via\nOS-routed endpoints; save and delete are Linux-only."
+    },
+    "custom_code": {
+      "class": "CustomCode",
+      "description": "Manage Sisense custom-code notebooks and their file system layout.\n\nCovers the full notebook lifecycle — create, retrieve, update, export,\nand delete notebooks — as well as renaming notebook files and folders\nwithin the Sisense custom-code directory structure."
+    },
+    "datamodel": {
+      "class": "DataModel",
+      "description": "Manage Sisense data models, connections, builds, security, and data.\n\nCovers the full data model lifecycle — schema retrieval, provisioning\nnew models and tables, connection management, row-level security rules,\nuser/group share assignments, and direct table-level data access via SQL."
+    },
+    "encryption": {
+      "class": "Encryption",
+      "description": "Encrypt and decrypt Sisense connection parameter values.\n\nWraps the Sisense encryption service for preparing or recovering\nconnection credentials (such as passwords and keys) used during\ncross-server data model migration."
+    },
+    "dashboard": {
+      "class": "Dashboard",
+      "description": "Manage Sisense dashboards, their shares, columns, and scripts.\n\nCovers dashboard CRUD (get, export, rename, move, publish), share\nmanagement for users and groups, inspection of all table/column\nreferences used within a dashboard, and reading or writing JavaScript\nscripts attached to dashboards and individual widgets."
+    },
+    "folder": {
+      "class": "Folder",
+      "description": "Manage the Sisense folder hierarchy and individual folder records.\n\nCovers folder CRUD (create, update, delete), lookup by name or ID,\nnavigation of the full folder tree, and retrieval of a folder's\nancestor chain. Does not manage dashboard content inside folders —\nuse the Dashboard class for that."
+    },
+    "metadata": {
+      "class": "Metadata",
+      "description": "Retrieve datasource metadata — measures, dimensions, and field definitions.\n\nProvides read-only access to the semantic layer of a Sisense datasource:\nsaved formula measures, dimension definitions, the list of available\ndatasources, and the ability to run raw metadata queries. Does not\nbuild or modify data model schemas — use the DataModel class for that."
+    },
+    "migration": {
+      "class": "Migration",
+      "description": "Copy Sisense content between two separate Sisense environments.\n\nConnects to a source and a target Sisense instance (via YAML config files\nor injected clients) and migrates groups, users, dashboards, and data\nmodels from one to the other. Does not operate on a single instance —\nuse AccessManagement or Dashboard for single-environment changes."
+    },
+    "plugins": {
+      "class": "Plugins",
+      "description": "Manage Sisense plugin installation state and enable/disable lifecycle.\n\nCovers listing installed plugins, toggling individual plugins or batches\nof plugins, and capturing or restoring a full plugin state snapshot.\nDoes not install or remove plugin packages from the filesystem."
+    },
+    "queries": {
+      "class": "Queries",
+      "description": "Execute custom JAQL and SQL queries against Sisense datasources.\n\nSends caller-supplied query payloads directly to the elasticube or live\ndatasource engine. Requires the caller to already know the internal table\nand column names — not for discovering schema, listing measures, or\nretrieving row counts. Use DataModel for row counts per table, and\nMetadata for browsing the semantic layer (measures, dimensions)."
+    },
+    "wellcheck": {
+      "class": "WellCheck",
+      "description": "Analyze Sisense dashboards and data models for health and complexity issues.\n\nRuns structural and best-practice checks across dashboards (widget counts,\npivot field density, tabber/accordion/jump-to-dashboard usage) and data\nmodels (custom table SQL, island tables, RLS column datatypes, import\nqueries, many-to-many relationships, unused columns). Results are returned\nas structured row lists suitable for export or further analysis."
+    }
+  }
+}

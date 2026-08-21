@@ -1,0 +1,351 @@
+[
+  {
+    "tool_id": "datamodel.delete_datamodel",
+    "description": "Delete a data model by title and server using the GraphQL ECM endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The exact title of the data model to delete."
+        },
+        "server": {
+          "type": "string",
+          "description": "The server name where the model is hosted (for example ``\"LocalHost\"``)."
+        }
+      },
+      "required": [
+        "title",
+        "server"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Delete the 'Sales Data' model from the 'LocalHost' server.",
+        "arguments": {
+          "title": "Sales Data",
+          "server": "LocalHost"
+        },
+        "notes": "This call deletes the 'Sales Data' data model hosted on the LocalHost server. Use this when the model is no longer needed or needs to be replaced."
+      },
+      {
+        "user_query": "I need to remove the 'Marketing Analytics' model from the 'AnalyticsServer'. How can I do that?",
+        "arguments": {
+          "title": "Marketing Analytics",
+          "server": "AnalyticsServer"
+        },
+        "notes": "This call removes the 'Marketing Analytics' data model from the 'AnalyticsServer'. Use this to clean up unused or outdated models."
+      },
+      {
+        "user_query": "Can you help me delete the 'Customer Insights' model from the 'DataHubServer'?",
+        "arguments": {
+          "title": "Customer Insights",
+          "server": "DataHubServer"
+        },
+        "notes": "This call deletes the 'Customer Insights' data model from the 'DataHubServer'. Use this when the model is obsolete or needs to be retired."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.describe_datamodel",
+    "description": "Retrieve data model structure in a flat, row-based format.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name (title) of the data model to describe."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Describe the structure of the 'Sales Analytics' data model.",
+        "arguments": {
+          "datamodel_name": "Sales Analytics"
+        },
+        "notes": "This call retrieves the structure of the 'Sales Analytics' data model, including datasets and tables, in a flat format suitable for analysis or export."
+      },
+      {
+        "user_query": "Can you describe the 'Customer Insights' data model for me?",
+        "arguments": {
+          "datamodel_name": "Customer Insights"
+        },
+        "notes": "This call provides a detailed, row-based description of the 'Customer Insights' data model, useful for understanding its datasets and tables."
+      },
+      {
+        "user_query": "I need to export the structure of the 'Marketing Performance' data model to a CSV file. Can you get the details?",
+        "arguments": {
+          "datamodel_name": "Marketing Performance"
+        },
+        "notes": "This call retrieves the structure of the 'Marketing Performance' data model, which can then be exported to a CSV file for further analysis."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.describe_datamodel_raw",
+    "description": "Retrieve detailed information about a specific data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name (title) of the data model to describe."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Show the detailed definition of the 'Sales Analytics' data model.",
+        "arguments": {
+          "datamodel_name": "Sales Analytics"
+        },
+        "notes": "This call retrieves detailed metadata about the 'Sales Analytics' data model, including its datasets, connections, and tables."
+      },
+      {
+        "user_query": "Can you provide information about the 'Customer Insights' data model?",
+        "arguments": {
+          "datamodel_name": "Customer Insights"
+        },
+        "notes": "Use this call to get a nested structure with metadata for the 'Customer Insights' data model, including its last build and update timestamps."
+      },
+      {
+        "user_query": "I need to review the structure of the 'Marketing Performance' data model.",
+        "arguments": {
+          "datamodel_name": "Marketing Performance"
+        },
+        "notes": "This call is helpful for reviewing the structure and metadata of the 'Marketing Performance' data model, including its datasets and tables."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.get_all_datamodel",
+    "description": "Retrieve metadata for all data models using an internal API.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "List all data models in the system with their metadata.",
+        "arguments": {},
+        "notes": "This call retrieves metadata for all data models, including details like build status, size, and timestamps. Useful for auditing or understanding the state of all data models."
+      },
+      {
+        "user_query": "Can I get a list of all data models with their sizes and statuses?",
+        "arguments": {},
+        "notes": "This call provides a comprehensive list of data models with their metadata, including size and status. Ideal for monitoring or reporting purposes."
+      },
+      {
+        "user_query": "I need to check the build status of all data models in the system.",
+        "arguments": {},
+        "notes": "This call fetches metadata for all data models, including their build statuses. Useful for tracking the progress or health of data models."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.get_datamodel",
+    "description": "Retrieve a data model by its title.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name (title) of the data model to retrieve."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Fetch the data model titled 'Sales Dashboard'.",
+        "arguments": {
+          "datamodel_name": "Sales Dashboard"
+        },
+        "notes": "This retrieves the schema for the data model titled 'Sales Dashboard', which might be used to understand its structure or validate its configuration."
+      },
+      {
+        "user_query": "I need the schema for the 'Customer Insights' data model to debug an issue.",
+        "arguments": {
+          "datamodel_name": "Customer Insights"
+        },
+        "notes": "Use this to fetch the schema for the 'Customer Insights' data model, which can assist in debugging or verifying its setup."
+      },
+      {
+        "user_query": "What does the schema for the 'Marketing Analytics' data model look like?",
+        "arguments": {
+          "datamodel_name": "Marketing Analytics"
+        },
+        "notes": "This call retrieves the schema for the 'Marketing Analytics' data model, useful for reviewing its structure or dependencies."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.get_elasticubes",
+    "description": "List all ElastiCubes using the legacy v1 endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Show me a list of all ElastiCubes available on the server.",
+        "arguments": {},
+        "notes": "This call retrieves a lightweight list of all ElastiCubes, including their titles, addresses, and full names. Ideal for Windows environments or when detailed metadata is not required."
+      },
+      {
+        "user_query": "I need to check the available ElastiCubes on our Windows Sisense deployment.",
+        "arguments": {},
+        "notes": "Use this to fetch basic metadata about all ElastiCubes in a Windows deployment. This is a quick way to get an overview of available cubes."
+      },
+      {
+        "user_query": "What ElastiCubes are currently configured on the system?",
+        "arguments": {},
+        "notes": "This request lists all ElastiCubes using the legacy v1 endpoint. It is suitable for scenarios where a lightweight response is sufficient."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.get_model_schema",
+    "description": "Retrieve the schema of a data model, including tables and columns.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name (title) of the data model to retrieve the schema for."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Show the schema of the 'Sales Analytics' data model, including its tables and columns.",
+        "arguments": {
+          "datamodel_name": "Sales Analytics"
+        },
+        "notes": "This retrieves the schema for the 'Sales Analytics' data model, including its tables and columns. Useful for understanding the structure of the data model."
+      },
+      {
+        "user_query": "Can you show me the schema for the Customer Insights data model?",
+        "arguments": {
+          "datamodel_name": "Customer Insights"
+        },
+        "notes": "This call fetches the schema for the 'Customer Insights' data model, providing details about its tables and columns. Ideal for verifying the data model's structure before building dashboards."
+      },
+      {
+        "user_query": "I need the schema details for the Marketing Performance data model.",
+        "arguments": {
+          "datamodel_name": "Marketing Performance"
+        },
+        "notes": "This retrieves the schema of the 'Marketing Performance' data model, helping to identify the available tables and columns for analysis."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.load_datamodel",
+    "description": "Look up a data model's OID by title using the GraphQL ECM endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The exact title of the data model to look up."
+        },
+        "server": {
+          "type": "string",
+          "description": "The server name where the model is hosted. Defaults to ``\"LocalHost\"``."
+        }
+      },
+      "required": [
+        "title"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Look up the OID of the data model titled 'Sales Dashboard' on the 'LocalHost' server.",
+        "arguments": {
+          "title": "Sales Dashboard",
+          "server": "LocalHost"
+        },
+        "notes": "This call retrieves the OID for the 'Sales Dashboard' data model hosted on the default server 'LocalHost'."
+      },
+      {
+        "user_query": "I need the OID for the 'Marketing Analytics' data model on the 'AnalyticsServer'.",
+        "arguments": {
+          "title": "Marketing Analytics",
+          "server": "AnalyticsServer"
+        },
+        "notes": "This call resolves the OID for the 'Marketing Analytics' data model hosted on the 'AnalyticsServer'."
+      },
+      {
+        "user_query": "Find the OID for the 'Customer Insights' data model.",
+        "arguments": {
+          "title": "Customer Insights",
+          "server": "LocalHost"
+        },
+        "notes": "This call looks up the OID for the 'Customer Insights' data model on the default 'LocalHost' server."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.resolve_datamodel_reference",
+    "description": "Resolve a data model reference (ID or title) to a concrete data model ID and title.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_ref": {
+          "type": "string",
+          "description": "Data model reference to resolve. This can be either an ID or a name."
+        }
+      },
+      "required": [
+        "datamodel_ref"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Resolve 'Sales Analytics' to its data model ID and title.",
+        "arguments": {
+          "datamodel_ref": "Sales Analytics"
+        },
+        "notes": "This resolves the data model reference 'Sales Analytics' to its concrete ID and title. Use this when you know the title of the data model but need its ID."
+      },
+      {
+        "user_query": "Can you find the details for the data model with ID '63f9c1d2e4b0a123456789ab'?",
+        "arguments": {
+          "datamodel_ref": "63f9c1d2e4b0a123456789ab"
+        },
+        "notes": "This resolves the data model reference '63f9c1d2e4b0a123456789ab' to its concrete ID and title. Use this when you already have the ID of the data model."
+      },
+      {
+        "user_query": "I need the ID and title for the data model called 'Marketing Dashboard'.",
+        "arguments": {
+          "datamodel_ref": "Marketing Dashboard"
+        },
+        "notes": "This resolves the data model reference 'Marketing Dashboard' to its concrete ID and title. Use this when you know the title of the data model but need its ID for further operations."
+      }
+    ]
+  }
+]

@@ -1,0 +1,139 @@
+[
+  {
+    "tool_id": "blox.delete_blox_action",
+    "description": "Delete a custom Blox action from the Sisense instance.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action_type": {
+          "type": "string",
+          "description": "The ``type`` identifier of the Blox action to delete."
+        }
+      },
+      "required": [
+        "action_type"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Remove the custom Blox action called 'export_to_csv' from my Sisense instance.",
+        "arguments": {
+          "action_type": "export_to_csv"
+        },
+        "notes": "This call deletes the 'export_to_csv' custom Blox action from the Sisense instance. Use this when the action is no longer needed or requires replacement."
+      },
+      {
+        "user_query": "I need to delete the 'send_email_notification' Blox action. How do I do that?",
+        "arguments": {
+          "action_type": "send_email_notification"
+        },
+        "notes": "This call removes the 'send_email_notification' custom Blox action. Use this to clean up unused or outdated actions."
+      },
+      {
+        "user_query": "Can I delete the 'generate_pdf_report' action from Sisense?",
+        "arguments": {
+          "action_type": "generate_pdf_report"
+        },
+        "notes": "This call deletes the 'generate_pdf_report' custom Blox action. Use this when the action is no longer relevant or needs to be replaced."
+      }
+    ]
+  },
+  {
+    "tool_id": "blox.get_blox_actions",
+    "description": "Retrieve all custom Blox actions from the Sisense instance.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "List the custom Blox actions available in my Sisense instance.",
+        "arguments": {},
+        "notes": "This call retrieves all custom Blox actions configured in the Sisense instance. Use this to review available actions for dashboards or widgets."
+      },
+      {
+        "user_query": "Can you list all the custom actions defined for Blox?",
+        "arguments": {},
+        "notes": "This call fetches a list of all custom Blox actions. Useful for administrators managing Blox configurations."
+      },
+      {
+        "user_query": "Show me the custom Blox actions I can use for my widgets.",
+        "arguments": {},
+        "notes": "This call provides a list of custom Blox actions that can be applied to widgets or dashboards in Sisense."
+      }
+    ]
+  },
+  {
+    "tool_id": "blox.save_blox_action",
+    "description": "Save a custom Blox action on the Sisense instance.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "object",
+          "description": "A Blox action object."
+        }
+      },
+      "required": [
+        "action"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Save a custom Blox action named 'ExportDashboardAction' that exports dashboard dashboard_12345 to PDF.",
+        "arguments": {
+          "action": {
+            "name": "ExportDashboardAction",
+            "type": "custom",
+            "payload": {
+              "dashboardId": "dashboard_12345",
+              "actionType": "export",
+              "format": "PDF"
+            }
+          }
+        },
+        "notes": "This saves a custom action that allows exporting a specific dashboard to PDF format."
+      },
+      {
+        "user_query": "I want to create a custom action that triggers a webhook when a widget is updated. How do I do that?",
+        "arguments": {
+          "action": {
+            "name": "WidgetUpdateWebhook",
+            "type": "custom",
+            "payload": {
+              "widgetId": "widget_67890",
+              "actionType": "webhook",
+              "url": "https://example.com/webhook",
+              "method": "POST"
+            }
+          }
+        },
+        "notes": "This creates a custom action that triggers a POST request to a specified webhook URL whenever the specified widget is updated."
+      },
+      {
+        "user_query": "Can I define a custom action to send an email notification when a data alert is triggered?",
+        "arguments": {
+          "action": {
+            "name": "DataAlertEmailNotification",
+            "type": "custom",
+            "payload": {
+              "alertId": "alert_54321",
+              "actionType": "email",
+              "recipients": [
+                "user@example.com",
+                "admin@example.com"
+              ],
+              "subject": "Data Alert Triggered",
+              "body": "The data alert has been triggered. Please review the details."
+            }
+          }
+        },
+        "notes": "This defines a custom action that sends an email notification to specified recipients when a specific data alert is triggered."
+      }
+    ]
+  }
+]

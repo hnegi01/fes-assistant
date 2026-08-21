@@ -8,14 +8,21 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    # Backend and MCP are unauthenticated; binding to loopback keeps them off the LAN (prod publishes only nginx).
     ports:
-      - "8002:8002"
+      - "127.0.0.1:8002:8002"
     volumes:
       - ./logs:/app/logs
     # IMPORTANT: keep MCP server at 1 worker.
     # Multiple workers can route the same MCP session to different processes and cause initialize/notifications errors.
     # We handle long-running tools via async offload + concurrency caps instead of extra workers.
     command: ["uvicorn", "mcp_server.server:app", "--host", "0.0.0.0", "--port", "8002", "--workers", "1"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8002/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   fes-backend:
     build:
@@ -28,12 +35,20 @@ services:
       - .env
     environment:
       PYSISENSE_MCP_HTTP_URL: http://fes-mcp:8002
+    # Backend and MCP are unauthenticated; binding to loopback keeps them off the LAN (prod publishes only nginx).
     ports:
-      - "8001:8001"
+      - "127.0.0.1:8001:8001"
     volumes:
       - ./logs:/app/logs
     depends_on:
-      - fes-mcp
+      fes-mcp:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   fes-ui:
     build:
@@ -46,10 +61,17 @@ services:
       - .env
     environment:
       FES_BACKEND_URL: http://fes-backend:8001
-      FES_MCP_URL: http://fes-mcp:8002
     ports:
       - "8501:8501"
     volumes:
       - ./logs:/app/logs
     depends_on:
-      - fes-backend
+      fes-backend:
+        condition: service_healthy
+    # The UI image ships no curl — use python's stdlib for the probe.
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8501/_stcore/health')\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

@@ -1,0 +1,172 @@
+name: CD
+
+# Publishes the three service images to Docker Hub.
+#
+# TRIGGERS
+#   push to main       → real release: builds, pushes, tags the commit, cuts a
+#                        GitHub Release.
+#   workflow_dispatch  → manual run. Defaults to dry_run=true: builds all three
+#                        images and logs in to Docker Hub (so it validates the
+#                        secrets and the Dockerfiles) but pushes nothing and
+#                        creates no tag/release. Use this to prove the workflow
+#                        works BEFORE the first merge to main — otherwise the
+#                        very first execution of this file is a live deploy.
+#
+# BEFORE THE FIRST REAL RELEASE
+#   1. Add the two repo secrets (Settings → Secrets and variables → Actions):
+#        DOCKERHUB_USERNAME  →  hnegi01
+#        DOCKERHUB_TOKEN     →  a Docker Hub *access token* (not your password),
+#                               hub.docker.com → Account Settings → Security
+#   2. Run this workflow manually with dry_run=true and confirm it's green.
+#   3. Bump `version` in pyproject.toml — the :<version> image tag and the git
+#      tag both come from it. Merging to main without a bump re-points the
+#      existing :<version> tag at the new build (":latest" and ":<sha>" always
+#      move; only the version tag is meant to be stable).
+#
+# NOTE: the three Docker Hub repos are PUBLIC. That is safe as-is — the images
+# carry no credentials (.dockerignore excludes .env/*.env/logs, and the
+# Dockerfiles COPY only pyproject/uv.lock plus specific source dirs, never
+# `COPY . .`); Sisense and LLM creds are supplied at runtime via env. Make the
+# repos private on Docker Hub if the source itself should not be pullable.
+
+on:
+  # push trigger deliberately DISABLED until the first dry run passes on main.
+  # GitHub only registers dispatchable workflows from the default branch, so the
+  # dry run can't happen before this file lands there — but landing it with the
+  # push trigger live would make that very merge the first-ever (unverified)
+  # deploy. Rollout order: merge → dry run from the Actions tab → green →
+  # uncomment these two lines in a follow-up commit; THAT push is release one.
+  # push:
+  #   branches: [main]   # deploy only when code lands on main
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build + log in but do NOT push images or create a release"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write   # the release job creates a git tag + GitHub Release
+
+jobs:
+  # ── Resolve the version once, so every image gets the same tag ───────────
+  version:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get.outputs.version }}
+      tag: ${{ steps.get.outputs.tag }}
+      tag_exists: ${{ steps.check.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # need tags + full history for the tag check
+
+      # Explicit interpreter: tomllib is stdlib only on 3.11+, and relying on
+      # whatever `python` the runner image happens to ship is how this breaks
+      # silently later. 3.11 matches requires-python in pyproject.toml.
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Read version from pyproject.toml
+        id: get
+        run: |
+          VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION"    >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VERSION"
+
+      - name: Check whether the version tag already exists
+        id: check
+        run: |
+          if git rev-parse "${{ steps.get.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Tag ${{ steps.get.outputs.tag }} already exists — no new Release will be cut. Bump 'version' in pyproject.toml to publish a new one."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ── Build + push all three images to Docker Hub ──────────────────────────
+  push-images:
+    name: Push — ${{ matrix.service }}
+    needs: version
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false   # push all three even if one fails
+      matrix:
+        include:
+          - service: backend
+            dockerfile: Dockerfile.backend
+            image: hnegi01/fes-backend
+          - service: mcp
+            dockerfile: Dockerfile.mcp
+            image: hnegi01/fes-mcp
+          - service: ui
+            dockerfile: Dockerfile.ui
+            image: hnegi01/fes-ui
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      # Runs even on a dry run — logging in is how we validate the secrets.
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build ${{ matrix.service }}${{ (github.event_name == 'push' || inputs.dry_run == false) && ' and push' || ' (dry run — no push)' }}
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          # Push on a main-branch release, or a manual run with dry_run=false.
+          push: ${{ github.event_name == 'push' || inputs.dry_run == false }}
+          # Three tags per image:
+          #   :latest     → most recent main push (moves)
+          #   :<sha>      → immutable reference to this exact commit
+          #   :<version>  → version from pyproject.toml; the tag you roll back to
+          tags: |
+            ${{ matrix.image }}:latest
+            ${{ matrix.image }}:${{ github.sha }}
+            ${{ matrix.image }}:${{ needs.version.outputs.version }}
+
+  # ── Tag the commit + cut a GitHub Release (idempotent) ───────────────────
+  release:
+    name: Tag + GitHub Release
+    needs: [version, push-images]
+    runs-on: ubuntu-latest
+    # Real releases only: never on a dry run, and only when the version is new.
+    if: github.event_name == 'push' && needs.version.outputs.tag_exists == 'false'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Create and push the git tag
+        run: |
+          git config user.name  "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag "${{ needs.version.outputs.tag }}"
+          git push origin "${{ needs.version.outputs.tag }}"
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.version.outputs.version }}
+          TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          {
+            echo "Release $TAG"
+            echo
+            echo "Images published to Docker Hub:"
+            echo "- \`hnegi01/fes-backend:$VERSION\`"
+            echo "- \`hnegi01/fes-mcp:$VERSION\`"
+            echo "- \`hnegi01/fes-ui:$VERSION\`"
+            echo
+            echo "Commit: ${{ github.sha }}"
+          } > notes.md
+          gh release create "$TAG" --title "$TAG" --notes-file notes.md

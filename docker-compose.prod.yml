@@ -1,3 +1,14 @@
+# Production stack. Images are pulled from Docker Hub, not built here.
+#
+# IMAGE TAG: defaults to the current version in pyproject.toml, which is what CD
+# publishes (cd.yml tags each image :latest, :<sha>, and :<version>). Override to
+# roll back or to pin a specific build:
+#   FES_IMAGE_TAG=2.0.0 docker compose -f docker-compose.prod.yml up -d
+#   FES_IMAGE_TAG=<git-sha> docker compose -f docker-compose.prod.yml up -d
+# Keep the default in step with pyproject's version when you cut a release.
+#
+# Only nginx publishes a host port; backend and mcp stay on the internal
+# `private` network and are unreachable from outside the compose network.
 services:
   nginx:
     image: nginx:alpine
@@ -6,31 +17,39 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - fes-ui
+      fes-ui:
+        condition: service_healthy
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - public
 
   fes-ui:
-    image: himanshusisense/fes-ui:0.1.0
+    image: hnegi01/fes-ui:${FES_IMAGE_TAG:-2.0.0}
     container_name: fes-ui
     restart: unless-stopped
     env_file:
       - .env
     environment:
       FES_BACKEND_URL: http://fes-backend:8001
-      FES_MCP_URL: http://fes-mcp:8002
     volumes:
       - ./logs:/app/logs
     depends_on:
-      - fes-backend
+      fes-backend:
+        condition: service_healthy
+    # The UI image ships no curl — use python's stdlib for the probe.
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8501/_stcore/health')\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - public
       - private
 
   fes-backend:
-    image: himanshusisense/fes-backend:0.1.0
+    image: hnegi01/fes-backend:${FES_IMAGE_TAG:-2.0.0}
     container_name: fes-backend
     restart: unless-stopped
     env_file:
@@ -40,12 +59,21 @@ services:
     volumes:
       - ./logs:/app/logs
     depends_on:
-      - fes-mcp
+      fes-mcp:
+        condition: service_healthy
+    # IMPORTANT: keep the backend at 1 worker — session/approval state lives
+    # in-process (SESSION_POOL, pending approvals); do not add --workers.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - private
 
   fes-mcp:
-    image: himanshusisense/fes-mcp:0.1.0
+    image: hnegi01/fes-mcp:${FES_IMAGE_TAG:-2.0.0}
     container_name: fes-mcp
     restart: unless-stopped
     env_file:
@@ -54,10 +82,15 @@ services:
       - ./logs:/app/logs
     # IMPORTANT: keep MCP server at 1 worker.
     command: ["uvicorn", "mcp_server.server:app", "--host", "0.0.0.0", "--port", "8002", "--workers", "1"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8002/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - private
 
 networks:
   public: {}
-  private:
-    internal: true
+  private: {}

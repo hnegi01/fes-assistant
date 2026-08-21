@@ -1,0 +1,8 @@
+{
+  "package": "plugins",
+  "class": "Plugins",
+  "modules": {
+    "core": "Plugin lifecycle — list all plugins, get a single plugin by name, enable or disable a plugin individually, enable or disable in bulk.",
+    "snapshots": "Plugin state snapshots — capture the current enabled/disabled state of all plugins; restore a previously captured snapshot."
+  }
+}

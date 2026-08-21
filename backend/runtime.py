@@ -29,11 +29,12 @@ import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional, Set, Tuple
 
-from logging.handlers import RotatingFileHandler
-
+from backend.agent._config import current_turn_trace_id, pop_turn_output
+from backend.agent._tracing import end_turn_trace, start_turn_trace
 from backend.agent.llm_agent import call_llm_with_tools
 from backend.agent.mcp_client import McpClient
 
@@ -64,7 +65,7 @@ def _setup_logger() -> None:
     logger.setLevel(log_level)
     logger.propagate = False
 
-    if any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
+    if any(isinstance(h, TimedRotatingFileHandler) for h in logger.handlers):
         logger.info(
             "backend.runtime logger already configured at level %s (env %s)",
             log_level_name,
@@ -72,10 +73,10 @@ def _setup_logger() -> None:
         )
         return
 
-    fh = RotatingFileHandler(
+    fh = TimedRotatingFileHandler(
         LOG_DIR / "backend_runtime.log",
-        maxBytes=10 * 1024 * 1024,
-        backupCount=5,
+        when="midnight",  # daily file; 7 dated backups = 7 days kept, older deleted
+        backupCount=7,
         encoding="utf-8",
     )
     fh.setLevel(log_level)
@@ -130,16 +131,44 @@ async def publish_progress(event: Dict[str, Any]) -> None:
         logger.debug("Progress callback raised and was ignored: %s", exc)
 
 
+# session_id -> the turn's active progress callback. The ContextVar covers
+# callers running inside the turn's task tree; this registry covers callers
+# that DON'T — the official MCP ClientSession dispatches notifications from a
+# long-lived receive-loop task whose context was snapshotted at connect()
+# (first deploy 2026-08-16: every turn after the first published into the
+# FIRST turn's dead context, and narration silently vanished).
+_SESSION_PROGRESS_CBS: Dict[str, ProgressCallback] = {}
+
+
+async def publish_progress_for(session_id: Optional[str], event: Dict[str, Any]) -> None:
+    """Publish a progress event for a session's ACTIVE turn, regardless of
+    which task the caller runs in. Falls back to the ContextVar path."""
+    cb = _SESSION_PROGRESS_CBS.get(session_id) if session_id else None
+    if cb is None:
+        await publish_progress(event)
+        return
+    try:
+        await cb(event)
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.error("publish_progress_for failed session_id=%s: %s", session_id, exc, exc_info=True)
+
+
 @contextlib.asynccontextmanager
-async def _progress_context(progress_cb: Optional[ProgressCallback]) -> AsyncIterator[None]:
+async def _progress_context(
+    progress_cb: Optional[ProgressCallback], session_id: Optional[str] = None
+) -> AsyncIterator[None]:
     """
     Context manager that binds a per-turn progress callback for publish_progress().
     """
     token = _CURRENT_PROGRESS_CB.set(progress_cb)
+    if session_id and progress_cb is not None:
+        _SESSION_PROGRESS_CBS[session_id] = progress_cb
     try:
         yield
     finally:
         _CURRENT_PROGRESS_CB.reset(token)
+        if session_id:
+            _SESSION_PROGRESS_CBS.pop(session_id, None)
 
 
 # -----------------------------------------------------------------------------
@@ -237,6 +266,7 @@ async def cancel_active_turn(session_id: str) -> None:
     except Exception:
         return
 
+
 # -----------------------------------------------------------------------------
 # MCP client pool (per UI session)
 # -----------------------------------------------------------------------------
@@ -264,6 +294,13 @@ class SessionEntry:
     tenant_config: Optional[Dict[str, Any]]
     migration_config: Optional[Dict[str, Any]]
     last_used: datetime
+    # Step 7: carried-over clarification state when a turn paused for a missing
+    # required arg. {tool_id, missing_fields, filled_args, attempts} or None.
+    pending_clarification: Optional[Dict[str, Any]] = None
+    # Step 8: carried-over agentic-loop state when a turn paused mid-loop for a
+    # mutation approval. {transcript, steps_executed, tool_id, arguments} or None.
+    # On the approval turn the loop resumes from the paused step (Option A).
+    pending_loop: Optional[Dict[str, Any]] = None
 
 
 # session_id -> SessionEntry
@@ -376,7 +413,7 @@ async def _get_or_create_mcp_client(
 
     # Step 3: Create and connect a new client outside the lock.
     logger.info("Creating new McpClient for session %s", session_id)
-    new_client = McpClient(tenant_config=tenant_config, migration_config=migration_config)
+    new_client = McpClient(tenant_config=tenant_config, migration_config=migration_config, ui_session_id=session_id)
     await new_client.connect()
     logger.info("McpClient connected for session %s", session_id)
 
@@ -415,7 +452,7 @@ async def _run_turn_once(
     approved_keys: Set[Tuple[str, str]],
     allow_summarization: Optional[bool],
     progress_cb: Optional[ProgressCallback],
-) -> str:
+) -> Dict[str, Any]:
     """
     Execute a single agent turn.
 
@@ -460,29 +497,91 @@ async def _run_turn_once(
         migration_config=migration_config,
     )
 
+    # Step 7: restore any clarification state saved on the previous turn so the
+    # LLM layer can skip routing and resume the pinned tool.
+    entry = SESSION_POOL.get(session_id)
+    prior_clarification = entry.pending_clarification if entry else None
+    if prior_clarification:
+        logger.info(
+            "Resuming clarification for session %s: tool=%s attempt=%s",
+            session_id,
+            prior_clarification.get("tool_id"),
+            prior_clarification.get("attempts"),
+        )
+
+    # Step 8: restore paused loop state so an approval turn resumes mid-loop
+    # instead of re-planning from scratch.
+    prior_loop = entry.pending_loop if entry else None
+    if prior_loop:
+        logger.info(
+            "Resuming paused agent loop for session %s: step=%s gated_tool=%s",
+            session_id,
+            prior_loop.get("steps_executed"),
+            prior_loop.get("tool_id"),
+        )
+
+    # LangSmith: one root `agent_turn` run per turn; every LLM call and tool
+    # execution attaches as a child via ContextVar. thread_id = the UI session,
+    # so a whole conversation groups in the Threads view. Best-effort only.
+    _last_user = next((m.get("content", "") for m in reversed(messages) if m.get("role") == "user"), "")
+    start_turn_trace(str(_last_user), session_id, "migration" if migration_config else "chat")
     try:
-        async with _progress_context(progress_cb):
+        async with _progress_context(progress_cb, session_id):
             reply = await call_llm_with_tools(
                 messages=messages,
                 tools=tools,
                 mcp_client=mcp_client,
                 approved_mutations=approved_keys,
                 allow_summarization=allow_summarization,
+                pending_clarification=prior_clarification,
+                pending_loop=prior_loop,
             )
+            # Collect this turn's outputs from the per-turn store — NEVER from
+            # llm_agent's module globals, which are last-writer-wins across
+            # concurrently running sessions (both mid-turn and after). The
+            # store is keyed by this turn's trace_id, carried by the same
+            # ContextVar the usage accumulator uses; we still run inside the
+            # turn task here, so the id resolves to OUR turn regardless of
+            # what other sessions are doing.
+            _tid = current_turn_trace_id()
+            _outputs = pop_turn_output(_tid)
+            turn_result: Dict[str, Any] = {
+                "reply": reply,
+                "trace_id": _tid or None,
+                **_outputs,
+            }
+
+        # Persist or clear pause state for the next turn. The LLM layer sets these
+        # only when it paused (to ask / for approval); any other outcome
+        # (executed, gave up, topic change) leaves them None → cleared.
+        if entry is not None:
+            entry.pending_clarification = turn_result["pending_clarification"]
+            entry.pending_loop = turn_result["pending_loop"]
 
         logger.info("call_llm_with_tools completed successfully for session %s.", session_id)
         logger.debug("Agent reply (truncated): %s", reply[:500] if isinstance(reply, str) else repr(reply))
-        return reply
+        _steps = turn_result["step_results"]
+        end_turn_trace(
+            reply=reply if isinstance(reply, str) else None,
+            outcome="ok",
+            steps=len(_steps),
+            tools=[str(st.get("tool_id") or "?") for st in _steps],
+        )
+        return turn_result
 
     except asyncio.CancelledError:
         logger.info("Agent turn cancelled (session_id=%s).", session_id)
+        end_turn_trace(outcome="cancelled")
         raise
 
     except Exception as exc:
         logger.exception("Error during agent turn (session_id=%s): %s", session_id, exc)
+        end_turn_trace(outcome=f"error: {str(exc)[:200]}")
         raise
 
     finally:
+        # Idempotent — a no-op when one of the paths above already closed it.
+        end_turn_trace(outcome="unknown")
         logger.info("=== run_turn_once END (session_id=%s) ===", session_id)
 
 
@@ -496,7 +595,7 @@ async def run_turn_once(
     migration_config: Optional[Dict[str, Any]] = None,
     allow_summarization: Optional[bool] = None,
     progress_cb: Optional[ProgressCallback] = None,
-) -> str:
+) -> Dict[str, Any]:
     """
     Public API: run one agent turn.
 
@@ -528,8 +627,12 @@ async def run_turn_once(
 
     Returns
     -------
-    str
-        Final assistant reply for the turn.
+    Dict[str, Any]
+        The turn's outputs — reply, tool_result, step_results, trace_id —
+        snapshotted INSIDE the turn task before any other session's turn can
+        overwrite the LLM layer's module globals. Callers must read from this
+        dict, never from llm_agent globals (those remain for unit tests and
+        debugging only).
     """
     _ = user_input  # reserved for future use
 

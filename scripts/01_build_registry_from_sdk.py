@@ -1,5 +1,4 @@
 import inspect
-import json
 import re
 from datetime import datetime
 from pathlib import Path
@@ -7,20 +6,11 @@ from typing import Any, Dict, List
 
 import pysisense
 
-from pysisense.access_management import AccessManagement
-from pysisense.datamodel import DataModel
-from pysisense.dashboard import Dashboard
-from pysisense.migration import Migration
-from pysisense.wellcheck import WellCheck
-
-
-MODULES = {
-    "access": AccessManagement,
-    "datamodel": DataModel,
-    "dashboard": Dashboard,
-    "migration": Migration,
-    "wellcheck": WellCheck,
-}
+from .registry_core import (
+    MODULES,
+    _parse_class_docstring,  # noqa: F401 — re-exported for test_registry_builder.py compat
+    _write_json,
+)
 
 # ---------------------------------------------------------------------------
 # Helper: parse parameter meta from docstring (Google-style + NumPy-style)
@@ -35,9 +25,7 @@ _GOOGLE_PARAM_LINE_RE = re.compile(
 
 # NumPy-style param header lines like:
 #   action : str, optional
-_NUMPY_PARAM_LINE_RE = re.compile(
-    r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*([^$]+)$"
-)
+_NUMPY_PARAM_LINE_RE = re.compile(r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*([^$]+)$")
 
 
 def _parse_param_doc_meta_google(doc: str) -> Dict[str, Dict[str, str]]:
@@ -234,6 +222,7 @@ def _parse_param_doc_meta(doc: str) -> Dict[str, Dict[str, str]]:
 # Type inference helpers
 # ---------------------------------------------------------------------------
 
+
 def _schema_type_from_default(default: Any) -> Dict[str, Any]:
     """
     Infer a JSON Schema fragment from a Python default value.
@@ -328,8 +317,40 @@ def _apply_name_heuristics(param_name: str, schema_piece: Dict[str, Any]) -> Dic
 
 
 # ---------------------------------------------------------------------------
+# Inline format marker → JSON Schema "format"
+# ---------------------------------------------------------------------------
+
+# A trailing "(format: <name>)" marker in a parameter description, e.g.
+#   "Email address of the user to retrieve. (format: email)"
+# The marker is translated into a JSON Schema `format` keyword and stripped
+# from the visible description. The name is passed through verbatim (no
+# allow-list) so the SDK docstring remains the single source of truth.
+_FORMAT_MARKER_RE = re.compile(r"\s*\(format:\s*([a-zA-Z0-9_-]+)\s*\)\s*$")
+
+
+def _split_format_marker(description: str) -> tuple:
+    """Return (clean_description, format_or_None) for a parameter description."""
+    if not description:
+        return description, None
+    m = _FORMAT_MARKER_RE.search(description)
+    if not m:
+        return description, None
+    fmt = m.group(1).strip()
+    clean = description[: m.start()].rstrip()
+    return clean, fmt
+
+
+# ---------------------------------------------------------------------------
 # JSON schema builder from signature + docstring (generic only)
 # ---------------------------------------------------------------------------
+
+
+# Signature params that must never reach the registry: no caller can supply them.
+# `emit` is the SDK's progress callback — the MCP server injects it for streaming
+# tools and drops any client-supplied value. Leaving it in the schema only gives
+# the tool-selection LLM a slot to invent a fake callback for.
+_INTERNAL_PARAMS = {"self", "emit"}
+
 
 def json_schema_from_signature(
     sig: inspect.Signature,
@@ -347,7 +368,7 @@ def json_schema_from_signature(
     doc_meta = _parse_param_doc_meta(doc)
 
     for name, p in sig.parameters.items():
-        if name == "self":
+        if name in _INTERNAL_PARAMS:
             continue
 
         # Start with type from default
@@ -368,9 +389,17 @@ def json_schema_from_signature(
         # Apply generic name-based heuristics (no per-tool logic)
         schema_piece = _apply_name_heuristics(name, schema_piece)
 
-        # Param-level description: prefer docstring text if available
+        # Param-level description: prefer docstring text if available.
+        # Extract any trailing "(format: <name>)" marker into a schema `format`.
         if meta and meta.get("description"):
-            schema_piece["description"] = meta["description"]
+            desc, fmt = _split_format_marker(meta["description"])
+            schema_piece["description"] = desc
+            if fmt:
+                # For array params the format applies per element → put it on items.
+                if schema_piece.get("type") == "array":
+                    schema_piece.setdefault("items", {"type": "string"})["format"] = fmt
+                else:
+                    schema_piece["format"] = fmt
         elif "description" not in schema_piece:
             schema_piece["description"] = f"{name} parameter"
 
@@ -492,29 +521,50 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                 "live": ["realtime", "real-time", "live model"],
             },
             "parameters.properties.datamodel_type.description": (
-                "Either 'extract' (Elasticube/EC) or 'live'. "
-                "If user says 'elasticube' or 'ec', normalize to 'extract'."
+                "Either 'extract' (Elasticube/EC) or 'live'. If user says 'elasticube' or 'ec', normalize to 'extract'."
             ),
         }
     },
-
     # Deploy/Build DataModel → constrain build_type / schema_origin / row_limit type
+    # Value lists mirror the SDK docstring (pysisense/datamodel/build.py::deploy_datamodel).
     "datamodel.deploy_datamodel": {
         "patch": {
-            "parameters.properties.build_type.enum": ["full", "by_table"],
+            "parameters.properties.build_type.enum": ["full", "by_table", "schema_changes"],
             "parameters.properties.build_type.x-aliases": {
                 "full": ["build", "rebuild", "start", "run", "execute", "refresh"],
                 "by_table": ["by-table", "table-wise", "incremental-tables"],
+                "schema_changes": ["schema-changes", "changes-only", "delta"],
             },
             "parameters.properties.build_type.description": (
                 "Build strategy for extract models. Omit for live/publish."
             ),
-            "parameters.properties.schema_origin.enum": ["latest", "schema_changes"],
+            "parameters.properties.schema_origin.enum": ["latest", "running"],
             "parameters.properties.row_limit.type": "integer",
             "parameters.properties.row_limit.minimum": 1,
         }
     },
-
+    # Create Dataset → option menu for the connection + deploy nudge
+    "datamodel.create_dataset": {
+        "patch": {
+            "parameters.properties.connection_name.x-options-tool": "datamodel.get_connections",
+            "parameters.properties.connection_name.x-options-note": (
+                "Or let me know if you want to create a new connection first."
+            ),
+            "x-followup": {
+                "note": "The change isn't queryable until the model is built or published.",
+                "ask_template": "Deploy '{datamodel_name}'.",
+            },
+        }
+    },
+    # Create Table → deploy nudge (the SDK self-resolves dataset/connection from datamodel_name)
+    "datamodel.create_table": {
+        "patch": {
+            "x-followup": {
+                "note": "The change isn't queryable until the model is built or published.",
+                "ask_template": "Deploy '{datamodel_name}'.",
+            },
+        }
+    },
     # Setup DataModel – enums + rich tables schema
     "datamodel.setup_datamodel": {
         "patch": {
@@ -523,7 +573,21 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                 "extract": ["ec", "elasticube", "elastic cube", "cube", "elastic-cube"],
                 "live": ["realtime", "real-time", "live model"],
             },
-
+            # Option menu for the connection: the CLARIFICATION path (not the model)
+            # reads x-options-tool, runs the listed READ tool, and renders the
+            # results as choices in the code-built question. x-options-* keys are
+            # stripped from every model-facing schema (strip_internal_params).
+            "parameters.properties.connection_name.x-options-tool": "datamodel.get_connections",
+            "parameters.properties.connection_name.x-options-note": (
+                "Or let me know if you want to create a new connection first."
+            ),
+            # Deploy nudge: appended to the final reply IN CODE after a successful
+            # run (never auto-executed — deploying is a mutation the user did not
+            # ask for). ask_template is formatted from the executed call's args.
+            "x-followup": {
+                "note": "The model isn't queryable until it's built or published.",
+                "ask_template": "Deploy '{datamodel_name}'.",
+            },
             # Override the auto-generated `tables` schema with a rich object definition
             "parameters.properties.tables": {
                 "type": "array",
@@ -544,15 +608,12 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                         "schema_name": {
                             "type": "string",
                             "description": (
-                                "Optional override of the table's schema. Defaults to top-level "
-                                "schema_name if omitted."
+                                "Optional override of the table's schema. Defaults to top-level schema_name if omitted."
                             ),
                         },
                         "table_name": {
                             "type": "string",
-                            "description": (
-                                "Physical table name to add, or a logical name when using import_query."
-                            ),
+                            "description": ("Physical table name to add, or a logical name when using import_query."),
                         },
                         "import_query": {
                             "type": "string",
@@ -573,8 +634,7 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                         "build_behavior_config": {
                             "type": "object",
                             "description": (
-                                "Extract models only; omit for 'live'. "
-                                "For 'increment' mode, column_name is required."
+                                "Extract models only; omit for 'live'. For 'increment' mode, column_name is required."
                             ),
                             "properties": {
                                 "mode": {
@@ -584,9 +644,7 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                                 },
                                 "column_name": {
                                     "type": "string",
-                                    "description": (
-                                        "Required when mode='increment'; ignored otherwise."
-                                    ),
+                                    "description": ("Required when mode='increment'; ignored otherwise."),
                                 },
                             },
                         },
@@ -597,14 +655,12 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
             },
         }
     },
-
     # Migration – all dashboards
     "migration.migrate_all_dashboards": {
         "patch": {
             "parameters.properties.action.enum": ["skip", "overwrite", "duplicate"],
         }
     },
-
     # Migration – all datamodels
     "migration.migrate_all_datamodels": {
         "patch": {
@@ -617,14 +673,12 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
             "parameters.properties.action.enum": ["overwrite", "duplicate"],
         }
     },
-
     # Migration – single dashboard
     "migration.migrate_dashboards": {
         "patch": {
             "parameters.properties.action.enum": ["skip", "overwrite", "duplicate"],
         }
     },
-
     # Migration – single datamodel
     "migration.migrate_datamodels": {
         "patch": {
@@ -635,12 +689,10 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
                 "hierarchies",
                 "perspectives",
             ],
-
             # action: overwrite vs duplicate
             "parameters.properties.action.enum": ["overwrite", "duplicate"],
         }
     },
-
 }
 
 
@@ -681,8 +733,53 @@ def apply_schema_rules(tool: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Sub-module helpers (for two-stage hierarchical routing)
+# ---------------------------------------------------------------------------
+
+
+def _get_defining_mixin(klass: type, method_name: str) -> type:
+    """
+    Walk the MRO to find the first class (other than the facade and object)
+    that actually defines method_name in its own __dict__.
+    Falls back to klass if nothing else owns it.
+    """
+    for cls in klass.__mro__:
+        if cls is object or cls is klass:
+            continue
+        if method_name in cls.__dict__:
+            return cls
+    return klass
+
+
+def _mixin_to_sub_module(module_key: str, mixin_class: type) -> str:
+    """
+    Derive a sub_module string from the mixin's source file name.
+    e.g. UsersMixin defined in users.py → "access.users"
+         DataModelCoreMixin defined in core.py → "datamodel.core"
+    Falls back to module_key when the file cannot be determined.
+    """
+    try:
+        filepath = inspect.getfile(mixin_class)
+        stem = Path(filepath).stem  # filename without .py extension
+        if stem == "__init__":
+            return module_key  # method defined on the facade class itself
+        return f"{module_key}.{stem}"
+    except (TypeError, OSError):
+        return module_key
+
+
+# ---------------------------------------------------------------------------
 # Registry builder
 # ---------------------------------------------------------------------------
+
+# Tool IDs excluded from the registry entirely.
+# Add here when a method's output is incompatible with the app's rendering pipeline.
+_EXCLUDED_TOOL_IDS: frozenset = frozenset(
+    {
+        "wellcheck.run_full_wellcheck",  # nested multi-section output; use individual checks instead
+    }
+)
+
 
 def build_registry() -> list:
     sdk_version = getattr(pysisense, "__version__", "unknown")
@@ -703,13 +800,18 @@ def build_registry() -> list:
             sig = inspect.signature(func)
 
             tool_id = f"{module_name}.{name}"
+            if tool_id in _EXCLUDED_TOOL_IDS:
+                continue
             schema = json_schema_from_signature(sig, doc)
             mutates = is_mutating(name, doc)
             tags = infer_tags(module_name, name, mutates)
+            defining_mixin = _get_defining_mixin(klass, name)
+            sub_module = _mixin_to_sub_module(module_name, defining_mixin)
 
             tool: Dict[str, Any] = {
                 "tool_id": tool_id,
                 "module": module_name,
+                "sub_module": sub_module,
                 "class": klass_name,
                 "method": name,
                 "description": one_liner,
@@ -739,13 +841,9 @@ def main() -> None:
     config_dir.mkdir(exist_ok=True)
 
     out_file = config_dir / "tools.registry.json"
-
-    with out_file.open("w", encoding="utf-8") as f:
-        json.dump(registry, f, indent=2)
-
-    print(f"Built registry for {len(registry)} tools → {out_file}")
-    print("Sample:")
-    print(json.dumps(registry[:3], indent=2))
+    _write_json(out_file, registry)
+    print(f"Flat registry: {len(registry)} tools → {out_file}")
+    print("Run 02_add_llm_examples_to_registry to generate the hierarchical registry with examples.")
 
 
 if __name__ == "__main__":

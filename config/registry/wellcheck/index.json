@@ -1,0 +1,8 @@
+{
+  "package": "wellcheck",
+  "class": "WellCheck",
+  "modules": {
+    "dashboard_checks": "Dashboard health — count pivot, tabber, accordion, and jump-to-dashboard widgets; flag dashboards with high widget counts; identify pivot widgets that exceed a field-count threshold.",
+    "datamodel_checks": "Data model health — flag custom tables using UNION; detect island tables with no relationships; report RLS column datatypes; identify tables with import queries; detect many-to-many join relationships."
+  }
+}

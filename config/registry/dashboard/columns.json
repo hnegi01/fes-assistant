@@ -1,0 +1,42 @@
+[
+  {
+    "tool_id": "dashboard.get_dashboard_columns",
+    "description": "Retrieve columns referenced by a dashboard, including widget and filter columns.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_name": {
+          "type": "string",
+          "description": "Title of the dashboard to retrieve columns from."
+        }
+      },
+      "required": [
+        "dashboard_name"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "List the columns used in the 'Sales Performance' dashboard.",
+        "arguments": {
+          "dashboard_name": "Sales Performance"
+        },
+        "notes": "This retrieves all columns referenced by the 'Sales Performance' dashboard, including those used in widgets and filters."
+      },
+      {
+        "user_query": "Can you list the columns in the Marketing Overview dashboard?",
+        "arguments": {
+          "dashboard_name": "Marketing Overview"
+        },
+        "notes": "This call identifies all columns associated with the 'Marketing Overview' dashboard, ensuring a complete view of its data dependencies."
+      },
+      {
+        "user_query": "I need to find the columns used in the Executive Summary dashboard for auditing purposes.",
+        "arguments": {
+          "dashboard_name": "Executive Summary"
+        },
+        "notes": "Use this to extract and review all columns tied to the 'Executive Summary' dashboard, helping with data audits or dependency checks."
+      }
+    ]
+  }
+]
