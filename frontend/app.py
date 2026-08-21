@@ -31,18 +31,21 @@ if load_dotenv is not None:
 # -----------------------------------------------------------------------------
 # Standard imports (safe after env loading)
 # -----------------------------------------------------------------------------
+import itertools
 import json
 import logging
 import os
+import threading
+import time
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from logging.handlers import TimedRotatingFileHandler
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 import pandas as pd
 import requests
 import streamlit as st
-from logging.handlers import RotatingFileHandler
-
+from streamlit.components.v1 import html as components_html
 
 # -----------------------------------------------------------------------------
 # Logging setup
@@ -63,11 +66,11 @@ logger = logging.getLogger("app")
 logger.setLevel(log_level)
 logger.propagate = False
 
-if not any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
-    fh = RotatingFileHandler(
+if not any(isinstance(h, TimedRotatingFileHandler) for h in logger.handlers):
+    fh = TimedRotatingFileHandler(
         LOG_DIR / "app.log",
-        maxBytes=10 * 1024 * 1024,  # 10 MB per file
-        backupCount=5,              # keep 5 old files
+        when="midnight",  # daily file; 7 dated backups = 7 days kept, older deleted
+        backupCount=7,
         encoding="utf-8",
     )
     fh.setLevel(log_level)
@@ -182,11 +185,11 @@ def _iter_sse_events(resp: requests.Response) -> Iterator[Tuple[str, Dict[str, A
             continue
 
         if line.startswith("event:"):
-            event_name = line[len("event:"):].strip() or "message"
+            event_name = line[len("event:") :].strip() or "message"
             continue
 
         if line.startswith("data:"):
-            data_lines.append(line[len("data:"):].lstrip())
+            data_lines.append(line[len("data:") :].lstrip())
             continue
 
     # Flush if stream ends without trailing blank line
@@ -206,6 +209,88 @@ def _iter_sse_events(resp: requests.Response) -> Iterator[Tuple[str, Dict[str, A
 # Progress UX helpers
 # -----------------------------------------------------------------------------
 _LAST_RUN_LOG_STATE_KEY = "_fes_last_run_log"
+
+# Migration turn threading state keys
+_MIG_TURN_IN_PROGRESS_KEY = "_mig_turn_in_progress"
+_MIG_TURN_CTX_KEY = "_mig_turn_ctx"
+_MIG_PENDING_TURN_META_KEY = "_mig_pending_turn_meta"
+
+# Synthetic tool_id the backend uses to key a WHOLE-PLAN migration approval —
+# see PLAN_TOOL_ID in backend/agent/migration_flow.py. Duplicated rather than
+# imported: the UI is a separate process and imports nothing from the backend.
+# It is not a real tool and never appears in the registry.
+MIGRATION_PLAN_TOOL_ID = "migration.plan"
+
+
+def _write_run_log(run_log: Any, _run_log_out: Optional[Dict[str, Any]] = None) -> None:
+    """Write run_log to the optional out-dict and, when on the main Streamlit thread, to session state."""
+    if _run_log_out is not None:
+        _run_log_out["run_log"] = run_log
+    try:
+        st.session_state[_LAST_RUN_LOG_STATE_KEY] = run_log
+    except Exception:
+        pass  # Called from background thread — session state not accessible
+
+
+def _render_agent_progress(
+    placeholder: Any,
+    completed_steps: List[Dict[str, Any]],
+    status_line: Optional[str],
+    plan_text: Optional[str] = None,
+) -> None:
+    """Render the agentic-loop progress block: the current plan (when the
+    strategist made one), a collapsed checklist of completed steps, and a live
+    status line for the current phase."""
+    if placeholder is None:
+        return
+    md = ""
+    if plan_text:
+        plan_lines = "\n".join(f"> {ln}" for ln in plan_text.splitlines())
+        md += f"**📋 Plan**\n{plan_lines}\n\n"
+    lines: List[str] = []
+    for s in completed_steps:
+        mark = "✅" if s.get("ok") else "⚠️"
+        lines.append(f"- {mark} Step {s.get('step')}: `{s.get('tool_id', '?')}`")
+    if lines:
+        md += "\n".join(lines) + "\n\n"
+    if status_line:
+        md += f"*{status_line}*"
+    if md:
+        placeholder.markdown(md)
+
+
+def _agent_progress_status_line(data: Dict[str, Any]) -> Optional[str]:
+    """Map an agent_progress event to a human status line (None for 'completed')."""
+    phase = data.get("phase")
+    step = data.get("step")
+    tool_id = data.get("tool_id")
+    if phase == "deciding":
+        return "🤔 Checking progress against your request…"
+    if phase == "replanning":
+        return "🧠 That approach didn't work — rethinking the plan…"
+    if phase == "replanned":
+        return "📋 Plan revised — continuing…"
+    if phase == "verifying":
+        return "🔎 Double-checking the result covers your whole request…"
+    if phase == "planning":
+        return f"🧭 Planning step {step}…"
+    if phase == "executing":
+        return f"⏳ Step {step}: running `{tool_id}`…"
+    return None
+
+
+def _cancel_backend_turn(sid: str) -> None:
+    """POST /agent/cancel for the given session id; errors are logged and swallowed."""
+    try:
+        r = requests.post(
+            f"{BACKEND_URL}/agent/cancel",
+            json={"session_id": sid},
+            timeout=10,
+        )
+        r.raise_for_status()
+        logger.info("Cancel request sent for session %s", sid)
+    except Exception as exc:
+        logger.warning("Cancel request failed for session %s: %s", sid, exc)
 
 
 def _extract_progress_payload(data: Any) -> Any:
@@ -231,6 +316,18 @@ def _extract_progress_payload(data: Any) -> Any:
         return inner
 
     return data
+
+
+# Per-item narration — one line per exported/imported asset — drowns the
+# batch-level story in the live progress view (875 of ~1,060 events in one
+# real run, 2026-08-14). Hidden from the LIVE view only: the run-log expander
+# and the server logs keep every event for troubleshooting.
+_LIVE_HIDDEN_STEPS = {"import_datamodels", "export_datamodels"}
+
+
+def _is_live_progress(payload: Any) -> bool:
+    """Should this progress event appear in the live progress view?"""
+    return not (isinstance(payload, dict) and payload.get("step") in _LIVE_HIDDEN_STEPS)
 
 
 def _format_progress_line(payload: Any) -> str:
@@ -262,20 +359,38 @@ def _format_progress_line(payload: Any) -> str:
         else:
             parts.append("update")
 
+    # Human phrasing, not key=value: "batch 3/10, processed 120 of 500" reads;
+    # "(batch_number=3, batches_total=10, processed_so_far=120)" leaks API keys
+    # into the run log the user reads.
     hints: List[str] = []
-    for k in [
-        "batch_number",
-        "batches_total",
-        "processed_so_far",
-        "total_count",
-        "succeeded_total",
-        "failed_total",
-        "skipped_total",
-        "pages_fetched",
-    ]:
+
+    def _val(k: str) -> Optional[str]:
         v = payload.get(k)
-        if isinstance(v, (int, float, str)) and str(v) != "":
-            hints.append(f"{k}={v}")
+        return str(v) if isinstance(v, (int, float, str)) and str(v) != "" else None
+
+    batch, batches = _val("batch_number"), _val("batches_total")
+    if batch and batches:
+        hints.append(f"batch {batch}/{batches}")
+    elif batch:
+        hints.append(f"batch {batch}")
+
+    done, total = _val("processed_so_far"), _val("total_count")
+    if done and total:
+        hints.append(f"processed {done} of {total}")
+    elif done:
+        hints.append(f"processed {done}")
+    elif total:
+        hints.append(f"{total} total")
+
+    for k, label in [
+        ("succeeded_total", "succeeded"),
+        ("failed_total", "failed"),
+        ("skipped_total", "skipped"),
+        ("pages_fetched", "pages fetched"),
+    ]:
+        v = _val(k)
+        if v:
+            hints.append(f"{v} {label}")
 
     if hints:
         parts.append(f"({', '.join(hints)})")
@@ -319,6 +434,82 @@ def render_run_log(run_log: Optional[Dict[str, Any]]) -> None:
         st.markdown("\n".join([f"- {ln}" for ln in lines]))
 
 
+def _launch_migration_turn(
+    meta: Dict[str, Any],
+    messages: List[Dict[str, Any]],
+    user_input: str,
+    tenant_config: Optional[Dict],
+    approved_keys: Optional[Any],
+    migration_config: Optional[Dict],
+    session_id: str,
+    allow_summarization: bool,
+    mode: str,
+) -> None:
+    """
+    Start call_backend_turn in a background thread for migration mode.
+
+    Writes results into st.session_state[_MIG_TURN_CTX_KEY] so the
+    polling block can pick them up on subsequent Streamlit reruns.
+    meta keys used by _process_mig_turn_result:
+      clear_pending (bool) — whether to clear MIG_PENDING_KEY on completion.
+    """
+    ctx: Dict[str, Any] = {
+        "done": False,
+        "reply": None,
+        "tool_result": None,
+        "error_str": None,
+        "progress_lines": [],
+        "run_log": None,
+        # Agentic-loop state, filled by the SSE reader on the worker thread and
+        # rendered by the polling block on the main thread (see call_backend_turn).
+        "agent_plan": None,
+        "agent_steps": [],
+        "agent_status": None,
+    }
+    st.session_state[_MIG_TURN_CTX_KEY] = ctx
+    st.session_state[_MIG_PENDING_TURN_META_KEY] = meta
+    st.session_state[_MIG_TURN_IN_PROGRESS_KEY] = True
+
+    def _progress_cb(line: str) -> None:
+        ctx["progress_lines"].append(line)
+
+    call_kwargs: Dict[str, Any] = {
+        "messages": messages,
+        "user_input": user_input,
+        "tenant_config": tenant_config,
+        "approved_keys": approved_keys,
+        "migration_config": migration_config,
+        "session_id": session_id,
+        "allow_summarization": allow_summarization,
+        "mode": mode,
+        "progress_placeholder": None,
+        "progress_callback": _progress_cb,
+        "_run_log_out": ctx,
+    }
+
+    def _run() -> None:
+        try:
+            reply, tool_result, step_results, trace_id, usage, _display_hints = call_backend_turn(**call_kwargs)
+            ctx["reply"] = reply
+            ctx["tool_result"] = tool_result
+            ctx["step_results"] = step_results
+            ctx["trace_id"] = trace_id
+            ctx["usage"] = usage
+        except Exception as exc:
+            logger.exception("Background migration turn failed: %s", exc)
+            ctx["error_str"] = str(exc)
+        finally:
+            ctx["done"] = True
+
+    thread = threading.Thread(target=_run, daemon=True)
+    thread.start()
+    logger.info(
+        "Launched migration thread for session %s (kind=%s)",
+        session_id,
+        meta.get("kind", "unknown"),
+    )
+
+
 def call_backend_turn(
     messages,
     user_input,
@@ -329,13 +520,17 @@ def call_backend_turn(
     allow_summarization=None,
     mode=None,
     progress_placeholder: Optional[Any] = None,
+    progress_callback: Optional[Callable[[str], None]] = None,
+    _run_log_out: Optional[Dict[str, Any]] = None,
 ):
     """
     Thin HTTP client for the backend /agent/turn API.
 
-    Strategy:
-    - Migration mode: request SSE and render progress + store run_log.
-    - Chat mode: request JSON only (no SSE), since SDK tools do not emit progress.
+    Strategy (both modes request SSE):
+    - Migration mode: render SDK progress lines + store run_log.
+    - Chat mode: render agentic-loop step progress (agent_progress events) so
+      multi-step turns show live "planning / running tool X" status instead of
+      a silent spinner.
     """
     payload = {
         "messages": messages,
@@ -350,44 +545,35 @@ def call_backend_turn(
 
     logger.info("Calling backend /agent/turn (mode=%s, session_id=%s)", mode, session_id)
 
-    is_migration = (mode == BACKEND_MODE_MIGRATION)
+    is_migration = mode == BACKEND_MODE_MIGRATION
 
     headers: Dict[str, str] = {
         "Content-Type": "application/json",
+        "Accept": "text/event-stream, application/json",
     }
 
-    # Only request SSE for migration mode (where progress is meaningful).
-    if is_migration:
-        headers["Accept"] = "text/event-stream, application/json"
-    else:
-        headers["Accept"] = "application/json"
-
     # Timeouts: keep connect timeout reasonable; allow long reads for migration.
-    timeout = (30, 1800) if is_migration else (30, 300)
+    timeout = (30, 1800)
 
     resp = requests.post(
         f"{BACKEND_URL}/agent/turn",
         json=payload,
         headers=headers,
         timeout=timeout,
-        stream=is_migration,  # only stream when we requested SSE
+        stream=True,
     )
     resp.raise_for_status()
 
-    # If we didn't request SSE, we expect JSON.
-    if not is_migration:
-        st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
-        data = resp.json()
-        reply = data.get("reply", "")
-        tool_result = data.get("tool_result")
-        return reply, tool_result
-
-    # Migration path: SSE expected (but backend might still return JSON).
+    # SSE expected (but backend might still return JSON).
     ctype = (resp.headers.get("Content-Type") or "").lower()
 
     if "text/event-stream" in ctype:
         final_reply: Optional[str] = None
         final_tool_result: Optional[Dict[str, Any]] = None
+        final_step_results: Optional[List[Dict[str, Any]]] = None
+        final_trace_id: Optional[str] = None
+        final_usage: Optional[Dict[str, Any]] = None
+        final_display_hints: Optional[List[str]] = None
 
         run_log: Dict[str, Any] = {
             "started_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
@@ -395,113 +581,208 @@ def call_backend_turn(
         }
 
         progress_lines: List[str] = []
+        agent_steps: List[Dict[str, Any]] = []
+        agent_plan: Optional[str] = None
 
         for event, data in _iter_sse_events(resp):
             if event == "keepalive":
                 continue
 
             cleaned_payload = _extract_progress_payload(data)
-            run_log["events"].append({"event": event, "payload": cleaned_payload})
+            # The run log is the SDK's per-asset activity trail ("[fetch_users]
+            # Fetching users… (3 of 10)") plus errors — nothing else. Internal
+            # frames (status, result, the agent_progress checklist) used to be
+            # recorded too, and on turns with no SDK activity the expander
+            # showed only their type names as bullets: "update / agent_progress
+            # / update". With this filter such turns record nothing and the
+            # expander does not appear at all.
+            if event == "error" or (event == "progress" and data.get("type") != "agent_progress"):
+                run_log["events"].append({"event": event, "payload": cleaned_payload})
+
+            # Agentic-loop step progress (Step 8) — dedicated checklist rendering.
+            if event == "progress" and data.get("type") == "agent_progress":
+                if data.get("plan"):
+                    agent_plan = data["plan"]
+                if data.get("phase") == "completed":
+                    agent_steps.append({"step": data.get("step"), "tool_id": data.get("tool_id"), "ok": data.get("ok")})
+                    _render_agent_progress(progress_placeholder, agent_steps, None, agent_plan)
+                else:
+                    _render_agent_progress(
+                        progress_placeholder, agent_steps, _agent_progress_status_line(data), agent_plan
+                    )
+                # Migration runs this loop on a background thread, where touching
+                # a Streamlit placeholder is illegal — hand the same structured
+                # state to the polling block instead, which renders on the main
+                # thread. Plain dict writes only; no st.* calls off-thread.
+                if _run_log_out is not None:
+                    _run_log_out["agent_plan"] = agent_plan
+                    _run_log_out["agent_steps"] = list(agent_steps)
+                    _run_log_out["agent_status"] = _agent_progress_status_line(data)
+                elif progress_callback is not None:
+                    # No structured channel — fall back to a flat status line.
+                    line = _agent_progress_status_line(data)
+                    if line:
+                        progress_callback(line)
+                continue
 
             if event == "status":
                 phase = data.get("phase")
                 if isinstance(phase, str) and phase.strip():
-                    progress_lines.append(f"Status: {phase}")
+                    new_line = f"Status: {phase}"
+                    progress_lines.append(new_line)
+                    if progress_callback is not None:
+                        progress_callback(new_line)
                 continue
 
             if event == "progress":
+                # Run log (above) already recorded the event; the live view
+                # shows milestones only. The step name lives in the EXTRACTED
+                # payload — `data` is the MCP notification envelope, which has
+                # no `step` key (the filter's first version tested `data` and
+                # therefore never fired; caught live 2026-08-14).
+                if not _is_live_progress(cleaned_payload):
+                    continue
                 msg = data.get("message") or data.get("detail")
                 if isinstance(msg, str) and msg.strip():
-                    progress_lines.append(msg.strip())
+                    new_line = msg.strip()
                 else:
-                    progress_lines.append(_format_progress_line(cleaned_payload))
+                    new_line = _format_progress_line(cleaned_payload)
+                progress_lines.append(new_line)
+                if progress_callback is not None:
+                    progress_callback(new_line)
 
             elif event == "result":
                 final_reply = data.get("reply", "")
                 final_tool_result = data.get("tool_result")
+                final_step_results = data.get("step_results")
+                final_trace_id = data.get("trace_id")
+                final_usage = data.get("usage")
+                final_display_hints = data.get("display_hints")
 
             elif event == "error":
                 err = data.get("error") or "Unknown error"
-                st.session_state[_LAST_RUN_LOG_STATE_KEY] = run_log
+                _write_run_log(run_log, _run_log_out)
                 raise RuntimeError(err)
 
             else:
-                progress_lines.append(_format_progress_line(cleaned_payload))
+                new_line = _format_progress_line(cleaned_payload)
+                progress_lines.append(new_line)
+                if progress_callback is not None:
+                    progress_callback(new_line)
 
-            if progress_placeholder is not None and progress_lines:
+            # Migration-style rolling log; chat placeholders render agent_progress only.
+            if is_migration and progress_placeholder is not None and progress_lines:
                 tail = progress_lines[-20:]
-                progress_placeholder.markdown(
-                    "**Progress**\n\n" + "\n".join([f"- {x}" for x in tail])
-                )
+                progress_placeholder.markdown("**Progress**\n\n" + "\n".join([f"- {x}" for x in tail]))
 
-        st.session_state[_LAST_RUN_LOG_STATE_KEY] = run_log
+        _write_run_log(run_log, _run_log_out)
 
         if final_reply is None and final_tool_result is None:
             raise RuntimeError("SSE stream ended without a final result.")
 
-        return final_reply or "", final_tool_result
+        return (
+            final_reply or "",
+            final_tool_result,
+            final_step_results,
+            final_trace_id,
+            final_usage,
+            final_display_hints,
+        )
 
     # Fallback: backend returned JSON even though we asked for SSE
-    st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
+    _write_run_log(None, _run_log_out)
     data = resp.json()
     reply = data.get("reply", "")
     tool_result = data.get("tool_result")
-    return reply, tool_result
+    step_results = data.get("step_results")
+    return reply, tool_result, step_results, data.get("trace_id"), data.get("usage"), data.get("display_hints")
 
 
 # -----------------------------------------------------------------------------
 # Tool result rendering
 # -----------------------------------------------------------------------------
+def _normalize_domain(raw: str) -> str:
+    """'mycompany.sisense.com/' -> 'https://mycompany.sisense.com'. A bare
+    domain defaults to https (the token must not travel in cleartext by
+    accident); an EXPLICIT http:// is honored — some internal deployments
+    genuinely run it. The SDK accepts every form; this is for safety and a
+    consistent sidebar display."""
+    d = (raw or "").strip().rstrip("/")
+    if d and "://" not in d:
+        d = f"https://{d}"
+    return d
+
+
 def _approval_key(tool_id: str, args: Dict[str, Any]) -> Tuple[str, str]:
     return tool_id, json.dumps(args or {}, sort_keys=True, ensure_ascii=False)
+
+
+@st.cache_data(ttl=120, show_spinner=False)
+def _fetch_tools_cached(url: str):
+    """One HTTP fetch of /tools, cached so reruns (and browser refreshes) don't
+    re-hit the backend. Raises on any problem; the caller handles retry/errors.
+    Only successful returns are cached — a raise is retried next call."""
+    resp = requests.get(url, timeout=30)
+    resp.raise_for_status()
+    data = resp.json()
+    tools = data.get("tools") or []
+    registry = data.get("registry") or {}
+    if not isinstance(tools, list) or not isinstance(registry, dict):
+        raise ValueError("Unexpected /tools payload shape")
+    return tools, registry
 
 
 def fetch_tools_from_backend():
     """
     Fetch OpenAI-style tools and registry metadata from the backend.
+
+    Cached + retried: on a browser refresh Streamlit reruns this and the
+    reconnecting websocket can make a single request race and fail. Retrying a
+    couple of times (and caching the success) stops a transient blip from
+    flashing a scary error on every reload.
     """
     url = f"{BACKEND_URL}/tools"
-    logger.debug("Fetching tools from backend: %s", url)
+    last_err = None
+    for attempt in range(3):
+        try:
+            return _fetch_tools_cached(url)
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            logger.warning("Fetch /tools attempt %d failed: %s", attempt + 1, e)
+            time.sleep(0.4 * (attempt + 1))
 
-    try:
-        resp = requests.get(url, timeout=30)
-    except Exception as e:
-        logger.exception("Request to /tools failed: %s", e)
-        st.error("Could not reach the backend /tools endpoint. Check that the backend is running and BACKEND_URL is correct.")
-        st.stop()
+    logger.exception("Request to /tools failed after retries: %s", last_err)
+    st.error(
+        "Could not reach the backend /tools endpoint after a few tries. "
+        "Check that the backend is running and BACKEND_URL is correct."
+    )
+    st.stop()
 
-    if not resp.ok:
-        logger.error("Backend /tools returned %s: %s", resp.status_code, resp.text[:500])
-        st.error(f"Backend /tools failed with status {resp.status_code}. See backend logs for details.")
-        st.stop()
 
-    try:
-        data = resp.json()
-    except ValueError as e:
-        logger.exception("Failed to decode JSON from /tools: %s", e)
-        st.error("Backend /tools did not return valid JSON. See backend logs.")
-        st.stop()
+# Unique keys for the download buttons: render_tool_result runs inside the
+# history loops, and two identical payloads in one conversation would collide
+# on Streamlit's auto-generated IDs. app.py is the main script, re-executed
+# top-to-bottom every rerun, so a fresh positional counter is stable per frame.
+_DL_SEQ = itertools.count()
 
-    tools = data.get("tools") or []
-    registry = data.get("registry") or {}
-
-    if not isinstance(tools, list):
-        logger.error("Unexpected tools payload type from /tools: %r", type(tools))
-        st.error("Backend /tools returned tools in an unexpected format.")
-        st.stop()
-
-    if not isinstance(registry, dict):
-        logger.error("Unexpected registry payload type from /tools: %r", type(registry))
-        st.error("Backend /tools returned registry in an unexpected format.")
-        st.stop()
-
-    logger.debug("Loaded %d tools and %d registry entries from backend", len(tools), len(registry))
-    return tools, registry
+# Starting height (px) of the scrollable conversation area — deliberately
+# TALLER than most windows: the auto-height JS reliably SHRINKS the box to
+# fit the viewer's window (growing gets reverted by Streamlit re-renders),
+# so starting tall and shrinking covers every monitor. The container itself
+# exists so the chat input can be NESTED (inline) instead of Streamlit's
+# pinned sticky bar (the ghost-bar fix).
+CHAT_BOX_HEIGHT = 1600
 
 
 def render_tool_result(tr: dict):
     if not tr or not isinstance(tr, dict):
         return
+
+    tool_name = tr.get("tool_id", "")
+    if tool_name:
+        st.caption(f"Tool called: `{tool_name}`")
+
+    _fname = (tool_name or "result").replace(".", "_")
 
     if tr.get("ok", True):
         data = tr.get("result")
@@ -517,21 +798,199 @@ def render_tool_result(tr: dict):
                     df[col] = df[col].astype(str)
 
             st.markdown("**Result**")
-            # Change suggested: use_container_width is the stable option across Streamlit versions.
+            # Interactive dataframe restored (canvas was EXONERATED for the
+            # ghost-bar bug — it reproduced with plain HTML tables too; the
+            # structural fix is the nested inline chat input, see the
+            # conversation-box notes). Its grid also hands trackpad scrolling
+            # back to the page properly, unlike a plain overflow div.
             st.dataframe(df, width="stretch")
+            # Export without copy-paste, in whichever format the user wants.
+            _c1, _c2, _c3, _ = st.columns([1, 1, 1, 4])
+            _c1.download_button(
+                "CSV",
+                df.to_csv(index=False).encode("utf-8"),
+                file_name=f"{_fname}.csv",
+                mime="text/csv",
+                key=f"dl_{next(_DL_SEQ)}",
+            )
+            _c2.download_button(
+                "JSON",
+                json.dumps(data, indent=2, ensure_ascii=False),
+                file_name=f"{_fname}.json",
+                mime="application/json",
+                key=f"dl_{next(_DL_SEQ)}",
+            )
+            _c3.download_button(
+                "TXT",
+                df.to_string(index=False),
+                file_name=f"{_fname}.txt",
+                mime="text/plain",
+                key=f"dl_{next(_DL_SEQ)}",
+            )
         else:
             st.markdown("**Result (JSON)**")
             st.code(json.dumps(data, indent=2), language="json")
+            if data is not None:
+                _payload = json.dumps(data, indent=2, ensure_ascii=False)
+                _c1, _c2, _ = st.columns([1, 1, 5])
+                _c1.download_button(
+                    "JSON",
+                    _payload,
+                    file_name=f"{_fname}.json",
+                    mime="application/json",
+                    key=f"dl_{next(_DL_SEQ)}",
+                )
+                _c2.download_button(
+                    "TXT",
+                    _payload if not isinstance(data, str) else data,
+                    file_name=f"{_fname}.txt",
+                    mime="text/plain",
+                    key=f"dl_{next(_DL_SEQ)}",
+                )
     else:
         if not tr.get("pending_confirmation"):
             st.markdown("**Tool error**")
             st.code(json.dumps(tr, indent=2), language="json")
 
 
+def _render_result_expander(label: str, res: Any, expanded_when_ok: bool = False) -> None:
+    """Every raw result lives in an expander. A SINGLE step's result opens by
+    default (the expander is for collapsing, not hiding — user feedback,
+    2026-08-17); multi-step results stay collapsed (scrolling past several
+    payloads to reach the answer buries the answer, 2026-08-14). A FAILED
+    result always opens: the raw payload is the tool's own account of what
+    went wrong — not worth hiding behind a click."""
+    ok = res.get("ok", True) if isinstance(res, dict) else True
+    rows = res.get("result") if isinstance(res, dict) else None
+    n = f" · {len(rows)} rows" if isinstance(rows, list) else ""
+    mark = "" if ok else " ⚠️"
+    with st.expander(f"{label}{n}{mark}", expanded=(not ok) or expanded_when_ok):
+        render_tool_result(res)
+
+
+def render_results(step_results, fallback_tr=None):
+    """Show every step's raw result, labeled by tool, so a multi-step answer is
+    legible instead of surfacing only the last table. Falls back to the single
+    tool_result for older messages / single-step turns."""
+    steps = [s for s in (step_results or []) if isinstance(s, dict)]
+    if len(steps) > 1:
+        st.caption(f"This answer used {len(steps)} steps — raw output of each:")
+        for s in steps:
+            _render_result_expander(f"Step {s.get('step', '?')} · `{s.get('tool_id', '?')}`", s.get("result") or {})
+    elif len(steps) == 1:
+        s = steps[0]
+        _render_result_expander(f"Result · `{s.get('tool_id', '?')}`", s.get("result") or {}, expanded_when_ok=True)
+    elif fallback_tr:
+        _render_result_expander("Result", fallback_tr, expanded_when_ok=True)
+
+
+# -----------------------------------------------------------------------------
+# User feedback (thumbs up/down per answer) → logs/feedback.csv
+# Joined to llm_calls.csv / llm_traces.csv by trace_id, a vote becomes a
+# LABELED row for cross-model accuracy comparison ("wrong tool ran" etc.).
+# Always on — it is an explicit user action, tiny volume, and the whole point
+# is collecting the labels.
+# -----------------------------------------------------------------------------
+_FEEDBACK_CSV_PATH = LOG_DIR / "feedback.csv"
+_FEEDBACK_COLUMNS = ["timestamp", "session_id", "mode", "trace_id", "verdict", "comment", "question", "tools"]
+
+
+def _turn_tools(msg: Dict[str, Any]) -> str:
+    """Tool ids this answer's turn executed, ';'-joined (for the feedback row)."""
+    ids: List[str] = []
+    for s in msg.get("step_results") or []:
+        if isinstance(s, dict) and s.get("tool_id"):
+            ids.append(str(s["tool_id"]))
+    if not ids and isinstance(msg.get("tool_result"), dict) and msg["tool_result"].get("tool_id"):
+        ids.append(str(msg["tool_result"]["tool_id"]))
+    return ";".join(ids)
+
+
+def _record_feedback(mode_label: str, msg: Dict[str, Any], question: str, verdict: str, comment: str = "") -> None:
+    """Append one feedback event. Swallows errors — feedback must never break the UI."""
+    import csv as _csv
+
+    try:
+        write_header = not _FEEDBACK_CSV_PATH.exists()
+        with _FEEDBACK_CSV_PATH.open("a", newline="", encoding="utf-8") as f:
+            writer = _csv.DictWriter(f, fieldnames=_FEEDBACK_COLUMNS, extrasaction="ignore")
+            if write_header:
+                writer.writeheader()
+            writer.writerow(
+                {
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "session_id": st.session_state.get("fes_session_id", ""),
+                    "mode": mode_label,
+                    "trace_id": msg.get("trace_id") or "",
+                    "verdict": verdict,
+                    "comment": (comment or "")[:500],
+                    "question": (question or "")[:300],
+                    "tools": _turn_tools(msg),
+                }
+            )
+        logger.info("Feedback recorded: %s (trace_id=%s)", verdict, msg.get("trace_id"))
+    except Exception:  # noqa: BLE001
+        logger.exception("Failed to record feedback; ignored.")
+
+
+def _question_before(messages: List[Dict[str, Any]], idx: int) -> str:
+    """The user message this answer responds to (nearest user turn above it)."""
+    for m in reversed(messages[:idx]):
+        if m.get("role") == "user":
+            return str(m.get("content", ""))
+    return ""
+
+
+def _usage_caption(u: Optional[Dict[str, Any]]) -> Optional[str]:
+    """'X tokens · ~$Y' line for a turn; None when nothing was recorded.
+    cost=None means the model isn't in the pricing map — say so explicitly
+    (a silent absence or a $0.00 would both read as 'broken')."""
+    if not isinstance(u, dict):
+        return None
+    total = int(u.get("tokens_in") or 0) + int(u.get("tokens_out") or 0)
+    if total <= 0:
+        return None
+    cost = u.get("cost")
+    if cost is None:
+        return f"⚡ {total:,} tokens · cost n/a for this model"
+    return f"⚡ {total:,} tokens" + (f" · ~${float(cost):.4f}" if float(cost) > 0 else "")
+
+
+def render_feedback_controls(mode_label: str, messages: List[Dict[str, Any]], idx: int, msg: Dict[str, Any]) -> None:
+    """Thumbs up/down under an assistant answer, plus an optional what-went-wrong
+    note on a thumbs-down. Each event appends a feedback.csv row; the vote is
+    remembered on the message dict so a rerun doesn't double-write."""
+    fb = st.feedback("thumbs", key=f"fb_{mode_label}_{idx}")
+    if fb is not None and msg.get("feedback") != fb:
+        msg["feedback"] = fb
+        verdict = "up" if fb == 1 else "down"
+        _record_feedback(mode_label, msg, _question_before(messages, idx), verdict)
+        st.toast("Thanks — feedback recorded.", icon="👍" if fb == 1 else "👎")
+    if msg.get("feedback") == 0:
+        # One comment per thumbs-down: once recorded, the input is gone —
+        # otherwise every further Enter in the lingering box records again.
+        if msg.get("feedback_comment"):
+            st.caption(f"📝 Feedback noted: {msg['feedback_comment']}")
+        else:
+            note = st.text_input(
+                "What went wrong? (optional — e.g. wrong tool, wrong data, unclear answer)",
+                key=f"fbc_{mode_label}_{idx}",
+            )
+            if note:
+                msg["feedback_comment"] = note
+                _record_feedback(mode_label, msg, _question_before(messages, idx), "down-comment", comment=note)
+                st.toast("Noted — thank you.", icon="📝")
+                st.rerun()
+
+
 # -----------------------------------------------------------------------------
 # Streamlit UI
 # -----------------------------------------------------------------------------
-st.set_page_config(page_title="FES Assistant", page_icon=None)
+# Wide layout: the default centered column is ~730px, which wastes most of a
+# wide monitor. The CSS below re-caps content at a readable width — tables and
+# run logs get the room, chat text lines stay a comfortable length.
+# (Bisected and exonerated for the sticky-bar paint bug, 2026-08-17.)
+st.set_page_config(page_title="FES Assistant", page_icon="images/sisense.png", layout="wide")
 
 check_ui_session_timeout()
 
@@ -545,29 +1004,231 @@ st.markdown(
         min-width: 360px;
         max-width: 360px;
     }
+    /* Wide layout, but not wall-to-wall: cap the main column at a width where
+       tables breathe and text lines stay readable, centered in the leftover.
+       scrollbar-gutter keeps content from shifting sideways when a dropdown
+       toggle adds/removes the scrollbar. Streamlit's default ~6rem top
+       padding is cut so header + conversation + input fit the window without
+       page-level scrolling. */
+    [data-testid="stMainBlockContainer"] {
+        max-width: 1250px;
+        margin: 0 auto;
+        padding-left: 2rem;
+        padding-right: 2rem;
+        padding-top: 1.5rem;
+        padding-bottom: 1rem;
+    }
+    [data-testid="stAppScrollToBottomContainer"] {
+        scrollbar-gutter: stable;
+    }
+    /* Help ("?") tooltips: Streamlit's default is white-on-black, which blends
+       into dark content on the main pane. Light card + dark text instead —
+       the tooltip renders in a BaseWeb portal, so target the portal body and
+       force the color on descendants (the markdown inside carries its own). */
+    div[data-baseweb="tooltip"], [data-testid="stTooltipContent"] {
+        background-color: #ffffff !important;
+        color: #31333f !important;
+        border: 1px solid #d5dae5 !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18) !important;
+    }
+    [data-testid="stTooltipContent"] p,
+    [data-testid="stTooltipContent"] li,
+    [data-testid="stTooltipContent"] em,
+    [data-testid="stTooltipContent"] code {
+        color: #31333f !important;
+    }
+    /* Conversation boxes: no browser scroll anchoring. Chrome's automatic
+       scroll adjustment on content growth makes an expander toggle feel like
+       a double render (settle, then adjust — seen live 2026-08-18). */
+    .st-key-chat_box, .st-key-chat_box [data-testid="stVerticalBlock"],
+    .st-key-mig_box, .st-key-mig_box [data-testid="stVerticalBlock"] {
+        overflow-anchor: none;
+        /* Streamlit animates its scroll adjustment when box content grows
+           (expander opens) — a visible bottom-top-bottom bounce. Instant
+           scrolling turns the dance into an imperceptible snap. */
+        scroll-behavior: auto !important;
+    }
+    /* The conversation "box" must EXIST (its nested chat input renders
+       inline — the ghost-bar fix) but should not LOOK or FEEL like a box:
+       no border, and stretched to fill the viewport so the layout reads as
+       a normal full-page chat with the composer at the bottom. The keyed
+       stVerticalBlock itself carries Streamlit's height and border. */
+    /* Conversation area: no box look. Height comes from the
+       st.container(height=...) parameter (sidebar slider) — CSS overrides
+       of Streamlit's height wrapper proved unreliable (cascade race with
+       emotion styles; do not retry calc(100vh) here). Tune the env knob per
+       monitor instead. */
+    div.stVerticalBlock.st-key-chat_box, div.stVerticalBlock.st-key-mig_box {
+        border: none !important;
+        /* No visible inner scrollbar: with wheel-forwarding making the whole
+           page scroll the conversation, a scrollbar at the box's right edge
+           (mid-screen) is the one tell that a box exists. Scrolling still
+           works everywhere; tables keep their own scrollbars. */
+        scrollbar-width: none;
+    }
+    div.stVerticalBlock.st-key-chat_box::-webkit-scrollbar,
+    div.stVerticalBlock.st-key-mig_box::-webkit-scrollbar {
+        display: none;
+    }
+    /* Expanders snap instead of animating: inside the height-container,
+       Streamlit re-measures content on toggle and can replay the collapse
+       transition ("it collapses twice"). No animation, nothing to replay. */
+    [data-testid="stExpander"] details,
+    [data-testid="stExpander"] summary,
+    [data-testid="stExpanderDetails"] {
+        transition: none !important;
+        animation: none !important;
+    }
+    /* NO pinned header. Tried (sticky via a :has() selector on the
+       stLayoutWrapper around the keyed container) and REVERTED 2026-08-17:
+       Chrome intermittently left a stale paint of the chat-input bar
+       mid-screen after result-expander toggles — visible but unclickable;
+       toggling the expander repainted it away. Chrome's :has() style
+       invalidation under heavy DOM churn was the prime suspect, and no
+       :has-free selector reaches that wrapper. If pinning returns, use a
+       non-CSS mechanism. */
+    /* Chat-input bar: STOCK STREAMLIT STYLING ONLY — do not add transform /
+       will-change / z-index here. A translateZ(0) "mitigation" (2026-08-17)
+       put the sticky bar on its own compositor layer, which broke Chrome's
+       sticky compensation during trackpad (compositor-thread) scrolling:
+       the bar's pixels scrolled away with the content and floated mid-page
+       (painted position == layout position minus scrollTop, verified against
+       a live window screenshot). Programmatic scrolls — and thus headless
+       tests — go through the main thread and never reproduced it. */
+    .st-key-app_header h1 {
+        font-size: 2.75rem;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+    .fes-subtitle {
+        font-size: 1rem;
+        opacity: 0.85;
+        margin: 0.6rem 0 0.9rem 0;
+    }
+    /* "Mode" label hugs its radio pills, not the subtitle above it */
+    .st-key-app_header [data-testid="stRadio"] label[data-testid="stWidgetLabel"] {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.markdown(
+# NO pinned chat input (final resolution of the 2026-08-17/18 ghost-bar
+# saga). Root-level st.chat_input makes Streamlit pin the bar in a sticky
+# stBottom strip inside its scroll-to-bottom container — and Chrome
+# intermittently paints that sticky bar at a stale scroll offset after
+# repeated expander toggles (Safari clean; reproduced with FULLY STOCK
+# Streamlit in scratchpad repro_v3.py; upstream: streamlit issue #8480).
+# Every mitigation attempted (scroll guards, compositor layer promotion,
+# repaint nudges) failed or aggravated it. The durable fix is structural:
+# messages render inside a fixed-height scrollable container and the chat
+# input is NESTED (documented Streamlit behavior: nested chat inputs render
+# INLINE) — so the pinned bar, the sticky strip, and the page-level
+# auto-scroll container cease to exist. Nothing left to mis-composite.
+
+# ONE scoped JS guard on the conversation box (this is NOT the banned sticky-
+# bar patching — that element is gone): Streamlit auto-scrolls height-
+# containers with chat messages whenever their content changes, so an
+# expander toggle yanks the box down-then-up ("someone is scrolling").
+# Programmatic scrolls are allowed for a 2s grace window after each rerun —
+# preserving the GOOD auto-scroll to a fresh answer — and blocked after,
+# which is when expander toggles happen (they don't rerun). Installed per
+# component-iframe with NO once-per-session flag: reruns destroy the iframe
+# and its timers, so the newest iframe must always re-install (hard lesson,
+# 2026-08-17).
+components_html(
     """
-    <div style="font-size: 2.5rem; font-weight: 700; line-height: 1.15; margin: 0 0 0.25rem 0;">
-        FES Assistant: Agentic Sisense Co-Pilot
-    </div>
+    <script>
+    (() => {
+        const w = window.parent;
+        // This zero-height iframe still occupies a flex slot and collects the
+        // page's element-gap spacing — hide our own container so we add no
+        // blank band to the layout (hidden iframes keep running their timers
+        // in Chrome; the interval below merely throttles, which is fine).
+        try { w.frameElement.parentElement.style.display = "none"; } catch (e) {}
+        const findBox = () => w.document.querySelector(".st-key-chat_box, .st-key-mig_box");
+
+        // NOTE (2026-08-18): NO scroll guard and NO follow logic here — on the
+        // box architecture, Streamlit's native height-container behavior is
+        // already correct (sticks to the bottom only when at the bottom;
+        // never yanks a scrolled-away view — verified headless both ways).
+        // A guard inherited from the old pinned-input architecture used to
+        // block that native behavior, and three generations of hand-rolled
+        // "follow" logic tried to rebuild it and lost timing races. Do not
+        // reintroduce either. The only jobs left for JS are the two things
+        // native cannot do:
+
+        // 1. AUTO-HEIGHT: size the conversation area to the viewer's window
+        //    (inline styles win where CSS calc() lost the cascade). The gap
+        //    below the box is MEASURED, so an approval dialog appearing below
+        //    shrinks the box and the input stays on screen.
+        const autoHeight = () => {
+            const box = findBox();
+            if (!box) return;
+            const inp = w.document.querySelector('[data-testid="stChatInput"]');
+            if (!inp) return;
+            const slack = Math.round((w.innerHeight - 12) - inp.getBoundingClientRect().bottom);
+            if (Math.abs(slack) <= 4) return;
+            const cur = box.getBoundingClientRect().height;
+            const h = Math.min(Math.max(320, Math.round(cur + slack)), w.innerHeight - 180);
+            if (Math.abs(cur - h) > 4) {
+                // Was the view at the bottom BEFORE our resize? Then keep it
+                // there after: native stickiness covers content growth, not a
+                // viewport we shrink ourselves (e.g. when an approval dialog
+                // appears below and takes room from the box).
+                const atBottom = (box.scrollHeight - cur - box.scrollTop) < 80;
+                for (const el of [box, box.parentElement]) {
+                    el.style.setProperty("height", h + "px", "important");
+                    el.style.setProperty("max-height", h + "px", "important");
+                }
+                if (atBottom) box.scrollTop = box.scrollHeight;
+            }
+        };
+        setInterval(autoHeight, 400);
+        autoHeight();
+        if (w.__fesResizeHandler) w.removeEventListener("resize", w.__fesResizeHandler);
+        w.__fesResizeHandler = autoHeight;
+        w.addEventListener("resize", w.__fesResizeHandler);
+
+        // 2. SCROLL-ANYWHERE: wheel motion from OUTSIDE the box (header, side
+        //    margins, input area) forwards into the box — but stands down
+        //    whenever the PAGE itself can scroll (tall dialog, small window),
+        //    else one gesture double-scrolls box and page. Sidebar excluded.
+        if (w.__fesWheelHandler) {
+            w.document.removeEventListener("wheel", w.__fesWheelHandler);
+        }
+        w.__fesWheelHandler = (e) => {
+            const box = findBox();
+            if (!box || box.contains(e.target)) return;
+            if (e.target.closest && e.target.closest('[data-testid="stSidebar"]')) return;
+            const main = w.document.querySelector('[data-testid="stMain"]') || w.document.scrollingElement;
+            if (main && main.scrollHeight > main.clientHeight + 8) return;
+            box.scrollTop += e.deltaY;
+        };
+        w.document.addEventListener("wheel", w.__fesWheelHandler, {passive: true});
+    })();
+    </script>
     """,
-    unsafe_allow_html=True,
+    height=0,
 )
 
-st.markdown(
-    "<p style='font-size: 0.95rem; opacity: 0.85; margin-top: 0;'>Powered by the FES Agent (MCP + PySisense)</p>",
-    unsafe_allow_html=True,
-)
+# Header: title + subtitle + the mode radio (added into this container
+# further down). Not pinned — see the CSS note above for why.
+_header = st.container(key="app_header")
+with _header:
+    st.title("FES Assistant")
+    st.markdown(
+        '<p class="fes-subtitle">Explore, manage and migrate your Sisense environment — just ask. '
+        "Scoped to your API token's permissions, and every change asks before it runs.</p>",
+        unsafe_allow_html=True,
+    )
 
 if st.session_state.get("session_expired"):
     st.info(
-        "Your session was idle for a long time, so it was reset. "
-        "Please reconnect your Sisense deployment to continue."
+        "Your session was idle for a long time, so it was reset. Please reconnect your Sisense deployment to continue."
     )
     del st.session_state["session_expired"]
 
@@ -590,8 +1251,23 @@ with st.sidebar:
     st.markdown(
         """
         <div style="font-weight: 700; font-size: 1.1rem; margin-top: 10px;">
-            Privacy & Controls
+            Data sharing &amp; agent capability
         </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Widen the ? help tooltip so multi-line explanations don't scroll in a
+    # narrow one-line-wide box. The tooltip renders at document level, so this
+    # style is global (not scoped to the sidebar).
+    st.markdown(
+        """
+        <style>
+        [data-testid="stTooltipContent"] {
+            max-width: 460px !important;
+            max-height: 70vh !important;
+        }
+        </style>
         """,
         unsafe_allow_html=True,
     )
@@ -599,27 +1275,56 @@ with st.sidebar:
     if "allow_summarization" not in st.session_state:
         st.session_state["allow_summarization"] = False
 
+    _summ_help = (
+        "Controls whether tool **results (your Sisense data)** are sent to the LLM. "
+        "This is not only a privacy switch — it sets **how capable the assistant is**.\n\n"
+        "**On** — the assistant can:\n"
+        "- answer in natural language, not just raw data\n"
+        "- chain steps that depend on each other (e.g. find a user's role, then "
+        "list everyone with that role)\n"
+        "- independently double-check that it actually finished your whole request\n\n"
+        "…but result data leaves your Sisense instance and goes to the LLM "
+        "provider — enable only if you trust it with that data.\n\n"
+        "**Off** — data stays private: the LLM only ever sees *which* operations "
+        "ran and whether they succeeded, never the data itself. The assistant still "
+        "handles independent multi-step requests, but it **can't** pass data between "
+        "steps, **can't** verify the goal was met, and returns **raw data** "
+        "instead of a natural-language answer."
+    )
+
     if ALLOW_SUMMARIZATION_TOGGLE:
         st.checkbox(
-            "Allow summarization (Sisense data will be sent to the LLM)",
+            "Send results to the LLM — fuller answers & smarter steps",
             key="allow_summarization",
-            help=(
-                "When enabled, Sisense data will be sent to the LLM provider for summarization. "
-                "This may include sensitive information, so enable only if you trust the LLM provider."
-            ),
+            help=_summ_help,
         )
+        if st.session_state["allow_summarization"]:
+            st.caption(
+                "🟢 **Full capability** — adaptive multi-step, goal double-check, "
+                "written answers. Result data is sent to the LLM."
+            )
+        else:
+            st.caption(
+                "🔒 **Private** — results are fetched and shown to you here, but "
+                "never sent to the LLM. Independent multi-step still works; no "
+                "data-chaining between steps, no goal check, raw results only."
+            )
     else:
         st.session_state["allow_summarization"] = False
         st.checkbox(
-            "Allow summarization (disabled by admin)",
+            "Send results to the LLM (disabled by admin)",
             key="allow_summarization",
             disabled=True,
-            help=(
-                "Summarization has been disabled in the server configuration. "
-                "Sisense data will not be sent to the LLM."
-            ),
+            help=_summ_help + "\n\n_Disabled in the server configuration._",
         )
-        st.caption("Summarization is disabled by the administrator.")
+        st.caption(
+            "🔒 Disabled by the administrator — result data is never sent to the LLM. "
+            "The assistant runs in private mode: independent multi-step only, no "
+            "data-chaining, goal check, or written summaries."
+        )
+
+    # (Chat-area height is fully automatic — sized to the viewer's window by
+    # the auto-height JS below; no user knob needed.)
 
 
 # -----------------------------------------------------------------------------
@@ -631,12 +1336,12 @@ MODE_MIGRATION = "Migrate between deployments"
 BACKEND_MODE_CHAT = "chat"
 BACKEND_MODE_MIGRATION = "migration"
 
-mode = st.radio(
-    "Mode",
-    [MODE_CHAT, MODE_MIGRATION],
-    horizontal=True,
-    label_visibility="collapsed",
-)
+with _header:
+    mode = st.radio(
+        "Mode",
+        [MODE_CHAT, MODE_MIGRATION],
+        horizontal=True,
+    )
 
 logger.debug("Current mode: %s", mode)
 
@@ -698,8 +1403,6 @@ migration_tools = st.session_state.migration_tools
 if mode == MODE_CHAT:
     CHAT_TENANT_KEY = "chat_tenant_config"
     CHAT_MESSAGES_KEY = "chat_messages"
-    CHAT_LAST_USER_IDX_KEY = "chat_last_user_idx"
-    CHAT_HIDE_USER_IDX_KEY = "chat_hide_user_idx"
     CHAT_PENDING_KEY = "chat_pending_confirmation"
     CHAT_APPROVED_KEY = "chat_approved_mutations"
 
@@ -721,24 +1424,27 @@ if mode == MODE_CHAT:
                 return
 
             st.session_state[CHAT_TENANT_KEY] = {
-                "domain": domain.strip(),
+                "domain": _normalize_domain(domain),
                 "token": token.strip(),
                 "ssl": ssl,
             }
             logger.info("[CHAT] Tenant configured for domain=%s, ssl=%s", domain.strip(), ssl)
-            st.success("Connected. You can now chat with your Sisense deployment.")
+            # st.toast survives the rerun; st.success here would be erased by it
+            st.toast("Connected. You can now chat with your Sisense deployment.", icon="✅")
             st.rerun()
 
     if st.session_state[CHAT_TENANT_KEY] is None:
         with st.sidebar:
-            st.subheader("Status:")
-            st.write(f"Chat tools available to LLM: **{len(chat_tools)}**")
+            st.subheader("Connection")
+            st.write(f"Available tools: **{len(chat_tools)}**")
+            st.caption(
+                "Everything in this deployment — users, groups, dashboards, data "
+                "models, health checks. To move assets between environments, "
+                "switch to Migration mode."
+            )
             st.markdown("**Mode:** Chat with deployment")
             st.markdown("---")
-            st.caption(
-                "Connect your Sisense deployment to start chatting. "
-                "Switch to 'Migrate between deployments' mode to migrate assets between environments."
-            )
+            st.caption("Connect your Sisense deployment to start.")
         render_chat_tenant_form()
         st.stop()
 
@@ -750,153 +1456,239 @@ if mode == MODE_CHAT:
         ]
         logger.debug("[CHAT] Chat history initialized with greeting only (system prompt handled in backend).")
 
-    if CHAT_LAST_USER_IDX_KEY not in st.session_state:
-        st.session_state[CHAT_LAST_USER_IDX_KEY] = None
-    if CHAT_HIDE_USER_IDX_KEY not in st.session_state:
-        st.session_state[CHAT_HIDE_USER_IDX_KEY] = None
     if CHAT_PENDING_KEY not in st.session_state:
         st.session_state[CHAT_PENDING_KEY] = None
     if CHAT_APPROVED_KEY not in st.session_state:
         st.session_state[CHAT_APPROVED_KEY] = set()
 
     with st.sidebar:
-        st.subheader("Status:")
-        st.write(f"Chat tools available to LLM: **{len(chat_tools)}**")
+        st.subheader("Connection")
+        st.write(f"Available tools: **{len(chat_tools)}**")
+        st.caption(
+            "Everything in this deployment — users, groups, dashboards, data "
+            "models, health checks. To move assets between environments, "
+            "switch to Migration mode."
+        )
         st.markdown("**Mode:** Chat with deployment")
 
         st.markdown("**Connected tenant**")
         st.write(f"Domain: `{chat_tenant_config.get('domain', '')}`")
         st.write(f"SSL verification: `{chat_tenant_config.get('ssl', True)}`")
 
-        if st.button("Disconnect tenant"):
-            logger.info("[CHAT] Disconnecting tenant.")
-            st.session_state[CHAT_TENANT_KEY] = None
-            for key in [
-                CHAT_MESSAGES_KEY,
-                CHAT_LAST_USER_IDX_KEY,
-                CHAT_HIDE_USER_IDX_KEY,
-                CHAT_PENDING_KEY,
-                CHAT_APPROVED_KEY,
-            ]:
-                if key in st.session_state:
-                    del st.session_state[key]
-            st.rerun()
+        # Two-click disconnect: it also deletes the chat transcript, which is
+        # not what someone expects from a "disconnect" — confirm first.
+        if st.button("Disconnect tenant", key="chat_disconnect"):
+            st.session_state["_chat_disconnect_confirm"] = True
+        if st.session_state.get("_chat_disconnect_confirm"):
+            st.warning("Disconnecting also clears this chat's history.")
+            _dc1, _dc2 = st.columns(2)
+            if _dc1.button("Disconnect", type="primary", key="chat_disconnect_yes"):
+                logger.info("[CHAT] Disconnecting tenant.")
+                st.session_state[CHAT_TENANT_KEY] = None
+                for key in [
+                    CHAT_MESSAGES_KEY,
+                    CHAT_PENDING_KEY,
+                    CHAT_APPROVED_KEY,
+                    "_chat_disconnect_confirm",
+                ]:
+                    if key in st.session_state:
+                        del st.session_state[key]
+                st.rerun()
+            if _dc2.button("Keep", key="chat_disconnect_no"):
+                st.session_state["_chat_disconnect_confirm"] = False
+                st.rerun()
 
         with st.expander("Examples", expanded=False):
             st.markdown(
                 """
+**Look things up**
 - Show me all users
-- List all dashboards
-- Show all data models
-- Show all tables and columns in 'ecommerce_db' datamodel
+- Which dashboards use the 'ecommerce_db' datamodel?
+
+**Ask for several things at once**
+- List all datamodels, all user groups, and all folders
+
+**Let it chain steps** *(needs "Send results to the LLM" on)*
+- Which groups does jane@acme.com belong to, and who else is in them?
+- Get john@acme.com's role, then list everyone with that same role
+
+**Audit & health-check**
+- Find unused columns in the 'ecommerce_db' datamodel
+- Check all datamodels for many-to-many relationships
+
+**Make changes** *(always asks for your approval first)*
+- Create a user analyst@acme.com with role Viewer
 - Add a table called "top_customers" in datamodel "ecommerce_db"
-- Create an elasticube called "nyctaxi_ec" using connection "pysense_databricks", database "samples", schema "nyctaxi". Add tables trips and vendors.
 """
             )
 
         st.markdown("---")
         st.caption(
-            "Agentic assistant for Sisense, powered by an LLM and MCP, "
-            "using PySisense tools for autonomous tool selection, execution, "
-            "and result summarization."
+            "Describe what you need in your own words — the assistant works out "
+            "the steps, runs them against your Sisense environment, and checks "
+            "the result actually answers your question. Anything that changes "
+            "data always asks for your approval first."
         )
 
-    # Render chat history (with hide support for approved mutation reruns)
-    for i, msg in enumerate(st.session_state[CHAT_MESSAGES_KEY]):
-        if msg.get("role") not in ("user", "assistant"):
-            continue
+    # Render chat history inside a fixed-height scrollable box. The box is
+    # load-bearing, not cosmetic: with the conversation in its own scroll
+    # container and the chat input NESTED below (see _chat_input_holder),
+    # Streamlit renders the input INLINE instead of as the pinned sticky
+    # stBottom bar — the element Chrome kept mis-painting (ghost-bar saga,
+    # 2026-08-17/18). Dialogs and the input stay visible without scrolling.
+    _chat_box = st.container(height=CHAT_BOX_HEIGHT, key="chat_box")
+    with _chat_box:
+        for _i, msg in enumerate(st.session_state[CHAT_MESSAGES_KEY]):
+            if msg.get("role") not in ("user", "assistant"):
+                continue
 
-        # Apply the hide index in chat mode
-        if (
-            st.session_state[CHAT_HIDE_USER_IDX_KEY] is not None
-            and i == st.session_state[CHAT_HIDE_USER_IDX_KEY]
-        ):
-            continue
+            with st.chat_message(msg["role"]):
+                if msg["role"] == "assistant":
+                    tr = msg.get("tool_result")
+                    sr = msg.get("step_results")
+                    if sr or tr:
+                        render_results(sr, fallback_tr=tr)
 
-        with st.chat_message(msg["role"]):
-            if msg["role"] == "assistant":
-                tr = msg.get("tool_result")
-                if tr:
-                    render_tool_result(tr)
+                    # Chat mode: do NOT render run log (no progress emitted for these tools)
 
-                # Chat mode: do NOT render run log (no progress emitted for these tools)
+                st.markdown(msg.get("content", ""))
 
-            st.markdown(msg.get("content", ""))
+                # Screen-only hints (e.g. clarification option names): rendered
+                # under the reply, NEVER merged into `content` — content is the
+                # only thing the backend's LLM path reads from history, so this
+                # is how live values stay visible in every summarization mode
+                # without ever reaching the model unless the user types them.
+                if msg["role"] == "assistant" and msg.get("display_hints"):
+                    for _hint in msg["display_hints"]:
+                        st.info(_hint)
 
-    # Clear the one-shot hide flag after rendering once
-    if st.session_state[CHAT_HIDE_USER_IDX_KEY] is not None:
-        st.session_state[CHAT_HIDE_USER_IDX_KEY] = None
+                # Usage line + thumbs on real turns (a trace_id means a backend turn ran)
+                if msg["role"] == "assistant" and msg.get("trace_id"):
+                    _uc = _usage_caption(msg.get("usage"))
+                    if _uc:
+                        st.caption(_uc)
+                    render_feedback_controls("chat", st.session_state[CHAT_MESSAGES_KEY], _i, msg)
 
-    # Pending mutation approval UX (Chat)
+    # Pending mutation approval UX (Chat) — the ONLY dialog renderer, rendered
+    # INSIDE the conversation box right after the last message: a confirmation
+    # is part of the conversation, so it sits glued under the prompt that
+    # caused it (rendering it between box and input left a dead band on
+    # sparse histories — seen live 2026-08-18) and the box's native
+    # stick-to-bottom lands the view on it. Exactly one Approve/Cancel widget
+    # pair per frame (an inline second copy used to collide on widget IDs).
     pending = st.session_state[CHAT_PENDING_KEY]
     if pending and isinstance(pending, dict):
-        st.info("This action requires approval before it can make changes to your Sisense deployment.")
-        with st.expander("View operation details", expanded=True):
-            st.markdown("**Tool:** `{}`".format(pending.get("tool_id", "")))
-            st.code(json.dumps(pending.get("arguments", {}), indent=2), language="json")
+        with _chat_box:
+            st.warning(
+                pending.get("reason")
+                or "This action requires approval before it can make changes to your Sisense deployment."
+            )
+            with st.expander("View operation details", expanded=True):
+                st.markdown("**Tool:** `{}`".format(pending.get("tool_id", "")))
+                st.code(json.dumps(pending.get("arguments", {}), indent=2), language="json")
 
-        cols = st.columns([1, 1])
-        with cols[0]:
-            if st.button("Approve", type="primary"):
-                key = _approval_key(pending["tool_id"], pending.get("arguments", {}))
-                st.session_state[CHAT_APPROVED_KEY].add(key)
+            cols = st.columns([1, 1])
+            with cols[0]:
+                if st.button("Approve", type="primary", key="chat_approve"):
+                    key = _approval_key(pending["tool_id"], pending.get("arguments", {}))
+                    # Replace, never accumulate: this turn carries exactly the one
+                    # approval the user just gave. The backend consumes it on use, so
+                    # the same operation asked for again gates again.
+                    st.session_state[CHAT_APPROVED_KEY] = {key}
 
-                # Chat mode: no progress placeholder needed (backend will respond JSON)
-                with st.spinner("Running approved action..."):
-                    try:
-                        reply, tr = call_backend_turn(
-                            messages=st.session_state[CHAT_MESSAGES_KEY],
-                            user_input="",
-                            tenant_config=chat_tenant_config,
-                            approved_keys=st.session_state[CHAT_APPROVED_KEY],
-                            migration_config=None,
-                            session_id=session_id,
-                            allow_summarization=st.session_state["allow_summarization"],
-                            mode=BACKEND_MODE_CHAT,
-                            progress_placeholder=None,
-                        )
-                    except Exception as e:
-                        logger.exception("Agent run after approval failed: %s", e)
-                        st.error("The approved action failed.")
-                        st.exception(e)
-                        st.session_state[CHAT_PENDING_KEY] = None
-                        st.rerun()
+                    _agent_ph = st.empty()
+                    _approve_failed = False
+                    with st.spinner("Running approved action..."):
+                        try:
+                            reply, tr, sr, tid, usage, hints = call_backend_turn(
+                                messages=st.session_state[CHAT_MESSAGES_KEY],
+                                user_input="",
+                                tenant_config=chat_tenant_config,
+                                approved_keys=st.session_state[CHAT_APPROVED_KEY],
+                                migration_config=None,
+                                session_id=session_id,
+                                allow_summarization=st.session_state["allow_summarization"],
+                                mode=BACKEND_MODE_CHAT,
+                                progress_placeholder=_agent_ph,
+                            )
+                        except Exception as e:
+                            logger.exception("Agent run after approval failed: %s", e)
+                            # Put the failure in history BEFORE rerunning — st.error
+                            # followed by st.rerun() is a frame the user never sees.
+                            _approve_failed = True
+                            reply, tr, sr, tid, usage, hints = (
+                                f"The approved action failed: {e}",
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                            )
+                    _agent_ph.empty()
 
-                # Ensure run log is not shown/stored for chat
-                st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
+                    # Ensure run log is not shown/stored for chat
+                    st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
 
-                st.session_state[CHAT_MESSAGES_KEY].append(
-                    {"role": "assistant", "content": reply, "tool_result": tr, "run_log": None}
-                )
+                    st.session_state[CHAT_MESSAGES_KEY].append(
+                        {
+                            "role": "assistant",
+                            "content": reply,
+                            "tool_result": tr,
+                            "step_results": sr,
+                            "run_log": None,
+                            "trace_id": tid,
+                            "usage": usage,
+                            "display_hints": hints,
+                        }
+                    )
 
-                # Hide the previous user request on next render
-                st.session_state[CHAT_HIDE_USER_IDX_KEY] = st.session_state[CHAT_LAST_USER_IDX_KEY]
-                st.session_state[CHAT_PENDING_KEY] = None
-                st.rerun()
+                    st.session_state[CHAT_PENDING_KEY] = None
+                    st.rerun()
 
-        with cols[1]:
-            if st.button("Cancel"):
-                st.session_state[CHAT_PENDING_KEY] = None
-                st.session_state[CHAT_MESSAGES_KEY].append({"role": "assistant", "content": "Action cancelled."})
-                st.rerun()
+            with cols[1]:
+                if st.button("Cancel", key="chat_cancel"):
+                    st.session_state[CHAT_PENDING_KEY] = None
+                    st.session_state[CHAT_MESSAGES_KEY].append({"role": "assistant", "content": "Action cancelled."})
+                    st.rerun()
 
-    # Chat input (Chat mode)
-    user_input = st.chat_input("Ask something about Sisense...")
+    # Chat input (Chat mode) — NESTED in a container so Streamlit renders it
+    # INLINE below the message box, not as the pinned sticky bar (see the
+    # ghost-bar note above the message box).
+    with st.container():
+        # A pending approval is a MODAL decision: freeze the input until the
+        # user clicks Approve or Cancel. Without this, an accidental Enter
+        # silently abandoned the gated action (the topic-change rule below
+        # still backstops any stale state).
+        _gate_open = bool(st.session_state.get(CHAT_PENDING_KEY))
+        user_input = (
+            st.chat_input(
+                "Approve or cancel the pending action above first…" if _gate_open else "Ask something about Sisense...",
+                disabled=_gate_open,
+            )
+            or ""
+        ).strip() or None
 
     if user_input:
         logger.debug("[CHAT] User question: %s", user_input)
 
-        st.session_state[CHAT_LAST_USER_IDX_KEY] = len(st.session_state[CHAT_MESSAGES_KEY])
+        # Typing instead of clicking answers the pending dialog with a topic
+        # change: drop the stale gate so it cannot reappear under the new
+        # answer and execute an operation the user has moved past.
+        st.session_state[CHAT_PENDING_KEY] = None
+        st.session_state[CHAT_APPROVED_KEY] = set()
+
         st.session_state[CHAT_MESSAGES_KEY].append({"role": "user", "content": user_input})
 
-        with st.chat_message("user"):
+        with _chat_box, st.chat_message("user"):
             st.markdown(user_input)
 
-        with st.chat_message("assistant"):
-            # Chat mode: no progress placeholder (JSON path)
+        with _chat_box, st.chat_message("assistant"):
+            # Live agentic-loop progress (step checklist + current phase).
+            _agent_ph = st.empty()
+            _call_failed = False
             with st.spinner("Thinking..."):
                 try:
-                    reply, tr = call_backend_turn(
+                    reply, tr, sr, tid, usage, hints = call_backend_turn(
                         messages=st.session_state[CHAT_MESSAGES_KEY],
                         user_input=user_input,
                         tenant_config=chat_tenant_config,
@@ -905,83 +1697,50 @@ if mode == MODE_CHAT:
                         session_id=session_id,
                         allow_summarization=st.session_state["allow_summarization"],
                         mode=BACKEND_MODE_CHAT,
-                        progress_placeholder=None,
+                        progress_placeholder=_agent_ph,
                     )
                 except Exception as e:
+                    _call_failed = True
                     logger.exception("LLM+tools call failed: %s", e)
                     st.error("Sorry, something went wrong while calling the agent.")
-                    st.exception(e)
                     reply = f"Error: {e}"
                     tr = None
+                    sr = None  # else the PREVIOUS message's results re-render under this error
+                    tid = None
+                    usage = None
+                    hints = None
+            _agent_ph.empty()
 
             # Ensure run log is not shown/stored for chat
             st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
 
             if isinstance(tr, dict) and tr.get("pending_confirmation"):
+                # Store the gate and rerun into the persisted dialog — the one
+                # and only Approve/Cancel renderer (an inline copy here used to
+                # duplicate widget IDs). The reason is NOT also appended to
+                # history: the dialog shows it while pending, and the same
+                # sentence in a chat bubble AND the warning box read as a
+                # rendering glitch (seen live 2026-08-18). The durable record
+                # is the resolution message (result / "Action cancelled.").
                 st.session_state[CHAT_PENDING_KEY] = tr["pending_confirmation"]
-
-                st.info("This action requires approval before it can make changes to your Sisense deployment.")
-                with st.expander("View operation details", expanded=True):
-                    pc = tr["pending_confirmation"]
-                    st.markdown("**Tool:** `{}`".format(pc.get("tool_id", "")))
-                    st.code(json.dumps(pc.get("arguments", {}), indent=2), language="json")
-
-                cols = st.columns([1, 1])
-                with cols[0]:
-                    if st.button("Approve", type="primary"):
-                        key = _approval_key(pc["tool_id"], pc.get("arguments", {}))
-                        st.session_state[CHAT_APPROVED_KEY].add(key)
-
-                        with st.spinner("Running approved action..."):
-                            try:
-                                reply2, tr2 = call_backend_turn(
-                                    messages=st.session_state[CHAT_MESSAGES_KEY],
-                                    user_input=user_input,
-                                    tenant_config=chat_tenant_config,
-                                    approved_keys=st.session_state[CHAT_APPROVED_KEY],
-                                    migration_config=None,
-                                    session_id=session_id,
-                                    allow_summarization=st.session_state["allow_summarization"],
-                                    mode=BACKEND_MODE_CHAT,
-                                    progress_placeholder=None,
-                                )
-                            except Exception as e:
-                                logger.exception("Agent run after approval failed: %s", e)
-                                st.error("The approved action failed.")
-                                st.exception(e)
-                                st.session_state[CHAT_PENDING_KEY] = None
-                                st.rerun()
-
-                        st.session_state[_LAST_RUN_LOG_STATE_KEY] = None
-
-                        if tr2:
-                            render_tool_result(tr2)
-                        st.markdown("**Summary**")
-                        st.markdown(reply2)
-
-                        st.session_state[CHAT_MESSAGES_KEY].append(
-                            {"role": "assistant", "content": reply2, "tool_result": tr2, "run_log": None}
-                        )
-
-                        st.session_state[CHAT_HIDE_USER_IDX_KEY] = st.session_state[CHAT_LAST_USER_IDX_KEY]
-                        st.session_state[CHAT_PENDING_KEY] = None
-                        st.rerun()
-
-                with cols[1]:
-                    if st.button("Cancel"):
-                        st.session_state[CHAT_PENDING_KEY] = None
-                        st.session_state[CHAT_MESSAGES_KEY].append({"role": "assistant", "content": "Action cancelled."})
-                        st.rerun()
+                st.rerun()
             else:
-                if tr:
-                    render_tool_result(tr)
-
-                st.markdown("**Summary**")
-                st.markdown(reply)
-
                 st.session_state[CHAT_MESSAGES_KEY].append(
-                    {"role": "assistant", "content": reply, "tool_result": tr, "run_log": None}
+                    {
+                        "role": "assistant",
+                        "content": reply,
+                        "tool_result": tr,
+                        "step_results": sr,
+                        "run_log": None,
+                        "trace_id": tid,
+                        "usage": usage,
+                        # Screen-only: rendered under the reply, never part of
+                        # `content`, so it can't re-enter LLM prompts via history.
+                        "display_hints": hints,
+                    }
                 )
+                if not _call_failed:
+                    st.rerun()
 
 
 # =============================================================================
@@ -991,8 +1750,6 @@ if mode == MODE_MIGRATION:
     MIG_SRC_KEY = "migration_source_config"
     MIG_TGT_KEY = "migration_target_config"
     MIG_MESSAGES_KEY = "migration_messages"
-    MIG_LAST_USER_IDX_KEY = "migration_last_user_idx"
-    MIG_HIDE_USER_IDX_KEY = "migration_hide_user_idx"
     MIG_PENDING_KEY = "migration_pending_confirmation"
     MIG_APPROVED_KEY = "migration_approved_mutations"
 
@@ -1001,61 +1758,95 @@ if mode == MODE_MIGRATION:
     if MIG_TGT_KEY not in st.session_state:
         st.session_state[MIG_TGT_KEY] = None
 
-    st.subheader("Connect source and target Sisense environments")
+    def _mig_disconnect(which_key: str) -> None:
+        """Drop one environment AND the conversation state: a stale approval
+        dialog re-rendered against NEW credentials would migrate into the
+        wrong environment (chat mode's disconnect does the same). The turn
+        threading keys must go too — a surviving _mig_turn_in_progress=True
+        keeps the chat input disabled with no turn left to finish it."""
+        st.session_state[which_key] = None
+        for key in [
+            MIG_MESSAGES_KEY,
+            MIG_PENDING_KEY,
+            MIG_APPROVED_KEY,
+            _MIG_TURN_IN_PROGRESS_KEY,
+            _MIG_TURN_CTX_KEY,
+            _MIG_PENDING_TURN_META_KEY,
+            _LAST_RUN_LOG_STATE_KEY,
+        ]:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.rerun()
 
-    cols = st.columns(2)
+    # Connect forms show only while a side is missing — once both are
+    # connected they disappear (chat-mode parity) so the conversation gets
+    # the vertical space; disconnect lives in the sidebar.
+    if not (st.session_state[MIG_SRC_KEY] and st.session_state[MIG_TGT_KEY]):
+        st.subheader("Connect source and target Sisense environments")
 
-    with cols[0]:
-        st.markdown("**Source environment**")
-        src_cfg = st.session_state[MIG_SRC_KEY] or {}
-        with st.form("source_form"):
-            src_domain = st.text_input("Source domain", value=src_cfg.get("domain", ""), placeholder="https://source.sisense.com")
-            src_token = st.text_input("Source API token", type="password", value=src_cfg.get("token", ""))
-            src_ssl = st.checkbox("Verify SSL (source)", value=src_cfg.get("ssl", True))
-            src_submitted = st.form_submit_button("Connect source")
+        cols = st.columns(2)
 
-        if src_submitted:
-            if not src_domain or not src_token:
-                st.error("Source domain and token are required.")
-            else:
-                st.session_state[MIG_SRC_KEY] = {"domain": src_domain.strip(), "token": src_token.strip(), "ssl": src_ssl}
-                logger.info("[MIGRATION] Source configured for domain=%s ssl=%s", src_domain.strip(), src_ssl)
-                st.success("Source environment connected.")
-                st.rerun()
+        with cols[0]:
+            st.markdown("**Source environment**")
+            src_cfg = st.session_state[MIG_SRC_KEY] or {}
+            with st.form("source_form"):
+                src_domain = st.text_input(
+                    "Source domain", value=src_cfg.get("domain", ""), placeholder="https://source.sisense.com"
+                )
+                src_token = st.text_input("Source API token", type="password", value=src_cfg.get("token", ""))
+                src_ssl = st.checkbox("Verify SSL (source)", value=src_cfg.get("ssl", True))
+                src_submitted = st.form_submit_button("Connect source")
 
-        if st.session_state[MIG_SRC_KEY] is not None:
-            if st.button("Disconnect source"):
-                logger.info("[MIGRATION] Disconnecting source.")
-                st.session_state[MIG_SRC_KEY] = None
-                st.rerun()
+            if src_submitted:
+                if not src_domain or not src_token:
+                    st.error("Source domain and token are required.")
+                else:
+                    st.session_state[MIG_SRC_KEY] = {
+                        "domain": _normalize_domain(src_domain),
+                        "token": src_token.strip(),
+                        "ssl": src_ssl,
+                    }
+                    logger.info("[MIGRATION] Source configured for domain=%s ssl=%s", src_domain.strip(), src_ssl)
+                    st.toast("Source environment connected.", icon="✅")
+                    st.rerun()
 
-    with cols[1]:
-        st.markdown("**Target environment**")
-        tgt_cfg = st.session_state[MIG_TGT_KEY] or {}
-        with st.form("target_form"):
-            tgt_domain = st.text_input("Target domain", value=tgt_cfg.get("domain", ""), placeholder="https://target.sisense.com")
-            tgt_token = st.text_input("Target API token", type="password", value=tgt_cfg.get("token", ""))
-            tgt_ssl = st.checkbox("Verify SSL (target)", value=tgt_cfg.get("ssl", True))
-            tgt_submitted = st.form_submit_button("Connect target")
+            if st.session_state[MIG_SRC_KEY] is not None:
+                if st.button("Disconnect source", key="mig_disconnect_src_form"):
+                    logger.info("[MIGRATION] Disconnecting source.")
+                    _mig_disconnect(MIG_SRC_KEY)
 
-        if tgt_submitted:
-            if not tgt_domain or not tgt_token:
-                st.error("Target domain and token are required.")
-            else:
-                st.session_state[MIG_TGT_KEY] = {"domain": tgt_domain.strip(), "token": tgt_token.strip(), "ssl": tgt_ssl}
-                logger.info("[MIGRATION] Target configured for domain=%s ssl=%s", tgt_domain.strip(), tgt_ssl)
-                st.success("Target environment connected.")
-                st.rerun()
+        with cols[1]:
+            st.markdown("**Target environment**")
+            tgt_cfg = st.session_state[MIG_TGT_KEY] or {}
+            with st.form("target_form"):
+                tgt_domain = st.text_input(
+                    "Target domain", value=tgt_cfg.get("domain", ""), placeholder="https://target.sisense.com"
+                )
+                tgt_token = st.text_input("Target API token", type="password", value=tgt_cfg.get("token", ""))
+                tgt_ssl = st.checkbox("Verify SSL (target)", value=tgt_cfg.get("ssl", True))
+                tgt_submitted = st.form_submit_button("Connect target")
 
-        if st.session_state[MIG_TGT_KEY] is not None:
-            if st.button("Disconnect target"):
-                logger.info("[MIGRATION] Disconnecting target.")
-                st.session_state[MIG_TGT_KEY] = None
-                st.rerun()
+            if tgt_submitted:
+                if not tgt_domain or not tgt_token:
+                    st.error("Target domain and token are required.")
+                else:
+                    st.session_state[MIG_TGT_KEY] = {
+                        "domain": _normalize_domain(tgt_domain),
+                        "token": tgt_token.strip(),
+                        "ssl": tgt_ssl,
+                    }
+                    logger.info("[MIGRATION] Target configured for domain=%s ssl=%s", tgt_domain.strip(), tgt_ssl)
+                    st.toast("Target environment connected.", icon="✅")
+                    st.rerun()
+
+            if st.session_state[MIG_TGT_KEY] is not None:
+                if st.button("Disconnect target", key="mig_disconnect_tgt_form"):
+                    logger.info("[MIGRATION] Disconnecting target.")
+                    _mig_disconnect(MIG_TGT_KEY)
 
     with st.sidebar:
-        st.subheader("Status:")
-        st.write(f"Migration tools available to LLM: **{len(migration_tools)}**")
+        st.subheader("Connection")
+        st.write(f"Available tools: **{len(migration_tools)}**")
         st.markdown("**Mode:** Migrate between deployments")
 
         src_cfg = st.session_state[MIG_SRC_KEY]
@@ -1065,6 +1856,9 @@ if mode == MODE_MIGRATION:
         if src_cfg:
             st.write(f"Domain: `{src_cfg.get('domain', '')}`")
             st.write(f"SSL verification: `{src_cfg.get('ssl', True)}`")
+            if st.button("Disconnect source", key="mig_disconnect_src"):
+                logger.info("[MIGRATION] Disconnecting source.")
+                _mig_disconnect(MIG_SRC_KEY)
         else:
             st.write("_Not connected_")
 
@@ -1072,22 +1866,34 @@ if mode == MODE_MIGRATION:
         if tgt_cfg:
             st.write(f"Domain: `{tgt_cfg.get('domain', '')}`")
             st.write(f"SSL verification: `{tgt_cfg.get('ssl', True)}`")
+            if st.button("Disconnect target", key="mig_disconnect_tgt"):
+                logger.info("[MIGRATION] Disconnecting target.")
+                _mig_disconnect(MIG_TGT_KEY)
         else:
             st.write("_Not connected_")
 
         if src_cfg and tgt_cfg:
-            st.markdown(
-                """
-**Examples:**
-- Migrate these groups from source to target: `group_a`, `group_b`
+            with st.expander("Examples", expanded=False):
+                st.markdown(
+                    """
+*Move specific assets*
+- Migrate the "Sales Team" group and the user jane@acme.com
 - Migrate dashboards "Sales Overview" and "Customer KPIs"
-- Migrate datamodel "ecommerce_db" from source to target
+
+*Move in bulk — planned in the right order automatically*
+- Migrate all users, all groups and all datamodels
+- Migrate all dashboards, overwriting existing ones
 """
-            )
+                )
         else:
             st.markdown("_Connect both source and target environments to see migration examples._")
         st.markdown("---")
-        st.caption("Migration mode uses source and target connections to migrate assets between environments.")
+        st.caption(
+            "Describe what to move from source to target — the assistant plans "
+            "every step in dependency order (groups before users, datamodels "
+            "before dashboards) and shows you the full plan for approval before "
+            "anything runs. A failed step stops the run instead of cascading."
+        )
 
     if not st.session_state[MIG_SRC_KEY] or not st.session_state[MIG_TGT_KEY]:
         st.info("Connect both source and target environments to start using the Migration assistant.")
@@ -1109,186 +1915,239 @@ if mode == MODE_MIGRATION:
         ]
         logger.debug("[MIGRATION] Chat history initialized with greeting only (system prompt handled in backend).")
 
-    if MIG_LAST_USER_IDX_KEY not in st.session_state:
-        st.session_state[MIG_LAST_USER_IDX_KEY] = None
-    if MIG_HIDE_USER_IDX_KEY not in st.session_state:
-        st.session_state[MIG_HIDE_USER_IDX_KEY] = None
     if MIG_PENDING_KEY not in st.session_state:
         st.session_state[MIG_PENDING_KEY] = None
     if MIG_APPROVED_KEY not in st.session_state:
         st.session_state[MIG_APPROVED_KEY] = set()
+    if _MIG_TURN_IN_PROGRESS_KEY not in st.session_state:
+        st.session_state[_MIG_TURN_IN_PROGRESS_KEY] = False
+    if _MIG_TURN_CTX_KEY not in st.session_state:
+        st.session_state[_MIG_TURN_CTX_KEY] = {}
+    if _MIG_PENDING_TURN_META_KEY not in st.session_state:
+        st.session_state[_MIG_PENDING_TURN_META_KEY] = {}
 
-    for i, msg in enumerate(st.session_state[MIG_MESSAGES_KEY]):
-        if msg.get("role") not in ("user", "assistant"):
-            continue
-        if st.session_state[MIG_HIDE_USER_IDX_KEY] is not None and i == st.session_state[MIG_HIDE_USER_IDX_KEY]:
-            continue
-        with st.chat_message(msg["role"]):
-            if msg["role"] == "assistant":
-                tr = msg.get("tool_result")
-                if tr:
-                    render_tool_result(tr)
-                render_run_log(msg.get("run_log"))
-            st.markdown(msg.get("content", ""))
+    def _process_mig_turn_result() -> None:
+        """
+        Called from the polling block once the background thread is done.
+        Reads the completed ctx and meta, updates session state, does NOT call st.rerun().
+        """
+        ctx = st.session_state.get(_MIG_TURN_CTX_KEY, {})
+        meta = st.session_state.get(_MIG_PENDING_TURN_META_KEY, {})
+        st.session_state[_MIG_TURN_IN_PROGRESS_KEY] = False
 
-    if st.session_state[MIG_HIDE_USER_IDX_KEY] is not None:
-        st.session_state[MIG_HIDE_USER_IDX_KEY] = None
+        run_log = ctx.get("run_log") or st.session_state.get(_LAST_RUN_LOG_STATE_KEY)
+        try:
+            st.session_state[_LAST_RUN_LOG_STATE_KEY] = run_log
+        except Exception:
+            pass
+
+        if ctx.get("error_str"):
+            st.session_state[MIG_MESSAGES_KEY].append({"role": "assistant", "content": f"Error: {ctx['error_str']}"})
+            st.session_state[MIG_PENDING_KEY] = None
+            return
+
+        reply = ctx.get("reply") or ""
+        tr = ctx.get("tool_result")
+        sr = ctx.get("step_results")
+
+        if isinstance(tr, dict) and tr.get("pending_confirmation"):
+            # The dialog is the record while pending — the reason is NOT also
+            # appended to history (the same sentence in a bubble AND the
+            # warning box reads as a rendering glitch, seen live 2026-08-18).
+            # The durable record is the resolution message.
+            st.session_state[MIG_PENDING_KEY] = tr["pending_confirmation"]
+        else:
+            if meta.get("clear_pending"):
+                st.session_state[MIG_PENDING_KEY] = None
+            st.session_state[MIG_MESSAGES_KEY].append(
+                {
+                    "role": "assistant",
+                    "content": reply,
+                    "tool_result": tr,
+                    "step_results": sr,
+                    "run_log": run_log,
+                    "trace_id": ctx.get("trace_id"),
+                    "usage": ctx.get("usage"),
+                }
+            )
+
+    # Fixed-height scrollable conversation box — same load-bearing role as in
+    # chat mode: with the input NESTED below it renders inline, and the pinned
+    # sticky bar Chrome kept mis-painting never exists.
+    _mig_box = st.container(height=CHAT_BOX_HEIGHT, key="mig_box")
+    with _mig_box:
+        for _i, msg in enumerate(st.session_state[MIG_MESSAGES_KEY]):
+            if msg.get("role") not in ("user", "assistant"):
+                continue
+            with st.chat_message(msg["role"]):
+                if msg["role"] == "assistant":
+                    tr = msg.get("tool_result")
+                    sr = msg.get("step_results")
+                    if sr or tr:
+                        render_results(sr, fallback_tr=tr)
+                    render_run_log(msg.get("run_log"))
+                st.markdown(msg.get("content", ""))
+
+                # Screen-only hints (e.g. clarification option names): rendered
+                # under the reply, NEVER merged into `content` — content is the
+                # only thing the backend's LLM path reads from history, so this
+                # is how live values stay visible in every summarization mode
+                # without ever reaching the model unless the user types them.
+                if msg["role"] == "assistant" and msg.get("display_hints"):
+                    for _hint in msg["display_hints"]:
+                        st.info(_hint)
+
+                # Usage line + thumbs on real turns (a trace_id means a backend turn ran)
+                if msg["role"] == "assistant" and msg.get("trace_id"):
+                    _uc = _usage_caption(msg.get("usage"))
+                    if _uc:
+                        st.caption(_uc)
+                    render_feedback_controls("migration", st.session_state[MIG_MESSAGES_KEY], _i, msg)
+
+    # One position-stable slot for the approval dialog, INSIDE the conversation
+    # box right after the last message (same placement as chat mode — a
+    # confirmation is part of the conversation, and the box's native
+    # stick-to-bottom lands the view on it). The polling branch clears it
+    # EXPLICITLY every frame: script runs that end in st.rerun() never reach
+    # Streamlit's stale-element pruning, so a dialog drawn by the Approve
+    # click-run otherwise lingers as ghost widgets — visible but inert —
+    # below the live progress (seen live 2026-08-14, twice).
+    with _mig_box:
+        mig_dialog_slot = st.empty()
+
+    # -------------------------------------------------------------------------
+    # Turn-in-progress polling block
+    # Shown while a background migration thread is running.
+    # Calls st.rerun() to poll until done; blocks the rest of the UI meanwhile.
+    # -------------------------------------------------------------------------
+    if st.session_state.get(_MIG_TURN_IN_PROGRESS_KEY):
+        mig_dialog_slot.empty()
+        ctx = st.session_state.get(_MIG_TURN_CTX_KEY, {})
+
+        # Inside the conversation box: the live plan/progress is conversation
+        # content — outside the box it rendered below the window edge until
+        # the approval dialog replaced it (seen live 2026-08-18).
+        with _mig_box:
+            _col_status, _col_stop = st.columns([5, 1])
+            with _col_stop:
+                if st.button("⏹ Stop", key="mig_stop_btn"):
+                    _cancel_backend_turn(session_id)
+                    st.session_state[_MIG_TURN_IN_PROGRESS_KEY] = False
+                    # The approval that launched this run is spent — leaving it in
+                    # state re-renders the dialog under the "stopped" message, and
+                    # re-approving would run the whole migration AGAIN (seen live
+                    # 2026-08-14). A stopped run ends the exchange; ask again to redo.
+                    st.session_state[MIG_PENDING_KEY] = None
+                    st.session_state[MIG_APPROVED_KEY] = set()
+                    st.session_state[MIG_MESSAGES_KEY].append(
+                        {"role": "assistant", "content": "Migration stopped by user."}
+                    )
+                    st.rerun()
+            with _col_status:
+                # The plan checklist, same as chat mode — a migration is exactly
+                # where seeing the ordered steps up front matters most. Rendered
+                # here on the main thread from state the worker collected.
+                _render_agent_progress(
+                    st.empty(),
+                    ctx.get("agent_steps") or [],
+                    ctx.get("agent_status"),
+                    ctx.get("agent_plan"),
+                )
+                # Then the SDK's own per-asset progress ("migrated 12 of 40...").
+                # Agent phase lines are not in here — they go to the checklist above.
+                prog = ctx.get("progress_lines") or []
+                if prog:
+                    tail = prog[-20:]
+                    st.markdown("**Progress**\n\n" + "\n".join([f"- {x}" for x in tail]))
+                elif not ctx.get("agent_plan") and not ctx.get("agent_status"):
+                    st.markdown("*Planning migration...*")
+
+        if ctx.get("done"):
+            _process_mig_turn_result()
+        else:
+            time.sleep(0.4)
+        st.rerun()
 
     pending_mig = st.session_state[MIG_PENDING_KEY]
-    if pending_mig and isinstance(pending_mig, dict):
-        st.info("This migration action requires approval before it can make changes to your Sisense deployments.")
-        with st.expander("View operation details", expanded=True):
-            st.markdown("**Tool:** `{}`".format(pending_mig.get("tool_id", "")))
-            st.code(json.dumps(pending_mig.get("arguments", {}), indent=2), language="json")
+    # Never render the approval dialog while a migration turn is in flight:
+    # Approve was already clicked, so showing live buttons invites a second
+    # click from a user who thinks the run is stuck (seen live 2026-08-14 —
+    # only Streamlit's rerun timing prevented a duplicate approval turn).
+    if pending_mig and isinstance(pending_mig, dict) and not st.session_state.get(_MIG_TURN_IN_PROGRESS_KEY):
+        with mig_dialog_slot.container():
+            # st.info, not st.warning: this carries the full numbered PLAN
+            # document — a wall of amber is unreadable (user call, 2026-08-18).
+            # Chat's dialog keeps the warning: its reason is one line.
+            st.info(
+                pending_mig.get("reason")
+                or "This migration action requires approval before it can make changes to your Sisense deployments."
+            )
+            # A whole-plan approval already lists every step and its arguments in the
+            # message above, in plain English. Repeating it as JSON under a synthetic
+            # tool name (`migration.plan` is not a real tool) adds nothing but noise
+            # in front of a destructive action. Single-tool approvals still get it.
+            if pending_mig.get("tool_id") != MIGRATION_PLAN_TOOL_ID:
+                with st.expander("View operation details", expanded=True):
+                    st.markdown("**Tool:** `{}`".format(pending_mig.get("tool_id", "")))
+                    st.code(json.dumps(pending_mig.get("arguments", {}), indent=2), language="json")
 
-        cols = st.columns([1, 1])
-        with cols[0]:
-            if st.button("Approve migration", type="primary"):
-                key = _approval_key(pending_mig["tool_id"], pending_mig.get("arguments", {}))
-                st.session_state[MIG_APPROVED_KEY].add(key)
-
-                progress_box = st.empty()
-                with st.spinner("Running approved migration action..."):
-                    try:
-                        reply, tr = call_backend_turn(
-                            messages=st.session_state[MIG_MESSAGES_KEY],
-                            user_input="",
-                            tenant_config=None,
-                            approved_keys=st.session_state[MIG_APPROVED_KEY],
-                            migration_config=migration_config,
-                            session_id=session_id,
-                            allow_summarization=st.session_state["allow_summarization"],
-                            mode=BACKEND_MODE_MIGRATION,
-                            progress_placeholder=progress_box,
-                        )
-                    except Exception as e:
-                        logger.exception("Migration agent run after approval failed: %s", e)
-                        st.error("The approved migration action failed.")
-                        st.exception(e)
-                        st.session_state[MIG_PENDING_KEY] = None
-                        st.rerun()
-
-                progress_box.empty()
-
-                run_log = st.session_state.get(_LAST_RUN_LOG_STATE_KEY)
-
-                st.session_state[MIG_MESSAGES_KEY].append(
-                    {"role": "assistant", "content": reply, "tool_result": tr, "run_log": run_log}
-                )
-
-                st.session_state[MIG_HIDE_USER_IDX_KEY] = st.session_state[MIG_LAST_USER_IDX_KEY]
-                st.session_state[MIG_PENDING_KEY] = None
-                st.rerun()
-
-        with cols[1]:
-            if st.button("Cancel migration"):
-                st.session_state[MIG_PENDING_KEY] = None
-                st.session_state[MIG_MESSAGES_KEY].append({"role": "assistant", "content": "Migration action cancelled."})
-                st.rerun()
-
-    mig_input = st.chat_input("Describe what you want to migrate...")
-
-    if mig_input:
-        logger.debug("[MIGRATION] User request: %s", mig_input)
-        st.session_state[MIG_LAST_USER_IDX_KEY] = len(st.session_state[MIG_MESSAGES_KEY])
-        st.session_state[MIG_MESSAGES_KEY].append({"role": "user", "content": mig_input})
-
-        with st.chat_message("user"):
-            st.markdown(mig_input)
-
-        with st.chat_message("assistant"):
-            progress_box = st.empty()
-            with st.spinner("Planning migration..."):
-                try:
-                    reply, tr = call_backend_turn(
+            cols = st.columns([1, 1])
+            with cols[0]:
+                if st.button("Approve", type="primary", key="mig_approve"):
+                    key = _approval_key(pending_mig["tool_id"], pending_mig.get("arguments", {}))
+                    # Single-use, as in chat mode — and it matters more here: a
+                    # silently-repeated migration writes to the target twice.
+                    st.session_state[MIG_APPROVED_KEY] = {key}
+                    _launch_migration_turn(
+                        meta={"kind": "approval", "clear_pending": True},
                         messages=st.session_state[MIG_MESSAGES_KEY],
-                        user_input=mig_input,
+                        user_input="",
                         tenant_config=None,
-                        approved_keys=None,
+                        approved_keys=st.session_state[MIG_APPROVED_KEY],
                         migration_config=migration_config,
                         session_id=session_id,
                         allow_summarization=st.session_state["allow_summarization"],
                         mode=BACKEND_MODE_MIGRATION,
-                        progress_placeholder=progress_box,
                     )
-                except Exception as e:
-                    logger.exception("Migration LLM+tools call failed: %s", e)
-                    st.error("Sorry, something went wrong while running the migration assistant.")
-                    st.exception(e)
-                    reply = f"Error: {e}"
-                    tr = None
+                    st.rerun()
 
-            progress_box.empty()
+            with cols[1]:
+                if st.button("Cancel", key="mig_cancel"):
+                    st.session_state[MIG_PENDING_KEY] = None
+                    st.session_state[MIG_MESSAGES_KEY].append({"role": "assistant", "content": "Action cancelled."})
+                    st.rerun()
 
-            if isinstance(tr, dict) and tr.get("pending_confirmation"):
-                st.session_state[MIG_PENDING_KEY] = tr["pending_confirmation"]
+    # Nested → inline input (see the conversation-box note above)
+    with st.container():
+        # Same modal freeze as chat mode: decide on the pending migration
+        # plan before asking for anything else.
+        _mig_gate_open = bool(st.session_state.get(MIG_PENDING_KEY)) and not st.session_state.get(
+            _MIG_TURN_IN_PROGRESS_KEY
+        )
+        mig_input = st.chat_input(
+            "Approve or cancel the pending migration above first…"
+            if _mig_gate_open
+            else "Describe what you want to migrate...",
+            disabled=_mig_gate_open,
+        )
 
-                st.info("This migration action requires approval before it can make changes to your Sisense deployments.")
-                with st.expander("View operation details", expanded=True):
-                    pc = tr["pending_confirmation"]
-                    st.markdown("**Tool:** `{}`".format(pc.get("tool_id", "")))
-                    st.code(json.dumps(pc.get("arguments", {}), indent=2), language="json")
-
-                cols = st.columns([1, 1])
-                with cols[0]:
-                    if st.button("Approve migration", type="primary"):
-                        key = _approval_key(pc["tool_id"], pc.get("arguments", {}))
-                        st.session_state[MIG_APPROVED_KEY].add(key)
-
-                        progress_box2 = st.empty()
-                        with st.spinner("Running approved migration action..."):
-                            try:
-                                reply2, tr2 = call_backend_turn(
-                                    messages=st.session_state[MIG_MESSAGES_KEY],
-                                    user_input=mig_input,
-                                    tenant_config=None,
-                                    approved_keys=st.session_state[MIG_APPROVED_KEY],
-                                    migration_config=migration_config,
-                                    session_id=session_id,
-                                    allow_summarization=st.session_state["allow_summarization"],
-                                    mode=BACKEND_MODE_MIGRATION,
-                                    progress_placeholder=progress_box2,
-                                )
-                            except Exception as e:
-                                logger.exception("Migration agent run after approval failed: %s", e)
-                                st.error("The approved migration action failed.")
-                                st.exception(e)
-                                st.session_state[MIG_PENDING_KEY] = None
-                                st.rerun()
-
-                        progress_box2.empty()
-
-                        run_log2 = st.session_state.get(_LAST_RUN_LOG_STATE_KEY)
-
-                        if tr2:
-                            render_tool_result(tr2)
-                        render_run_log(run_log2)
-                        st.markdown("**Summary**")
-                        st.markdown(reply2)
-
-                        st.session_state[MIG_MESSAGES_KEY].append(
-                            {"role": "assistant", "content": reply2, "tool_result": tr2, "run_log": run_log2}
-                        )
-
-                        st.session_state[MIG_HIDE_USER_IDX_KEY] = st.session_state[MIG_LAST_USER_IDX_KEY]
-                        st.session_state[MIG_PENDING_KEY] = None
-                        st.rerun()
-
-                with cols[1]:
-                    if st.button("Cancel migration"):
-                        st.session_state[MIG_PENDING_KEY] = None
-                        st.session_state[MIG_MESSAGES_KEY].append({"role": "assistant", "content": "Migration action cancelled."})
-                        st.rerun()
-            else:
-                run_log = st.session_state.get(_LAST_RUN_LOG_STATE_KEY)
-
-                if tr:
-                    render_tool_result(tr)
-                render_run_log(run_log)
-
-                st.markdown("**Summary**")
-                st.markdown(reply)
-
-                st.session_state[MIG_MESSAGES_KEY].append(
-                    {"role": "assistant", "content": reply, "tool_result": tr, "run_log": run_log}
-                )
+    if mig_input and not st.session_state.get(_MIG_TURN_IN_PROGRESS_KEY):
+        logger.debug("[MIGRATION] User request: %s", mig_input)
+        # Typing instead of clicking answers the pending dialog with a topic
+        # change: drop the stale gate now, so it cannot re-render under the new
+        # turn's answer and fire an operation the user has moved past.
+        st.session_state[MIG_PENDING_KEY] = None
+        st.session_state[MIG_APPROVED_KEY] = set()
+        st.session_state[MIG_MESSAGES_KEY].append({"role": "user", "content": mig_input})
+        _launch_migration_turn(
+            meta={"kind": "input", "clear_pending": True},
+            messages=st.session_state[MIG_MESSAGES_KEY],
+            user_input=mig_input,
+            tenant_config=None,
+            approved_keys=None,
+            migration_config=migration_config,
+            session_id=session_id,
+            allow_summarization=st.session_state["allow_summarization"],
+            mode=BACKEND_MODE_MIGRATION,
+        )
+        st.rerun()

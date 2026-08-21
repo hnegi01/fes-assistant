@@ -1,0 +1,156 @@
+[
+  {
+    "tool_id": "wellcheck.check_dashboard_structure",
+    "description": "Analyze the structure of one or more dashboards.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more dashboard references to analyze. Each reference can be: - a Sisense dashboard ID, or - a dashboard title (name). At least one dashboard reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+        }
+      },
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Analyze the structure of the dashboard titled 'Sales Overview'.",
+        "arguments": {
+          "dashboards": [
+            "Sales Overview"
+          ]
+        },
+        "notes": "This call analyzes the structure of the 'Sales Overview' dashboard, counting widget types and identifying child dashboards."
+      },
+      {
+        "user_query": "Check the structure of dashboards with IDs 'dashboard123' and 'dashboard456'.",
+        "arguments": {
+          "dashboards": [
+            "dashboard123",
+            "dashboard456"
+          ]
+        },
+        "notes": "This call processes two dashboards by their IDs, providing insights into widget counts and jump-to-dashboard relationships."
+      },
+      {
+        "user_query": "Analyze the complexity of the dashboard named 'Marketing Performance'.",
+        "arguments": {
+          "dashboards": [
+            "Marketing Performance"
+          ]
+        },
+        "notes": "This call evaluates the 'Marketing Performance' dashboard for widget counts and child dashboard references, useful for understanding its structure."
+      }
+    ]
+  },
+  {
+    "tool_id": "wellcheck.check_dashboard_widget_counts",
+    "description": "Compute widget counts for one or more dashboards.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more dashboard references to analyze. Each reference can be: - a Sisense dashboard ID, or - a dashboard title (name). At least one dashboard reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+        }
+      },
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Count the widgets on the 'Sales Overview' and 'Marketing Performance' dashboards.",
+        "arguments": {
+          "dashboards": [
+            "Sales Overview",
+            "Marketing Performance"
+          ]
+        },
+        "notes": "This call analyzes the widget counts for the dashboards titled 'Sales Overview' and 'Marketing Performance'. Use this when you need a quick summary of widget counts for specific dashboards by title."
+      },
+      {
+        "user_query": "Can you check the widget count for the dashboard with ID 'dashboard_12345'?",
+        "arguments": {
+          "dashboards": [
+            "dashboard_12345"
+          ]
+        },
+        "notes": "This call retrieves the widget count for the dashboard identified by the Sisense dashboard ID 'dashboard_12345'. Use this when you know the dashboard ID and want to analyze its widget count."
+      },
+      {
+        "user_query": "I need to know the widget counts for dashboards 'dashboard_67890' and 'Executive Summary'.",
+        "arguments": {
+          "dashboards": [
+            "dashboard_67890",
+            "Executive Summary"
+          ]
+        },
+        "notes": "This call computes widget counts for a mix of dashboard references: one by ID ('dashboard_67890') and one by title ('Executive Summary'). Use this when you have a combination of IDs and titles to analyze."
+      }
+    ]
+  },
+  {
+    "tool_id": "wellcheck.check_pivot_widget_fields",
+    "description": "Analyze pivot widgets on one or more dashboards and report those with many fields.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more dashboard references to analyze. Each reference can be: - a Sisense dashboard ID, or - a dashboard title (name). At least one dashboard reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+        },
+        "max_fields": {
+          "type": "integer",
+          "description": "Threshold for the number of fields on a pivot widget. Only pivot widgets with more than this number of fields are included in the returned data. Defaults to 20."
+        }
+      },
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Find pivot widgets with more than 25 fields on the 'Sales Dashboard' and 'Marketing Dashboard' dashboards.",
+        "arguments": {
+          "dashboards": [
+            "Sales Dashboard",
+            "Marketing Dashboard"
+          ],
+          "max_fields": 25
+        },
+        "notes": "This call analyzes the 'Sales Dashboard' and 'Marketing Dashboard' to identify pivot widgets with more than 25 fields. Use this to ensure widgets remain manageable and performant."
+      },
+      {
+        "user_query": "Check all pivot widgets on dashboard ID '12345' for excessive fields.",
+        "arguments": {
+          "dashboards": [
+            "12345"
+          ],
+          "max_fields": 20
+        },
+        "notes": "This call checks the dashboard with ID '12345' for pivot widgets that exceed the default threshold of 20 fields. Useful for auditing a specific dashboard by its ID."
+      },
+      {
+        "user_query": "Audit pivot widgets on multiple dashboards for field counts above 30.",
+        "arguments": {
+          "dashboards": [
+            "Finance Dashboard",
+            "Operations Dashboard",
+            "HR Dashboard"
+          ],
+          "max_fields": 30
+        },
+        "notes": "This call reviews the 'Finance Dashboard', 'Operations Dashboard', and 'HR Dashboard' for pivot widgets with more than 30 fields. Ideal for a broader audit across multiple dashboards."
+      }
+    ]
+  }
+]

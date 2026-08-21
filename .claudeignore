@@ -1,0 +1,31 @@
+# Virtual environment — thousands of package files, never useful
+venv_pysisense_chatbot/
+
+# Python bytecode
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Runtime logs — changes constantly, not useful for coding
+logs/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+
+# PySisense SDK reference docs — large, read explicitly only when working on SDK integration
+docs_src/
+
+# Tool registry JSONs — 4000+ lines each, read explicitly when working on tool-specific features
+config/tools.registry.with_examples.json
+config/tools.registry.json
+
+# Roadmap artifact HTML — read explicitly when updating the roadmap
+.claude/v2-v3-roadmap.html
+
+# Images
+images/
+
+# OS / IDE
+.DS_Store
+.vscode/

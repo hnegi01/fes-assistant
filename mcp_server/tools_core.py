@@ -19,9 +19,9 @@ import json
 import logging
 import os
 import threading
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Tuple
+from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Set, Tuple
 
 import urllib3
 
@@ -130,7 +130,7 @@ def _setup_logger() -> None:
     logger.setLevel(log_level)
     logger.propagate = False
 
-    if any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
+    if any(isinstance(h, TimedRotatingFileHandler) for h in logger.handlers):
         logger.info(
             "mcp_server logger already configured at level %s (env %s)",
             log_level_name,
@@ -138,10 +138,10 @@ def _setup_logger() -> None:
         )
         return
 
-    fh = RotatingFileHandler(
+    fh = TimedRotatingFileHandler(
         LOG_DIR / "tools_core.log",
-        maxBytes=10 * 1024 * 1024,
-        backupCount=5,
+        when="midnight",  # daily file; 7 dated backups = 7 days kept, older deleted
+        backupCount=7,
         encoding="utf-8",
     )
     fh.setLevel(log_level)
@@ -159,18 +159,15 @@ def _setup_logger() -> None:
 _setup_logger()
 
 
-def _log_json_truncated(label: str, obj: Any, max_chars: int = 2000) -> None:
-    """
-    Log JSON at debug level, truncated to avoid huge log spam.
-    """
+def _log_json(label: str, obj: Any) -> None:
+    """Debug-log the FULL JSON, secrets scrubbed HERE — this helper used to dump
+    its input raw and rely on every caller remembering to scrub first. With full
+    payloads that is one forgotten call away from a token on disk, so scrubbing
+    is unconditional. Disk is bounded by the 7-day rotation."""
     try:
-        text = json.dumps(obj, indent=2, default=str)
+        text = json.dumps(_scrub_secrets(obj), indent=2, default=str)
     except Exception:
         text = str(obj)
-
-    if len(text) > max_chars:
-        text = text[:max_chars] + "... [truncated]"
-
     logger.debug("%s:\n%s", label, text)
 
 
@@ -230,7 +227,12 @@ REGISTRY_JSON = os.environ.get("PYSISENSE_REGISTRY_PATH", "config/tools.registry
 ALLOW_MUTATIONS_ENV_VAR = "PYSISENSE_ALLOW_MUTATIONS"
 ALLOW_MUTATIONS_DEFAULT = "true"
 
-ALLOW_MODULES = {m.strip() for m in os.environ.get("ALLOW_MODULES", "").split(",") if m.strip()}
+
+# Curated tool surface. The backend reads the same file (see
+# backend/agent/_registry.py::allowed_tool_ids) but this process enforces it
+# independently: the MCP server is the dispatch boundary, so a delisted tool must
+# be unreachable even from a client that is not our backend.
+ALLOWLIST_PATH = os.environ.get("FES_TOOL_ALLOWLIST", "config/allowed_tools.txt")
 
 
 def _env_flag(name: str, default: str = "false") -> bool:
@@ -240,22 +242,11 @@ def _env_flag(name: str, default: str = "false") -> bool:
     return os.getenv(name, default).strip().lower() in ("1", "true", "yes", "y", "on")
 
 
-def _env_bool(name: str, default: bool) -> bool:
-    """
-    Parse a boolean-ish environment variable with a Python bool default.
-    """
-    raw = os.getenv(name)
-    if raw is None or raw.strip() == "":
-        return default
-    return raw.strip().lower() in ("1", "true", "yes", "y", "on")
-
-
 ALLOW_MUTATIONS = _env_flag(ALLOW_MUTATIONS_ENV_VAR, ALLOW_MUTATIONS_DEFAULT)
 
 logger.info("Config:")
 logger.info("  REGISTRY_JSON      = %s", REGISTRY_JSON)
 logger.info("  ALLOW_MUTATIONS    = %s (env %s)", ALLOW_MUTATIONS, ALLOW_MUTATIONS_ENV_VAR)
-logger.info("  ALLOW_MODULES      = %s", ",".join(sorted(ALLOW_MODULES)) or "<all>")
 
 
 # Audit logger for mutating operations (separate file)
@@ -269,23 +260,6 @@ if not any(isinstance(h, logging.FileHandler) for h in audit_logger.handlers):
     audit_fmt = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     audit_fh.setFormatter(audit_fmt)
     audit_logger.addHandler(audit_fh)
-
-
-# -----------------------------------------------------------------------------
-# Default tenant env fallbacks (useful for Claude Desktop)
-# -----------------------------------------------------------------------------
-DEFAULT_TENANT_ENABLED_ENV_VAR = "PYSISENSE_USE_DEFAULT_TENANT"
-DEFAULT_TENANT_DOMAIN_ENV_VAR = "PYSISENSE_DEFAULT_DOMAIN"
-DEFAULT_TENANT_TOKEN_ENV_VAR = "PYSISENSE_DEFAULT_TOKEN"
-DEFAULT_TENANT_SSL_ENV_VAR = "PYSISENSE_DEFAULT_SSL"
-
-DEFAULT_MIGRATION_TENANTS_ENABLED_ENV_VAR = "PYSISENSE_USE_DEFAULT_MIGRATION_TENANTS"
-DEFAULT_SOURCE_DOMAIN_ENV_VAR = "PYSISENSE_DEFAULT_SOURCE_DOMAIN"
-DEFAULT_SOURCE_TOKEN_ENV_VAR = "PYSISENSE_DEFAULT_SOURCE_TOKEN"
-DEFAULT_SOURCE_SSL_ENV_VAR = "PYSISENSE_DEFAULT_SOURCE_SSL"
-DEFAULT_TARGET_DOMAIN_ENV_VAR = "PYSISENSE_DEFAULT_TARGET_DOMAIN"
-DEFAULT_TARGET_TOKEN_ENV_VAR = "PYSISENSE_DEFAULT_TARGET_TOKEN"
-DEFAULT_TARGET_SSL_ENV_VAR = "PYSISENSE_DEFAULT_TARGET_SSL"
 
 
 # -----------------------------------------------------------------------------
@@ -342,25 +316,36 @@ STREAMING_TOOL_IDS = {
 _STREAM_SENTINEL = object()
 
 
-def _tool_supports_emit(func: Callable[..., Any]) -> bool:
-    """
-    Check whether the resolved callable supports an `emit` callback.
-    """
-    return _callable_supports_emit(func)
-
-
 # -----------------------------------------------------------------------------
 # SDK imports / init
 # -----------------------------------------------------------------------------
 try:
-    from pysisense import SisenseClient, AccessManagement, Dashboard, DataModel, Migration, WellCheck
+    from pysisense import *  # noqa: F401, F403 — brings in all facade classes from __all__
+    from pysisense import SisenseClient  # explicit re-import for static analysis
 except Exception as exc:
     logger.exception("Failed to import pysisense SDK")
     raise RuntimeError(f"Failed to import pysisense SDK: {exc}") from exc
 
 logger.info("pysisense SDK imported successfully. Clients will be created from inline connection at runtime.")
 
-SUPPORTED_MODULES = ["access", "dashboard", "datamodel", "migration", "wellcheck"]
+# Maps registry module key → facade class.
+# Migration is excluded here — it uses a different constructor (source_client/target_client).
+# To add a new module: add ONE line here.
+_MODULE_CLASSES: Dict[str, type] = {
+    "access_management": AccessManagement,  # noqa: F405, F821
+    "blox": Blox,  # noqa: F405, F821
+    "custom_code": CustomCode,  # noqa: F405, F821
+    "dashboard": Dashboard,  # noqa: F405, F821
+    "datamodel": DataModel,  # noqa: F405, F821
+    "encryption": Encryption,  # noqa: F405, F821
+    "folder": Folder,  # noqa: F405, F821
+    "metadata": Metadata,  # noqa: F405, F821
+    "plugins": Plugins,  # noqa: F405, F821
+    "queries": Queries,  # noqa: F405, F821
+    "wellcheck": WellCheck,  # noqa: F405, F821
+}
+
+SUPPORTED_MODULES = sorted([*_MODULE_CLASSES.keys(), "migration"])
 
 
 # -----------------------------------------------------------------------------
@@ -400,9 +385,7 @@ def _load_registry(path: str) -> List[Dict[str, Any]]:
             payload = json.load(f)
     except FileNotFoundError as exc:
         logger.exception("Registry file not found")
-        raise RuntimeError(
-            f"Registry file not found: {path}. Generate it before starting the server."
-        ) from exc
+        raise RuntimeError(f"Registry file not found: {path}. Generate it before starting the server.") from exc
     except Exception as exc:
         logger.exception("Failed to load registry JSON")
         raise RuntimeError(f"Failed to load registry JSON: {exc}") from exc
@@ -413,11 +396,43 @@ def _load_registry(path: str) -> List[Dict[str, Any]]:
     return payload
 
 
+def _load_allowlist(path: str) -> Optional[Set[str]]:
+    """
+    Read the curated tool allowlist: one tool_id per line, '#' starts a comment.
+
+    Returns None when the file is absent — meaning no allowlist is in force and
+    every registry tool is exposed. A missing file must not silently empty the
+    tool surface, so "absent" is allow-all, not deny-all.
+    """
+    p = Path(path)
+    if not p.is_absolute():
+        p = ROOT_DIR / p
+    if not p.exists():
+        logger.warning(
+            "Tool allowlist not found at %s — ALL registry tools are exposed. "
+            "Create it with: python scripts/04_generate_tool_allowlist.py --init",
+            p,
+        )
+        return None
+    try:
+        ids = set()
+        for line in p.read_text(encoding="utf-8").splitlines():
+            entry = line.split("#", 1)[0].strip()
+            if entry:
+                ids.add(entry)
+        logger.info("Loaded tool allowlist: %d tool(s) permitted (path=%s)", len(ids), p)
+        return ids
+    except Exception:
+        logger.exception("Failed to read tool allowlist %s — allowing all tools", p)
+        return None
+
+
 REGISTRY = _load_registry(REGISTRY_JSON)
+ALLOWED_TOOL_IDS = _load_allowlist(ALLOWLIST_PATH)
 
 TOOLS_BY_ID: Dict[str, Dict[str, Any]] = {}
 _skipped_missing = 0
-_skipped_module_filter = 0
+_skipped_allowlist = 0
 
 for row in REGISTRY:
     tool_id = row.get("tool_id")
@@ -428,8 +443,8 @@ for row in REGISTRY:
         _skipped_missing += 1
         continue
 
-    if ALLOW_MODULES and module not in ALLOW_MODULES:
-        _skipped_module_filter += 1
+    if ALLOWED_TOOL_IDS is not None and tool_id not in ALLOWED_TOOL_IDS:
+        _skipped_allowlist += 1
         continue
 
     normalized = dict(row)
@@ -449,7 +464,7 @@ logger.info("Registry summary:")
 logger.info("  Total rows in JSON      : %d", len(REGISTRY))
 logger.info("  Loaded into TOOLS_BY_ID : %d", len(TOOLS_BY_ID))
 logger.info("  Skipped (missing fields): %d", _skipped_missing)
-logger.info("  Skipped (ALLOW_MODULES) : %d", _skipped_module_filter)
+logger.info("  Skipped (allowlist)     : %d", _skipped_allowlist)
 
 
 # -----------------------------------------------------------------------------
@@ -507,31 +522,16 @@ def _extract_tenant_from_arguments(arguments: Dict[str, Any]) -> Dict[str, Any]:
     if ssl is None:
         ssl = True
 
-    # Optional default tenant for clients that cannot easily provide args (e.g., Claude Desktop).
-    if (not domain or not token) and _env_flag(DEFAULT_TENANT_ENABLED_ENV_VAR, "false"):
-        env_domain = os.getenv(DEFAULT_TENANT_DOMAIN_ENV_VAR)
-        env_token = os.getenv(DEFAULT_TENANT_TOKEN_ENV_VAR)
-        env_ssl = _env_bool(DEFAULT_TENANT_SSL_ENV_VAR, default=ssl)
-
-        if not domain:
-            domain = env_domain
-        if not token:
-            token = env_token
-        ssl = env_ssl
-
-        if domain and token:
-            logger.info("Using DEFAULT tenant connection from env: domain=%s ssl=%s", domain, ssl)
-
+    # Credentials come from the caller (the backend injects the UI's sidebar
+    # config) — NEVER from env. An env fallback existed for credential-less
+    # clients (Claude Desktop); removed 2026-08-14: with the assistant as the
+    # only client, a fallback just turns "creds missing" into a silent write
+    # against whatever the env last pointed at.
     if domain and token:
         logger.info("Using tenant connection: domain=%s ssl=%s", domain, ssl)
         return {"domain": domain, "token": token, "ssl": ssl}
 
-    logger.error(
-        "Missing tenant domain/token. Pass domain/token in tool args or set %s=true and %s/%s in env.",
-        DEFAULT_TENANT_ENABLED_ENV_VAR,
-        DEFAULT_TENANT_DOMAIN_ENV_VAR,
-        DEFAULT_TENANT_TOKEN_ENV_VAR,
-    )
+    logger.error("Missing tenant domain/token. Pass domain/token in tool args.")
     raise RuntimeError("Tenant domain and token are required for SisenseClient.from_connection.")
 
 
@@ -549,26 +549,12 @@ def _extract_migration_tenants_from_arguments(arguments: Dict[str, Any]) -> Tupl
     tgt_token = arguments.pop("target_token", None)
     tgt_ssl_raw = arguments.pop("target_ssl", _MISSING)
 
-    # Respect explicit caller values
+    # Respect explicit caller values. Source/target credentials come from the
+    # caller only — the env fallback (PYSISENSE_USE_DEFAULT_MIGRATION_TENANTS)
+    # was removed 2026-08-14: a silent default TARGET is where migration
+    # writes land when config is missing, which is exactly the wrong failure mode.
     src_ssl = True if src_ssl_raw is _MISSING else bool(src_ssl_raw)
     tgt_ssl = True if tgt_ssl_raw is _MISSING else bool(tgt_ssl_raw)
-
-    if _env_flag(DEFAULT_MIGRATION_TENANTS_ENABLED_ENV_VAR, "false"):
-        if not src_domain:
-            src_domain = os.getenv(DEFAULT_SOURCE_DOMAIN_ENV_VAR)
-        if not src_token:
-            src_token = os.getenv(DEFAULT_SOURCE_TOKEN_ENV_VAR)
-
-        if src_ssl_raw is _MISSING:
-            src_ssl = _env_bool(DEFAULT_SOURCE_SSL_ENV_VAR, default=src_ssl)
-
-        if not tgt_domain:
-            tgt_domain = os.getenv(DEFAULT_TARGET_DOMAIN_ENV_VAR)
-        if not tgt_token:
-            tgt_token = os.getenv(DEFAULT_TARGET_TOKEN_ENV_VAR)
-
-        if tgt_ssl_raw is _MISSING:
-            tgt_ssl = _env_bool(DEFAULT_TARGET_SSL_ENV_VAR, default=tgt_ssl)
 
     src = {"domain": src_domain, "token": src_token, "ssl": src_ssl}
     tgt = {"domain": tgt_domain, "token": tgt_token, "ssl": tgt_ssl}
@@ -606,18 +592,11 @@ def _get_module_instance(module: str, tenant: Dict[str, Any]) -> Any:
     """
     Return an SDK module instance for the requested module.
     """
+    klass = _MODULE_CLASSES.get(module)
+    if klass is None:
+        raise LookupError(f"Module '{module}' not recognized.")
     client = _build_sisense_client(tenant)
-
-    if module == "access":
-        return AccessManagement(api_client=client)
-    if module == "dashboard":
-        return Dashboard(api_client=client)
-    if module == "datamodel":
-        return DataModel(api_client=client)
-    if module == "wellcheck":
-        return WellCheck(api_client=client)
-
-    raise LookupError(f"Module '{module}' not recognized.")
+    return klass(api_client=client)
 
 
 # -----------------------------------------------------------------------------
@@ -643,7 +622,7 @@ def _resolve_sdk_callable(
         src_tenant, tgt_tenant = _extract_migration_tenants_from_arguments(arguments)
         src_client = _build_sisense_client(src_tenant)
         tgt_client = _build_sisense_client(tgt_tenant)
-        instance = Migration(source_client=src_client, target_client=tgt_client, debug=SDK_DEBUG)
+        instance = Migration(source_client=src_client, target_client=tgt_client, debug=SDK_DEBUG)  # noqa: F405
     else:
         tenant = _extract_tenant_from_arguments(arguments)
         instance = _get_module_instance(module, tenant)
@@ -662,6 +641,21 @@ def _resolve_sdk_callable(
 
     func = getattr(instance, method)
     return func, meta, coerced
+
+
+def _sdk_error_payload(tool_id: str, result: Any) -> Optional[Dict[str, Any]]:
+    """
+    SDK methods that fail return {"error": "..."} instead of raising — sometimes
+    wrapped in a single-item list ([{"error": "..."}]) by list-returning methods.
+    Detect both patterns and normalise to ok=False so callers don't have to
+    inspect the result themselves.
+    """
+    candidate = result
+    if isinstance(result, list) and len(result) == 1:
+        candidate = result[0]
+    if isinstance(candidate, dict) and list(candidate.keys()) == ["error"]:
+        return {"tool_id": tool_id, "ok": False, "error": candidate["error"], "error_type": "SDKError"}
+    return None
 
 
 def _add_unused_columns_summary(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -692,77 +686,33 @@ def _add_unused_columns_summary(payload: Dict[str, Any]) -> Dict[str, Any]:
     return payload
 
 
-def invoke_tool(tool_id: str, arguments: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """
-    Invoke a tool synchronously and return a normalized payload.
-    """
-    try:
-        safe_args = copy.deepcopy(arguments or {})
-    except Exception:
-        safe_args = dict(arguments or {})
-
-    logger.info("Dispatching tool call: tool_id=%s", tool_id)
-    _log_json_truncated("Incoming arguments (scrubbed)", _scrub_secrets(safe_args))
-
-    try:
-        func, meta, coerced = _resolve_sdk_callable(tool_id, safe_args)
-
-        if meta.get("mutates"):
-            audit_logger.info(
-                "EXECUTING mutation tool=%s args=%s",
-                tool_id,
-                json.dumps(_scrub_secrets(coerced), default=str),
-            )
-
-        result = func(**coerced)
-        _log_json_truncated("SDK method result (truncated)", result)
-
-        payload: Dict[str, Any] = {"tool_id": tool_id, "ok": True, "result": result}
-
-        if tool_id == "access.get_unused_columns":
-            return _add_unused_columns_summary(payload)
-
-        return payload
-
-    except TypeError as te:
-        try:
-            expected = str(inspect.signature(func))  # type: ignore[name-defined]
-        except Exception:
-            expected = None
-
-        msg = f"Argument error: {te}"
-        if expected:
-            msg += f" | expected signature: {expected}"
-
-        return {"tool_id": tool_id, "ok": False, "error": msg, "error_type": "TypeError"}
-
-    except Exception as exc:
-        return {"tool_id": tool_id, "ok": False, "error": str(exc), "error_type": type(exc).__name__}
-
-
-def invoke_tool_with_emit(
+def invoke_tool(
     tool_id: str,
-    arguments: Optional[Dict[str, Any]],
-    emit: Callable[[Dict[str, Any]], None],
+    arguments: Optional[Dict[str, Any]] = None,
+    emit: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     """
-    Invoke a tool synchronously, injecting an emit callback when supported.
+    Invoke a tool synchronously and return a normalized payload.
+
+    When `emit` is given and the SDK method supports it, it is injected as the
+    progress callback. (This absorbed invoke_tool_with_emit, 2026-08-17 — the
+    two bodies were ~60 duplicated lines apart from the injection block.)
     """
     try:
         safe_args = copy.deepcopy(arguments or {})
     except Exception:
         safe_args = dict(arguments or {})
 
-    logger.info("Dispatching tool call (with emit): tool_id=%s", tool_id)
-    _log_json_truncated("Incoming arguments (scrubbed)", _scrub_secrets(safe_args))
+    logger.info("Dispatching tool call: tool_id=%s emit=%s", tool_id, emit is not None)
+    _log_json("Incoming arguments (scrubbed)", _scrub_secrets(safe_args))
 
     try:
         func, meta, coerced = _resolve_sdk_callable(tool_id, safe_args)
 
-        if emit is not None and _tool_supports_emit(func):
+        if emit is not None and _callable_supports_emit(func):
             coerced["emit"] = emit
         elif emit is not None and tool_id in STREAMING_TOOL_IDS:
-            try:
+            with contextlib.suppress(Exception):
                 emit(
                     {
                         "type": "warning",
@@ -770,8 +720,6 @@ def invoke_tool_with_emit(
                         "message": f"Tool '{tool_id}' does not accept emit; running without SDK progress callbacks.",
                     }
                 )
-            except Exception:
-                pass
 
         if meta.get("mutates"):
             audit_logger.info(
@@ -781,11 +729,20 @@ def invoke_tool_with_emit(
             )
 
         result = func(**coerced)
-        _log_json_truncated("SDK method result (truncated)", result)
+        _log_json("SDK method result (full, scrubbed)", result)
+
+        err = _sdk_error_payload(tool_id, result)
+        if err:
+            return err
 
         payload: Dict[str, Any] = {"tool_id": tool_id, "ok": True, "result": result}
 
-        if tool_id == "access.get_unused_columns":
+        # The one sanctioned per-tool special case: this tool's answer IS a
+        # count, and the LLM-bound payload truncates long lists, so the counts
+        # must be precomputed or the model cannot answer. Evaluated for
+        # relocation 2026-08-17 and kept: moving it changes the UI-visible
+        # payload for no structural gain now that there is a single call site.
+        if tool_id == "access_management.get_unused_columns":
             return _add_unused_columns_summary(payload)
 
         return payload
@@ -837,7 +794,7 @@ async def invoke_tool_async(
 
     async with sem:
         if emit_cb is not None and tool_id in STREAMING_TOOL_IDS:
-            return await asyncio.to_thread(invoke_tool_with_emit, tool_id, safe_args, emit_cb)
+            return await asyncio.to_thread(invoke_tool, tool_id, safe_args, emit_cb)
 
         return await asyncio.to_thread(invoke_tool, tool_id, safe_args)
 
@@ -907,7 +864,7 @@ async def invoke_tool_stream_async(
         async def _runner() -> None:
             try:
                 if tool_id in STREAMING_TOOL_IDS:
-                    final_payload = await asyncio.to_thread(invoke_tool_with_emit, tool_id, safe_args, _emit)
+                    final_payload = await asyncio.to_thread(invoke_tool, tool_id, safe_args, _emit)
                 else:
                     final_payload = await asyncio.to_thread(invoke_tool, tool_id, safe_args)
                 _finish(final_payload)

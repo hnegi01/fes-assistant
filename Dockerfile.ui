@@ -7,7 +7,11 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     STREAMLIT_SERVER_PORT=8501 \
-    STREAMLIT_SERVER_ADDRESS=0.0.0.0
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
+    # "viewer" hides the developer toolbar + its C/R keyboard shortcuts that
+    # otherwise hijack Ctrl+C (the .streamlit/config.toml equivalent for local runs).
+    STREAMLIT_CLIENT_TOOLBAR_MODE=viewer \
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
 
 # 3) Workdir inside container
 WORKDIR /app
@@ -17,9 +21,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
  && rm -rf /var/lib/apt/lists/*
 
-# 5) Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# 5) Install uv (pinned) and the locked Python dependencies.
+#    pyproject.toml + uv.lock are the source of truth — the build is exactly
+#    reproducible (`--frozen` refuses to run if the lock is out of date).
+COPY --from=ghcr.io/astral-sh/uv:0.11 /uv /uvx /bin/
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
+# Put the project venv first on PATH so uvicorn/streamlit resolve from it.
+ENV PATH="/app/.venv/bin:$PATH"
 
 # 6) Copy only what the UI needs
 COPY frontend ./frontend

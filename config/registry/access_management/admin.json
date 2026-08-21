@@ -1,0 +1,115 @@
+[
+  {
+    "tool_id": "access_management.create_schedule_build",
+    "description": "Create a schedule build for a DataModel.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "The name of the DataModel."
+        },
+        "build_type": {
+          "type": "string",
+          "description": "Type of the build, one of ``\"ACCUMULATE\"``, ``\"FULL\"``, or ``\"SCHEMA_CHANGES\"``. Defaults to ``\"ACCUMULATE\"``."
+        },
+        "days": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Keyword-only. List of days for a cron schedule, e.g. ``[\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"]`` or ``[\"*\"]`` for all days."
+        },
+        "hour": {
+          "type": "integer",
+          "description": "Keyword-only. Hour in 24-hour format (UTC) for a cron schedule."
+        },
+        "minute": {
+          "type": "integer",
+          "description": "Keyword-only. Minute of the hour (UTC) for a cron schedule."
+        },
+        "interval_days": {
+          "type": "integer",
+          "description": "Keyword-only. Interval in days for an interval-based schedule."
+        },
+        "interval_hours": {
+          "type": "integer",
+          "description": "Keyword-only. Interval in hours for an interval-based schedule."
+        },
+        "interval_minutes": {
+          "type": "integer",
+          "description": "Keyword-only. Interval in minutes for an interval-based schedule."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Schedule a full build for the 'SalesDataModel' data model every Monday at 3:00 UTC.",
+        "arguments": {
+          "datamodel_name": "SalesDataModel",
+          "build_type": "FULL",
+          "days": [
+            "MON"
+          ],
+          "hour": 3,
+          "minute": 0
+        },
+        "notes": "This call schedules a full build of the 'SalesDataModel' to run every Monday at 3:00 AM UTC using a cron-based schedule."
+      },
+      {
+        "user_query": "I need to set up an interval-based build for 'MarketingAnalytics' to run every 2 days and 6 hours. How can I do that?",
+        "arguments": {
+          "datamodel_name": "MarketingAnalytics",
+          "build_type": "ACCUMULATE",
+          "interval_days": 2,
+          "interval_hours": 6
+        },
+        "notes": "This call creates an interval-based schedule for the 'MarketingAnalytics' DataModel to build every 2 days and 6 hours. The build type defaults to 'ACCUMULATE'."
+      },
+      {
+        "user_query": "Can I create a schema changes build for 'FinanceModel' to run daily at 12:30 UTC?",
+        "arguments": {
+          "datamodel_name": "FinanceModel",
+          "build_type": "SCHEMA_CHANGES",
+          "days": [
+            "*"
+          ],
+          "hour": 12,
+          "minute": 30
+        },
+        "notes": "This call schedules a schema changes build for the 'FinanceModel' to run daily at 12:30 PM UTC using a cron-based schedule."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.get_all_dashboard_shares",
+    "description": "Retrieve all dashboard shares, including user and group details for each shared dashboard.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Show me all the dashboards and who they are shared with.",
+        "arguments": {},
+        "notes": "This retrieves a list of all dashboards along with details of the users and groups they are shared with. Useful for auditing dashboard sharing settings."
+      },
+      {
+        "user_query": "I need to see which groups have access to our dashboards.",
+        "arguments": {},
+        "notes": "This call fetches all dashboards and includes group sharing details, making it helpful for understanding group-level access."
+      },
+      {
+        "user_query": "Can I get a list of all users who have access to our dashboards?",
+        "arguments": {},
+        "notes": "This retrieves all dashboards and their associated user sharing details, which is useful for reviewing individual user access."
+      }
+    ]
+  }
+]

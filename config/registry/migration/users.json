@@ -1,0 +1,78 @@
+[
+  {
+    "tool_id": "migration.migrate_all_users",
+    "description": "Migrate all eligible users from the source environment to the target environment using the bulk endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all users from the source environment to the target environment.",
+        "arguments": {},
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
+      },
+      {
+        "user_query": "Copy every eligible user over to the new environment.",
+        "arguments": {},
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
+      }
+    ]
+  },
+  {
+    "tool_id": "migration.migrate_users",
+    "description": "Migrate specific users from the source environment to the target environment.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_name_list": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "email"
+          },
+          "description": "The user identifiers (email addresses) to migrate."
+        }
+      },
+      "required": [
+        "user_name_list"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate the users john.doe@example.com and jane.smith@example.com to the target environment.",
+        "arguments": {
+          "user_name_list": [
+            "john.doe@example.com",
+            "jane.smith@example.com"
+          ]
+        },
+        "notes": "This call migrates the specified users from the source environment to the target environment, ensuring their roles and group memberships are mapped correctly."
+      },
+      {
+        "user_query": "Transfer the users admin@example.com and support@example.com to the new Sisense instance.",
+        "arguments": {
+          "user_name_list": [
+            "admin@example.com",
+            "support@example.com"
+          ]
+        },
+        "notes": "Use this call when moving administrative and support users to a new Sisense environment while preserving their configurations."
+      },
+      {
+        "user_query": "Migrate the users sales.team@example.com, marketing.lead@example.com, and hr.manager@example.com to the target environment.",
+        "arguments": {
+          "user_name_list": [
+            "sales.team@example.com",
+            "marketing.lead@example.com",
+            "hr.manager@example.com"
+          ]
+        },
+        "notes": "This operation is ideal for migrating multiple department leads to the target environment in one batch."
+      }
+    ]
+  }
+]

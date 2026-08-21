@@ -1,0 +1,91 @@
+[
+  {
+    "tool_id": "plugins.restore_snapshot",
+    "description": "Restore plugin states to exactly match a previously saved snapshot.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "snapshot": {
+          "type": "object",
+          "description": "A snapshot dict as returned by :meth:`save_snapshot`, containing at minimum a ``\"plugins\"`` key with a list of ``folderName`` values for the plugins that should be enabled. All other plugins will be disabled."
+        },
+        "bulk": {
+          "type": "boolean",
+          "description": "When ``True`` (default), all enable and disable changes are sent in a single PATCH request. When ``False``, one PATCH request is made per plugin change."
+        }
+      },
+      "required": [
+        "snapshot"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Restore the plugin snapshot containing data_connector_v2, custom_theme_manager and audit_logger, in one bulk operation.",
+        "arguments": {
+          "snapshot": {
+            "plugins": [
+              "data_connector_v2",
+              "custom_theme_manager",
+              "audit_logger"
+            ]
+          },
+          "bulk": true
+        },
+        "notes": "This call restores the plugin state to match the provided snapshot, enabling 'data_connector_v2', 'custom_theme_manager', and 'audit_logger' while disabling all other plugins. Changes are sent in a single PATCH request for efficiency."
+      },
+      {
+        "user_query": "Apply a snapshot to enable only the 'geo_visualization' plugin and disable everything else, but send changes one at a time.",
+        "arguments": {
+          "snapshot": {
+            "plugins": [
+              "geo_visualization"
+            ]
+          },
+          "bulk": false
+        },
+        "notes": "This call enables the 'geo_visualization' plugin and disables all others, sending one PATCH request per plugin change. Use this mode if you need granular control or error handling for each change."
+      },
+      {
+        "user_query": "Revert the plugins to a snapshot that includes 'data_exporter' and 'advanced_charts', ensuring all other plugins are turned off.",
+        "arguments": {
+          "snapshot": {
+            "plugins": [
+              "data_exporter",
+              "advanced_charts"
+            ]
+          },
+          "bulk": true
+        },
+        "notes": "This call restores the plugin state to enable 'data_exporter' and 'advanced_charts' while disabling all other plugins. Changes are sent in a single PATCH request for faster execution."
+      }
+    ]
+  },
+  {
+    "tool_id": "plugins.save_snapshot",
+    "description": "Capture the current plugin enable/disable state as a snapshot.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Save the current enabled and disabled state of all plugins as a snapshot so it can be restored later.",
+        "arguments": {},
+        "notes": "This call captures the current enable/disable state of all plugins as a snapshot. Use this when you want to save the current plugin configuration for future restoration."
+      },
+      {
+        "user_query": "I need to back up the current plugin configuration before making changes. How do I do that?",
+        "arguments": {},
+        "notes": "This call creates a snapshot of the current plugin state. It's useful for creating a backup before enabling or disabling plugins."
+      },
+      {
+        "user_query": "Can I save the current plugin setup to ensure I can revert to it later if needed?",
+        "arguments": {},
+        "notes": "This call saves the current state of enabled plugins. Use it to ensure you can revert to the same configuration after making changes."
+      }
+    ]
+  }
+]

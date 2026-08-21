@@ -1,0 +1,79 @@
+[project]
+name = "fes-assistant"
+version = "2.0.0"
+description = "Agentic AI assistant for Sisense administration (planner -> orchestrator loop -> critic over MCP/PySisense)"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "fastapi>=0.123,<0.124",
+    "uvicorn>=0.38,<0.39",
+    "httpx>=0.28,<0.29",
+    "requests>=2.32,<3",
+    "litellm>=1.89,<2",
+    "jsonschema>=4.23,<5",
+    "langsmith>=0.9,<1",
+    "streamlit>=1.52,<1.59",
+    "pysisense==1.0.2",
+    "mcp>=1.24,<1.25",
+    "python-dotenv>=1.0,<2",
+    "PyJWT>=2.10,<3",
+    "python-multipart>=0.0.20,<0.0.21",
+    "pydantic>=2.12,<2.13",
+    "pydantic-settings>=2.12,<2.13",
+    "sse-starlette>=3.0,<4",
+    "pandas>=2.3,<2.4",
+    "numpy>=2.3,<2.4",
+    "PyYAML>=6.0,<7",
+    "anyio==4.11.0",
+    "boto3>=1.35.0",
+    "langgraph>=1.0,<2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0,<10",
+    "ruff>=0.11,<1",
+]
+
+[tool.uv]
+# This repo is an application, not an installable package — uv manages the
+# environment/lock only and never tries to build fes-assistant itself.
+package = false
+# cryptography 49.x has no usable wheel for this platform combo (falls back to
+# a Rust source build that fails behind the corporate proxy); 48.x ships wheels
+# and is what the working environment runs. (Pulled in via mcp -> pyjwt[crypto].)
+constraint-dependencies = [
+    "cryptography<49",
+    # Lock to the litellm series this codebase is verified against (1.89.x);
+    # newer releases resolve to sdists here (wheels age-suppressed by the
+    # security proxy) and require a Rust toolchain build that fails offline.
+    "litellm<1.90",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+# Ruff >=0.16 also formats Python code fences inside Markdown. Our docs use
+# deliberately compact illustrative snippets (e.g. the one-liner /agent/turn
+# harness in .claude/skills/run/SKILL.md); reformatting those adds churn and
+# would let a docs edit fail CI on style. Lint/format Python files only.
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+# E/W = pycodestyle  F = pyflakes  I = import order
+select = ["E", "F", "W", "I"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+# dotenv must be loaded before other imports so env vars are set before any
+# module-level code reads them (e.g. LLM_CONFIG = _build_llm_config() in
+# llm_agent.py). E402 on every import that follows is intentional and correct.
+"backend/api_server.py" = ["E402"]
+"frontend/app.py" = ["E402"]
+"mcp_server/server.py" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+markers = [
+    "integration: marks tests as integration tests (require live stack + real creds)",
+    "eval: planner-behaviour regression battery of real prompts that once failed (subset of integration)",
+]

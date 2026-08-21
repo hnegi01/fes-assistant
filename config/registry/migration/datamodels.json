@@ -1,0 +1,187 @@
+[
+  {
+    "tool_id": "migration.migrate_all_datamodels",
+    "description": "Migrates all data models from the source environment to the target environment in batches.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "dataSecurity",
+              "formulas",
+              "hierarchies",
+              "perspectives"
+            ]
+          },
+          "description": "Dependencies to include in the migration. If None or \"all\", all supported dependencies are included by default. Supported values: - \"dataSecurity\" (includes both Data Security and Scope Configuration) - \"formulas\" (for Formulas) - \"hierarchies\" (for Drill Hierarchies) - \"perspectives\" (for Perspectives)"
+        },
+        "shares": {
+          "type": "boolean",
+          "description": "Whether to also migrate data model shares after the schema import."
+        },
+        "batch_size": {
+          "type": "integer",
+          "description": "Number of data models to migrate per batch."
+        },
+        "sleep_time": {
+          "type": "integer",
+          "description": "Time (in seconds) to sleep between batches."
+        },
+        "action": {
+          "type": "string",
+          "description": "Strategy to handle existing data models in the target environment. - \"overwrite\": Attempts to overwrite an existing model using its original ID via the ``datamodelId`` parameter. If the model is not found in the target environment, it falls back to creating the model. - \"duplicate\": Creates a new model by appending \" (Duplicate)\" to the original name.",
+          "enum": [
+            "overwrite",
+            "duplicate"
+          ]
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all data models with data security and formulas included, and overwrite any existing models in the target environment.",
+        "arguments": {
+          "dependencies": [
+            "dataSecurity",
+            "formulas"
+          ],
+          "action": "overwrite"
+        },
+        "notes": "This call migrates all data models in batches of 10, including data security and formulas, and overwrites existing models in the target environment if they are found."
+      },
+      {
+        "user_query": "I want to migrate all data models, including shares, and duplicate any existing models in the target environment. How can I do this?",
+        "arguments": {
+          "dependencies": null,
+          "shares": true,
+          "batch_size": 20,
+          "sleep_time": 10,
+          "action": "duplicate"
+        },
+        "notes": "This call migrates all data models in batches of 20, includes shares, and duplicates any existing models in the target environment by appending \" (Duplicate)\" to their names."
+      },
+      {
+        "user_query": "Migrate all data models with drill hierarchies and perspectives, overwriting existing models, in batches of 5 with a 2 second pause between batches.",
+        "arguments": {
+          "dependencies": [
+            "hierarchies",
+            "perspectives"
+          ],
+          "shares": false,
+          "batch_size": 5,
+          "sleep_time": 2,
+          "action": "overwrite"
+        },
+        "notes": "This call migrates drill hierarchies and perspectives in batches of 5, overwriting existing models in the target environment, and uses a callback to monitor progress."
+      }
+    ]
+  },
+  {
+    "tool_id": "migration.migrate_datamodels",
+    "description": "Migrates specific data models from the source environment to the target environment.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of data model IDs to migrate. Either `datamodel_ids` or `datamodel_names` must be provided."
+        },
+        "datamodel_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of data model names to migrate. Either `datamodel_ids` or `datamodel_names` must be provided."
+        },
+        "provider_connection_map": {
+          "type": "object",
+          "description": "A dictionary mapping provider names to connection IDs. This allows specifying different connections per provider. Example: { \"Databricks\": \"Connection ID\", \"GoogleBigQuery\": \"Connection ID\" }"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "dataSecurity",
+              "formulas",
+              "hierarchies",
+              "perspectives"
+            ]
+          },
+          "description": "A list of dependencies to include in the migration. If not provided or if \"all\" is passed, all dependencies are selected by default. Possible values: - \"dataSecurity\" (includes both Data Security and Scope Configuration) - \"formulas\" (for Formulas) - \"hierarchies\" (for Drill Hierarchies) - \"perspectives\" (for Perspectives) If left blank or set to \"all\", all dependencies are included by default."
+        },
+        "shares": {
+          "type": "boolean",
+          "description": "Whether to also migrate the data model's shares."
+        },
+        "action": {
+          "type": "string",
+          "description": "Strategy to handle existing data models in the target environment. - \"overwrite\": Attempts to overwrite existing model using its original ID via the datamodelId parameter. If the model is not found in target environment, it will automatically fall back and create the model. - \"duplicate\": Creates a new model by passing a `new_title` to the `newTitle` parameter of the import API. If `new_title` is not provided, the original title will be used with \" (Duplicate)\" appended.",
+          "enum": [
+            "overwrite",
+            "duplicate"
+          ]
+        },
+        "new_title": {
+          "type": "string",
+          "description": "New name for the duplicated data model. Used only when `action='duplicate'`."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate the data models 'SalesData' and 'CustomerAnalytics' along with their shares to the target environment, and overwrite any existing models.",
+        "arguments": {
+          "datamodel_names": [
+            "SalesData",
+            "CustomerAnalytics"
+          ],
+          "shares": true,
+          "action": "overwrite"
+        },
+        "notes": "This call migrates two specific data models by name, includes all dependencies, and overwrites any existing models in the target environment."
+      },
+      {
+        "user_query": "Migrate data models with IDs 'dm_12345' and 'dm_67890' to the target environment, using specific provider connections and duplicating the models with new titles.",
+        "arguments": {
+          "datamodel_ids": [
+            "dm_12345",
+            "dm_67890"
+          ],
+          "provider_connection_map": {
+            "Databricks": "conn_abc123",
+            "GoogleBigQuery": "conn_xyz789"
+          },
+          "action": "duplicate",
+          "new_title": "Migrated Data Model"
+        },
+        "notes": "This call migrates two data models by ID, specifies provider connections for Databricks and Google BigQuery, and duplicates the models with a new title in the target environment."
+      },
+      {
+        "user_query": "Migrate all data models related to 'Finance' and include only formulas and hierarchies as dependencies. Do not migrate shares.",
+        "arguments": {
+          "datamodel_names": [
+            "Finance"
+          ],
+          "dependencies": [
+            "formulas",
+            "hierarchies"
+          ],
+          "shares": false,
+          "action": "overwrite"
+        },
+        "notes": "This call migrates the 'Finance' data model, includes only formulas and hierarchies as dependencies, and avoids migrating shares. Existing models in the target environment will be overwritten."
+      }
+    ]
+  }
+]

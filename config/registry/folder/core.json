@@ -1,0 +1,313 @@
+[
+  {
+    "tool_id": "folder.create_folder",
+    "description": "Create a new Sisense folder.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name for the new folder."
+        },
+        "parent_id": {
+          "type": "string",
+          "description": "OID of the parent folder. When omitted, the folder is created at the root level."
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create a folder named 'Sales Reports' under parent folder 63f2b8c9e4b0a3d2f8e4a123.",
+        "arguments": {
+          "name": "Sales Reports",
+          "parent_id": "63f2b8c9e4b0a3d2f8e4a123"
+        },
+        "notes": "This creates a new folder called 'Sales Reports' as a subfolder of the folder with OID '63f2b8c9e4b0a3d2f8e4a123'."
+      },
+      {
+        "user_query": "Add a new root-level folder called 'Marketing Materials'.",
+        "arguments": {
+          "name": "Marketing Materials"
+        },
+        "notes": "This creates a new folder named 'Marketing Materials' at the root level since no parent_id is provided."
+      },
+      {
+        "user_query": "Create a folder named 'Q4 Analysis' inside the folder with ID '64a1c7e1e4b0b9f3d9f5b456'.",
+        "arguments": {
+          "name": "Q4 Analysis",
+          "parent_id": "64a1c7e1e4b0b9f3d9f5b456"
+        },
+        "notes": "This creates a new folder named 'Q4 Analysis' under the folder with OID '64a1c7e1e4b0b9f3d9f5b456'."
+      }
+    ]
+  },
+  {
+    "tool_id": "folder.delete_folder",
+    "description": "Delete a folder by OID.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "folder_id": {
+          "type": "string",
+          "description": "OID of the folder to delete."
+        }
+      },
+      "required": [
+        "folder_id"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Delete the folder with ID '12345abcde'.",
+        "arguments": {
+          "folder_id": "12345abcde"
+        },
+        "notes": "This call deletes the folder with the specified OID. Ensure the folder is empty or meets the Sisense server's deletion criteria."
+      },
+      {
+        "user_query": "I need to remove an old folder with the ID '67890fghij'. How do I do that?",
+        "arguments": {
+          "folder_id": "67890fghij"
+        },
+        "notes": "Use this to delete the folder identified by the given OID. Verify that the folder is deletable before making this call."
+      },
+      {
+        "user_query": "Can you help me delete the folder with OID 'abc123xyz'?",
+        "arguments": {
+          "folder_id": "abc123xyz"
+        },
+        "notes": "This operation deletes the specified folder. Make sure the folder is empty or satisfies the deletion rules enforced by Sisense."
+      }
+    ]
+  },
+  {
+    "tool_id": "folder.get_all_folders",
+    "description": "Retrieve the full folder tree.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Show me the entire folder structure for organizing dashboards.",
+        "arguments": {},
+        "notes": "This retrieves the full folder hierarchy, including nested folders and dashboards, to help visualize the organization of content in Sisense."
+      },
+      {
+        "user_query": "I need to fetch all folders to check where a specific dashboard is located.",
+        "arguments": {},
+        "notes": "Use this to get a complete list of folders and their nested contents, which can help locate dashboards within the folder structure."
+      },
+      {
+        "user_query": "How can I get a list of all root-level folders and their subfolders?",
+        "arguments": {},
+        "notes": "This call provides a detailed tree of all folders, starting from the root level, and includes any nested folders and dashboards."
+      }
+    ]
+  },
+  {
+    "tool_id": "folder.get_folder_ancestors",
+    "description": "Retrieve folders by a caller-supplied structure value.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "structure": {
+          "type": "string",
+          "description": "Sisense folder structure type for the request."
+        }
+      },
+      "required": [
+        "structure"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Show the ancestor folders for the 'SalesData' structure.",
+        "arguments": {
+          "structure": "SalesData"
+        },
+        "notes": "This call retrieves all ancestor folders for the 'SalesData' structure, which can be useful for understanding the folder hierarchy."
+      },
+      {
+        "user_query": "Can you show me the parent folders for the 'MarketingReports' structure?",
+        "arguments": {
+          "structure": "MarketingReports"
+        },
+        "notes": "Use this call to fetch the hierarchy of folders leading up to the 'MarketingReports' structure, helping to locate related folders."
+      },
+      {
+        "user_query": "I need to find the folder hierarchy for the 'FinanceDocs' structure.",
+        "arguments": {
+          "structure": "FinanceDocs"
+        },
+        "notes": "This call is helpful for identifying the ancestor folders associated with the 'FinanceDocs' structure, aiding in navigation or organization."
+      }
+    ]
+  },
+  {
+    "tool_id": "folder.get_folder_id",
+    "description": "Retrieve a single folder by OID.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "folder_id": {
+          "type": "string",
+          "description": "OID of the folder to retrieve."
+        }
+      },
+      "required": [
+        "folder_id"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Fetch the details of the folder with ID '12345abcde'.",
+        "arguments": {
+          "folder_id": "12345abcde"
+        },
+        "notes": "This call retrieves metadata for the folder with the specified OID. Use it to fetch details like folder name, permissions, and contents."
+      },
+      {
+        "user_query": "I need to check the metadata of the folder with ID '67890fghij'. How do I do that?",
+        "arguments": {
+          "folder_id": "67890fghij"
+        },
+        "notes": "This call is useful for verifying folder properties or ensuring the folder exists before performing other operations."
+      },
+      {
+        "user_query": "Can you get the folder information for the folder ID 'abcdef12345'?",
+        "arguments": {
+          "folder_id": "abcdef12345"
+        },
+        "notes": "This retrieves the folder's metadata, which can include details like its creation date, owner, and associated dashboards."
+      }
+    ]
+  },
+  {
+    "tool_id": "folder.get_folders",
+    "description": "Retrieve folders using a configurable ``structure`` query parameter.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "structure": {
+          "type": "string",
+          "description": "Sisense folder structure type (for example ``\"flat\"`` or ``\"tree\"``). Default is ``\"flat\"``."
+        }
+      },
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Show me all folders in a flat structure.",
+        "arguments": {
+          "structure": "flat"
+        },
+        "notes": "This retrieves all folders in a flat list format, which is useful for simpler workflows or pre-migration scenarios."
+      },
+      {
+        "user_query": "Can I see the folder hierarchy as a tree?",
+        "arguments": {
+          "structure": "tree"
+        },
+        "notes": "This retrieves folders in a hierarchical tree structure, which is helpful for visualizing nested relationships between folders."
+      },
+      {
+        "user_query": "What folders exist in the default structure?",
+        "arguments": {},
+        "notes": "This retrieves folders using the default 'flat' structure since no specific structure parameter is provided."
+      }
+    ]
+  },
+  {
+    "tool_id": "folder.get_navver",
+    "description": "Retrieve the Sisense navigation tree (navver payload).",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Show the navigation tree for our Sisense folders.",
+        "arguments": {},
+        "notes": "This call retrieves the entire navigation tree structure (navver payload) for the Sisense folders. Useful for understanding the folder hierarchy."
+      },
+      {
+        "user_query": "I need to check the folder structure in Sisense for troubleshooting purposes.",
+        "arguments": {},
+        "notes": "Use this call to fetch the navigation tree, which can help identify issues or confirm the folder hierarchy during troubleshooting."
+      },
+      {
+        "user_query": "How can I get the folder hierarchy from Sisense?",
+        "arguments": {},
+        "notes": "This call provides the folder hierarchy in Sisense, allowing users to analyze or document the structure of their navigation tree."
+      }
+    ]
+  },
+  {
+    "tool_id": "folder.update_folder",
+    "description": "Update an existing folder.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "folder_id": {
+          "type": "string",
+          "description": "OID of the folder to update."
+        },
+        "name": {
+          "type": "string",
+          "description": "New display name for the folder."
+        },
+        "parent_id": {
+          "type": "string",
+          "description": "OID of the new parent folder (moves the folder in the tree)."
+        },
+        "owner": {
+          "type": "string",
+          "description": "User OID of the new folder owner."
+        }
+      },
+      "required": [
+        "folder_id"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Rename the folder with ID '12345abcde' to 'Sales Reports'.",
+        "arguments": {
+          "folder_id": "12345abcde",
+          "name": "Sales Reports"
+        },
+        "notes": "This call updates the folder's display name to 'Sales Reports' while leaving its parent folder and owner unchanged."
+      },
+      {
+        "user_query": "I need to move the folder '67890fghij' under a new parent folder with ID '11223klmno'. How can I do that?",
+        "arguments": {
+          "folder_id": "67890fghij",
+          "parent_id": "11223klmno"
+        },
+        "notes": "This call moves the folder to a new parent folder without changing its name or owner."
+      },
+      {
+        "user_query": "How do I transfer ownership of the folder 'abcdef12345' to the user with ID 'user67890xyz'?",
+        "arguments": {
+          "folder_id": "abcdef12345",
+          "owner": "user67890xyz"
+        },
+        "notes": "This call assigns a new owner to the folder while keeping its name and parent folder unchanged."
+      }
+    ]
+  }
+]
