@@ -1,5 +1,14 @@
 # 🤖 FES Assistant: Your Agentic Sisense Co-pilot
 
+> [!WARNING]
+> **This is the archived V1 branch — use [`main`](https://github.com/hnegi01/fes-assistant/tree/main) instead.**
+> V1 is the first iteration: one tool call per message, no multi-step planning,
+> no conversation memory, no clarifying questions, and approval dialogs in their
+> earliest form. The current version on `main` (v2.0.0+) is a plan→execute→replan
+> agent with multi-turn context, human-in-the-loop approval gates, migration
+> planning with dependency ordering, and live eval batteries. This branch is kept
+> only as a historical snapshot and receives no fixes.
+
 ## ⚠️ Experimental Project Notice
 
 ### Community-Contributed Tool from Sisense Field Engineering
