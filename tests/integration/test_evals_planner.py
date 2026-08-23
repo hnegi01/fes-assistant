@@ -220,7 +220,7 @@ EVAL_CASES = [
     {
         "id": "off-topic-request-is-denied-not-force-fit",
         "prompt": "write me a poem about databases",
-        # Not a Sisense administration task: deny, execute nothing. Before the
+        # Not a Sisense task: deny, execute nothing. Before the
         # refuse-what-the-catalog-cannot-do planner rule, this force-fit the
         # nearest tool — a notebook-create — and asked for its payload. Denying
         # needs no result data, so one set of checks holds under BOTH settings.
