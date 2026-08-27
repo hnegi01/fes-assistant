@@ -41,3 +41,17 @@ eval_identities:
   user_a_role: "admin"
   user_b_email: "another.user@your-domain.com"
   user_b_role: "sysadmin"
+
+# Role-token matrix (permission testing): one API token per Sisense role, all
+# for the SAME deployment as tenant_config.domain. Drives the role/permission
+# battery — the agent is token-scoped, so each role exercises different
+# endpoint permissions (some SDK methods use /admin endpoints that only an
+# admin token can call; user-scoped variants succeed for everyone but return
+# only what is shared with that user). Leave a role blank to skip it.
+role_tokens:
+  sys_admin: "your-sysadmin-token"
+  admin: "your-admin-token"
+  data_admin: "your-data-admin-token"
+  data_designer: "your-data-designer-token"
+  dashboard_designer: "your-dashboard-designer-token"
+  viewer: "your-viewer-token"
