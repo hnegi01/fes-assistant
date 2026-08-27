@@ -70,8 +70,13 @@ def tenant_config(integration_config) -> Dict[str, Any]:
     (is_ssl=True). Invisible while every test tenant used verify_ssl: true;
     surfaced on an http-only sandbox (connection resets, 2026-08-27)."""
     raw = integration_config["tenant_config"]
+    domain = str(raw["domain"]).strip().rstrip("/")
+    if domain and "://" not in domain:
+        domain = f"https://{domain}"  # bare domains default to https, like the UI
+    # Port handling lives in the SDK: with ssl=False it calls
+    # http://<domain>:30845 (Linux default; a `port` config key overrides).
     return {
-        "domain": raw["domain"],
+        "domain": domain,
         "token": raw["token"],
         "ssl": raw.get("verify_ssl", True),
     }

@@ -11,6 +11,9 @@
 backend_url: "http://localhost:8001"
 
 # Chat mode: a single Sisense deployment.
+# domain: bare hostnames default to https (like the UI); an explicit http://
+#   is honored. verify_ssl: false means PLAIN HTTP — the SDK then calls
+#   http://<domain>:30845 (Linux default; Sisense's non-SSL port).
 tenant_config:
   domain: "https://your-sisense-instance.example.com"
   token: "your-real-token"
