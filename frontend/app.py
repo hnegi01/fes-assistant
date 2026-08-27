@@ -789,11 +789,26 @@ def render_tool_result(tr: dict):
         if isinstance(data, list) and data and isinstance(data[0], dict):
             df = pd.DataFrame(data)
 
-            # Make mixed-type columns safe for Arrow / Streamlit
+            # Make columns safe for Arrow / Streamlit. Mixed-type columns AND
+            # columns of nested containers: a column where EVERY cell is a dict
+            # is uniformly typed (the old nunique guard passed it), but nested
+            # dicts/lists of varying inner shape crash pyarrow's conversion —
+            # a native segfault, not an exception, so no try/except downstream
+            # can save the process (fes-ui exit=139, live 2026-08-27, EC2).
+            # Nested values render as compact JSON strings instead.
+            def _cell_safe(v):
+                if isinstance(v, (dict, list, tuple, set)):
+                    try:
+                        return json.dumps(v, ensure_ascii=False, default=str)
+                    except Exception:
+                        return str(v)
+                return v
+
             for col in df.columns:
                 try:
-                    if df[col].map(type).nunique() > 1:
-                        df[col] = df[col].astype(str)
+                    has_nested = df[col].map(lambda v: isinstance(v, (dict, list, tuple, set, bytes))).any()
+                    if has_nested or df[col].map(type).nunique() > 1:
+                        df[col] = df[col].map(_cell_safe).astype(str)
                 except Exception:
                     df[col] = df[col].astype(str)
 
