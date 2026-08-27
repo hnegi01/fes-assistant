@@ -27,7 +27,7 @@ services:
       - public
 
   fes-ui:
-    image: hnegi01/fes-ui:${FES_IMAGE_TAG:-2.0.1}
+    image: hnegi01/fes-ui:${FES_IMAGE_TAG:-2.0.2}
     container_name: fes-ui
     restart: unless-stopped
     env_file:
@@ -51,7 +51,7 @@ services:
       - private
 
   fes-backend:
-    image: hnegi01/fes-backend:${FES_IMAGE_TAG:-2.0.1}
+    image: hnegi01/fes-backend:${FES_IMAGE_TAG:-2.0.2}
     container_name: fes-backend
     restart: unless-stopped
     env_file:
@@ -75,7 +75,7 @@ services:
       - private
 
   fes-mcp:
-    image: hnegi01/fes-mcp:${FES_IMAGE_TAG:-2.0.1}
+    image: hnegi01/fes-mcp:${FES_IMAGE_TAG:-2.0.2}
     container_name: fes-mcp
     restart: unless-stopped
     env_file:
