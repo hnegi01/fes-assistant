@@ -433,9 +433,7 @@ Root/
 
   frontend/
     app.py               # Streamlit UI (SSE client for backend /agent/turn)
-
-  images/
-    sisense.png          # App favicon (the architecture diagram is Mermaid, inline above)
+    assets/sisense.png   # App favicon (the architecture diagram is Mermaid, inline above)
 
   logs/                  # Runtime logs (rotated; not committed)
 

@@ -990,7 +990,7 @@ def render_feedback_controls(mode_label: str, messages: List[Dict[str, Any]], id
 # wide monitor. The CSS below re-caps content at a readable width — tables and
 # run logs get the room, chat text lines stay a comfortable length.
 # (Bisected and exonerated for the sticky-bar paint bug, 2026-08-17.)
-st.set_page_config(page_title="FES Assistant", page_icon="images/sisense.png", layout="wide")
+st.set_page_config(page_title="FES Assistant", page_icon="frontend/assets/sisense.png", layout="wide")
 
 check_ui_session_timeout()
 

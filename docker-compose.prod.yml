@@ -1,8 +1,10 @@
 # Production stack. Images are pulled from Docker Hub, not built here.
 #
 # IMAGE TAG: defaults to the current version in pyproject.toml, which is what CD
-# publishes (cd.yml tags each image :latest, :<sha>, and :<version>). Override to
-# roll back or to pin a specific build:
+# publishes (cd.yml tags each image :latest, :<sha>, and :<version>). RELEASE
+# RITUAL: bump this default and pyproject's `version` in the SAME commit — this
+# file can only be corrected BY a release, never after one (main moves only on
+# release merges). Override to roll back or to pin a specific build:
 #   FES_IMAGE_TAG=2.0.0 docker compose -f docker-compose.prod.yml up -d
 #   FES_IMAGE_TAG=<git-sha> docker compose -f docker-compose.prod.yml up -d
 # Keep the default in step with pyproject's version when you cut a release.
@@ -25,7 +27,7 @@ services:
       - public
 
   fes-ui:
-    image: hnegi01/fes-ui:${FES_IMAGE_TAG:-2.0.0}
+    image: hnegi01/fes-ui:${FES_IMAGE_TAG:-2.0.2}
     container_name: fes-ui
     restart: unless-stopped
     env_file:
@@ -49,7 +51,7 @@ services:
       - private
 
   fes-backend:
-    image: hnegi01/fes-backend:${FES_IMAGE_TAG:-2.0.0}
+    image: hnegi01/fes-backend:${FES_IMAGE_TAG:-2.0.2}
     container_name: fes-backend
     restart: unless-stopped
     env_file:
@@ -73,7 +75,7 @@ services:
       - private
 
   fes-mcp:
-    image: hnegi01/fes-mcp:${FES_IMAGE_TAG:-2.0.0}
+    image: hnegi01/fes-mcp:${FES_IMAGE_TAG:-2.0.2}
     container_name: fes-mcp
     restart: unless-stopped
     env_file:
