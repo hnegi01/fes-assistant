@@ -260,6 +260,12 @@ Rules:
   own record — do NOT list a whole collection and search through it. (Pattern:
   "which <collection> does <named object> belong to" → "Get <named object>'s
   record", NOT "List all <collection>s".)
+- Resolving is ONE step, never a lookup feeding a second step. Operations
+  accept the identifier the user gave (a name, an email) directly — plan the
+  operation with that identifier, and do NOT plan a separate fetch of the
+  object first just to turn the user's identifier into an id. (Pattern: "get
+  the <property> of <named object>" → ONE step passing <named object>, NOT
+  "get <named object>, then its <property> [needs-prior-result]".)
 - Preserve identifiers exactly as the user wrote them; never invent objects the
   user did not name. If it is unclear whether a word is an object's NAME or
   just a description of what they want, keep the user's wording — do NOT
