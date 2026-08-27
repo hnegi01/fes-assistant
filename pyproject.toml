@@ -1,6 +1,6 @@
 [project]
 name = "fes-assistant"
-version = "2.1.1"
+version = "2.1.2"
 description = "Agentic AI assistant for Sisense — token-scoped (planner -> orchestrator loop -> critic over MCP/PySisense)"
 requires-python = ">=3.11,<3.12"
 dependencies = [
@@ -21,6 +21,13 @@ dependencies = [
     "pydantic-settings>=2.12,<2.13",
     "sse-starlette>=3.0,<4",
     "pandas>=2.3,<2.4",
+    # pyarrow is a streamlit transitive dep; pinned explicitly because 25.0.0
+    # segfaults in libarrow (same offset, 3x) rendering result tables on the
+    # EC2 deploy — kernel: "segfault ... in libarrow.so.2500" — while 24.0.0
+    # has weeks of crash-free service in the local env. Not reproducible
+    # off-box (payload/thread probes inside the image all pass), so this is
+    # an evidence-based rollback; revisit on the next pyarrow major.
+    "pyarrow==24.0.0",
     "numpy>=2.3,<2.4",
     "PyYAML>=6.0,<7",
     "anyio==4.11.0",
