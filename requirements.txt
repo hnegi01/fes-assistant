@@ -220,8 +220,10 @@ propcache==0.5.2
     #   yarl
 protobuf==7.35.1
     # via streamlit
-pyarrow==25.0.0
-    # via streamlit
+pyarrow==24.0.0
+    # via
+    #   fes-assistant
+    #   streamlit
 pycparser==3.0 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
     # via cffi
 pydantic==2.12.5
