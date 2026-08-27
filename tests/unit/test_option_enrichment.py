@@ -119,10 +119,22 @@ class TestCuratedDataGuards:
         by_id = {r["tool_id"]: r for r in rows}
         allowed = _allowed_ids()
         found = 0
+
+        def _walk(props: dict, prefix: str):
+            # Nested object params (create_user's user_data) may carry
+            # x-options-tool on inner properties — guard those the same way.
+            for pname, prop in props.items():
+                if not isinstance(prop, dict):
+                    continue
+                yield f"{prefix}{pname}", prop
+                inner = prop.get("properties")
+                if isinstance(inner, dict):
+                    yield from _walk(inner, f"{prefix}{pname}.")
+
         for row in rows:
             props = (row.get("parameters") or {}).get("properties") or {}
-            for pname, prop in props.items():
-                opt = (prop or {}).get("x-options-tool")
+            for pname, prop in _walk(props, ""):
+                opt = prop.get("x-options-tool")
                 if not opt:
                     continue
                 found += 1
@@ -133,7 +145,7 @@ class TestCuratedDataGuards:
                 assert by_id[opt].get("module") != "migration", (
                     f"{where}: x-options-tool {opt!r} is a migration tool — unreachable from the chat clarify path"
                 )
-        assert found >= 2, "expected setup_datamodel and create_dataset to carry x-options-tool"
+        assert found >= 4, "expected setup_datamodel, create_dataset, and the user_data role fields"
 
     def test_every_followup_template_uses_only_required_params(self):
         import string

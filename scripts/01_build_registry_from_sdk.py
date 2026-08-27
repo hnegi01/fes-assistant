@@ -512,6 +512,79 @@ def infer_tags(module: str, method: str, mutates: bool) -> list:
 # ---------------------------------------------------------------------------
 
 SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
+    # Create User → rich user_data schema. The SDK signature is `user_data: dict`,
+    # so the generated schema can't see inside it: "create user himanshu negi"
+    # passed validation with neither email nor role, gated, and failed in the SDK
+    # ("Role 'None' not found", live 2026-08-27). Field list and requiredness
+    # mirror the SDK docstring + code (pysisense/access_management/users.py::
+    # create_user — role provably required, email required by the API).
+    # The clarification path walks one level into object params
+    # (_missing_required_fields), so missing inner fields clarify up front.
+    "access_management.create_user": {
+        "patch": {
+            "parameters.properties.user_data": {
+                "type": "object",
+                "description": (
+                    "The new user's details. Required: email and role. "
+                    "Optional: firstName, lastName, groups, preferences."
+                ),
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "description": "The new user's email address",
+                    },
+                    "role": {
+                        "type": "string",
+                        "description": "Role name to assign (matched case-insensitively)",
+                        "x-options-tool": "access_management.get_roles",
+                    },
+                    "firstName": {"type": "string", "description": "The user's first name"},
+                    "lastName": {"type": "string", "description": "The user's last name"},
+                    "groups": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Group names to assign the user to",
+                    },
+                    "preferences": {"type": "object", "description": "User preference settings"},
+                },
+                "required": ["email", "role"],
+            },
+        }
+    },
+    # Update User → rich user_data schema, NO inner required: the SDK docstring
+    # says "Only include fields you want to change", so every inner field is
+    # legitimately optional. The value of the patch is the model emitting
+    # canonical field names instead of guessing.
+    "access_management.update_user": {
+        "patch": {
+            "parameters.properties.user_data": {
+                "type": "object",
+                "description": "Fields to update — include only what should change.",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "description": "New email address for the user",
+                    },
+                    "userName": {"type": "string", "description": "New username/login name"},
+                    "firstName": {"type": "string", "description": "New first name"},
+                    "lastName": {"type": "string", "description": "New last name"},
+                    "role": {
+                        "type": "string",
+                        "description": "New role name (matched case-insensitively)",
+                        "x-options-tool": "access_management.get_roles",
+                    },
+                    "groups": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Group names replacing the user's group assignments",
+                    },
+                    "preferences": {"type": "object", "description": "User preference settings"},
+                },
+            },
+        }
+    },
     # Create DataModel → constrain datamodel_type
     "datamodel.create_datamodel": {
         "patch": {

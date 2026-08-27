@@ -179,7 +179,7 @@ EVAL_CASES = [
         ],
         "expect_tools_any": [],
         "forbid_tools": [],
-        "expect_reply_any": ["more information", "needs:"],
+        "expect_reply_any": ["more information", "more details", "needs:"],
         "forbid_reply": ["didn't quite understand"],
         "origin": "2026-08-20: stale clarify exchange in history derailed the planner into "
         "answering as the assistant; the fallback then discarded its question.",
@@ -216,6 +216,24 @@ EVAL_CASES = [
         "forbid_reply": ["didn't quite understand"],
         "origin": "2026-08-21: topic-change to a second create request mid-clarification sent "
         "the planner into discovery reads instead of clarifying the new create.",
+    },
+    {
+        "id": "create-user-without-email-or-role-clarifies-not-gates",
+        "prompt": "create user himanshu negi",
+        # user_data is an SDK `dict` param whose requirements live one level
+        # down (email + role). Before the rich SCHEMA_RULES schema + the nested
+        # walk in _missing_required_fields, this passed validation, GATED, the
+        # user approved, and the SDK failed ("Role 'None' not found", live
+        # 2026-08-27) — a wasted approval on a doomed call. Correct: clarify up
+        # front for the inner fields (role options looked up by code), no gate,
+        # nothing executed. Clarifying needs no result data → both settings.
+        "allow_summarization": "both",
+        "expect_tools_any": [],
+        "forbid_tools": ["access_management.create_user"],
+        "expect_reply_any": ["email"],
+        "forbid_reply": ["didn't quite understand", "not found"],
+        "origin": "2026-08-27: create_user gated with neither email nor role inside user_data; "
+        "approval was spent on a call the SDK was guaranteed to reject.",
     },
     {
         "id": "off-topic-request-is-denied-not-force-fit",
