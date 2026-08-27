@@ -194,10 +194,22 @@ def strip_internal_params(params: Dict[str, Any]) -> Dict[str, Any]:
     if isinstance(props, dict):
         for name in INTERNAL_PARAMS:
             props.pop(name, None)
+
+        def _strip_options(prop: Dict[str, Any]) -> None:
+            # Recurse: object params carry inner properties (create_user's
+            # user_data), and a nested x-options-* must not leak to the model
+            # any more than a top-level one.
+            for key in [k for k in prop if k.startswith("x-options-")]:
+                prop.pop(key, None)
+            inner = prop.get("properties")
+            if isinstance(inner, dict):
+                for sub in inner.values():
+                    if isinstance(sub, dict):
+                        _strip_options(sub)
+
         for prop in props.values():
             if isinstance(prop, dict):
-                for key in [k for k in prop if k.startswith("x-options-")]:
-                    prop.pop(key, None)
+                _strip_options(prop)
     required = schema.get("required")
     if isinstance(required, list):
         schema["required"] = [f for f in required if f not in INTERNAL_PARAMS]

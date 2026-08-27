@@ -7,7 +7,25 @@
       "properties": {
         "measure": {
           "type": "object",
-          "description": "Measure object in Sisense metadata format (for example datasource, table, column, expression, and related fields)."
+          "description": "Measure object in Sisense metadata format.",
+          "properties": {
+            "datasource": {
+              "type": "string",
+              "description": "Datasource/datamodel the measure belongs to"
+            },
+            "table": {
+              "type": "string",
+              "description": "Table the measure reads from"
+            },
+            "column": {
+              "type": "string",
+              "description": "Column the measure reads from"
+            },
+            "expression": {
+              "type": "string",
+              "description": "The measure's formula expression"
+            }
+          }
         }
       },
       "required": [

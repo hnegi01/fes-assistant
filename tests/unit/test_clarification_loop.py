@@ -609,6 +609,144 @@ def test_empty_containers_count_as_missing_required():
     assert m._missing_required_fields({"source_dashboard_ids": ["d1"], "target_dashboard_ids": ["dA"]}, schema) == []
 
 
+_USER_DATA_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "user_data": {
+            "type": "object",
+            "description": "The new user's details.",
+            "properties": {
+                "email": {"type": "string", "format": "email", "description": "The new user's email address"},
+                "role": {"type": "string", "description": "Role name to assign"},
+                "firstName": {"type": "string"},
+            },
+            "required": ["email", "role"],
+        },
+    },
+    "required": ["user_data"],
+}
+
+
+def test_object_param_inner_required_reports_dotted_children():
+    """An SDK `dict` param keeps its requirements one level down, where the flat
+    walk never looked: "create user himanshu negi" carried neither email nor
+    role, passed `required` (user_data existed), and the gated call failed in
+    the SDK ("Role 'None' not found", live 2026-08-27). The children are what
+    the user must supply, so they are reported dotted — never the parent."""
+    # Parent absent entirely → the inner requireds are what's missing.
+    assert m._missing_required_fields({}, _USER_DATA_SCHEMA) == ["user_data.email", "user_data.role"]
+    # Parent present but inner requireds absent (the live failure).
+    args = {"user_data": {"firstName": "Himanshu", "lastName": "Negi"}}
+    assert m._missing_required_fields(args, _USER_DATA_SCHEMA) == ["user_data.email", "user_data.role"]
+    # One inner required supplied, one missing.
+    args = {"user_data": {"email": "jane@acme.com", "firstName": "Jane"}}
+    assert m._missing_required_fields(args, _USER_DATA_SCHEMA) == ["user_data.role"]
+    # All inner requireds supplied → nothing missing.
+    args = {"user_data": {"email": "jane@acme.com", "role": "viewer"}}
+    assert m._missing_required_fields(args, _USER_DATA_SCHEMA) == []
+    # Empty inner value counts as missing (same _is_filled rule as top level).
+    args = {"user_data": {"email": "", "role": "viewer"}}
+    assert m._missing_required_fields(args, _USER_DATA_SCHEMA) == ["user_data.email"]
+
+
+def test_object_param_inner_fabricated_value_counts_as_missing():
+    """The anti-invention guard applies one level down too: a model pressured by
+    inner `required` may fill email with a placeholder the user never typed —
+    that must clarify, not gate. (The guard abstains without a corpus, so seed
+    the turn context the way a real turn does.)"""
+    from backend.agent import _config as cfg
+
+    token = cfg.set_current_turn(
+        "t-nested-fab", "create user himanshu negi as viewer", user_corpus="create user himanshu negi as viewer"
+    )
+    try:
+        args = {"user_data": {"email": "user@example.com", "role": "viewer"}}
+        assert m._missing_required_fields(args, _USER_DATA_SCHEMA) == ["user_data.email"]
+    finally:
+        cfg._CURRENT_TURN.reset(token)
+
+
+def test_object_param_without_inner_required_is_untouched():
+    """update_user's user_data documents fields but requires none ("only include
+    fields you want to change") — the nested walk must not invent requirements."""
+    schema = {
+        "type": "object",
+        "properties": {
+            "user_email": {"type": "string"},
+            "user_data": {
+                "type": "object",
+                "properties": {"email": {"type": "string"}, "role": {"type": "string"}},
+            },
+        },
+        "required": ["user_email", "user_data"],
+    }
+    assert m._missing_required_fields({"user_email": "jane@acme.com", "user_data": {"role": "admin"}}, schema) == []
+    # The parent itself still reports plainly when absent (no inner required list).
+    assert m._missing_required_fields({"user_email": "jane@acme.com"}, schema) == ["user_data"]
+
+
+def test_option_set_field_value_never_said_by_user_counts_as_missing():
+    """A field with x-options-tool draws from a deployment-specific option set
+    (roles, connections): a value the user never uttered can only be the
+    model's guess. Live 2026-08-27: 'create user himanshu negi' sometimes
+    gated with role='viewer' — too plausible for the placeholder patterns.
+    Matching squashes case/punctuation so 'Data Designer' matches
+    dataDesigner; without a corpus (outside a turn) the rule abstains."""
+    from backend.agent import _config as cfg
+
+    schema = {
+        "type": "object",
+        "properties": {
+            "user_data": {
+                "type": "object",
+                "properties": {
+                    "email": {"type": "string"},
+                    "role": {"type": "string", "x-options-tool": "access_management.get_roles"},
+                },
+                "required": ["email", "role"],
+            },
+        },
+        "required": ["user_data"],
+    }
+
+    def _missing(corpus, args):
+        token = cfg.set_current_turn("t-opt", corpus, user_corpus=corpus)
+        try:
+            return m._missing_required_fields(args, schema)
+        finally:
+            cfg._CURRENT_TURN.reset(token)
+
+    args = {"user_data": {"email": "jane@acme.com", "role": "viewer"}}
+    # User never said "viewer" → the value is a guess → clarify.
+    assert _missing("create user jane@acme.com", args) == ["user_data.role"]
+    # User did say it → accepted.
+    assert _missing("create a viewer user jane@acme.com", args) == []
+    # Squashed matching: natural phrasing matches the canonical value.
+    args2 = {"user_data": {"email": "jane@acme.com", "role": "dataDesigner"}}
+    assert _missing("make jane@acme.com a Data Designer", args2) == []
+    # Top-level option-set fields get the same rule.
+    top = {
+        "type": "object",
+        "properties": {"connection_name": {"type": "string", "x-options-tool": "datamodel.get_connections"}},
+        "required": ["connection_name"],
+    }
+    token = cfg.set_current_turn("t-opt2", "set up a datamodel called X", user_corpus="set up a datamodel called X")
+    try:
+        assert m._missing_required_fields({"connection_name": "prod_warehouse"}, top) == ["connection_name"]
+    finally:
+        cfg._CURRENT_TURN.reset(token)
+    # No corpus → abstain (outside a turn we cannot judge).
+    assert m._missing_required_fields(args, schema) == []
+
+
+def test_prop_at_resolves_dotted_and_plain_names():
+    props = _USER_DATA_SCHEMA["properties"]
+    assert m._prop_at(props, "user_data.email")["format"] == "email"
+    assert m._prop_at(props, "user_data")["type"] == "object"
+    assert m._prop_at(props, "user_data.nope") == {}
+    assert m._prop_at(props, "ghost.email") == {}
+
+
 def test_validate_tool_args_rejects_present_but_empty_required():
     """JSON Schema `required` only demands the KEY exists, so explicit empties
     ({"ids": []}) pass jsonschema.validate — and every clarify path used to sit

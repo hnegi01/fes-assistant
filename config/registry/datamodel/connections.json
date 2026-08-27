@@ -7,7 +7,36 @@
       "properties": {
         "connection_payload": {
           "type": "object",
-          "description": "The configuration payload for the connection. Canonical fields include ``provider``, ``name``, ``description``, ``parameters``, ``enabled``, ``createdByUser``, and ``supportedModelTypes``."
+          "description": "Connection configuration, typically produced by generate_connections_payload.",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "description": "Connector/provider name"
+            },
+            "name": {
+              "type": "string",
+              "description": "Connection name"
+            },
+            "description": {
+              "type": "string",
+              "description": "Connection description"
+            },
+            "parameters": {
+              "type": "object",
+              "description": "Provider-specific connection parameters"
+            },
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether the connection is enabled"
+            },
+            "supportedModelTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Model types the connection supports"
+            }
+          }
         }
       },
       "required": [
@@ -96,11 +125,75 @@
       "properties": {
         "datasource_type": {
           "type": "string",
-          "description": "Type of data source. One of ``\"Athena\"``, ``\"RedShift\"``, ``\"BigQuery\"``, ``\"DataBricks\"`` (case-insensitive)."
+          "description": "Type of data source. One of ``\"Athena\"``, ``\"RedShift\"``, ``\"BigQuery\"``, ``\"DataBricks\"`` (case-insensitive).",
+          "enum": [
+            "Athena",
+            "RedShift",
+            "BigQuery",
+            "DataBricks"
+          ]
         },
         "connection_params": {
           "type": "object",
-          "description": "Connection details. Supported keys depend on ``datasource_type``: - Athena: ``name`` (required), ``region`` (required), ``s3_output_location`` (required), ``aws_access_key`` (required), ``aws_secret_key`` (required), ``description``, ``schema``, ``additional_parameters``. - DataBricks: ``name`` (required), ``connection_string`` (required), ``token`` (required), ``description``, ``use_dynamic_schema``, ``schema``. - BigQuery: ``name`` (required), ``service_account_key_path`` (required), ``description``, ``use_service_account``, ``use_proxy_server``, ``use_dynamic_schema``, ``record_field_flattening_level``, ``unnest_arrays``, ``allow_large_results``, ``use_storage_api``, ``additional_parameters``, ``database``. - RedShift: ``server`` (required), ``username`` (required), ``password`` (required), ``name``, ``description``, ``default_database``, ``additional_parameters``."
+          "description": "Connection details; which keys are required depends on datasource_type (Athena: name, region, s3_output_location, aws_access_key, aws_secret_key. DataBricks: name, connection_string, token. BigQuery: name, service_account_key_path. RedShift: server, username, password.)",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Connection name"
+            },
+            "description": {
+              "type": "string",
+              "description": "Connection description"
+            },
+            "region": {
+              "type": "string",
+              "description": "AWS region (Athena)"
+            },
+            "s3_output_location": {
+              "type": "string",
+              "description": "S3 output location (Athena)"
+            },
+            "aws_access_key": {
+              "type": "string",
+              "description": "AWS access key (Athena)"
+            },
+            "aws_secret_key": {
+              "type": "string",
+              "description": "AWS secret key (Athena)"
+            },
+            "connection_string": {
+              "type": "string",
+              "description": "JDBC connection string (DataBricks)"
+            },
+            "token": {
+              "type": "string",
+              "description": "Access token (DataBricks)"
+            },
+            "service_account_key_path": {
+              "type": "string",
+              "description": "Service account key file path (BigQuery)"
+            },
+            "server": {
+              "type": "string",
+              "description": "Server host (RedShift)"
+            },
+            "username": {
+              "type": "string",
+              "description": "Username (RedShift)"
+            },
+            "password": {
+              "type": "string",
+              "description": "Password (RedShift)"
+            },
+            "schema": {
+              "type": "string",
+              "description": "Schema name"
+            },
+            "database": {
+              "type": "string",
+              "description": "Database name (BigQuery)"
+            }
+          }
         }
       },
       "required": [
@@ -309,7 +402,21 @@
         },
         "connection_data": {
           "type": "object",
-          "description": "Fields to update (for example ``name``, ``parameters``, ``provider``). Supported keys depend on the Sisense connection type."
+          "description": "Fields to update — include only what should change.",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "New connection name"
+            },
+            "provider": {
+              "type": "string",
+              "description": "Connector/provider name"
+            },
+            "parameters": {
+              "type": "object",
+              "description": "Provider-specific connection parameters"
+            }
+          }
         }
       },
       "required": [

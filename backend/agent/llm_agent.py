@@ -467,6 +467,19 @@ def _approval_disclosure(
 # -----------------------------------------------------------------------------
 # Clarification loop (Step 7) — ask for missing required args, resume next turn
 # -----------------------------------------------------------------------------
+def _prop_at(props: Dict[str, Any], field: str) -> Dict[str, Any]:
+    """Resolve a possibly-dotted field name (`user_data.email`) to its property
+    schema. Dotted names come from _missing_required_fields walking into object
+    params; plain names resolve exactly as before."""
+    node: Dict[str, Any] = {"properties": props}
+    for part in field.split("."):
+        inner = node.get("properties")
+        if not isinstance(inner, dict) or part not in inner:
+            return {}
+        node = inner[part] if isinstance(inner[part], dict) else {}
+    return node
+
+
 def _missing_required_fields(args: Dict[str, Any], schema: Dict[str, Any]) -> List[str]:
     """Required schema fields the user did not actually provide, excluding
     injected credential fields.
@@ -479,14 +492,58 @@ def _missing_required_fields(args: Dict[str, Any], schema: Dict[str, Any]) -> Li
       - the key carries an INVENTED value (live 2026-08-18:
         user_email="user@example.com" for a request that named no address)
         — `_is_fabricated`, judged against what the user actually typed.
+
+    Object params get the same treatment ONE level deep: an SDK `dict` param
+    (create_user's user_data) keeps its requirements in the property's inner
+    `required` list, where the flat walk never looked — so "create user
+    himanshu negi" carried neither email nor role, passed `required`
+    (user_data existed), and the gated call was doomed before approval (live
+    2026-08-27). A parent whose inner requireds are all missing reports the
+    dotted children (`user_data.email`), never itself: the children are what
+    the user must actually supply, and the question renderer / option lookup
+    resolve dotted names via _prop_at.
+
+    Fields that carry `x-options-tool` get one rule more: their valid values
+    are a deployment-specific option set (roles, connections), so a value the
+    user never actually said can only be the model's guess — "create user
+    himanshu negi" was sometimes gated with role="viewer", a value too
+    plausible for the placeholder patterns to brand (live 2026-08-27). Judged
+    against the corpus with punctuation/spacing stripped, so "Data Designer"
+    in the user's words matches a canonical `dataDesigner`. Same abstention as
+    _is_fabricated: no corpus (outside a turn) → no judgement.
     """
     required = schema.get("required") or []
+    props = schema.get("properties") or {}
     corpus = current_turn_user_corpus()
-    return [
-        f
-        for f in required
-        if f not in _CREDENTIAL_FIELDS and (not _is_filled(args.get(f)) or _is_fabricated(args.get(f), corpus))
-    ]
+
+    def _guessed_option(value: Any, prop: Dict[str, Any]) -> bool:
+        if not corpus or not prop.get("x-options-tool") or not isinstance(value, str):
+            return False
+        squash = lambda s: re.sub(r"[^a-z0-9]", "", s.lower())  # noqa: E731
+        return bool(squash(value)) and squash(value) not in squash(corpus)
+
+    def _absent(value: Any, prop: Dict[str, Any]) -> bool:
+        return not _is_filled(value) or _is_fabricated(value, corpus) or _guessed_option(value, prop)
+
+    missing: List[str] = []
+    for f in required:
+        if f in _CREDENTIAL_FIELDS:
+            continue
+        prop = props.get(f) if isinstance(props.get(f), dict) else {}
+        inner_required = prop.get("required")
+        inner_props = prop.get("properties")
+        if inner_required and isinstance(inner_props, dict):
+            # Object param with declared inner requirements: judge the children.
+            value = args.get(f)
+            inner_args = value if isinstance(value, dict) else {}
+            missing.extend(
+                f"{f}.{sub}"
+                for sub in inner_required
+                if _absent(inner_args.get(sub), inner_props.get(sub) if isinstance(inner_props.get(sub), dict) else {})
+            )
+        elif _absent(args.get(f), prop):
+            missing.append(f)
+    return missing
 
 
 def _validate_tool_args(schema: Dict[str, Any], args: Dict[str, Any]) -> None:
@@ -645,7 +702,7 @@ async def _fetch_param_options(
         return out
     props = (meta.get("parameters") or {}).get("properties") or {}
     for field in missing_fields:
-        prop = props.get(field) or {}
+        prop = _prop_at(props, field)
         options_tool = prop.get("x-options-tool")
         if not options_tool:
             continue
@@ -709,10 +766,11 @@ async def _generate_clarification_question(
     def _desc(field: str) -> str:
         # First sentence only: some schema descriptions are whole docstrings
         # (user_data enumerates every supported key), and a bullet is a
-        # question, not a manual page.
-        text = _clean_desc((props.get(field) or {}).get("description"))
+        # question, not a manual page. Dotted fields (user_data.email) resolve
+        # into the object param's inner properties.
+        text = _clean_desc(_prop_at(props, field).get("description"))
         if not text:
-            return field.replace("_", " ")
+            return field.rsplit(".", 1)[-1].replace("_", " ")
         return text.split(". ")[0].rstrip(".")
 
     # Live option lookups for params that declare one (x-options-tool), run by
@@ -747,7 +805,7 @@ async def _generate_clarification_question(
     for f in missing_fields:
         if f in options:
             names, count, note = options[f]
-            label = f.replace("_", " ")
+            label = f.rsplit(".", 1)[-1].replace("_", " ")
             plural = "s" if count != 1 else ""
             lines += [
                 "",

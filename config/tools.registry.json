@@ -46,7 +46,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -81,7 +81,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -141,7 +141,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -157,7 +157,42 @@
       "properties": {
         "user_data": {
           "type": "object",
-          "description": "Dictionary containing the user details. Supported fields use canonical Sisense payload field names: - ``email`` : str — the user's email address. - ``firstName`` : str — the user's first name. - ``lastName`` : str — the user's last name. - ``role`` : str — role name to assign (resolved to ``roleId``). - ``groups`` : list[str] — group names to assign (resolved to IDs). - ``preferences`` : dict — user preference settings."
+          "description": "The new user's details. Required: email and role. Optional: firstName, lastName, groups, preferences.",
+          "properties": {
+            "email": {
+              "type": "string",
+              "format": "email",
+              "description": "The new user's email address"
+            },
+            "role": {
+              "type": "string",
+              "description": "Role name to assign (matched case-insensitively)",
+              "x-options-tool": "access_management.get_roles"
+            },
+            "firstName": {
+              "type": "string",
+              "description": "The user's first name"
+            },
+            "lastName": {
+              "type": "string",
+              "description": "The user's last name"
+            },
+            "groups": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Group names to assign the user to"
+            },
+            "preferences": {
+              "type": "object",
+              "description": "User preference settings"
+            }
+          },
+          "required": [
+            "email",
+            "role"
+          ]
         }
       },
       "required": [
@@ -171,7 +206,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -202,7 +237,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -225,7 +260,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -255,7 +290,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -285,7 +320,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -308,7 +343,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -330,7 +365,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -359,7 +394,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -389,7 +424,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -420,7 +455,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -452,7 +487,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -475,7 +510,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -499,7 +534,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -520,7 +555,42 @@
         },
         "user_data": {
           "type": "object",
-          "description": "Dictionary of fields to update. Only include fields you want to change. Supported fields ---------------- - email : str Update the user's email address. - userName : str Update the user's username/login name. - firstName : str Update the user's first name. - lastName : str Update the user's last name. - role : str Role name (e.g., \"viewer\", \"designer\"). This is resolved to ``roleId`` before sending the API request. - groups : list[str] List of group names to apply. Group names are resolved to group IDs before sending the API request. If ``groups`` is explicitly provided as an empty list (``[]``), group memberships are cleared (tenant defaults may still apply)."
+          "description": "Fields to update — include only what should change.",
+          "properties": {
+            "email": {
+              "type": "string",
+              "format": "email",
+              "description": "New email address for the user"
+            },
+            "userName": {
+              "type": "string",
+              "description": "New username/login name"
+            },
+            "firstName": {
+              "type": "string",
+              "description": "New first name"
+            },
+            "lastName": {
+              "type": "string",
+              "description": "New last name"
+            },
+            "role": {
+              "type": "string",
+              "description": "New role name (matched case-insensitively)",
+              "x-options-tool": "access_management.get_roles"
+            },
+            "groups": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Group names replacing the user's group assignments"
+            },
+            "preferences": {
+              "type": "object",
+              "description": "User preference settings"
+            }
+          }
         }
       },
       "required": [
@@ -535,7 +605,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -566,7 +636,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -590,7 +660,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -619,7 +689,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -641,7 +711,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -670,7 +740,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -686,7 +756,17 @@
       "properties": {
         "notebook_data": {
           "type": "object",
-          "description": "Notebook creation payload (for example ``notebookType``, ``displayName``, manifest fields)."
+          "description": "Notebook creation payload.",
+          "properties": {
+            "notebookType": {
+              "type": "string",
+              "description": "Notebook type (for example CustomCodeTransformation)"
+            },
+            "displayName": {
+              "type": "string",
+              "description": "Display name for the notebook"
+            }
+          }
         },
         "use_internal_header": {
           "type": "boolean",
@@ -703,7 +783,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -732,7 +812,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -761,7 +841,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -792,7 +872,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -821,7 +901,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -855,7 +935,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -889,7 +969,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -927,7 +1007,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -964,7 +1044,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -980,7 +1060,36 @@
       "properties": {
         "connection_payload": {
           "type": "object",
-          "description": "The configuration payload for the connection. Canonical fields include ``provider``, ``name``, ``description``, ``parameters``, ``enabled``, ``createdByUser``, and ``supportedModelTypes``."
+          "description": "Connection configuration, typically produced by generate_connections_payload.",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "description": "Connector/provider name"
+            },
+            "name": {
+              "type": "string",
+              "description": "Connection name"
+            },
+            "description": {
+              "type": "string",
+              "description": "Connection description"
+            },
+            "parameters": {
+              "type": "object",
+              "description": "Provider-specific connection parameters"
+            },
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether the connection is enabled"
+            },
+            "supportedModelTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Model types the connection supports"
+            }
+          }
         }
       },
       "required": [
@@ -993,7 +1102,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1045,7 +1154,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1095,7 +1204,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": [],
     "x-followup": {
       "note": "The change isn't queryable until the model is built or published.",
@@ -1164,7 +1273,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": [],
     "x-followup": {
       "note": "The change isn't queryable until the model is built or published.",
@@ -1202,7 +1311,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1273,7 +1382,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1302,7 +1411,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1331,7 +1440,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1347,11 +1456,75 @@
       "properties": {
         "datasource_type": {
           "type": "string",
-          "description": "Type of data source. One of ``\"Athena\"``, ``\"RedShift\"``, ``\"BigQuery\"``, ``\"DataBricks\"`` (case-insensitive)."
+          "description": "Type of data source. One of ``\"Athena\"``, ``\"RedShift\"``, ``\"BigQuery\"``, ``\"DataBricks\"`` (case-insensitive).",
+          "enum": [
+            "Athena",
+            "RedShift",
+            "BigQuery",
+            "DataBricks"
+          ]
         },
         "connection_params": {
           "type": "object",
-          "description": "Connection details. Supported keys depend on ``datasource_type``: - Athena: ``name`` (required), ``region`` (required), ``s3_output_location`` (required), ``aws_access_key`` (required), ``aws_secret_key`` (required), ``description``, ``schema``, ``additional_parameters``. - DataBricks: ``name`` (required), ``connection_string`` (required), ``token`` (required), ``description``, ``use_dynamic_schema``, ``schema``. - BigQuery: ``name`` (required), ``service_account_key_path`` (required), ``description``, ``use_service_account``, ``use_proxy_server``, ``use_dynamic_schema``, ``record_field_flattening_level``, ``unnest_arrays``, ``allow_large_results``, ``use_storage_api``, ``additional_parameters``, ``database``. - RedShift: ``server`` (required), ``username`` (required), ``password`` (required), ``name``, ``description``, ``default_database``, ``additional_parameters``."
+          "description": "Connection details; which keys are required depends on datasource_type (Athena: name, region, s3_output_location, aws_access_key, aws_secret_key. DataBricks: name, connection_string, token. BigQuery: name, service_account_key_path. RedShift: server, username, password.)",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Connection name"
+            },
+            "description": {
+              "type": "string",
+              "description": "Connection description"
+            },
+            "region": {
+              "type": "string",
+              "description": "AWS region (Athena)"
+            },
+            "s3_output_location": {
+              "type": "string",
+              "description": "S3 output location (Athena)"
+            },
+            "aws_access_key": {
+              "type": "string",
+              "description": "AWS access key (Athena)"
+            },
+            "aws_secret_key": {
+              "type": "string",
+              "description": "AWS secret key (Athena)"
+            },
+            "connection_string": {
+              "type": "string",
+              "description": "JDBC connection string (DataBricks)"
+            },
+            "token": {
+              "type": "string",
+              "description": "Access token (DataBricks)"
+            },
+            "service_account_key_path": {
+              "type": "string",
+              "description": "Service account key file path (BigQuery)"
+            },
+            "server": {
+              "type": "string",
+              "description": "Server host (RedShift)"
+            },
+            "username": {
+              "type": "string",
+              "description": "Username (RedShift)"
+            },
+            "password": {
+              "type": "string",
+              "description": "Password (RedShift)"
+            },
+            "schema": {
+              "type": "string",
+              "description": "Schema name"
+            },
+            "database": {
+              "type": "string",
+              "description": "Database name (BigQuery)"
+            }
+          }
         }
       },
       "required": [
@@ -1365,7 +1538,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1387,7 +1560,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1416,7 +1589,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1438,7 +1611,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1476,7 +1649,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1505,7 +1678,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1534,7 +1707,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1563,7 +1736,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1592,7 +1765,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1614,7 +1787,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1643,7 +1816,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1672,7 +1845,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1716,7 +1889,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1749,7 +1922,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1778,7 +1951,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1815,7 +1988,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -1949,7 +2122,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": [],
     "x-followup": {
       "note": "The model isn't queryable until it's built or published.",
@@ -1973,7 +2146,21 @@
         },
         "connection_data": {
           "type": "object",
-          "description": "Fields to update (for example ``name``, ``parameters``, ``provider``). Supported keys depend on the Sisense connection type."
+          "description": "Fields to update — include only what should change.",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "New connection name"
+            },
+            "provider": {
+              "type": "string",
+              "description": "Connector/provider name"
+            },
+            "parameters": {
+              "type": "object",
+              "description": "Provider-specific connection parameters"
+            }
+          }
         }
       },
       "required": [
@@ -1987,7 +2174,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2024,7 +2211,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2053,7 +2240,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2082,7 +2269,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2122,7 +2309,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2160,7 +2347,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2204,7 +2391,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2233,7 +2420,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2263,7 +2450,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2286,7 +2473,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2316,7 +2503,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2346,7 +2533,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2376,7 +2563,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2406,7 +2593,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2436,7 +2623,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2470,7 +2657,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2500,7 +2687,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2531,7 +2718,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2565,7 +2752,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2600,7 +2787,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2638,7 +2825,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2673,7 +2860,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2703,7 +2890,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2736,7 +2923,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2765,7 +2952,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2787,7 +2974,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2816,7 +3003,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2845,7 +3032,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2872,7 +3059,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2894,7 +3081,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2935,7 +3122,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2951,7 +3138,25 @@
       "properties": {
         "measure": {
           "type": "object",
-          "description": "Measure object in Sisense metadata format (for example datasource, table, column, expression, and related fields)."
+          "description": "Measure object in Sisense metadata format.",
+          "properties": {
+            "datasource": {
+              "type": "string",
+              "description": "Datasource/datamodel the measure belongs to"
+            },
+            "table": {
+              "type": "string",
+              "description": "Table the measure reads from"
+            },
+            "column": {
+              "type": "string",
+              "description": "Column the measure reads from"
+            },
+            "expression": {
+              "type": "string",
+              "description": "The measure's formula expression"
+            }
+          }
         }
       },
       "required": [
@@ -2964,7 +3169,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -2995,7 +3200,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3026,7 +3231,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3048,7 +3253,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3077,7 +3282,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3130,7 +3335,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3187,7 +3392,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3210,7 +3415,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3233,7 +3438,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3278,7 +3483,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3337,7 +3542,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3408,7 +3613,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3441,7 +3646,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3475,7 +3680,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3504,7 +3709,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3540,7 +3745,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3569,7 +3774,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3605,7 +3810,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3627,7 +3832,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3656,7 +3861,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3672,7 +3877,19 @@
       "properties": {
         "snapshot": {
           "type": "object",
-          "description": "A snapshot dict as returned by :meth:`save_snapshot`, containing at minimum a ``\"plugins\"`` key with a list of ``folderName`` values for the plugins that should be enabled. All other plugins will be disabled."
+          "description": "A snapshot as returned by save_snapshot.",
+          "properties": {
+            "plugins": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "folderName values of the plugins that should be enabled; all others are disabled"
+            }
+          },
+          "required": [
+            "plugins"
+          ]
         },
         "bulk": {
           "type": "boolean",
@@ -3689,7 +3906,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3711,7 +3928,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3745,7 +3962,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3779,7 +3996,7 @@
       "write"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3810,7 +4027,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3841,7 +4058,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3872,7 +4089,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3903,7 +4120,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3934,7 +4151,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3965,7 +4182,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -3996,7 +4213,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   },
   {
@@ -4030,7 +4247,7 @@
       "read"
     ],
     "sdk_version": "1.0.2",
-    "updated_at": "2026-08-21T17:34:34Z",
+    "updated_at": "2026-08-27T20:26:30Z",
     "examples": []
   }
 ]

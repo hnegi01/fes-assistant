@@ -7,7 +7,17 @@
       "properties": {
         "notebook_data": {
           "type": "object",
-          "description": "Notebook creation payload (for example ``notebookType``, ``displayName``, manifest fields)."
+          "description": "Notebook creation payload.",
+          "properties": {
+            "notebookType": {
+              "type": "string",
+              "description": "Notebook type (for example CustomCodeTransformation)"
+            },
+            "displayName": {
+              "type": "string",
+              "description": "Display name for the notebook"
+            }
+          }
         },
         "use_internal_header": {
           "type": "boolean",
