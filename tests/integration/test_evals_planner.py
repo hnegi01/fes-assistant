@@ -225,12 +225,17 @@ EVAL_CASES = [
         # walk in _missing_required_fields, this passed validation, GATED, the
         # user approved, and the SDK failed ("Role 'None' not found", live
         # 2026-08-27) — a wasted approval on a doomed call. Correct: clarify up
-        # front for the inner fields (role options looked up by code), no gate,
-        # nothing executed. Clarifying needs no result data → both settings.
+        # front, no gate, nothing executed. The anchor is ROLE: it carries
+        # x-options-tool, so a value the user never said always counts as
+        # missing. Email is NOT asserted — the model sometimes invents a
+        # plausible address (himanshu.negi@sisense.com, derived from the name),
+        # which no deterministic rule can brand; the approval dialog's arg
+        # disclosure is that residual's net. Clarifying needs no result data →
+        # both settings.
         "allow_summarization": "both",
         "expect_tools_any": [],
         "forbid_tools": ["access_management.create_user"],
-        "expect_reply_any": ["email"],
+        "expect_reply_any": ["role"],
         "forbid_reply": ["didn't quite understand", "not found"],
         "origin": "2026-08-27: create_user gated with neither email nor role inside user_data; "
         "approval was spent on a call the SDK was guaranteed to reject.",

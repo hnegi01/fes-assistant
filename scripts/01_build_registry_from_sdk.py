@@ -585,6 +585,132 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
             },
         }
     },
+    # Restore plugin snapshot → the docstring documents the shape explicitly:
+    # "containing at minimum a 'plugins' key with a list of folderName values".
+    "plugins.restore_snapshot": {
+        "patch": {
+            "parameters.properties.snapshot": {
+                "type": "object",
+                "description": "A snapshot as returned by save_snapshot.",
+                "properties": {
+                    "plugins": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": (
+                            "folderName values of the plugins that should be enabled; all others are disabled"
+                        ),
+                    },
+                },
+                "required": ["plugins"],
+            },
+        }
+    },
+    # Generate connection payload → datasource_type is a documented closed set;
+    # connection_params fields are documented PER TYPE (different required sets
+    # per provider), so the union is described without a flat inner `required` —
+    # a wrong flat list would demand Athena keys from a Databricks request.
+    "datamodel.generate_connections_payload": {
+        "patch": {
+            "parameters.properties.datasource_type.enum": ["Athena", "RedShift", "BigQuery", "DataBricks"],
+            "parameters.properties.connection_params": {
+                "type": "object",
+                "description": (
+                    "Connection details; which keys are required depends on datasource_type "
+                    "(Athena: name, region, s3_output_location, aws_access_key, aws_secret_key. "
+                    "DataBricks: name, connection_string, token. "
+                    "BigQuery: name, service_account_key_path. "
+                    "RedShift: server, username, password.)"
+                ),
+                "properties": {
+                    "name": {"type": "string", "description": "Connection name"},
+                    "description": {"type": "string", "description": "Connection description"},
+                    "region": {"type": "string", "description": "AWS region (Athena)"},
+                    "s3_output_location": {"type": "string", "description": "S3 output location (Athena)"},
+                    "aws_access_key": {"type": "string", "description": "AWS access key (Athena)"},
+                    "aws_secret_key": {"type": "string", "description": "AWS secret key (Athena)"},
+                    "connection_string": {"type": "string", "description": "JDBC connection string (DataBricks)"},
+                    "token": {"type": "string", "description": "Access token (DataBricks)"},
+                    "service_account_key_path": {
+                        "type": "string",
+                        "description": "Service account key file path (BigQuery)",
+                    },
+                    "server": {"type": "string", "description": "Server host (RedShift)"},
+                    "username": {"type": "string", "description": "Username (RedShift)"},
+                    "password": {"type": "string", "description": "Password (RedShift)"},
+                    "schema": {"type": "string", "description": "Schema name"},
+                    "database": {"type": "string", "description": "Database name (BigQuery)"},
+                },
+            },
+        }
+    },
+    # Create/update connection → canonical field names from the docstrings; no
+    # inner `required` (create's docstring lists fields without marking any,
+    # and update is PATCH semantics — only include what should change).
+    "datamodel.create_connections": {
+        "patch": {
+            "parameters.properties.connection_payload": {
+                "type": "object",
+                "description": ("Connection configuration, typically produced by generate_connections_payload."),
+                "properties": {
+                    "provider": {"type": "string", "description": "Connector/provider name"},
+                    "name": {"type": "string", "description": "Connection name"},
+                    "description": {"type": "string", "description": "Connection description"},
+                    "parameters": {"type": "object", "description": "Provider-specific connection parameters"},
+                    "enabled": {"type": "boolean", "description": "Whether the connection is enabled"},
+                    "supportedModelTypes": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Model types the connection supports",
+                    },
+                },
+            },
+        }
+    },
+    "datamodel.update_connection": {
+        "patch": {
+            "parameters.properties.connection_data": {
+                "type": "object",
+                "description": "Fields to update — include only what should change.",
+                "properties": {
+                    "name": {"type": "string", "description": "New connection name"},
+                    "provider": {"type": "string", "description": "Connector/provider name"},
+                    "parameters": {"type": "object", "description": "Provider-specific connection parameters"},
+                },
+            },
+        }
+    },
+    # Create notebook → documented example fields; requiredness not documented,
+    # so none is invented.
+    "custom_code.create_notebook": {
+        "patch": {
+            "parameters.properties.notebook_data": {
+                "type": "object",
+                "description": "Notebook creation payload.",
+                "properties": {
+                    "notebookType": {
+                        "type": "string",
+                        "description": "Notebook type (for example CustomCodeTransformation)",
+                    },
+                    "displayName": {"type": "string", "description": "Display name for the notebook"},
+                },
+            },
+        }
+    },
+    # Saved formula measure → documented example fields, Sisense metadata format.
+    "metadata.add_datasource_measure": {
+        "patch": {
+            "parameters.properties.measure": {
+                "type": "object",
+                "description": "Measure object in Sisense metadata format.",
+                "properties": {
+                    "datasource": {"type": "string", "description": "Datasource/datamodel the measure belongs to"},
+                    "table": {"type": "string", "description": "Table the measure reads from"},
+                    "column": {"type": "string", "description": "Column the measure reads from"},
+                    "expression": {"type": "string", "description": "The measure's formula expression"},
+                },
+            },
+        }
+    },
     # Create DataModel → constrain datamodel_type
     "datamodel.create_datamodel": {
         "patch": {

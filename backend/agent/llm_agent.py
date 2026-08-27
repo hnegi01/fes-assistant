@@ -502,27 +502,46 @@ def _missing_required_fields(args: Dict[str, Any], schema: Dict[str, Any]) -> Li
     dotted children (`user_data.email`), never itself: the children are what
     the user must actually supply, and the question renderer / option lookup
     resolve dotted names via _prop_at.
+
+    Fields that carry `x-options-tool` get one rule more: their valid values
+    are a deployment-specific option set (roles, connections), so a value the
+    user never actually said can only be the model's guess — "create user
+    himanshu negi" was sometimes gated with role="viewer", a value too
+    plausible for the placeholder patterns to brand (live 2026-08-27). Judged
+    against the corpus with punctuation/spacing stripped, so "Data Designer"
+    in the user's words matches a canonical `dataDesigner`. Same abstention as
+    _is_fabricated: no corpus (outside a turn) → no judgement.
     """
     required = schema.get("required") or []
     props = schema.get("properties") or {}
     corpus = current_turn_user_corpus()
 
-    def _absent(value: Any) -> bool:
-        return not _is_filled(value) or _is_fabricated(value, corpus)
+    def _guessed_option(value: Any, prop: Dict[str, Any]) -> bool:
+        if not corpus or not prop.get("x-options-tool") or not isinstance(value, str):
+            return False
+        squash = lambda s: re.sub(r"[^a-z0-9]", "", s.lower())  # noqa: E731
+        return bool(squash(value)) and squash(value) not in squash(corpus)
+
+    def _absent(value: Any, prop: Dict[str, Any]) -> bool:
+        return not _is_filled(value) or _is_fabricated(value, corpus) or _guessed_option(value, prop)
 
     missing: List[str] = []
     for f in required:
         if f in _CREDENTIAL_FIELDS:
             continue
-        prop = props.get(f) or {}
-        inner_required = prop.get("required") if isinstance(prop, dict) else None
-        inner_props = prop.get("properties") if isinstance(prop, dict) else None
+        prop = props.get(f) if isinstance(props.get(f), dict) else {}
+        inner_required = prop.get("required")
+        inner_props = prop.get("properties")
         if inner_required and isinstance(inner_props, dict):
             # Object param with declared inner requirements: judge the children.
             value = args.get(f)
             inner_args = value if isinstance(value, dict) else {}
-            missing.extend(f"{f}.{sub}" for sub in inner_required if _absent(inner_args.get(sub)))
-        elif _absent(args.get(f)):
+            missing.extend(
+                f"{f}.{sub}"
+                for sub in inner_required
+                if _absent(inner_args.get(sub), inner_props.get(sub) if isinstance(inner_props.get(sub), dict) else {})
+            )
+        elif _absent(args.get(f), prop):
             missing.append(f)
     return missing
 

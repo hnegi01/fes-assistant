@@ -685,6 +685,60 @@ def test_object_param_without_inner_required_is_untouched():
     assert m._missing_required_fields({"user_email": "jane@acme.com"}, schema) == ["user_data"]
 
 
+def test_option_set_field_value_never_said_by_user_counts_as_missing():
+    """A field with x-options-tool draws from a deployment-specific option set
+    (roles, connections): a value the user never uttered can only be the
+    model's guess. Live 2026-08-27: 'create user himanshu negi' sometimes
+    gated with role='viewer' — too plausible for the placeholder patterns.
+    Matching squashes case/punctuation so 'Data Designer' matches
+    dataDesigner; without a corpus (outside a turn) the rule abstains."""
+    from backend.agent import _config as cfg
+
+    schema = {
+        "type": "object",
+        "properties": {
+            "user_data": {
+                "type": "object",
+                "properties": {
+                    "email": {"type": "string"},
+                    "role": {"type": "string", "x-options-tool": "access_management.get_roles"},
+                },
+                "required": ["email", "role"],
+            },
+        },
+        "required": ["user_data"],
+    }
+
+    def _missing(corpus, args):
+        token = cfg.set_current_turn("t-opt", corpus, user_corpus=corpus)
+        try:
+            return m._missing_required_fields(args, schema)
+        finally:
+            cfg._CURRENT_TURN.reset(token)
+
+    args = {"user_data": {"email": "jane@acme.com", "role": "viewer"}}
+    # User never said "viewer" → the value is a guess → clarify.
+    assert _missing("create user jane@acme.com", args) == ["user_data.role"]
+    # User did say it → accepted.
+    assert _missing("create a viewer user jane@acme.com", args) == []
+    # Squashed matching: natural phrasing matches the canonical value.
+    args2 = {"user_data": {"email": "jane@acme.com", "role": "dataDesigner"}}
+    assert _missing("make jane@acme.com a Data Designer", args2) == []
+    # Top-level option-set fields get the same rule.
+    top = {
+        "type": "object",
+        "properties": {"connection_name": {"type": "string", "x-options-tool": "datamodel.get_connections"}},
+        "required": ["connection_name"],
+    }
+    token = cfg.set_current_turn("t-opt2", "set up a datamodel called X", user_corpus="set up a datamodel called X")
+    try:
+        assert m._missing_required_fields({"connection_name": "prod_warehouse"}, top) == ["connection_name"]
+    finally:
+        cfg._CURRENT_TURN.reset(token)
+    # No corpus → abstain (outside a turn we cannot judge).
+    assert m._missing_required_fields(args, schema) == []
+
+
 def test_prop_at_resolves_dotted_and_plain_names():
     props = _USER_DATA_SCHEMA["properties"]
     assert m._prop_at(props, "user_data.email")["format"] == "email"
