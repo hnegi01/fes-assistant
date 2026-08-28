@@ -1009,6 +1009,89 @@ st.set_page_config(page_title="FES Assistant", page_icon="frontend/assets/sisens
 
 check_ui_session_timeout()
 
+# Tab bar linking this app to the Fieldnotes tool sharing the same domain
+# (nginx routes "/" here, "/fieldnotes/" to the other). Plain <a> tags, not
+# st.page_link: Fieldnotes is a separate Flask app, not a page in this one.
+#
+# Lives inside Streamlit's own header bar, not in the page content below it.
+# st.markdown can only add content in the normal document flow, and that
+# header is a fixed overlay drawn on top of the page rather than pushing it
+# down, so anything placed "below" it in markup either gets covered or needs
+# a margin guess to clear it. A components.html script reaches past its own
+# iframe into window.parent.document and appends straight into
+# [data-testid="stHeader"] instead — checked that this actually survives a
+# real Streamlit rerun (not just the initial paint) before relying on it.
+components_html(
+    """
+    <script>
+    (function () {
+        const doc = window.parent.document;
+        if (doc.getElementById("app-tabs-nav")) return;  // already injected, reruns call this again
+
+        const header = doc.querySelector('[data-testid="stHeader"]');
+        if (!header) return;
+
+        const style = doc.createElement("style");
+        style.textContent = `
+            #app-tabs-nav {
+                position: absolute;
+                left: 1rem;
+                top: 50%;
+                transform: translateY(-50%);
+                /* Streamlit's own header content wrapper is a plain static
+                   sibling, but it still won the paint/click order without
+                   this — verified empirically (elementFromPoint returned the
+                   wrapper, not this nav) rather than trusted on stacking
+                   rules alone. */
+                z-index: 1000000;
+                display: inline-flex;
+                padding: 0.25rem;
+                gap: 0.2rem;
+                background: rgba(128, 128, 128, 0.08);
+                border: 1px solid rgba(128, 128, 128, 0.25);
+                border-radius: 10px;
+            }
+            #app-tabs-nav a, #app-tabs-nav a * {
+                text-decoration: none !important;
+            }
+            .app-tab {
+                display: inline-flex;
+                align-items: baseline;
+                gap: 0.4rem;
+                padding: 0.4rem 0.9rem;
+                border-radius: 7px;
+                font-size: 0.88rem;
+                font-weight: 600;
+                color: inherit;
+                opacity: 0.6;
+            }
+            .app-tab.is-active {
+                opacity: 1;
+                background: rgba(128, 128, 128, 0.22);
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+            }
+            .app-tab-sub {
+                font-size: 0.7rem;
+                font-weight: 500;
+                opacity: 0.75;
+            }
+        `;
+        doc.head.appendChild(style);
+
+        const nav = doc.createElement("nav");
+        nav.id = "app-tabs-nav";
+        nav.innerHTML = `
+            <a class="app-tab is-active" href="/">FES Assistant <span class="app-tab-sub">MCP</span></a>
+            <a class="app-tab" href="/fieldnotes/">Fieldnotes <span class="app-tab-sub">FES Tickets</span></a>
+        `;
+        header.appendChild(nav);
+    })();
+    </script>
+    """,
+    height=0,
+)
+
+
 st.markdown(
     """
     <style>
