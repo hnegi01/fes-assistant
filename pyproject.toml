@@ -1,6 +1,6 @@
 [project]
 name = "fes-assistant"
-version = "2.1.3"
+version = "2.1.4"
 description = "Agentic AI assistant for Sisense — token-scoped (planner -> orchestrator loop -> critic over MCP/PySisense)"
 requires-python = ">=3.11,<3.12"
 dependencies = [
