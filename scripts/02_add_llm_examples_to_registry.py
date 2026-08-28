@@ -460,6 +460,59 @@ def load_existing_with_examples(root_dir: Path) -> Dict[str, Dict[str, Any]]:
     return {t.get("tool_id"): t for t in tools if isinstance(t, dict) and t.get("tool_id")}
 
 
+def port_renamed_examples(
+    base_tools: List[Dict[str, Any]],
+    existing_by_id: Dict[str, Dict[str, Any]],
+) -> None:
+    """Carry curated examples across SDK method RENAMES.
+
+    Examples are preserved by tool_id, so a renamed method looks like a brand
+    new tool: it loses its curated example[0] (the one users see in dialogs and
+    the tool-selection LLM sees at FES_TOOL_EXAMPLES=1) and gets a fresh
+    uncurated generation instead. Encoding the port here means nobody has to
+    remember the ritual when the SDK renames something.
+
+    A vanished old id's examples move to a new id only when the match is
+    UNAMBIGUOUS — all of:
+      - same module,
+      - identical parameter names and identical required list (many no-arg
+        read tools share an empty schema, so names alone are not enough),
+      - similar tool name (one contains the other, or >= 0.8 difflib ratio),
+      - exactly ONE candidate pair in each direction.
+    Anything murkier is left alone and simply regenerates. Ports are logged so
+    a rebuild's output shows what moved."""
+    import difflib
+
+    base_by_id = {t["tool_id"]: t for t in base_tools if t.get("tool_id")}
+    new_ids = [tid for tid in base_by_id if tid not in existing_by_id]
+    vanished = {tid: row for tid, row in existing_by_id.items() if tid not in base_by_id and row.get("examples")}
+    if not new_ids or not vanished:
+        return
+
+    def _shape(row: Dict[str, Any]) -> tuple:
+        params = row.get("parameters") or {}
+        props = tuple(sorted((params.get("properties") or {}).keys()))
+        req = tuple(sorted(params.get("required") or []))
+        return (row.get("module"), props, req)
+
+    def _similar(a: str, b: str) -> bool:
+        a, b = a.split(".")[-1], b.split(".")[-1]
+        return a in b or b in a or difflib.SequenceMatcher(None, a, b).ratio() >= 0.8
+
+    for new_id in new_ids:
+        candidates = [
+            old_id
+            for old_id, old_row in vanished.items()
+            if _shape(old_row) == _shape(base_by_id[new_id]) and _similar(old_id, new_id)
+        ]
+        if len(candidates) != 1:
+            continue
+        old_id = candidates[0]
+        existing_by_id[new_id] = {"tool_id": new_id, "examples": vanished[old_id]["examples"]}
+        del vanished[old_id]
+        logger.info("Rename detected: ported curated examples %s -> %s", old_id, new_id)
+
+
 def parse_examples(raw: str) -> Dict[str, Any]:
     """Parse LLM response into examples dict. Handles JSON fences and extraction."""
     try:
@@ -616,6 +669,7 @@ def main() -> None:
 
     base_tools = load_base_registry(root_dir)
     existing_by_id = load_existing_with_examples(root_dir)
+    port_renamed_examples(base_tools, existing_by_id)
     out_path = root_dir / "config" / "tools.registry.with_examples.json"
 
     logger.info("Base tools: %d, existing-with-examples: %d", len(base_tools), len(existing_by_id))

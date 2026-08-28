@@ -19,6 +19,17 @@ To create the file the first time (refuses to clobber hand edits):
 
     python scripts/04_generate_tool_allowlist.py --init
     python scripts/04_generate_tool_allowlist.py --init --force   # overwrite anyway
+
+To reconcile after a registry rebuild (renames, additions, deletions):
+
+    python scripts/04_generate_tool_allowlist.py --apply
+
+      - DELETES lines whose tool_id no longer exists in the registry (a dead
+        line can never expose anything — keeping it is pure clutter)
+      - APPENDS new registry tools as COMMENTED-OUT lines in a staging block:
+        exposing a tool stays a human decision, but the decision becomes
+        "uncomment one line", never "hand-copy an id"
+      - never touches an id that is already listed OR already staged/commented
 """
 
 from __future__ import annotations
@@ -107,9 +118,75 @@ def render(rows: List[Dict[str, Any]]) -> str:
     return "\n".join(out) + "\n"
 
 
+def _commented_tool_id(line: str, registry_ids: set) -> str:
+    """The tool_id a full-line comment stages, or '' — matches '# module.tool ...'
+    only when the first token really is a known-or-plausible tool id, so prose
+    comments and section headers are never mistaken for staged tools."""
+    import re
+
+    stripped = line.strip()
+    if not stripped.startswith("#"):
+        return ""
+    first = stripped.lstrip("#").strip().split()[0] if stripped.lstrip("#").strip() else ""
+    if first in registry_ids or re.fullmatch(r"[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*", first):
+        return first
+    return ""
+
+
+STAGING_HEADER = "# ===== staged by --apply: new in the registry — uncomment a line to expose the tool ====="
+
+
+def apply_reconcile(rows: List[Dict[str, Any]], registry_ids: set) -> int:
+    """--apply: delete dead lines, stage new tools commented-out. Idempotent."""
+    lines = ALLOWLIST.read_text(encoding="utf-8").splitlines()
+    kept: List[str] = []
+    removed: List[str] = []
+    staged_or_listed: set = set()
+
+    for line in lines:
+        active_id = line.split("#", 1)[0].strip()
+        commented_id = _commented_tool_id(line, registry_ids) if not active_id else ""
+        tid = active_id or commented_id
+        if tid and tid not in registry_ids:
+            removed.append(tid)  # dead line — active or staged, it can never resolve
+            continue
+        if tid:
+            staged_or_listed.add(tid)
+        kept.append(line)
+
+    new_ids = sorted(registry_ids - staged_or_listed)
+    if new_ids:
+        by_id = {r["tool_id"]: r for r in rows if r.get("tool_id")}
+        pad = max(len(t) for t in new_ids)
+        # Reuse an existing staging block's header if present; else append one.
+        if STAGING_HEADER not in kept:
+            kept += ["", STAGING_HEADER]
+        for t in new_ids:
+            meta = by_id.get(t, {})
+            tag = "[write] " if meta.get("mutates") else ""
+            kept.append(f"# {t:<{pad}}  # {tag}{one_liner(meta.get('description'))}")
+
+    ALLOWLIST.write_text("\n".join(kept).rstrip("\n") + "\n", encoding="utf-8")
+    if removed:
+        print(f"deleted {len(removed)} dead line(s): {', '.join(removed)}")
+    if new_ids:
+        print(f"staged {len(new_ids)} new tool(s) commented-out — uncomment to expose:")
+        for t in new_ids:
+            print(f"  # {t}")
+    if not (removed or new_ids):
+        print("nothing to reconcile — allowlist already in sync with the registry.")
+    return 0
+
+
 def main() -> int:
     rows = load_registry()
     registry_ids = {r["tool_id"] for r in rows if r.get("tool_id")}
+
+    if "--apply" in sys.argv:
+        if not ALLOWLIST.exists():
+            print(f"{ALLOWLIST} does not exist — create it first with --init.")
+            return 1
+        return apply_reconcile(rows, registry_ids)
 
     if "--init" in sys.argv:
         if ALLOWLIST.exists() and "--force" not in sys.argv:
