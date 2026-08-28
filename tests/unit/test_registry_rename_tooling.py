@@ -55,7 +55,7 @@ def _apply(path):
     return s04.apply_reconcile(ROWS, IDS)
 
 
-def test_apply_deletes_dead_active_and_commented_lines(allowlist):
+def test_apply_moves_dead_lines_to_deprecated_with_version(allowlist):
     allowlist.write_text(
         "# ===== datamodel =====\n"
         "datamodel.get_connections      # Retrieve all connections.\n"  # renamed away — dead
@@ -65,9 +65,30 @@ def test_apply_deletes_dead_active_and_commented_lines(allowlist):
     )
     _apply(allowlist)
     text = allowlist.read_text()
-    assert "datamodel.get_connections " not in text and "gone_tool" not in text
-    assert "access_management.get_users_all" in text
-    assert "prose comment" in text, "prose comments are never touched"
+    dep_at = text.index(s04.DEPRECATED_HEADER)
+    # dead lines live ONLY below the deprecated header, commented, with their
+    # original trailing comments preserved and a version batch marker above.
+    assert "# datamodel.get_connections " in text[dep_at:]
+    assert "Retrieve all connections." in text[dep_at:], "original comment kept as history"
+    assert "# datamodel.gone_tool" in text[dep_at:]
+    assert "removed in pysisense" in text[dep_at:]
+    assert "get_connections " not in text[:dep_at], "no dead line remains in the live body"
+    assert "access_management.get_users_all" in text[:dep_at]
+    assert "prose comment" in text[:dep_at], "prose comments are never touched"
+    # nothing in the deprecated section is ever active
+    active = {ln.split("#")[0].strip() for ln in text.splitlines() if ln.split("#")[0].strip()}
+    assert active == {"access_management.get_users_all"}
+
+
+def test_deprecated_section_survives_reruns_without_duplication(allowlist):
+    allowlist.write_text(
+        "access_management.get_users_all  # Retrieve all users.\n"
+        "datamodel.get_connections  # Retrieve all connections.\n"
+    )
+    _apply(allowlist)
+    _apply(allowlist)
+    text = allowlist.read_text()
+    assert text.count("datamodel.get_connections ") == 1, "moved once, never re-moved or duplicated"
 
 
 def test_apply_stages_new_tools_commented_with_write_tag(allowlist):
@@ -75,6 +96,7 @@ def test_apply_stages_new_tools_commented_with_write_tag(allowlist):
     _apply(allowlist)
     text = allowlist.read_text()
     assert s04.STAGING_HEADER in text
+    assert "new in pysisense" in text
     staged = [ln for ln in text.splitlines() if ln.startswith("# datamodel.")]
     assert any("get_connections_all" in ln for ln in staged), "new read tool staged commented"
     assert any("delete_datamodel" in ln and "[write]" in ln for ln in staged), "write tools carry the tag"
