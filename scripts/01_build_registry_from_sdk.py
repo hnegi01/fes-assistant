@@ -1,8 +1,9 @@
 import inspect
 import re
+import typing
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import pysisense
 
@@ -352,12 +353,82 @@ def _split_format_marker(description: str) -> tuple:
 _INTERNAL_PARAMS = {"self", "emit"}
 
 
+def _schema_from_annotation(ann: Any) -> Optional[Dict[str, Any]]:
+    """JSON Schema fragment from a resolved type annotation, or None when the
+    annotation carries no usable information (Any, missing, exotic unions) —
+    None sends the caller down the older default/docstring/heuristic chain.
+
+    This is the consumer half of pysisense >= 1.1's introspection contracts
+    (payload TypedDicts + Literal enums). On 1.0.x nothing here fires beyond
+    plain scalars/containers, which resolve to the same types the old chain
+    inferred — verified by a full registry rebuild producing a byte-identical
+    surface.
+
+    - TypedDict → object schema with per-field properties and `required` from
+      __required_keys__ (typing_extensions-aware: the SDK's payloads may
+      subclass typing_extensions.TypedDict, which typing.is_typeddict misses)
+    - Literal[...] → enum (+ scalar type from the values)
+    - Optional[X] / X | None → schema of X (a None default already marks the
+      param optional; JSON Schema needs no null union for that)
+    - list/tuple/set[X] → array with recursively-typed items
+    - dict[...] → object; str/bool/int/float → their scalar types
+    """
+    import types
+    import typing
+
+    import typing_extensions
+
+    if ann is None or ann is inspect._empty or ann is typing.Any:
+        return None
+    if typing_extensions.is_typeddict(ann):
+        try:
+            hints = typing_extensions.get_type_hints(ann)
+        except Exception:  # noqa: BLE001 — unresolvable forward refs → no info
+            return {"type": "object"}
+        props = {k: (_schema_from_annotation(sub) or {"type": "string"}) for k, sub in hints.items()}
+        req = sorted(getattr(ann, "__required_keys__", frozenset()))
+        schema: Dict[str, Any] = {"type": "object", "properties": props}
+        if req:
+            schema["required"] = req
+        return schema
+    origin = typing.get_origin(ann)
+    if origin is typing.Literal:
+        vals = list(typing.get_args(ann))
+        if all(isinstance(v, str) for v in vals):
+            return {"type": "string", "enum": vals}
+        if all(isinstance(v, int) and not isinstance(v, bool) for v in vals):
+            return {"type": "integer", "enum": vals}
+        return None
+    if origin is typing.Union or origin is types.UnionType:
+        non_none = [a for a in typing.get_args(ann) if a is not type(None)]
+        return _schema_from_annotation(non_none[0]) if len(non_none) == 1 else None
+    if origin in (list, tuple, set) or ann in (list, tuple, set):
+        args = typing.get_args(ann)
+        items = _schema_from_annotation(args[0]) if args else None
+        return {"type": "array", "items": items or {"type": "string"}}
+    if origin is dict or ann is dict:
+        return {"type": "object"}
+    if ann is bool:
+        return {"type": "boolean"}
+    if ann is int:
+        return {"type": "integer"}
+    if ann is float:
+        return {"type": "number"}
+    if ann is str:
+        return {"type": "string"}
+    return None
+
+
 def json_schema_from_signature(
     sig: inspect.Signature,
     doc: str,
+    type_hints: Optional[Dict[str, Any]] = None,
 ) -> dict:
     """
     Build a JSON schema for a method based on:
+    - Resolved type annotations, when the caller supplies them (TypedDict
+      payloads, Literal enums — the pysisense >= 1.1 contracts); an
+      annotation that yields concrete information wins outright
     - Python signature defaults (bool/int/list/dict → type inference)
     - Docstring param type hints + multi-line param descriptions
     - Generic name-based heuristics (e.g. *_ids → array)
@@ -371,23 +442,29 @@ def json_schema_from_signature(
         if name in _INTERNAL_PARAMS:
             continue
 
-        # Start with type from default
-        schema_piece = _schema_type_from_default(p.default)
-
-        # Refine from docstring if default did not give us anything useful
         meta = doc_meta.get(name)
-        if meta:
-            doc_type = meta.get("type")
-            if (p.default is inspect._empty or p.default is None) and doc_type:
-                hint_piece = _schema_type_from_doc_hint(doc_type)
-                schema_piece.update(hint_piece)
+        ann_piece = _schema_from_annotation((type_hints or {}).get(name))
+        if ann_piece is not None:
+            # The annotation is the SDK's own declaration — heuristics and
+            # docstring TYPE hints never override it (descriptions still apply).
+            schema_piece = dict(ann_piece)
+        else:
+            # Start with type from default
+            schema_piece = _schema_type_from_default(p.default)
+
+            # Refine from docstring if default did not give us anything useful
+            if meta:
+                doc_type = meta.get("type")
+                if (p.default is inspect._empty or p.default is None) and doc_type:
+                    hint_piece = _schema_type_from_doc_hint(doc_type)
+                    schema_piece.update(hint_piece)
+
+            # Apply generic name-based heuristics (no per-tool logic)
+            schema_piece = _apply_name_heuristics(name, schema_piece)
 
         # Ensure arrays always have "items"
         if schema_piece.get("type") == "array" and "items" not in schema_piece:
             schema_piece["items"] = {"type": "string"}
-
-        # Apply generic name-based heuristics (no per-tool logic)
-        schema_piece = _apply_name_heuristics(name, schema_piece)
 
         # Param-level description: prefer docstring text if available.
         # Extract any trailing "(format: <name>)" marker into a schema `format`.
@@ -993,6 +1070,12 @@ def build_registry() -> list:
         for name, func in inspect.getmembers(klass, predicate=inspect.isfunction):
             if name.startswith("_"):
                 continue
+            # PEP 702 deprecated aliases (pysisense keeps every renamed method
+            # as a decorated wrapper for one minor version) — a rename must not
+            # become two tools for one operation. The registry carries only the
+            # live name; the allowlist's DEPRECATED section keeps the history.
+            if getattr(func, "__deprecated__", None):
+                continue
 
             doc = (inspect.getdoc(func) or "").strip()
             one_liner = (doc.splitlines()[0] if doc else "No description.").strip()
@@ -1001,7 +1084,14 @@ def build_registry() -> list:
             tool_id = f"{module_name}.{name}"
             if tool_id in _EXCLUDED_TOOL_IDS:
                 continue
-            schema = json_schema_from_signature(sig, doc)
+            try:
+                # Resolve string annotations (SDK modules use `from __future__
+                # import annotations`) so TypedDict/Literal contracts are real
+                # classes the schema builder can introspect.
+                type_hints = typing.get_type_hints(func)
+            except Exception:  # noqa: BLE001 — unresolvable hints → old chain
+                type_hints = None
+            schema = json_schema_from_signature(sig, doc, type_hints=type_hints)
             mutates = is_mutating(name, doc)
             tags = infer_tags(module_name, name, mutates)
             defining_mixin = _get_defining_mixin(klass, name)

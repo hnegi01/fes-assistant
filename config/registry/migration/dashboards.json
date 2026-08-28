@@ -175,12 +175,12 @@
         },
         "action": {
           "type": "string",
-          "description": "Determines how the target handles conflicts. - None: default Sisense behavior (typically skip existing). - \"skip\": skip if exists. - \"overwrite\": overwrite if exists (shares/ownership migration is skipped). - \"duplicate\": create duplicate (shares/ownership migration is skipped).",
           "enum": [
             "skip",
             "overwrite",
             "duplicate"
-          ]
+          ],
+          "description": "Determines how the target handles conflicts. - None: default Sisense behavior (typically skip existing). - \"skip\": skip if exists. - \"overwrite\": overwrite if exists (shares/ownership migration is skipped). - \"duplicate\": create duplicate (shares/ownership migration is skipped)."
         },
         "republish": {
           "type": "boolean",

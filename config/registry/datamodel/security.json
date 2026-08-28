@@ -92,7 +92,7 @@
         "rules": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object"
           },
           "description": "Datasecurity rules to add in Sisense API format. Each rule typically includes fields such as ``table``, ``column``, ``datatype``, ``members``, ``exclusionary``, and ``shares``."
         }
@@ -152,7 +152,7 @@
         "datasecurity": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object"
           },
           "description": "Complete datasecurity rule list in Sisense API format. Each rule typically includes fields such as ``table``, ``column``, ``datatype``, ``members``, ``exclusionary``, and ``shares``."
         }

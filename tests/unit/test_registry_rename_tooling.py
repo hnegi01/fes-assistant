@@ -10,8 +10,11 @@ announced method renames (get_connections -> get_connections_all etc.):
 """
 
 import importlib
+import inspect
+import typing
 
 import pytest
+import typing_extensions
 
 s04 = importlib.import_module("scripts.04_generate_tool_allowlist")
 s02 = importlib.import_module("scripts.02_add_llm_examples_to_registry")
@@ -189,3 +192,80 @@ def test_schema_change_blocks_the_port():
     }
     s02.port_renamed_examples(base, existing)
     assert "datamodel.get_connections_all" not in existing
+
+
+# ---------------------------------------------------------------------------
+# scripts/01 annotation-aware schema generation (pysisense >= 1.1 contracts)
+# ---------------------------------------------------------------------------
+
+s01 = importlib.import_module("scripts.01_build_registry_from_sdk")
+
+
+class _ReqHalf(typing_extensions.TypedDict):
+    email: str
+    role: typing_extensions.Literal["viewer", "admin"]
+
+
+class _FakePayload(_ReqHalf, total=False):
+    firstName: str
+    groups: typing.List[str]
+
+
+def _fake_method(
+    self,
+    user_data: _FakePayload,
+    mode: typing.Literal["extract", "live"] = "extract",
+    names: typing.Optional[typing.List[str]] = None,
+    count: int = 0,
+):
+    """Do a fake thing.
+
+    Parameters
+    ----------
+    user_data : dict
+        The payload.
+    """
+
+
+def test_typeddict_annotation_becomes_nested_object_schema():
+    hints = typing.get_type_hints(_fake_method)
+    schema = s01.json_schema_from_signature(
+        inspect.signature(_fake_method), inspect.getdoc(_fake_method) or "", type_hints=hints
+    )
+    ud = schema["properties"]["user_data"]
+    assert ud["type"] == "object"
+    assert ud["required"] == ["email", "role"]
+    assert sorted(ud["properties"]) == ["email", "firstName", "groups", "role"]
+    assert ud["properties"]["groups"] == {"type": "array", "items": {"type": "string"}}
+    # nested Literal inside the TypedDict becomes an enum too
+    assert ud["properties"]["role"]["enum"] == ["viewer", "admin"]
+    # the docstring description still rides along; the doc TYPE hint ('dict')
+    # does not fight the annotation
+    assert ud["description"] == "The payload."
+
+
+def test_literal_optional_and_scalars_resolve_from_annotations():
+    hints = typing.get_type_hints(_fake_method)
+    schema = s01.json_schema_from_signature(inspect.signature(_fake_method), "", type_hints=hints)
+    assert schema["properties"]["mode"] == {
+        "type": "string",
+        "enum": ["extract", "live"],
+        "description": "mode parameter",
+    }
+    assert schema["properties"]["names"]["type"] == "array"  # Optional[List[str]] unwraps
+    assert schema["properties"]["count"]["type"] == "integer"
+
+
+def test_no_hints_means_old_chain_byte_identical():
+    # Without type_hints the output must be EXACTLY the pre-upgrade behavior —
+    # this is the pinned-1.0.x safety property.
+    schema = s01.json_schema_from_signature(inspect.signature(_fake_method), inspect.getdoc(_fake_method) or "")
+    assert schema["properties"]["user_data"] == {"type": "object", "description": "The payload."}
+
+
+def test_deprecated_alias_annotation_attribute_is_what_the_loop_keys_on():
+    @typing_extensions.deprecated("use new_name")
+    def old_name(self):
+        """Old."""
+
+    assert getattr(old_name, "__deprecated__", None) == "use new_name"

@@ -30,7 +30,14 @@ _SKIP_CLASSES = {"SisenseClient"}
 
 def _discover_facade_classes() -> Dict[str, Any]:
     """
-    Auto-discover facade classes from pysisense.__all__.
+    Auto-discover facade classes, preferring the SDK's explicit registry.
+
+    pysisense >= 1.1 exports `FACADES` — an explicit tuple of tool-bearing
+    classes, added exactly so downstream generators stop guessing: from that
+    version `__all__` also carries TypedDict payload classes (data contracts,
+    not facades), which ARE classes and would otherwise slip through the
+    isclass filter as a junk "payloads" module. Older versions (the 1.0.x
+    line) have no FACADES and fall back to filtering `__all__` as before.
 
     Maps subpackage name → facade class, e.g.:
       "access_management" → AccessManagement
@@ -38,19 +45,19 @@ def _discover_facade_classes() -> Dict[str, Any]:
 
     The subpackage name is derived from the class's __module__:
       "pysisense.access_management" → "access_management"
-
-    New packages added to pysisense.__all__ are picked up automatically.
     """
+    facades = getattr(pysisense, "FACADES", None)
+    candidates = list(facades) if facades else [getattr(pysisense, n, None) for n in pysisense.__all__]
+
     modules: Dict[str, Any] = {}
-    for name in pysisense.__all__:
-        obj = getattr(pysisense, name, None)
+    for obj in candidates:
         if obj is None or not inspect.isclass(obj):
             continue
-        if name in _SKIP_CLASSES:
+        if obj.__name__ in _SKIP_CLASSES:
             continue
         mod_path = getattr(obj, "__module__", "") or ""
         parts = mod_path.split(".")
-        subpkg = parts[1] if len(parts) >= 2 and parts[0] == "pysisense" else name.lower()
+        subpkg = parts[1] if len(parts) >= 2 and parts[0] == "pysisense" else obj.__name__.lower()
         modules[subpkg] = obj
     return modules
 
