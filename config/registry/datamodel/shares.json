@@ -12,7 +12,7 @@
         "shares": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object"
           },
           "description": "List of share definitions to add. Each dictionary should include: ``name`` (user email or group name), ``type`` (``\"user\"`` or ``\"group\"``), and ``permission`` (one of ``\"EDIT\"``, ``\"READ\"``, ``\"USE\"``)."
         }

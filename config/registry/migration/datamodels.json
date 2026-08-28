@@ -57,7 +57,6 @@
       {
         "user_query": "I want to migrate all data models, including shares, and duplicate any existing models in the target environment. How can I do this?",
         "arguments": {
-          "dependencies": null,
           "shares": true,
           "batch_size": 20,
           "sleep_time": 10,

@@ -19,6 +19,22 @@ To create the file the first time (refuses to clobber hand edits):
 
     python scripts/04_generate_tool_allowlist.py --init
     python scripts/04_generate_tool_allowlist.py --init --force   # overwrite anyway
+
+To reconcile after a registry rebuild (renames, additions, deletions):
+
+    python scripts/04_generate_tool_allowlist.py --apply
+
+      - moves lines whose tool_id left the registry into a DEPRECATED section,
+        commented, under a "removed in pysisense <version>" batch header — the
+        file doubles as the surface's changelog (a dead line can never expose
+        anything, but its history answers "what happened to this tool?")
+      - APPENDS new registry tools as COMMENTED-OUT lines in a STAGED section
+        under a "new in pysisense <version>" batch header: exposing a tool
+        stays a human decision, but the decision becomes "uncomment one line",
+        never "hand-copy an id"
+      - never touches an id that is already listed, staged, or deprecated
+
+    File layout --apply maintains:  live tools → DEPRECATED → STAGED.
 """
 
 from __future__ import annotations
@@ -107,9 +123,126 @@ def render(rows: List[Dict[str, Any]]) -> str:
     return "\n".join(out) + "\n"
 
 
+def _commented_tool_id(line: str, registry_ids: set) -> str:
+    """The tool_id a full-line comment stages, or '' — matches '# module.tool ...'
+    only when the first token really is a known-or-plausible tool id, so prose
+    comments and section headers are never mistaken for staged tools."""
+    import re
+
+    stripped = line.strip()
+    if not stripped.startswith("#"):
+        return ""
+    first = stripped.lstrip("#").strip().split()[0] if stripped.lstrip("#").strip() else ""
+    if first in registry_ids or re.fullmatch(r"[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*", first):
+        return first
+    return ""
+
+
+STAGING_HEADER = "# ===== STAGED: new in the registry — uncomment a line to expose the tool ====="
+DEPRECATED_HEADER = "# ===== DEPRECATED: removed from the SDK — history only, never uncomment ====="
+
+
+def _sdk_version() -> str:
+    try:
+        from importlib.metadata import version
+
+        return version("pysisense")
+    except Exception:  # noqa: BLE001 — annotation, never a blocker
+        return "unknown"
+
+
+def apply_reconcile(rows: List[Dict[str, Any]], registry_ids: set) -> int:
+    """--apply: dead lines move to DEPRECATED (annotated with the pysisense
+    version that removed them), new tools stage commented under the version
+    that introduced them. Idempotent; live lines and prose are never touched."""
+    ver = _sdk_version()
+    lines = ALLOWLIST.read_text(encoding="utf-8").splitlines()
+
+    # Split into the three sections (body / deprecated / staged). Sections may
+    # be absent; anything after a header belongs to that section until the
+    # next header.
+    sections = {"body": [], "dep": [], "stg": []}
+    current = "body"
+    for line in lines:
+        if line.strip() == DEPRECATED_HEADER:
+            current = "dep"
+            continue
+        if line.strip() == STAGING_HEADER:
+            current = "stg"
+            continue
+        sections[current].append(line)
+
+    moved: List[str] = []  # newly dead lines (as commented text, annotated)
+    kept_body: List[str] = []
+    kept_stg: List[str] = []
+    present: set = set()  # every id currently listed, staged, or deprecated
+
+    for tid_line in sections["dep"]:
+        tid = _commented_tool_id(tid_line, registry_ids)
+        if tid:
+            present.add(tid)
+
+    def _process(seg: List[str], out: List[str]) -> None:
+        for line in seg:
+            active_id = line.split("#", 1)[0].strip()
+            commented_id = _commented_tool_id(line, registry_ids) if not active_id else ""
+            tid = active_id or commented_id
+            if tid and tid not in registry_ids:
+                text = line.strip()
+                moved.append(text if text.startswith("#") else f"# {text}")
+                continue
+            if tid:
+                present.add(tid)
+            out.append(line)
+
+    _process(sections["body"], kept_body)
+    _process(sections["stg"], kept_stg)
+
+    new_ids = sorted(registry_ids - present)
+
+    if not (moved or new_ids):
+        print("nothing to reconcile — allowlist already in sync with the registry.")
+        return 0
+
+    out = ["\n".join(kept_body).rstrip("\n")]
+
+    dep_lines = [ln for ln in sections["dep"] if ln.strip()]
+    if moved:
+        dep_lines += [f"# --- removed in pysisense {ver} ---", *moved]
+    if dep_lines:
+        out += ["", DEPRECATED_HEADER, *dep_lines]
+
+    stg_lines = [ln for ln in kept_stg if ln.strip()]
+    if new_ids:
+        by_id = {r["tool_id"]: r for r in rows if r.get("tool_id")}
+        pad = max(len(t) for t in new_ids)
+        stg_lines.append(f"# --- new in pysisense {ver} ---")
+        for t in new_ids:
+            meta = by_id.get(t, {})
+            tag = "[write] " if meta.get("mutates") else ""
+            stg_lines.append(f"# {t:<{pad}}  # {tag}{one_liner(meta.get('description'))}")
+    if stg_lines:
+        out += ["", STAGING_HEADER, *stg_lines]
+
+    ALLOWLIST.write_text("\n".join(out).rstrip("\n") + "\n", encoding="utf-8")
+    if moved:
+        print(f"moved {len(moved)} dead line(s) to DEPRECATED (removed in pysisense {ver})")
+    if new_ids:
+        print(f"staged {len(new_ids)} new tool(s) (new in pysisense {ver}) — uncomment to expose:")
+        for t in new_ids:
+            print(f"  # {t}")
+    return 0
+
+
 def main() -> int:
     rows = load_registry()
     registry_ids = {r["tool_id"] for r in rows if r.get("tool_id")}
+
+    if "--apply" in sys.argv:
+        if not ALLOWLIST.exists():
+            print(f"{ALLOWLIST} does not exist — create it first with --init.")
+            return 1
+        return apply_reconcile(rows, registry_ids)
 
     if "--init" in sys.argv:
         if ALLOWLIST.exists() and "--force" not in sys.argv:
