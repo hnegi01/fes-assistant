@@ -260,6 +260,10 @@ Rules:
   own record — do NOT list a whole collection and search through it. (Pattern:
   "which <collection> does <named object> belong to" → "Get <named object>'s
   record", NOT "List all <collection>s".)
+- The catalog notes each operation's required inputs ("takes: …"). When an
+  operation takes an identifier the user already gave (a name, an email),
+  plan it in ONE step with that identifier — a separate fetch of the object
+  just to convert the user's identifier is never needed.
 - Preserve identifiers exactly as the user wrote them; never invent objects the
   user did not name. If it is unclear whether a word is an object's NAME or
   just a description of what they want, keep the user's wording — do NOT

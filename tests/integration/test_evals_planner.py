@@ -255,6 +255,38 @@ EVAL_CASES = [
         "origin": "2026-08-21: off-topic request routed to a notebook-creation tool and "
         "asked for its creation payload.",
     },
+    {
+        "id": "named-object-property-is-one-step-not-resolve-then-fetch",
+        "prompt": "get columns from dashboard called test",
+        # The columns tool takes the dashboard NAME — the user's own words —
+        # yet with listing turns in history the planner reliably (4/4 live,
+        # 0/4 fresh) planned "get the dashboard by name, THEN its columns
+        # [needs-prior-result]", inventing an id-dependency; under summ-off
+        # the dependency gate then skipped the tagged step and the turn died
+        # with "turn summarization on" for a one-step request. Root cause was
+        # our own resolve-the-named-entity-first rule read as mandating a
+        # two-step resolve; the resolving-is-ONE-step rule pins the intent.
+        # History is the trigger, so the case carries the reproducing fixture.
+        "allow_summarization": False,
+        "history": [
+            {"role": "user", "content": "get all dashboard"},
+            {
+                "role": "assistant",
+                "content": "Found 4 results from `dashboard.get_all_dashboards`. Results shown above.",
+            },
+            {"role": "user", "content": "get users"},
+            {
+                "role": "assistant",
+                "content": "Found 1 result from `access_management.get_users_all`. Results shown above.",
+            },
+        ],
+        "expect_tools_any": ["dashboard.get_dashboard_columns"],
+        "forbid_tools": [],
+        "expect_reply_any": [],
+        "forbid_reply": ["turn summarization on"],
+        "origin": "2026-08-27: history-triggered resolve-then-fetch plan blocked a one-step "
+        "summ-off request; live EC2, reproduced 4/4 with this fixture, 5/5 fixed.",
+    },
 ]
 
 
