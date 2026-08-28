@@ -899,11 +899,22 @@ async def _navigate_for_step(
 
 
 def _capability_catalog(mode: str) -> str:
-    """One line per tool — `tool_id: first line of description` — for the
-    planner (plan/replan). NO schemas: the planner writes prose steps, it
-    never emits tool calls, so the compact full catalog is safe where showing
+    """One line per tool — `tool_id: first line of description (takes: …)` —
+    for the planner (plan/replan). NO schemas: the planner writes prose steps,
+    it never emits tool calls, so the compact full catalog is safe where showing
     119 schemas to the CALLING tool-selection step would not be. Mode-filtered the same way
-    the registry is (migration tools only in migration mode)."""
+    the registry is (migration tools only in migration mode).
+
+    The `(takes: …)` hint lists the tool's REQUIRED param names, straight from
+    the generated registry. Without it the planner plans blind to which
+    identifier an operation accepts, and hedges: with dashboard listings in
+    history it reliably planned "get the dashboard by name, THEN its columns
+    [needs-prior-result]" for a tool that takes the NAME — an invented
+    id-dependency that the summ-off gate then blocked (live 2026-08-27). Data
+    over instruction: a rebuild keeps the hint true for tools nobody has
+    written yet, where a prompt rule commands blind trust. Credential and
+    internal params never appear (they are stripped from the registry's
+    schemas before this reads them)."""
     lines: List[str] = []
     for tid in sorted(TOOL_REGISTRY):
         meta = TOOL_REGISTRY[tid]
@@ -911,7 +922,9 @@ def _capability_catalog(mode: str) -> str:
         if (mode == "migration") != is_migration:
             continue
         desc = (meta.get("description") or "").strip().splitlines()
-        lines.append(f"- {tid}: {desc[0] if desc else ''}")
+        required = (meta.get("parameters") or {}).get("required") or []
+        hint = f" (takes: {', '.join(required)})" if required else ""
+        lines.append(f"- {tid}: {desc[0] if desc else ''}{hint}")
     return "\n".join(lines)
 
 
