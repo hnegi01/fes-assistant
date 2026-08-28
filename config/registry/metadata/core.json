@@ -156,7 +156,6 @@
       {
         "user_query": "Can you show me the measures for the datasource hosted at localhost/MyModel?",
         "arguments": {
-          "datasource": null,
           "ds_full_name": "localhost/MyModel"
         },
         "notes": "This call fetches measures for the datasource using its full name 'localhost/MyModel'."

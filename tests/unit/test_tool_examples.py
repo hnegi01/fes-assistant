@@ -267,3 +267,43 @@ class TestShippedExampleQuality:
             if unverbalized:
                 offenders[row["tool_id"]] = unverbalized
         assert offenders == {}, f"example[0] sets numbers absent from its query: {offenders}"
+
+
+# ---------------------------------------------------------------------------
+# Examples must be VALID, not just well-phrased
+# ---------------------------------------------------------------------------
+class TestShippedExamplesValidateAgainstTheirSchema:
+    """An example's arguments must satisfy its own tool's JSON Schema.
+
+    The quality checks above police what an example SAYS; this polices whether
+    it would actually run. The gap was real: the two datasecurity tools carried
+    examples whose payload was an array of JSON STRINGS, correct against the
+    old (wrong) items:string schema and invalid once the generator learned to
+    read the SDK's list[dict] annotation — a curated demonstration of a call
+    the validator would reject. Two others passed explicit nulls for optional
+    params, teaching the model to send null instead of omitting the key.
+
+    Examples are preserved by tool_id across rebuilds (script 02), so a schema
+    correction never refreshes them — nothing but this test closes that loop.
+    """
+
+    def test_every_example_argument_set_matches_its_tool_schema(self):
+        import jsonschema
+
+        rows = json.loads(registry_m.REGISTRY_PATH.read_text(encoding="utf-8"))
+        allowed = registry_m.allowed_tool_ids()
+        offenders = {}
+        for row in rows:
+            tool_id = row.get("tool_id")
+            if allowed is not None and tool_id not in allowed:
+                continue
+            schema = row.get("parameters") or {}
+            for i, example in enumerate(row.get("examples") or []):
+                args = example.get("arguments")
+                if not isinstance(args, dict):
+                    continue
+                try:
+                    jsonschema.validate(instance=args, schema=schema)
+                except jsonschema.ValidationError as exc:
+                    offenders[f"{tool_id} example[{i}]"] = exc.message[:120]
+        assert offenders == {}, f"curated examples that fail their own schema: {offenders}"

@@ -109,8 +109,27 @@
         "arguments": {
           "datamodel_name": "Sales_Live",
           "rules": [
-            "{\"table\": \"Orders\", \"column\": \"Region\", \"datatype\": \"string\", \"members\": [\"North\", \"South\"], \"exclusionary\": false, \"shares\": []}",
-            "{\"table\": \"Customers\", \"column\": \"CustomerType\", \"datatype\": \"string\", \"members\": [\"Premium\"], \"exclusionary\": true, \"shares\": []}"
+            {
+              "table": "Orders",
+              "column": "Region",
+              "datatype": "string",
+              "members": [
+                "North",
+                "South"
+              ],
+              "exclusionary": false,
+              "shares": []
+            },
+            {
+              "table": "Customers",
+              "column": "CustomerType",
+              "datatype": "string",
+              "members": [
+                "Premium"
+              ],
+              "exclusionary": true,
+              "shares": []
+            }
           ]
         },
         "notes": "This call adds two data security rules to the 'Sales_Live' datamodel, restricting access to specific regions and customer types."
@@ -120,8 +139,25 @@
         "arguments": {
           "datamodel_name": "HR_Live",
           "rules": [
-            "{\"table\": \"Employees\", \"column\": \"Salary\", \"datatype\": \"number\", \"members\": [\"10000\", \"20000\"], \"exclusionary\": false, \"shares\": []}",
-            "{\"table\": \"Employees\", \"column\": \"SSN\", \"datatype\": \"string\", \"members\": [], \"exclusionary\": true, \"shares\": []}"
+            {
+              "table": "Employees",
+              "column": "Salary",
+              "datatype": "number",
+              "members": [
+                "10000",
+                "20000"
+              ],
+              "exclusionary": false,
+              "shares": []
+            },
+            {
+              "table": "Employees",
+              "column": "SSN",
+              "datatype": "string",
+              "members": [],
+              "exclusionary": true,
+              "shares": []
+            }
           ]
         },
         "notes": "This call adds rules to the 'HR_Live' datamodel to restrict access to salary and SSN data."
@@ -131,8 +167,27 @@
         "arguments": {
           "datamodel_name": "Finance_Live",
           "rules": [
-            "{\"table\": \"Transactions\", \"column\": \"Department\", \"datatype\": \"string\", \"members\": [\"Accounting\", \"Audit\"], \"exclusionary\": false, \"shares\": []}",
-            "{\"table\": \"Transactions\", \"column\": \"Confidential\", \"datatype\": \"boolean\", \"members\": [\"false\"], \"exclusionary\": true, \"shares\": []}"
+            {
+              "table": "Transactions",
+              "column": "Department",
+              "datatype": "string",
+              "members": [
+                "Accounting",
+                "Audit"
+              ],
+              "exclusionary": false,
+              "shares": []
+            },
+            {
+              "table": "Transactions",
+              "column": "Confidential",
+              "datatype": "boolean",
+              "members": [
+                "false"
+              ],
+              "exclusionary": true,
+              "shares": []
+            }
           ]
         },
         "notes": "This call adds rules to the 'Finance_Live' datamodel to limit access to specific departments and exclude confidential transactions."
@@ -169,8 +224,27 @@
         "arguments": {
           "datamodel_name": "Sales_Elasticube",
           "datasecurity": [
-            "{\"table\": \"Orders\", \"column\": \"Region\", \"datatype\": \"string\", \"members\": [\"North America\", \"Europe\"], \"exclusionary\": false, \"shares\": []}",
-            "{\"table\": \"Customers\", \"column\": \"CustomerType\", \"datatype\": \"string\", \"members\": [\"Enterprise\"], \"exclusionary\": true, \"shares\": []}"
+            {
+              "table": "Orders",
+              "column": "Region",
+              "datatype": "string",
+              "members": [
+                "North America",
+                "Europe"
+              ],
+              "exclusionary": false,
+              "shares": []
+            },
+            {
+              "table": "Customers",
+              "column": "CustomerType",
+              "datatype": "string",
+              "members": [
+                "Enterprise"
+              ],
+              "exclusionary": true,
+              "shares": []
+            }
           ]
         },
         "notes": "This call replaces all existing datasecurity rules on the 'Sales_Elasticube' datamodel with the provided rules."
@@ -180,8 +254,22 @@
         "arguments": {
           "datamodel_name": "HR_Analytics",
           "datasecurity": [
-            "{\"table\": \"EmployeeData\", \"column\": \"Salary\", \"datatype\": \"number\", \"members\": [], \"exclusionary\": true, \"shares\": []}",
-            "{\"table\": \"EmployeeData\", \"column\": \"SSN\", \"datatype\": \"string\", \"members\": [], \"exclusionary\": true, \"shares\": []}"
+            {
+              "table": "EmployeeData",
+              "column": "Salary",
+              "datatype": "number",
+              "members": [],
+              "exclusionary": true,
+              "shares": []
+            },
+            {
+              "table": "EmployeeData",
+              "column": "SSN",
+              "datatype": "string",
+              "members": [],
+              "exclusionary": true,
+              "shares": []
+            }
           ]
         },
         "notes": "This call applies new datasecurity rules to the 'HR_Analytics' datamodel, ensuring sensitive columns like 'Salary' and 'SSN' are restricted."
@@ -191,7 +279,17 @@
         "arguments": {
           "datamodel_name": "Marketing_Campaigns",
           "datasecurity": [
-            "{\"table\": \"Campaigns\", \"column\": \"Region\", \"datatype\": \"string\", \"members\": [\"APAC\", \"EMEA\"], \"exclusionary\": false, \"shares\": []}"
+            {
+              "table": "Campaigns",
+              "column": "Region",
+              "datatype": "string",
+              "members": [
+                "APAC",
+                "EMEA"
+              ],
+              "exclusionary": false,
+              "shares": []
+            }
           ]
         },
         "notes": "This call updates the 'Marketing_Campaigns' datamodel to allow access to campaign data only for the specified regions: APAC and EMEA."

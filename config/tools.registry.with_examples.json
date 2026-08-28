@@ -49,7 +49,7 @@
     "updated_at": "2026-08-28T17:51:58Z",
     "examples": [
       {
-        "user_query": "Transfer ownership of the 'Sales Reports' folder to jane.doe@example.com, running as admin@example.com, and transfer the dashboards inside it too \u2014 the previous owner should keep edit access.",
+        "user_query": "Transfer ownership of the 'Sales Reports' folder to jane.doe@example.com, running as admin@example.com, and transfer the dashboards inside it too — the previous owner should keep edit access.",
         "arguments": {
           "executing_user": "admin@example.com",
           "folder_name": "Sales Reports",
@@ -247,7 +247,7 @@
     "class": "AccessManagement",
     "method": "create_user",
     "description": "Create a new user in Sisense.",
-    "full_doc": "Create a new user in Sisense.\n\nProcesses the provided user data to resolve the role name and group\nnames to their corresponding IDs, then sends a POST request to create\nthe user. The ``role`` field is matched case-insensitively (with\n``\"VIEWER\"`` mapped to ``\"CONSUMER\"`` and ``\"DESIGNER\"`` to\n``\"CONTRIBUTOR\"``) and replaced with the resolved ``roleId``; group\nnames in ``groups`` are resolved to group IDs.\n\nParameters\n----------\nuser_data : dict[str, Any]\n    Dictionary containing the user details. Supported fields use\n    canonical Sisense payload field names:\n\n    - ``email`` : str \u2014 the user's email address.\n    - ``firstName`` : str \u2014 the user's first name.\n    - ``lastName`` : str \u2014 the user's last name.\n    - ``role`` : str \u2014 role name to assign (resolved to ``roleId``).\n    - ``groups`` : list[str] \u2014 group names to assign (resolved to IDs).\n    - ``preferences`` : dict \u2014 user preference settings.\n\nReturns\n-------\ndict[str, Any]\n    The created user object returned by the API if successful, or a\n    dictionary with an ``error`` key if the operation fails.",
+    "full_doc": "Create a new user in Sisense.\n\nProcesses the provided user data to resolve the role name and group\nnames to their corresponding IDs, then sends a POST request to create\nthe user. The ``role`` field is matched case-insensitively (with\n``\"VIEWER\"`` mapped to ``\"CONSUMER\"`` and ``\"DESIGNER\"`` to\n``\"CONTRIBUTOR\"``) and replaced with the resolved ``roleId``; group\nnames in ``groups`` are resolved to group IDs.\n\nParameters\n----------\nuser_data : dict[str, Any]\n    Dictionary containing the user details. Supported fields use\n    canonical Sisense payload field names:\n\n    - ``email`` : str — the user's email address.\n    - ``firstName`` : str — the user's first name.\n    - ``lastName`` : str — the user's last name.\n    - ``role`` : str — role name to assign (resolved to ``roleId``).\n    - ``groups`` : list[str] — group names to assign (resolved to IDs).\n    - ``preferences`` : dict — user preference settings.\n\nReturns\n-------\ndict[str, Any]\n    The created user object returned by the API if successful, or a\n    dictionary with an ``error`` key if the operation fails.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -743,7 +743,7 @@
             "dm_54321"
           ]
         },
-        "notes": "This call processes three data models\u2014two by ID and one by title\u2014to identify unused columns across all of them."
+        "notes": "This call processes three data models—two by ID and one by title—to identify unused columns across all of them."
       }
     ]
   },
@@ -951,7 +951,7 @@
         },
         "user_data": {
           "type": "object",
-          "description": "Fields to update \u2014 include only what should change.",
+          "description": "Fields to update — include only what should change.",
           "properties": {
             "email": {
               "type": "string",
@@ -1768,7 +1768,7 @@
     "updated_at": "2026-08-28T17:51:58Z",
     "examples": [
       {
-        "user_query": "Update notebook 123e4567-e89b-12d3-a456-426614174000 \u2014 set its title to 'Updated Sales Analysis' and its description to 'Notebook with updated insights for Q4 sales.'",
+        "user_query": "Update notebook 123e4567-e89b-12d3-a456-426614174000 — set its title to 'Updated Sales Analysis' and its description to 'Notebook with updated insights for Q4 sales.'",
         "arguments": {
           "notebook_id": "123e4567-e89b-12d3-a456-426614174000",
           "notebook_data": {
@@ -3462,8 +3462,27 @@
         "arguments": {
           "datamodel_name": "Sales_Live",
           "rules": [
-            "{\"table\": \"Orders\", \"column\": \"Region\", \"datatype\": \"string\", \"members\": [\"North\", \"South\"], \"exclusionary\": false, \"shares\": []}",
-            "{\"table\": \"Customers\", \"column\": \"CustomerType\", \"datatype\": \"string\", \"members\": [\"Premium\"], \"exclusionary\": true, \"shares\": []}"
+            {
+              "table": "Orders",
+              "column": "Region",
+              "datatype": "string",
+              "members": [
+                "North",
+                "South"
+              ],
+              "exclusionary": false,
+              "shares": []
+            },
+            {
+              "table": "Customers",
+              "column": "CustomerType",
+              "datatype": "string",
+              "members": [
+                "Premium"
+              ],
+              "exclusionary": true,
+              "shares": []
+            }
           ]
         },
         "notes": "This call adds two data security rules to the 'Sales_Live' datamodel, restricting access to specific regions and customer types."
@@ -3473,8 +3492,25 @@
         "arguments": {
           "datamodel_name": "HR_Live",
           "rules": [
-            "{\"table\": \"Employees\", \"column\": \"Salary\", \"datatype\": \"number\", \"members\": [\"10000\", \"20000\"], \"exclusionary\": false, \"shares\": []}",
-            "{\"table\": \"Employees\", \"column\": \"SSN\", \"datatype\": \"string\", \"members\": [], \"exclusionary\": true, \"shares\": []}"
+            {
+              "table": "Employees",
+              "column": "Salary",
+              "datatype": "number",
+              "members": [
+                "10000",
+                "20000"
+              ],
+              "exclusionary": false,
+              "shares": []
+            },
+            {
+              "table": "Employees",
+              "column": "SSN",
+              "datatype": "string",
+              "members": [],
+              "exclusionary": true,
+              "shares": []
+            }
           ]
         },
         "notes": "This call adds rules to the 'HR_Live' datamodel to restrict access to salary and SSN data."
@@ -3484,8 +3520,27 @@
         "arguments": {
           "datamodel_name": "Finance_Live",
           "rules": [
-            "{\"table\": \"Transactions\", \"column\": \"Department\", \"datatype\": \"string\", \"members\": [\"Accounting\", \"Audit\"], \"exclusionary\": false, \"shares\": []}",
-            "{\"table\": \"Transactions\", \"column\": \"Confidential\", \"datatype\": \"boolean\", \"members\": [\"false\"], \"exclusionary\": true, \"shares\": []}"
+            {
+              "table": "Transactions",
+              "column": "Department",
+              "datatype": "string",
+              "members": [
+                "Accounting",
+                "Audit"
+              ],
+              "exclusionary": false,
+              "shares": []
+            },
+            {
+              "table": "Transactions",
+              "column": "Confidential",
+              "datatype": "boolean",
+              "members": [
+                "false"
+              ],
+              "exclusionary": true,
+              "shares": []
+            }
           ]
         },
         "notes": "This call adds rules to the 'Finance_Live' datamodel to limit access to specific departments and exclude confidential transactions."
@@ -3736,7 +3791,7 @@
         },
         "connection_data": {
           "type": "object",
-          "description": "Fields to update \u2014 include only what should change.",
+          "description": "Fields to update — include only what should change.",
           "properties": {
             "name": {
               "type": "string",
@@ -3767,7 +3822,7 @@
     "updated_at": "2026-08-28T17:51:58Z",
     "examples": [
       {
-        "user_query": "Update connection conn_12345 \u2014 rename it to 'Updated Connection Name' and point it at host new-database-host.example.com on port 5432.",
+        "user_query": "Update connection conn_12345 — rename it to 'Updated Connection Name' and point it at host new-database-host.example.com on port 5432.",
         "arguments": {
           "connection_id": "conn_12345",
           "connection_data": {
@@ -3848,8 +3903,27 @@
         "arguments": {
           "datamodel_name": "Sales_Elasticube",
           "datasecurity": [
-            "{\"table\": \"Orders\", \"column\": \"Region\", \"datatype\": \"string\", \"members\": [\"North America\", \"Europe\"], \"exclusionary\": false, \"shares\": []}",
-            "{\"table\": \"Customers\", \"column\": \"CustomerType\", \"datatype\": \"string\", \"members\": [\"Enterprise\"], \"exclusionary\": true, \"shares\": []}"
+            {
+              "table": "Orders",
+              "column": "Region",
+              "datatype": "string",
+              "members": [
+                "North America",
+                "Europe"
+              ],
+              "exclusionary": false,
+              "shares": []
+            },
+            {
+              "table": "Customers",
+              "column": "CustomerType",
+              "datatype": "string",
+              "members": [
+                "Enterprise"
+              ],
+              "exclusionary": true,
+              "shares": []
+            }
           ]
         },
         "notes": "This call replaces all existing datasecurity rules on the 'Sales_Elasticube' datamodel with the provided rules."
@@ -3859,8 +3933,22 @@
         "arguments": {
           "datamodel_name": "HR_Analytics",
           "datasecurity": [
-            "{\"table\": \"EmployeeData\", \"column\": \"Salary\", \"datatype\": \"number\", \"members\": [], \"exclusionary\": true, \"shares\": []}",
-            "{\"table\": \"EmployeeData\", \"column\": \"SSN\", \"datatype\": \"string\", \"members\": [], \"exclusionary\": true, \"shares\": []}"
+            {
+              "table": "EmployeeData",
+              "column": "Salary",
+              "datatype": "number",
+              "members": [],
+              "exclusionary": true,
+              "shares": []
+            },
+            {
+              "table": "EmployeeData",
+              "column": "SSN",
+              "datatype": "string",
+              "members": [],
+              "exclusionary": true,
+              "shares": []
+            }
           ]
         },
         "notes": "This call applies new datasecurity rules to the 'HR_Analytics' datamodel, ensuring sensitive columns like 'Salary' and 'SSN' are restricted."
@@ -3870,7 +3958,17 @@
         "arguments": {
           "datamodel_name": "Marketing_Campaigns",
           "datasecurity": [
-            "{\"table\": \"Campaigns\", \"column\": \"Region\", \"datatype\": \"string\", \"members\": [\"APAC\", \"EMEA\"], \"exclusionary\": false, \"shares\": []}"
+            {
+              "table": "Campaigns",
+              "column": "Region",
+              "datatype": "string",
+              "members": [
+                "APAC",
+                "EMEA"
+              ],
+              "exclusionary": false,
+              "shares": []
+            }
           ]
         },
         "notes": "This call updates the 'Marketing_Campaigns' datamodel to allow access to campaign data only for the specified regions: APAC and EMEA."
@@ -4719,7 +4817,7 @@
     "class": "Dashboard",
     "method": "get_dashboard_widgets",
     "description": "Retrieve widget definitions from an admin export of the dashboard.",
-    "full_doc": "Retrieve widget definitions from an admin export of the dashboard.\n\nUses ``export_dashboard`` (``GET /api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``), then reads the ``widgets``\nfield from the first exported dashboard object\u2014the same payload shape\nused by ``get_dashboard_script`` and ``get_widget_script``. If\n``widgets`` is missing or empty, an empty list is returned.\n\n``dashboard_ref`` is resolved with ``resolve_dashboard_reference`` so it\nmay be either a 24-character dashboard ``oid`` or a dashboard title.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard ``oid`` or title.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of widget objects on success (possibly empty). On failure,\n    ``{\"error\": \"...\"}`` when the reference cannot be resolved or\n    ``export_dashboard`` fails. If ``widgets`` is present but neither a\n    list nor a mapping of widget objects, returns an error dict.",
+    "full_doc": "Retrieve widget definitions from an admin export of the dashboard.\n\nUses ``export_dashboard`` (``GET /api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``), then reads the ``widgets``\nfield from the first exported dashboard object—the same payload shape\nused by ``get_dashboard_script`` and ``get_widget_script``. If\n``widgets`` is missing or empty, an empty list is returned.\n\n``dashboard_ref`` is resolved with ``resolve_dashboard_reference`` so it\nmay be either a 24-character dashboard ``oid`` or a dashboard title.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard ``oid`` or title.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of widget objects on success (possibly empty). On failure,\n    ``{\"error\": \"...\"}`` when the reference cannot be resolved or\n    ``export_dashboard`` fails. If ``widgets`` is present but neither a\n    list nor a mapping of widget objects, returns an error dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -4771,7 +4869,7 @@
     "class": "Dashboard",
     "method": "get_dashboards",
     "description": "Retrieve dashboards visible to the authenticated user.",
-    "full_doc": "Retrieve dashboards visible to the authenticated user.\n\nSends ``GET /api/v1/dashboards``, which returns dashboards the current\nuser owns or has been shared to \u2014 as opposed to\n``get_all_dashboards``, which uses the admin endpoint and requires\nelevated access.\n\nParameters\n----------\nfields : list[str], optional\n    Subset of fields to include in the response (for example\n    ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are\n    returned.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dashboard objects on success, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "full_doc": "Retrieve dashboards visible to the authenticated user.\n\nSends ``GET /api/v1/dashboards``, which returns dashboards the current\nuser owns or has been shared to — as opposed to\n``get_all_dashboards``, which uses the admin endpoint and requires\nelevated access.\n\nParameters\n----------\nfields : list[str], optional\n    Subset of fields to include in the response (for example\n    ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are\n    returned.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dashboard objects on success, or ``{\"error\": \"...\"}`` on\n    failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -5271,7 +5369,7 @@
     "class": "Folder",
     "method": "get_folder_ancestors",
     "description": "Retrieve folders by a caller-supplied structure value.",
-    "full_doc": "Retrieve folders by a caller-supplied structure value.\n\nThin alias for ``get_folders(structure)`` \u2014 passes the ``structure``\nstring through to ``GET /api/v1/folders?structure={structure}``\nunchanged. Provided for compatibility with win2linux workflows that\npass an ancestors-specific structure string.\n\nParameters\n----------\nstructure : str\n    Sisense folder structure type for the request.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    Folder data from the API, or ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Retrieve folders by a caller-supplied structure value.\n\nThin alias for ``get_folders(structure)`` — passes the ``structure``\nstring through to ``GET /api/v1/folders?structure={structure}``\nunchanged. Provided for compatibility with win2linux workflows that\npass an ancestors-specific structure string.\n\nParameters\n----------\nstructure : str\n    Sisense folder structure type for the request.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    Folder data from the API, or ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -5707,7 +5805,6 @@
       {
         "user_query": "Can you show me the measures for the datasource hosted at localhost/MyModel?",
         "arguments": {
-          "datasource": null,
           "ds_full_name": "localhost/MyModel"
         },
         "notes": "This call fetches measures for the datasource using its full name 'localhost/MyModel'."
@@ -5975,7 +6072,6 @@
       {
         "user_query": "I want to migrate all data models, including shares, and duplicate any existing models in the target environment. How can I do this?",
         "arguments": {
-          "dependencies": null,
           "shares": true,
           "batch_size": 20,
           "sleep_time": 10,
@@ -6024,12 +6120,12 @@
       {
         "user_query": "Migrate all user groups from the source environment to the target environment.",
         "arguments": {},
-        "notes": "This tool takes no arguments \u2014 source and target come from the configured connections."
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
       },
       {
         "user_query": "Copy every group over to the new environment.",
         "arguments": {},
-        "notes": "This tool takes no arguments \u2014 source and target come from the configured connections."
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
       }
     ]
   },
@@ -6058,12 +6154,12 @@
       {
         "user_query": "Migrate all users from the source environment to the target environment.",
         "arguments": {},
-        "notes": "This tool takes no arguments \u2014 source and target come from the configured connections."
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
       },
       {
         "user_query": "Copy every eligible user over to the new environment.",
         "arguments": {},
-        "notes": "This tool takes no arguments \u2014 source and target come from the configured connections."
+        "notes": "This tool takes no arguments — source and target come from the configured connections."
       }
     ]
   },
@@ -6839,7 +6935,7 @@
     "class": "Plugins",
     "method": "restore_snapshot",
     "description": "Restore plugin states to exactly match a previously saved snapshot.",
-    "full_doc": "Restore plugin states to exactly match a previously saved snapshot.\n\nCompares the snapshot's plugin list against the live instance state and\ncomputes the minimal set of changes needed \u2014 enabling plugins that should\nbe on, disabling plugins that should be off. Plugins already in the\ncorrect state are skipped.\n\nParameters\n----------\nsnapshot : dict[str, Any]\n    A snapshot dict as returned by :meth:`save_snapshot`, containing at\n    minimum a ``\"plugins\"`` key with a list of ``folderName`` values for\n    the plugins that should be enabled. All other plugins will be disabled.\nbulk : bool, optional\n    When ``True`` (default), all enable and disable changes are sent in a\n    single PATCH request. When ``False``, one PATCH request is made per\n    plugin change.\n\nReturns\n-------\ndict[str, Any]\n    A summary dict with keys:\n\n    - ``enabled`` (list[str]): ``folderName`` values that were enabled.\n    - ``disabled`` (list[str]): ``folderName`` values that were disabled.\n    - ``already_set`` (int): Count of plugins already in the correct state.\n    - ``not_in_instance`` (list[str]): Snapshot entries with no matching plugin.\n    - ``errors`` (list[str]): ``folderName`` values where the PATCH failed\n      (non-bulk mode only).\n\n    Returns ``{\"error\": \"...\"}`` if the plugin list could not be fetched or\n    the snapshot is missing the ``\"plugins\"`` key.",
+    "full_doc": "Restore plugin states to exactly match a previously saved snapshot.\n\nCompares the snapshot's plugin list against the live instance state and\ncomputes the minimal set of changes needed — enabling plugins that should\nbe on, disabling plugins that should be off. Plugins already in the\ncorrect state are skipped.\n\nParameters\n----------\nsnapshot : dict[str, Any]\n    A snapshot dict as returned by :meth:`save_snapshot`, containing at\n    minimum a ``\"plugins\"`` key with a list of ``folderName`` values for\n    the plugins that should be enabled. All other plugins will be disabled.\nbulk : bool, optional\n    When ``True`` (default), all enable and disable changes are sent in a\n    single PATCH request. When ``False``, one PATCH request is made per\n    plugin change.\n\nReturns\n-------\ndict[str, Any]\n    A summary dict with keys:\n\n    - ``enabled`` (list[str]): ``folderName`` values that were enabled.\n    - ``disabled`` (list[str]): ``folderName`` values that were disabled.\n    - ``already_set`` (int): Count of plugins already in the correct state.\n    - ``not_in_instance`` (list[str]): Snapshot entries with no matching plugin.\n    - ``errors`` (list[str]): ``folderName`` values where the PATCH failed\n      (non-bulk mode only).\n\n    Returns ``{\"error\": \"...\"}`` if the plugin list could not be fetched or\n    the snapshot is missing the ``\"plugins\"`` key.",
     "parameters": {
       "type": "object",
       "properties": {
