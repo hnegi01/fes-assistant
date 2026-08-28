@@ -123,6 +123,34 @@ EVAL_CASES = [
         "origin": "2026-08-20: create-vs-setup review — add-a-table is create_table's one "
         "legitimate standalone job; the composite would error on the existing model.",
     },
+    {
+        "id": "dashboard-sharing-is-a-share-not-a-role-change",
+        "prompt": "share dashboard 6a90b533a689f5da2f617354 with the user "
+        "probe.eval.donotcreate@sisense-test.com as viewer",
+        # Granting access to ONE dashboard must gate add_dashboard_shares.
+        # access_management.update_user(role=viewer) looks superficially similar
+        # in a dialog and silently widens the user's access across the WHOLE
+        # deployment instead — a far broader mutation than the one asked for.
+        #
+        # KNOWN GAP (live 2026-08-28, deterministic): the phrasing "give X view
+        # access to dashboard <id>" — nearly verbatim add_dashboard_shares' own
+        # curated example — routes to access_management/users, so the selection
+        # step never sees the sharing tool and picks update_user. Root cause is
+        # the SDK class docstrings the L1 index is generated from:
+        # access_management advertises "dashboard ownership transfer ...
+        # reporting on dashboard shares" while dashboard advertises "share
+        # management for users and groups". Proven by experiment — sharpening
+        # those two descriptions routes it correctly 4/4 — so the fix belongs in
+        # the SDK docstrings (index.json is generated; a hand-edit is dropped on
+        # the next rebuild). This case pins the phrasings that DO work; the
+        # "give ... view access" wording joins the prompt once the SDK lands.
+        "expect_gated": "dashboard.add_dashboard_shares",
+        "expect_args": [["dashboard_id", "6a90b533a689f5da2f617354"]],
+        "forbid_arg_paths": [],
+        "forbid_reply": [],
+        "origin": "2026-08-28: live write test — 'give X view access to dashboard Y' gated "
+        "update_user(role=viewer), a deployment-wide role change instead of one dashboard share.",
+    },
 ]
 
 

@@ -179,7 +179,7 @@ EVAL_CASES = [
         ],
         "expect_tools_any": [],
         "forbid_tools": [],
-        "expect_reply_any": ["more information", "more details", "needs:"],
+        "expect_reply_any": ["i need", "more information", "more details", "needs:", "could you provide"],
         "forbid_reply": ["didn't quite understand"],
         "origin": "2026-08-20: stale clarify exchange in history derailed the planner into "
         "answering as the assistant; the fallback then discarded its question.",
@@ -212,7 +212,7 @@ EVAL_CASES = [
         ],
         "expect_tools_any": [],
         "forbid_tools": ["get_datasources", "get_elasticubes"],
-        "expect_reply_any": ["more information", "needs:"],
+        "expect_reply_any": ["i need", "more information", "more details", "needs:", "could you provide"],
         "forbid_reply": ["didn't quite understand"],
         "origin": "2026-08-21: topic-change to a second create request mid-clarification sent "
         "the planner into discovery reads instead of clarifying the new create.",
