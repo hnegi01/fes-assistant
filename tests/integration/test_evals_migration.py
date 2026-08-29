@@ -140,8 +140,17 @@ EVAL_CASES = [
             "migration.migrate_datamodels",
             "migration.migrate_dashboard_shares",
         ],
-        "expect_reply_any": ["dashboard id"],
-        "forbid_reply": [],
+        # No positive wording assertion (removed 2026-08-28). It demanded the
+        # phrase "dashboard id" and failed ~40% of runs on CORRECT behaviour:
+        # the model asks the same question three ways ("provide the dashboard
+        # ids" / "which specific dashboards' shares" / "I need more details to
+        # proceed"). A question has unlimited phrasings, so pinning one is
+        # whack-a-mole; the strategy guard is the empty plan plus forbid_steps
+        # above, which hold 100% of the time. What IS worth asserting is the
+        # thing that must never happen — claiming the migration ran when
+        # nothing was planned.
+        "expect_reply_any": [],
+        "forbid_reply": ["successfully migrated", "migration completed", "shares migrated"],
         "origin": "2026-08-14: planner emitted migrate_all_users({}) for a bare shares request "
         "(~1 in 6 runs); two other runs gated migrate_dashboard_shares with EMPTY id lists, "
         "which passed the missing-required check until _is_missing learned that [] means absent.",

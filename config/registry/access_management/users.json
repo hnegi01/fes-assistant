@@ -55,17 +55,18 @@
       "properties": {
         "user_data": {
           "type": "object",
-          "description": "The new user's details. Required: email and role. Optional: firstName, lastName, groups, preferences.",
           "properties": {
             "email": {
               "type": "string",
-              "format": "email",
               "description": "The new user's email address"
             },
             "role": {
               "type": "string",
               "description": "Role name to assign (matched case-insensitively)",
               "x-options-tool": "access_management.get_roles"
+            },
+            "userName": {
+              "type": "string"
             },
             "firstName": {
               "type": "string",
@@ -82,15 +83,18 @@
               },
               "description": "Group names to assign the user to"
             },
+            "password": {
+              "type": "string"
+            },
             "preferences": {
-              "type": "object",
-              "description": "User preference settings"
+              "type": "object"
             }
           },
           "required": [
             "email",
             "role"
-          ]
+          ],
+          "description": "User details, using canonical Sisense payload field names: - ``email`` : str — the user's email address. **Required.** - ``role`` : str — role name to assign (resolved to ``roleId``). **Required.** - ``userName`` : str — the user's login name (optional). - ``firstName`` : str — the user's first name (optional). - ``lastName`` : str — the user's last name (optional). - ``groups`` : list[str] — group names to assign, resolved to IDs (optional). - ``password`` : str — initial password; if omitted, the user receives an email to set one (optional). - ``preferences`` : dict — user preference settings (optional)."
         }
       },
       "required": [
@@ -154,6 +158,87 @@
           }
         },
         "notes": "This call creates a new user named Admin User with the Admin role, does not assign them to any groups, and sets their preferences for language and timezone."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.create_users_bulk",
+    "description": "Create multiple users in a single bulk request.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "User definitions to create. Each dictionary should use canonical Sisense user fields (at minimum ``email``, ``firstName``, and ``roleId``)."
+        }
+      },
+      "required": [
+        "users"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create two users at once: john.doe@example.com with first name John and role admin, and jane.smith@example.com with first name Jane and role editor.",
+        "arguments": {
+          "users": [
+            {
+              "email": "john.doe@example.com",
+              "firstName": "John",
+              "roleId": "admin"
+            },
+            {
+              "email": "jane.smith@example.com",
+              "firstName": "Jane",
+              "roleId": "editor"
+            }
+          ]
+        },
+        "notes": "This call creates two new users with the provided email addresses, first names, and role IDs. Use this when onboarding multiple users simultaneously."
+      },
+      {
+        "user_query": "How can I bulk-create users with their roles already resolved?",
+        "arguments": {
+          "users": [
+            {
+              "email": "alice.wonderland@example.com",
+              "firstName": "Alice",
+              "roleId": "viewer"
+            },
+            {
+              "email": "bob.builder@example.com",
+              "firstName": "Bob",
+              "roleId": "editor"
+            },
+            {
+              "email": "charlie.brown@example.com",
+              "firstName": "Charlie",
+              "roleId": "admin"
+            }
+          ]
+        },
+        "notes": "This example demonstrates how to create three users with different roles. Ensure that role IDs are resolved beforehand."
+      },
+      {
+        "user_query": "Can I add a batch of users with their email, first name, and admin role?",
+        "arguments": {
+          "users": [
+            {
+              "email": "diana.prince@example.com",
+              "firstName": "Diana",
+              "roleId": "admin"
+            },
+            {
+              "email": "clark.kent@example.com",
+              "firstName": "Clark",
+              "roleId": "admin"
+            }
+          ]
+        },
+        "notes": "This call adds two users with the 'admin' role. Use this when you need to assign administrative privileges to multiple users."
       }
     ]
   },
@@ -362,6 +447,33 @@
     ]
   },
   {
+    "tool_id": "access_management.get_users_expanded",
+    "description": "Retrieve all users with raw, unmodified role and group objects.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve all users with their raw roles and groups for cross-environment role mapping.",
+        "arguments": {},
+        "notes": "This call fetches all users with unmodified role and group objects, useful for scenarios requiring exact mappings between Sisense environments."
+      },
+      {
+        "user_query": "How can I get a list of all users with their roles and groups in raw format?",
+        "arguments": {},
+        "notes": "Use this call to retrieve user data with roles and groups as stored in the database, without display-name aliasing."
+      },
+      {
+        "user_query": "Fetch all users with expanded role and group information for auditing purposes.",
+        "arguments": {},
+        "notes": "This call is ideal for auditing user roles and groups in their original format, ensuring no modifications or aliasing are applied."
+      }
+    ]
+  },
+  {
     "tool_id": "access_management.get_users_with_role_names_and_group_names",
     "description": "Retrieve all users enriched with role names and group names.",
     "parameters": {
@@ -401,24 +513,19 @@
         },
         "user_data": {
           "type": "object",
-          "description": "Fields to update — include only what should change.",
           "properties": {
             "email": {
               "type": "string",
-              "format": "email",
               "description": "New email address for the user"
             },
             "userName": {
-              "type": "string",
-              "description": "New username/login name"
+              "type": "string"
             },
             "firstName": {
-              "type": "string",
-              "description": "New first name"
+              "type": "string"
             },
             "lastName": {
-              "type": "string",
-              "description": "New last name"
+              "type": "string"
             },
             "role": {
               "type": "string",
@@ -429,14 +536,16 @@
               "type": "array",
               "items": {
                 "type": "string"
-              },
-              "description": "Group names replacing the user's group assignments"
+              }
+            },
+            "password": {
+              "type": "string"
             },
             "preferences": {
-              "type": "object",
-              "description": "User preference settings"
+              "type": "object"
             }
-          }
+          },
+          "description": "Dictionary of fields to update. Only include fields you want to change. Supported fields ---------------- - email : str Update the user's email address. - userName : str Update the user's username/login name. - firstName : str Update the user's first name. - lastName : str Update the user's last name. - role : str Role name (e.g., \"viewer\", \"designer\"). This is resolved to ``roleId`` before sending the API request. - groups : list[str] List of group names to apply. Group names are resolved to group IDs before sending the API request. If ``groups`` is explicitly provided as an empty list (``[]``), group memberships are cleared (tenant defaults may still apply)."
         }
       },
       "required": [

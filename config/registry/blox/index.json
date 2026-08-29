@@ -2,6 +2,7 @@
   "package": "blox",
   "class": "Blox",
   "modules": {
-    "core": "Custom Blox actions — retrieve all actions (OS-routed), save a new action (Linux), and delete an existing action (Linux)."
+    "core": "Custom Blox actions — retrieve all actions (OS-routed), save a new action (Linux), and delete an existing action (Linux).",
+    "widgets": "BloX widget styles — read and update the CSS and font family of BloX widgets, with optional temporary ownership transfer for dashboards the API token user does not own."
   }
 }

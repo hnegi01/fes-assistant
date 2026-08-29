@@ -1,0 +1,367 @@
+[
+  {
+    "tool_id": "report_manager.create_report",
+    "description": "Create a new Report Manager report.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "report": {
+          "type": "object",
+          "description": "The report definition to create."
+        }
+      },
+      "required": [
+        "report"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create a new report named 'Weekly Sales Report' with PDF and CSV formats enabled, and set it to overwrite existing files on the file share.",
+        "arguments": {
+          "report": {
+            "name": "Weekly Sales Report",
+            "reportType": {
+              "PDF": true,
+              "CSV": true,
+              "URL": false
+            },
+            "runOnFinish": {
+              "fileShare": {
+                "overwriteExisting": true
+              }
+            }
+          }
+        },
+        "notes": "This call creates a new report named 'Weekly Sales Report' with PDF and CSV formats enabled. It ensures that any existing files on the file share are overwritten."
+      },
+      {
+        "user_query": "How can I create a report for monthly performance metrics with email notifications enabled?",
+        "arguments": {
+          "report": {
+            "name": "Monthly Performance Metrics",
+            "reportType": {
+              "PDF": true,
+              "CSV": false,
+              "URL": true
+            },
+            "events": [
+              "email"
+            ],
+            "enabled": true
+          }
+        },
+        "notes": "This call creates a report named 'Monthly Performance Metrics' with PDF and URL formats enabled. It also sets up email notifications for the report."
+      },
+      {
+        "user_query": "Set up a report for quarterly revenue analysis with a specific template and high priority.",
+        "arguments": {
+          "report": {
+            "name": "Quarterly Revenue Analysis",
+            "reportType": {
+              "PDF": true,
+              "CSV": true,
+              "URL": true
+            },
+            "templateId": "template_12345",
+            "priority": "high"
+          }
+        },
+        "notes": "This call creates a report named 'Quarterly Revenue Analysis' using a specific template and assigns it a high priority."
+      }
+    ]
+  },
+  {
+    "tool_id": "report_manager.delete_report",
+    "description": "Delete a Report Manager report by id.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "report_id": {
+          "type": "string",
+          "description": "The report id to delete."
+        }
+      },
+      "required": [
+        "report_id"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Delete the report with ID 'report_12345'.",
+        "arguments": {
+          "report_id": "report_12345"
+        },
+        "notes": "This call deletes the report with the specified ID. Use it when you need to remove a specific report from the Report Manager."
+      },
+      {
+        "user_query": "How do I remove a report with the ID 'monthly_sales_2023'?",
+        "arguments": {
+          "report_id": "monthly_sales_2023"
+        },
+        "notes": "This example demonstrates how to delete a report with a specific ID, such as 'monthly_sales_2023'. Use this when you no longer need the report."
+      },
+      {
+        "user_query": "Can you delete the report identified as 'temp_report_001'?",
+        "arguments": {
+          "report_id": "temp_report_001"
+        },
+        "notes": "This call removes the report with the ID 'temp_report_001'. It is useful for cleaning up temporary or outdated reports."
+      }
+    ]
+  },
+  {
+    "tool_id": "report_manager.get_report",
+    "description": "Retrieve a single Report Manager report by id.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "report_id": {
+          "type": "string",
+          "description": "The report id."
+        },
+        "owner_info": {
+          "type": "boolean",
+          "description": "When ``True``, include the report owner's information. Default is ``False``."
+        },
+        "recipients_info": {
+          "type": "boolean",
+          "description": "When ``True``, include recipient data. Default is ``False``."
+        },
+        "dashboards_info": {
+          "type": "boolean",
+          "description": "When ``True``, include dashboard names. Default is ``False``."
+        },
+        "fields": {
+          "type": "string",
+          "description": "Whitelist of fields to return. Fields can also be excluded by prefixing their name with ``-``."
+        }
+      },
+      "required": [
+        "report_id"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve the report with ID 'report123' and include recipient data.",
+        "arguments": {
+          "report_id": "report123",
+          "recipients_info": true
+        },
+        "notes": "Fetches the report with the specified ID and includes recipient information in the response."
+      },
+      {
+        "user_query": "Can you get the report with ID 'sales_report_2023' and include the owner's details?",
+        "arguments": {
+          "report_id": "sales_report_2023",
+          "owner_info": true
+        },
+        "notes": "Retrieves the report with the given ID and includes the owner's information in the response."
+      },
+      {
+        "user_query": "Fetch the report with ID 'dashboard_report_456' and include dashboard names.",
+        "arguments": {
+          "report_id": "dashboard_report_456",
+          "dashboards_info": true
+        },
+        "notes": "Retrieves the report with the specified ID and includes the names of associated dashboards in the response."
+      }
+    ]
+  },
+  {
+    "tool_id": "report_manager.get_reports",
+    "description": "Retrieve all reports configured in Report Manager.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Search reports by name."
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more report ids to filter by. A bare string is treated as a single id."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "When provided, filter to only enabled (``True``) or disabled (``False``) reports."
+        },
+        "statuses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more running statuses to filter by. A bare string is treated as a single status."
+        },
+        "priority": {
+          "type": "string",
+          "description": "Filter reports by priority. One of ``\"high\"``, ``\"normal\"``."
+        },
+        "owner_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more owner user ids to filter by. A bare string is treated as a single id."
+        },
+        "fields": {
+          "type": "string",
+          "description": "Whitelist of fields to return for each report. Fields can also be excluded by prefixing their name with ``-``."
+        },
+        "sort": {
+          "type": "string",
+          "description": "Field to sort results by. Ascending by default, descending if prefixed with ``-``."
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Page size used for the underlying paginated requests. Default is ``100``."
+        }
+      },
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve all enabled reports owned by user ID 'user123'.",
+        "arguments": {
+          "enabled": true,
+          "owner_ids": [
+            "user123"
+          ]
+        },
+        "notes": "This call retrieves all reports that are enabled and owned by the specified user. Use this to filter reports by ownership and status."
+      },
+      {
+        "user_query": "What reports are currently running with high priority?",
+        "arguments": {
+          "statuses": [
+            "running"
+          ],
+          "priority": "high"
+        },
+        "notes": "This call filters reports to only those with a 'running' status and 'high' priority. Use this to monitor urgent tasks."
+      },
+      {
+        "user_query": "Show all reports sorted by name, but only return the 'name' and 'status' fields.",
+        "arguments": {
+          "fields": "name,status",
+          "sort": "name"
+        },
+        "notes": "This call retrieves all reports, sorted alphabetically by name, and limits the returned fields to 'name' and 'status'. Use this for simplified report listings."
+      }
+    ]
+  },
+  {
+    "tool_id": "report_manager.run_report",
+    "description": "Trigger an immediate run of a Report Manager report.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "report_id": {
+          "type": "string",
+          "description": "The report id to run."
+        }
+      },
+      "required": [
+        "report_id"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Run the report with ID 'sales_report_2023' immediately.",
+        "arguments": {
+          "report_id": "sales_report_2023"
+        },
+        "notes": "This call triggers an immediate execution of the 'sales_report_2023' report. If the server is at capacity, the report will be queued."
+      },
+      {
+        "user_query": "How can I execute the report with ID 'customer_retention_q4'?",
+        "arguments": {
+          "report_id": "customer_retention_q4"
+        },
+        "notes": "Use this call to run the 'customer_retention_q4' report. It ensures the report is executed or queued if the server is busy."
+      },
+      {
+        "user_query": "I need to trigger the 'inventory_audit_2023' report right now.",
+        "arguments": {
+          "report_id": "inventory_audit_2023"
+        },
+        "notes": "This example demonstrates running the 'inventory_audit_2023' report immediately. Useful for time-sensitive reporting tasks."
+      }
+    ]
+  },
+  {
+    "tool_id": "report_manager.update_report",
+    "description": "Update an existing Report Manager report.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "report_id": {
+          "type": "string",
+          "description": "The report id to update."
+        },
+        "report": {
+          "type": "object",
+          "description": "The fields to update."
+        }
+      },
+      "required": [
+        "report_id",
+        "report"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Update the report with ID 'report123' to enable it and set its priority to high.",
+        "arguments": {
+          "report_id": "report123",
+          "report": {
+            "enabled": true,
+            "priority": "high"
+          }
+        },
+        "notes": "This call updates the specified report to enable it and set its priority to high. Use this when you need to modify key attributes of an existing report."
+      },
+      {
+        "user_query": "How can I update the schedule and recipients for a report?",
+        "arguments": {
+          "report_id": "report456",
+          "report": {
+            "schedule": "0 9 * * 1",
+            "recipients": [
+              "user1@example.com",
+              "user2@example.com"
+            ]
+          }
+        },
+        "notes": "This call updates the schedule and recipients for the specified report. Use this when you need to adjust the timing and audience of a report."
+      },
+      {
+        "user_query": "Can I change the report type and overwrite existing files in the file share?",
+        "arguments": {
+          "report_id": "report789",
+          "report": {
+            "reportType": {
+              "PDF": true,
+              "CSV": false,
+              "URL": true
+            },
+            "runOnFinish": {
+              "fileShare": {
+                "overwriteExisting": true
+              }
+            }
+          }
+        },
+        "notes": "This call updates the report type and ensures that files in the file share are overwritten upon completion. Use this when changing the output format and managing file storage behavior."
+      }
+    ]
+  }
+]

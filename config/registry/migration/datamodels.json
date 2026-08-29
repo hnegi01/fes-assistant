@@ -115,7 +115,7 @@
               "perspectives"
             ]
           },
-          "description": "A list of dependencies to include in the migration. If not provided or if \"all\" is passed, all dependencies are selected by default. Possible values: - \"dataSecurity\" (includes both Data Security and Scope Configuration) - \"formulas\" (for Formulas) - \"hierarchies\" (for Drill Hierarchies) - \"perspectives\" (for Perspectives) If left blank or set to \"all\", all dependencies are included by default."
+          "description": "A list of dependencies to include in the migration. If not provided or if \"all\" is passed, all dependencies are selected by default. Possible values: - \"dataSecurity\" (includes both Data Security and Scope Configuration) - \"formulas\" (for Formulas) - \"hierarchies\" (for Drill Hierarchies) - \"perspectives\" (for Perspectives) If left blank or set to \"all\", all dependencies are included by default. Windows: the export endpoint used on Windows sources has no dependencies parameter, so this argument has no effect there."
         },
         "shares": {
           "type": "boolean",

@@ -1,18 +1,22 @@
 {
-  "sdk_version": "1.0.2",
-  "updated_at": "2026-08-28T17:51:59Z",
+  "sdk_version": "1.1.0",
+  "updated_at": "2026-08-29T02:12:05Z",
   "packages": {
     "access_management": {
       "class": "AccessManagement",
-      "description": "Manage Sisense users, groups, permissions, and access control.\n\nCovers user lifecycle (create, update, deactivate), group membership,\nrole assignment, folder and dashboard ownership transfer, column-level\nsecurity restrictions, and administrative reporting on dashboard shares\nand scheduled builds."
+      "description": "Manage Sisense users, groups, permissions, and access control.\n\nCovers user lifecycle (create, update, deactivate), group membership,\nrole assignment, folder and dashboard ownership transfer, column-level\nsecurity restrictions, tenant lookup, and administrative reporting on\ndashboard shares and scheduled builds."
     },
     "blox": {
       "class": "Blox",
-      "description": "Manage custom Blox actions on a Sisense instance.\n\nProvides read, write, and delete access to Blox custom actions. Fetch\noperations are supported on both Linux and Windows deployments via\nOS-routed endpoints; save and delete are Linux-only."
+      "description": "Manage custom Blox actions and BloX widget styles on a Sisense instance.\n\nProvides read, write, and delete access to Blox custom actions, and\nread/write access to individual BloX widget styles. Fetch operations for\ncustom actions are supported on both Linux and Windows deployments via\nOS-routed endpoints; save and delete are Linux-only."
     },
     "custom_code": {
       "class": "CustomCode",
       "description": "Manage Sisense custom-code notebooks and their file system layout.\n\nCovers the full notebook lifecycle — create, retrieve, update, export,\nand delete notebooks — as well as renaming notebook files and folders\nwithin the Sisense custom-code directory structure."
+    },
+    "dashboard": {
+      "class": "Dashboard",
+      "description": "Manage Sisense dashboards, their shares, columns, scripts, and widgets.\n\nCovers dashboard CRUD (get, export, rename, move, publish), share\nmanagement for users and groups, inspection of all table/column\nreferences used within a dashboard, reading or writing JavaScript\nscripts attached to dashboards and individual widgets, and direct\nwidget read/write operations."
     },
     "datamodel": {
       "class": "DataModel",
@@ -22,13 +26,13 @@
       "class": "Encryption",
       "description": "Encrypt and decrypt Sisense connection parameter values.\n\nWraps the Sisense encryption service for preparing or recovering\nconnection credentials (such as passwords and keys) used during\ncross-server data model migration."
     },
-    "dashboard": {
-      "class": "Dashboard",
-      "description": "Manage Sisense dashboards, their shares, columns, and scripts.\n\nCovers dashboard CRUD (get, export, rename, move, publish), share\nmanagement for users and groups, inspection of all table/column\nreferences used within a dashboard, and reading or writing JavaScript\nscripts attached to dashboards and individual widgets."
-    },
     "folder": {
       "class": "Folder",
       "description": "Manage the Sisense folder hierarchy and individual folder records.\n\nCovers folder CRUD (create, update, delete), lookup by name or ID,\nnavigation of the full folder tree, and retrieval of a folder's\nancestor chain. Does not manage dashboard content inside folders —\nuse the Dashboard class for that."
+    },
+    "mergetool": {
+      "class": "MergeTool",
+      "description": "Copy Sisense content between two separate Sisense environments.\n\nConnects to a source and a target Sisense instance (via YAML config files\nor injected clients) and merges custom-code notebooks, folders, Blox\nactions, groups, users, data models, data security rules, saved\nformulas, saved filters, and dashboards from one to the other. Does not\noperate on a single instance — use CustomCode, Folder, Blox,\nAccessManagement, DataModel, or Metadata for single-environment changes."
     },
     "metadata": {
       "class": "Metadata",
@@ -45,6 +49,10 @@
     "queries": {
       "class": "Queries",
       "description": "Execute custom JAQL and SQL queries against Sisense datasources.\n\nSends caller-supplied query payloads directly to the elasticube or live\ndatasource engine. Requires the caller to already know the internal table\nand column names — not for discovering schema, listing measures, or\nretrieving row counts. Use DataModel for row counts per table, and\nMetadata for browsing the semantic layer (measures, dimensions)."
+    },
+    "report_manager": {
+      "class": "ReportManager",
+      "description": "Manage scheduled reports through the Report Manager plugin.\n\nReport Manager is an on-demand Sisense plugin and is not guaranteed to\nbe installed or enabled on every instance. All methods return\n``{\"error\": \"...\"}`` rather than raising when the plugin's endpoints are\nunavailable, so callers can detect and handle that case directly."
     },
     "wellcheck": {
       "class": "WellCheck",

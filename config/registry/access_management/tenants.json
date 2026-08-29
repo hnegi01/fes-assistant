@@ -1,0 +1,29 @@
+[
+  {
+    "tool_id": "access_management.get_tenants",
+    "description": "Retrieve all tenants.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve all tenants from the Sisense server.",
+        "arguments": {},
+        "notes": "This call fetches the complete list of tenants defined on the Sisense server. It is useful for multi-tenant deployments to get an overview of all tenants."
+      },
+      {
+        "user_query": "What are all the tenants currently configured on the server?",
+        "arguments": {},
+        "notes": "This retrieves all tenants configured on the Sisense server. It is particularly relevant for administrators managing multi-tenant environments."
+      },
+      {
+        "user_query": "List all tenants available in the system.",
+        "arguments": {},
+        "notes": "Use this call to get a list of all tenants in the system. This is helpful for auditing or administrative purposes in multi-tenant setups."
+      }
+    ]
+  }
+]

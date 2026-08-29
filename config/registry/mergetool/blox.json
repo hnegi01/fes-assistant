@@ -1,0 +1,111 @@
+[
+  {
+    "tool_id": "mergetool.migrate_all_blox_actions",
+    "description": "Migrate all Blox actions from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Conflict strategy applied to every Blox action."
+        },
+        "concurrency": {
+          "type": "integer",
+          "description": "Same as in ``migrate_blox_actions``."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all Blox actions, skipping any that already exist.",
+        "arguments": {
+          "action": "skip"
+        },
+        "notes": "This call migrates all Blox actions from the source to the target, skipping any actions that already exist on the target."
+      },
+      {
+        "user_query": "How can I migrate all Blox actions and overwrite any existing ones?",
+        "arguments": {
+          "action": "overwrite"
+        },
+        "notes": "This call migrates all Blox actions from the source to the target, overwriting any actions that already exist on the target."
+      },
+      {
+        "user_query": "Can I duplicate all Blox actions while migrating them?",
+        "arguments": {
+          "action": "duplicate",
+          "concurrency": 5
+        },
+        "notes": "This call migrates all Blox actions from the source to the target, duplicating any actions that already exist on the target. It uses a concurrency level of 5 for faster processing."
+      }
+    ]
+  },
+  {
+    "tool_id": "mergetool.migrate_blox_actions",
+    "description": "Migrate specific Blox actions from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The ``type`` identifiers of the Blox actions to migrate. If ``None``, every Blox action on the source is migrated."
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Conflict strategy when an action with the same ``type`` already exists on the target. - ``\"skip\"`` — leave the existing action unchanged. - ``\"overwrite\"`` — delete the existing action then recreate from source. - ``\"duplicate\"`` — always create, regardless of conflicts."
+        },
+        "concurrency": {
+          "type": "integer",
+          "description": "Maximum number of Blox actions to migrate concurrently, run via a background thread pool (``asyncio.to_thread``) since the underlying HTTP client is synchronous. Blox actions are independent of each other, so any value is safe. Values <= 1 (the default) process actions one at a time."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all dashboards, skipping any that already exist.",
+        "arguments": {
+          "action_types": null,
+          "action": "skip"
+        },
+        "notes": "This call migrates all Blox actions from the source to the target environment, skipping any actions that already exist on the target. Use this when you want to ensure no existing actions are overwritten."
+      },
+      {
+        "user_query": "How can I migrate only the 'dashboard' and 'widget' actions, overwriting any conflicts?",
+        "arguments": {
+          "action_types": [
+            "dashboard",
+            "widget"
+          ],
+          "action": "overwrite"
+        },
+        "notes": "This call migrates only the specified Blox actions ('dashboard' and 'widget') from the source to the target environment, overwriting any conflicting actions on the target. Use this when you need to ensure the latest versions of specific actions are migrated."
+      },
+      {
+        "user_query": "Can I duplicate all actions while processing them concurrently?",
+        "arguments": {
+          "action_types": null,
+          "action": "duplicate",
+          "concurrency": 5
+        },
+        "notes": "This call migrates all Blox actions from the source to the target environment, duplicating every action regardless of conflicts, and processes up to 5 actions concurrently. Use this for faster migration when duplicates are acceptable."
+      }
+    ]
+  }
+]

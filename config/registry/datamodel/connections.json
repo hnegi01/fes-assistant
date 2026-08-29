@@ -7,36 +7,38 @@
       "properties": {
         "connection_payload": {
           "type": "object",
-          "description": "Connection configuration, typically produced by generate_connections_payload.",
           "properties": {
             "provider": {
-              "type": "string",
-              "description": "Connector/provider name"
+              "type": "string"
             },
             "name": {
-              "type": "string",
-              "description": "Connection name"
-            },
-            "description": {
-              "type": "string",
-              "description": "Connection description"
+              "type": "string"
             },
             "parameters": {
-              "type": "object",
-              "description": "Provider-specific connection parameters"
+              "type": "object"
             },
             "enabled": {
-              "type": "boolean",
-              "description": "Whether the connection is enabled"
+              "type": "boolean"
+            },
+            "createdByUser": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
             },
             "supportedModelTypes": {
               "type": "array",
               "items": {
                 "type": "string"
-              },
-              "description": "Model types the connection supports"
+              }
             }
-          }
+          },
+          "required": [
+            "name",
+            "parameters",
+            "provider"
+          ],
+          "description": "The configuration payload for the connection. ``provider``, ``name``, and ``parameters`` are required; optional fields include ``description``, ``enabled``, ``createdByUser``, and ``supportedModelTypes``."
         }
       },
       "required": [
@@ -59,7 +61,6 @@
               "password": "securepassword123"
             },
             "enabled": true,
-            "createdByUser": "admin_user",
             "supportedModelTypes": [
               "live",
               "elasticube"
@@ -84,7 +85,6 @@
               }
             },
             "enabled": true,
-            "createdByUser": "data_engineer",
             "supportedModelTypes": [
               "live"
             ]
@@ -107,7 +107,6 @@
               "password": "anothersecurepassword456"
             },
             "enabled": false,
-            "createdByUser": "sysadmin",
             "supportedModelTypes": [
               "elasticube"
             ]
@@ -125,75 +124,88 @@
       "properties": {
         "datasource_type": {
           "type": "string",
-          "description": "Type of data source. One of ``\"Athena\"``, ``\"RedShift\"``, ``\"BigQuery\"``, ``\"DataBricks\"`` (case-insensitive).",
           "enum": [
             "Athena",
             "RedShift",
             "BigQuery",
             "DataBricks"
-          ]
+          ],
+          "description": "Type of data source (matched case-insensitively)."
         },
         "connection_params": {
           "type": "object",
-          "description": "Connection details; which keys are required depends on datasource_type (Athena: name, region, s3_output_location, aws_access_key, aws_secret_key. DataBricks: name, connection_string, token. BigQuery: name, service_account_key_path. RedShift: server, username, password.)",
           "properties": {
             "name": {
-              "type": "string",
-              "description": "Connection name"
-            },
-            "description": {
-              "type": "string",
-              "description": "Connection description"
+              "type": "string"
             },
             "region": {
-              "type": "string",
-              "description": "AWS region (Athena)"
+              "type": "string"
             },
             "s3_output_location": {
-              "type": "string",
-              "description": "S3 output location (Athena)"
+              "type": "string"
             },
             "aws_access_key": {
-              "type": "string",
-              "description": "AWS access key (Athena)"
+              "type": "string"
             },
             "aws_secret_key": {
-              "type": "string",
-              "description": "AWS secret key (Athena)"
+              "type": "string"
             },
-            "connection_string": {
-              "type": "string",
-              "description": "JDBC connection string (DataBricks)"
-            },
-            "token": {
-              "type": "string",
-              "description": "Access token (DataBricks)"
-            },
-            "service_account_key_path": {
-              "type": "string",
-              "description": "Service account key file path (BigQuery)"
-            },
-            "server": {
-              "type": "string",
-              "description": "Server host (RedShift)"
-            },
-            "username": {
-              "type": "string",
-              "description": "Username (RedShift)"
-            },
-            "password": {
-              "type": "string",
-              "description": "Password (RedShift)"
+            "description": {
+              "type": "string"
             },
             "schema": {
-              "type": "string",
-              "description": "Schema name"
+              "type": "string"
+            },
+            "additional_parameters": {
+              "type": "string"
+            },
+            "server": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "default_database": {
+              "type": "string"
+            },
+            "service_account_key_path": {
+              "type": "string"
+            },
+            "use_service_account": {
+              "type": "boolean"
+            },
+            "use_proxy_server": {
+              "type": "boolean"
+            },
+            "use_dynamic_schema": {
+              "type": "boolean"
+            },
+            "record_field_flattening_level": {
+              "type": "string"
+            },
+            "unnest_arrays": {
+              "type": "boolean"
+            },
+            "allow_large_results": {
+              "type": "boolean"
+            },
+            "use_storage_api": {
+              "type": "boolean"
             },
             "database": {
-              "type": "string",
-              "description": "Database name (BigQuery)"
+              "type": "string"
+            },
+            "connection_string": {
+              "type": "string"
+            },
+            "token": {
+              "type": "string"
             }
-          }
+          },
+          "description": "Connection details. Supported keys depend on ``datasource_type``: - Athena: ``name`` (required), ``region`` (required), ``s3_output_location`` (required), ``aws_access_key`` (required), ``aws_secret_key`` (required), ``description``, ``schema``, ``additional_parameters``. - DataBricks: ``name`` (required), ``connection_string`` (required), ``token`` (required), ``description``, ``use_dynamic_schema``, ``schema``. - BigQuery: ``name`` (required), ``service_account_key_path`` (required), ``description``, ``use_service_account``, ``use_proxy_server``, ``use_dynamic_schema``, ``record_field_flattening_level``, ``unnest_arrays``, ``allow_large_results``, ``use_storage_api``, ``additional_parameters``, ``database``. - RedShift: ``server`` (required), ``username`` (required), ``password`` (required), ``name``, ``description``, ``default_database``, ``additional_parameters``."
         }
       },
       "required": [
@@ -213,10 +225,7 @@
             "s3_output_location": "s3://athena-query-results/",
             "aws_access_key": "AKIAEXAMPLE",
             "aws_secret_key": "SECRETEXAMPLE",
-            "schema": "default",
-            "additional_parameters": {
-              "workgroup": "primary"
-            }
+            "schema": "default"
           }
         },
         "notes": "This call generates a connection payload for an Athena data source, specifying the required AWS credentials and S3 output location."
@@ -249,10 +258,7 @@
             "password": "securepassword123",
             "name": "RedShift_Cluster_Connection",
             "description": "Connection to RedShift cluster for sales data",
-            "default_database": "sales_db",
-            "additional_parameters": {
-              "ssl": true
-            }
+            "default_database": "sales_db"
           }
         },
         "notes": "This call generates a connection payload for a RedShift data source, including the server address, credentials, and default database."
@@ -300,7 +306,7 @@
     ]
   },
   {
-    "tool_id": "datamodel.get_connections",
+    "tool_id": "datamodel.get_connections_all",
     "description": "Retrieve all connections.",
     "parameters": {
       "type": "object",
@@ -402,21 +408,24 @@
         },
         "connection_data": {
           "type": "object",
-          "description": "Fields to update — include only what should change.",
           "properties": {
             "name": {
-              "type": "string",
-              "description": "New connection name"
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
             },
             "provider": {
-              "type": "string",
-              "description": "Connector/provider name"
+              "type": "string"
             },
             "parameters": {
-              "type": "object",
-              "description": "Provider-specific connection parameters"
+              "type": "object"
+            },
+            "enabled": {
+              "type": "boolean"
             }
-          }
+          },
+          "description": "Fields to update (for example ``name``, ``parameters``, ``provider``). Supported keys depend on the Sisense connection type."
         }
       },
       "required": [

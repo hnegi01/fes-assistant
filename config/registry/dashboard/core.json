@@ -274,6 +274,83 @@
     ]
   },
   {
+    "tool_id": "dashboard.import_dashboards_bulk",
+    "description": "Import one or more dashboards via the bulk import endpoint.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboards": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Dashboard objects to import."
+        },
+        "action": {
+          "type": "string",
+          "description": "Conflict behavior for dashboards whose ``oid`` already exists. One of ``\"skip\"``, ``\"overwrite\"``, or ``\"duplicate\"``. Default is ``\"skip\"``."
+        }
+      },
+      "required": [
+        "dashboards"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Import dashboards dashboard_123 'Sales Overview' and dashboard_456 'Marketing Performance', skipping any that already exist.",
+        "arguments": {
+          "dashboards": [
+            {
+              "oid": "dashboard_123",
+              "name": "Sales Overview"
+            },
+            {
+              "oid": "dashboard_456",
+              "name": "Marketing Performance"
+            }
+          ],
+          "action": "skip"
+        },
+        "notes": "This call imports multiple dashboards and skips any that already exist in the target environment."
+      },
+      {
+        "user_query": "How can I import dashboards and overwrite any existing ones with the same IDs?",
+        "arguments": {
+          "dashboards": [
+            {
+              "oid": "dashboard_789",
+              "name": "Customer Insights"
+            },
+            {
+              "oid": "dashboard_101",
+              "name": "Product Analytics"
+            }
+          ],
+          "action": "overwrite"
+        },
+        "notes": "This call imports the specified dashboards and overwrites any existing dashboards with matching IDs."
+      },
+      {
+        "user_query": "I want to import dashboards but create duplicates if they already exist. How can I do that?",
+        "arguments": {
+          "dashboards": [
+            {
+              "oid": "dashboard_202",
+              "name": "Executive Summary"
+            },
+            {
+              "oid": "dashboard_303",
+              "name": "Operational Metrics"
+            }
+          ],
+          "action": "duplicate"
+        },
+        "notes": "This call imports the specified dashboards and creates duplicates for any dashboards with matching IDs."
+      }
+    ]
+  },
+  {
     "tool_id": "dashboard.move_dashboard_to_folder",
     "description": "Move a dashboard into a folder.",
     "parameters": {

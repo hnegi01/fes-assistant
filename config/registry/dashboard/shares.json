@@ -84,6 +84,65 @@
     ]
   },
   {
+    "tool_id": "dashboard.change_dashboard_owner",
+    "description": "Transfer ownership of a dashboard to a different user.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ``oid`` of the dashboard whose owner will be changed."
+        },
+        "new_owner_id": {
+          "type": "string",
+          "description": "The Sisense user ID (``_id``) of the user who will become the new owner."
+        },
+        "admin_access": {
+          "type": "boolean",
+          "description": "When ``True`` (default), appends ``?adminAccess=true`` to the request. Required when the API token user is not the current dashboard owner. Pass ``False`` when restoring ownership back to the original owner (the caller is already the temporary owner at that point)."
+        },
+        "original_owner_rule": {
+          "type": "string",
+          "description": "The share rule assigned to the outgoing owner after the transfer. Defaults to ``\"edit\"``."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "new_owner_id"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Transfer ownership of dashboard 'sales_dashboard_2023' to user 'new_owner_123', and set the original owner's access to 'view'.",
+        "arguments": {
+          "dashboard_id": "sales_dashboard_2023",
+          "new_owner_id": "new_owner_123",
+          "original_owner_rule": "view"
+        },
+        "notes": "This call transfers ownership of the 'sales_dashboard_2023' dashboard to the user with ID 'new_owner_123'. The original owner will retain 'view' access to the dashboard."
+      },
+      {
+        "user_query": "How can I assign the 'marketing_dashboard' to user 'user_456' while keeping admin access enabled?",
+        "arguments": {
+          "dashboard_id": "marketing_dashboard",
+          "new_owner_id": "user_456",
+          "admin_access": true
+        },
+        "notes": "This call transfers ownership of the 'marketing_dashboard' to the user with ID 'user_456'. Admin access is explicitly enabled for the API token user to ensure the transfer succeeds."
+      },
+      {
+        "user_query": "Can I restore ownership of 'finance_dashboard' back to its original owner?",
+        "arguments": {
+          "dashboard_id": "finance_dashboard",
+          "new_owner_id": "original_owner_789",
+          "admin_access": false
+        },
+        "notes": "This call restores ownership of the 'finance_dashboard' to its original owner with ID 'original_owner_789'. Admin access is disabled since the caller is already the temporary owner."
+      }
+    ]
+  },
+  {
     "tool_id": "dashboard.get_dashboard_share",
     "description": "Retrieve share details (users and groups) for a dashboard by title.",
     "parameters": {
@@ -135,7 +194,7 @@
         },
         "admin_access": {
           "type": "boolean",
-          "description": "When ``True`` (default), request with ``adminAccess=true``."
+          "description": "When ``True`` (default), request with ``adminAccess=true``. Some Sisense versions reject the ``adminAccess`` query parameter with HTTP 422 (strict query-schema validation); the request is then retried automatically without it."
         }
       },
       "required": [

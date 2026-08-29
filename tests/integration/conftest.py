@@ -102,9 +102,16 @@ def eval_identities(integration_config) -> Dict[str, str]:
     if not ids:
         pytest.skip("eval_identities not set in integration_config.yaml (see the example file)")
     required = ("user_a_email", "user_a_group", "user_a_role", "user_b_email", "user_b_role")
+    # A Sisense role has an internal name and a display name for the SAME role
+    # ("super" is shown as "sysAdmin"); which one a reply quotes depends on the
+    # tool that fetched it, so cases assert on either. Optional: falls back to
+    # the primary when a deployment has no distinct internal name.
+    optional = ("user_a_role_alt", "user_b_role_alt")
     missing = [k for k in required if not ids.get(k)]
     if missing:
         pytest.skip(f"eval_identities missing keys: {missing}")
     resolved = {k: str(ids[k]) for k in required}
+    for k in optional:
+        resolved[k] = str(ids.get(k) or resolved[k.replace("_alt", "")])
     resolved["user_a_email_typo"] = resolved["user_a_email"].rsplit(".", 1)[0]
     return resolved

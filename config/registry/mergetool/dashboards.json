@@ -1,0 +1,119 @@
+[
+  {
+    "tool_id": "mergetool.migrate_all_dashboards",
+    "description": "Migrate all dashboards from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Conflict strategy applied to every dashboard."
+        },
+        "concurrency": {
+          "type": "integer",
+          "description": "Same as in ``migrate_dashboards``."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all dashboards, skipping any that already exist.",
+        "arguments": {
+          "action": "skip"
+        },
+        "notes": "This call migrates all dashboards from the source environment to the target environment, skipping any dashboards that already exist in the target."
+      },
+      {
+        "user_query": "How can I migrate all dashboards and overwrite any existing ones?",
+        "arguments": {
+          "action": "overwrite"
+        },
+        "notes": "This call migrates all dashboards from the source environment to the target environment, overwriting any dashboards that already exist in the target."
+      },
+      {
+        "user_query": "I want to migrate all dashboards but create duplicates for any conflicts. Can I do that?",
+        "arguments": {
+          "action": "duplicate",
+          "concurrency": 5
+        },
+        "notes": "This call migrates all dashboards from the source environment to the target environment, creating duplicates for any conflicting dashboards. The concurrency level is set to 5 for faster processing."
+      }
+    ]
+  },
+  {
+    "tool_id": "mergetool.migrate_dashboards",
+    "description": "Migrate specific dashboards from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Dashboard OIDs to migrate. Provide either this or ``dashboard_names``."
+        },
+        "dashboard_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Dashboard titles to migrate. Provide either this or ``dashboard_ids``."
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Conflict strategy when a dashboard with the same ``oid`` already exists on the target. - ``\"skip\"`` — leave the existing dashboard unchanged. - ``\"overwrite\"`` — replace the existing dashboard with the source version. - ``\"duplicate\"`` — always create, regardless of conflicts."
+        },
+        "concurrency": {
+          "type": "integer",
+          "description": "Maximum number of dashboards to migrate concurrently, run via a background thread pool (``asyncio.to_thread``) since the underlying HTTP client is synchronous. Dashboards are independent of each other, so any value is safe. Values <= 1 (the default) process dashboards one at a time."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all dashboards, skipping any that already exist.",
+        "arguments": {
+          "action": "skip"
+        },
+        "notes": "This call migrates all dashboards from the source to the target environment, skipping any dashboards that already exist on the target."
+      },
+      {
+        "user_query": "How can I migrate dashboards 'Sales Overview' and 'Marketing Insights', overwriting any existing ones?",
+        "arguments": {
+          "dashboard_names": [
+            "Sales Overview",
+            "Marketing Insights"
+          ],
+          "action": "overwrite"
+        },
+        "notes": "This call migrates the specified dashboards by name, overwriting any dashboards with the same OID that already exist on the target."
+      },
+      {
+        "user_query": "Migrate dashboards with IDs 'dash123' and 'dash456', creating duplicates if they already exist.",
+        "arguments": {
+          "dashboard_ids": [
+            "dash123",
+            "dash456"
+          ],
+          "action": "duplicate"
+        },
+        "notes": "This call migrates the specified dashboards by ID, always creating duplicates on the target regardless of conflicts."
+      }
+    ]
+  }
+]

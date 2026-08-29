@@ -1,0 +1,113 @@
+[
+  {
+    "tool_id": "mergetool.migrate_all_saved_filters",
+    "description": "Migrate saved filter dimensions for all data models from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Same as in ``migrate_saved_filters``."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all saved filters for all data models, skipping any that already exist.",
+        "arguments": {
+          "action": "skip"
+        },
+        "notes": "This call migrates saved filter dimensions for all data models from the source to the target environment, skipping any filters that already exist on the target."
+      },
+      {
+        "user_query": "How can I migrate all saved filters and overwrite existing ones?",
+        "arguments": {
+          "action": "overwrite"
+        },
+        "notes": "This call migrates saved filter dimensions for all data models from the source to the target environment, overwriting any filters that already exist on the target."
+      },
+      {
+        "user_query": "Can I duplicate all saved filters during migration?",
+        "arguments": {
+          "action": "duplicate"
+        },
+        "notes": "This call migrates saved filter dimensions for all data models from the source to the target environment, duplicating any filters that already exist on the target."
+      }
+    ]
+  },
+  {
+    "tool_id": "mergetool.migrate_saved_filters",
+    "description": "Migrate saved filter dimensions for specific data models from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Data model OIDs to migrate. Provide either this or ``datamodel_names``."
+        },
+        "datamodel_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Data model titles to migrate. Provide either this or ``datamodel_ids``."
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Conflict strategy for filters whose ``title`` already exists on the target datasource. - ``\"skip\"`` — leave the existing filter unchanged (default). - ``\"overwrite\"`` or ``\"duplicate\"`` — always create, regardless of conflicts. The Sisense metadata API exposes no update or delete endpoint for saved filters, so ``\"overwrite\"`` cannot replace the existing filter in place and behaves identically to ``\"duplicate\"``."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate saved filters for data models 'Sales_Data' and 'Marketing_Analytics', skipping any that already exist.",
+        "arguments": {
+          "datamodel_names": [
+            "Sales_Data",
+            "Marketing_Analytics"
+          ],
+          "action": "skip"
+        },
+        "notes": "This call migrates saved filters for the specified data models by their names, ensuring no duplicates are created if filters with the same title already exist on the target."
+      },
+      {
+        "user_query": "How can I migrate saved filters for data models with IDs '12345' and '67890', overwriting any conflicts?",
+        "arguments": {
+          "datamodel_ids": [
+            "12345",
+            "67890"
+          ],
+          "action": "overwrite"
+        },
+        "notes": "This call migrates saved filters for the specified data models by their IDs, overwriting any existing filters with the same title on the target."
+      },
+      {
+        "user_query": "Migrate saved filters for the 'Customer_Insights' data model and duplicate any conflicting filters.",
+        "arguments": {
+          "datamodel_names": [
+            "Customer_Insights"
+          ],
+          "action": "duplicate"
+        },
+        "notes": "This call migrates saved filters for the 'Customer_Insights' data model, duplicating any filters that conflict with existing ones on the target."
+      }
+    ]
+  }
+]

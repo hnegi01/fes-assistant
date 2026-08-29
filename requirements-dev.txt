@@ -217,7 +217,7 @@ pyarrow==24.0.0
     #   streamlit
 pycparser==3.0 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
     # via cffi
-pydantic==2.12.5
+pydantic==2.13.5
     # via
     #   fastapi
     #   fes-assistant
@@ -228,7 +228,8 @@ pydantic==2.12.5
     #   mcp
     #   openai
     #   pydantic-settings
-pydantic-core==2.41.5
+    #   pysisense
+pydantic-core==2.46.5
     # via pydantic
 pydantic-settings==2.12.0
     # via
@@ -242,7 +243,7 @@ pyjwt==2.13.0
     # via
     #   fes-assistant
     #   mcp
-pysisense==1.0.2
+pysisense==1.1.0
     # via fes-assistant
 pytest==9.1.1
 python-dateutil==2.9.0.post0
@@ -338,6 +339,7 @@ typing-extensions==4.16.0
     #   openai
     #   pydantic
     #   pydantic-core
+    #   pysisense
     #   referencing
     #   starlette
     #   streamlit

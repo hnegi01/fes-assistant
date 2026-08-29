@@ -1,0 +1,115 @@
+[
+  {
+    "tool_id": "mergetool.migrate_all_users",
+    "description": "Migrate all eligible users from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Conflict strategy applied to every user."
+        },
+        "ignore_custom_roles": {
+          "type": "boolean",
+          "description": "When ``True``, strips a ``custom_`` prefix from source role names before matching them against target roles."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all users, overwriting any conflicts and ignoring custom roles.",
+        "arguments": {
+          "action": "overwrite",
+          "ignore_custom_roles": true
+        },
+        "notes": "This call migrates all eligible users from the source to the target environment, overwriting any conflicting users and ignoring the 'custom_' prefix in role names during role matching."
+      },
+      {
+        "user_query": "How can I migrate all users while skipping any conflicts?",
+        "arguments": {
+          "action": "skip"
+        },
+        "notes": "This call migrates all eligible users from the source to the target environment, skipping any users that already exist in the target environment."
+      },
+      {
+        "user_query": "Can I duplicate all users from the source environment to the target?",
+        "arguments": {
+          "action": "duplicate"
+        },
+        "notes": "This call migrates all eligible users from the source to the target environment, duplicating any users that already exist in the target environment."
+      }
+    ]
+  },
+  {
+    "tool_id": "mergetool.migrate_users",
+    "description": "Migrate specific users from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_emails": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "email"
+          },
+          "description": "Email addresses of the users to migrate. If ``None``, every user on the source is migrated."
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Conflict strategy when a user with the same ``email`` already exists on the target. - ``\"skip\"`` — leave the existing user unchanged. - ``\"overwrite\"`` — delete the existing user then recreate from source. - ``\"duplicate\"`` — always create, regardless of conflicts."
+        },
+        "ignore_custom_roles": {
+          "type": "boolean",
+          "description": "When ``True``, strips a ``custom_`` prefix from source role names before matching them against target roles (and matches target roles with the same prefix stripped)."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all users, skipping any that already exist.",
+        "arguments": {
+          "user_emails": null,
+          "action": "skip"
+        },
+        "notes": "This call migrates all users from the source to the target environment, skipping any users that already exist on the target."
+      },
+      {
+        "user_query": "How can I migrate specific users and overwrite any existing ones on the target?",
+        "arguments": {
+          "user_emails": [
+            "user1@example.com",
+            "user2@example.com"
+          ],
+          "action": "overwrite"
+        },
+        "notes": "This call migrates the specified users from the source to the target environment, overwriting any existing users with the same email addresses on the target."
+      },
+      {
+        "user_query": "Migrate users but ignore custom roles during the process.",
+        "arguments": {
+          "user_emails": [
+            "admin@example.com",
+            "manager@example.com"
+          ],
+          "action": "duplicate",
+          "ignore_custom_roles": true
+        },
+        "notes": "This call migrates the specified users from the source to the target environment, creating duplicates even if users with the same email already exist, and ignores custom role prefixes during role matching."
+      }
+    ]
+  }
+]

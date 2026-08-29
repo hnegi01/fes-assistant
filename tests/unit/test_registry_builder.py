@@ -302,13 +302,21 @@ class TestDiscoverFacadeClasses:
 
         modules = _discover_facade_classes()
 
-        # Compute expected set directly from __all__ so this test stays
-        # correct across SDK versions without a hardcoded package list.
-        expected = {
-            getattr(_pysisense, name).__module__.split(".")[1]
-            for name in _pysisense.__all__
-            if _inspect.isclass(getattr(_pysisense, name, None)) and name != "SisenseClient"
-        }
+        # Compute the expected set from the SDK itself, never a hardcoded
+        # list. pysisense >= 1.1 exports FACADES — the explicit tuple of
+        # tool-bearing classes — and __all__ additionally carries the TypedDict
+        # payload classes (module "pysisense.payloads"), which are data
+        # contracts, not facades: deriving from __all__ here would demand a
+        # bogus "payloads" package. Older SDKs have no FACADES and fall back.
+        facades = getattr(_pysisense, "FACADES", None)
+        if facades:
+            expected = {c.__module__.split(".")[1] for c in facades if c.__name__ != "SisenseClient"}
+        else:
+            expected = {
+                getattr(_pysisense, name).__module__.split(".")[1]
+                for name in _pysisense.__all__
+                if _inspect.isclass(getattr(_pysisense, name, None)) and name != "SisenseClient"
+            }
         assert set(modules.keys()) == expected
 
     def test_skips_sisense_client(self):

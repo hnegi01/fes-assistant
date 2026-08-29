@@ -7,25 +7,31 @@
       "properties": {
         "measure": {
           "type": "object",
-          "description": "Measure object in Sisense metadata format.",
           "properties": {
+            "title": {
+              "type": "string"
+            },
             "datasource": {
-              "type": "string",
-              "description": "Datasource/datamodel the measure belongs to"
-            },
-            "table": {
-              "type": "string",
-              "description": "Table the measure reads from"
-            },
-            "column": {
-              "type": "string",
-              "description": "Column the measure reads from"
-            },
-            "expression": {
-              "type": "string",
-              "description": "The measure's formula expression"
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "fullname": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "fullname",
+                "title"
+              ]
             }
-          }
+          },
+          "required": [
+            "datasource",
+            "title"
+          ],
+          "description": "Measure object in Sisense metadata format. ``title`` and ``datasource`` (``{\"title\": ..., \"fullname\": ...}``) are required; additional Sisense metadata fields (expression, context, table/column references) may be included and are passed through unchanged."
         }
       },
       "required": [
@@ -35,17 +41,21 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Add a measure 'total_sales' on the 'sales_data' table of the 'sales_db' datasource that sums the sales_amount column.",
+        "user_query": "Add a measure 'total_sales' on the 'sales_data' table of the 'sales_db' datasource that sums the sales_amount column (datasource fullname localhost/sales_db).",
         "arguments": {
           "measure": {
-            "datasource": "sales_db",
+            "datasource": {
+              "title": "sales_db",
+              "fullname": "localhost/sales_db"
+            },
             "table": "sales_data",
             "column": "total_sales",
             "expression": "SUM(sales_amount)",
             "fields": {
               "aggregation": "sum",
               "type": "measure"
-            }
+            },
+            "title": "total_sales"
           }
         },
         "notes": "This call creates a measure that calculates the total sales by summing the 'sales_amount' column in the 'sales_data' table."
@@ -54,14 +64,18 @@
         "user_query": "Create a measure to calculate average order value for the 'orders' table.",
         "arguments": {
           "measure": {
-            "datasource": "ecommerce_db",
+            "datasource": {
+              "title": "ecommerce_db",
+              "fullname": "localhost/ecommerce_db"
+            },
             "table": "orders",
             "column": "avg_order_value",
             "expression": "AVG(order_total)",
             "fields": {
               "aggregation": "average",
               "type": "measure"
-            }
+            },
+            "title": "avg_order_value"
           }
         },
         "notes": "This call adds a measure to calculate the average order value using the 'order_total' column in the 'orders' table."
@@ -70,14 +84,18 @@
         "user_query": "Define a measure to count the number of customers in the 'customer_data' table.",
         "arguments": {
           "measure": {
-            "datasource": "crm_db",
+            "datasource": {
+              "title": "crm_db",
+              "fullname": "localhost/crm_db"
+            },
             "table": "customer_data",
             "column": "customer_count",
             "expression": "COUNT(customer_id)",
             "fields": {
               "aggregation": "count",
               "type": "measure"
-            }
+            },
+            "title": "customer_count"
           }
         },
         "notes": "This call creates a measure to count the total number of customers based on the 'customer_id' column in the 'customer_data' table."
