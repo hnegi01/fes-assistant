@@ -35,6 +35,7 @@ Like all LLM-judgment tests these are non-deterministic: re-run a single failure
 once before treating it as real (see tests/integration/README.md).
 """
 
+import re
 import uuid
 
 import httpx
@@ -49,7 +50,7 @@ EVAL_CASES = [
         # 2026-07-30 failure: checker pushed users_per_group("admin") — treated
         # the admin ROLE as a GROUP; "group not found" polluted the answer.
         "forbid_tools": ["users_per_group"],
-        "expect_reply_any": ["{user_a_role}"],
+        "expect_reply_any": ["{user_a_role}", "{user_a_role_alt}"],
         "forbid_reply": ["not found", "does not exist"],
         "origin": "2026-07-30: role treated as group; wrong extra step users_per_group('admin')",
     },
@@ -63,7 +64,7 @@ EVAL_CASES = [
         "expect_tools_any": ["get_user"],
         "forbid_tools": ["users_per_group"],
         "expect_reply_any": ["summarization"],
-        "forbid_reply": ["{user_a_role}"],
+        "forbid_reply": ["{user_a_role}", "{user_a_role_alt}"],
         "origin": "2026-08-21: summ-off coverage sweep — every guard must hold data-blind",
     },
     {
@@ -120,7 +121,7 @@ EVAL_CASES = [
         "expect_tools_any": ["get_user"],
         "expect_min_steps": 2,
         "forbid_tools": ["users_per_group"],
-        "expect_reply_any": ["{user_b_role}"],
+        "expect_reply_any": ["{user_b_role}", "{user_b_role_alt}"],
         "forbid_reply": ["not found"],
         "origin": "2026-07-30/31: adaptive value-passing chain, verified live during Step 8",
     },
@@ -134,7 +135,7 @@ EVAL_CASES = [
         "expect_tools_any": ["get_user"],
         "forbid_tools": ["users_per_group"],
         "expect_reply_any": ["summarization"],
-        "forbid_reply": ["{user_b_role}"],
+        "forbid_reply": ["{user_b_role}", "{user_b_role_alt}"],
         "origin": "2026-08-21: summ-off coverage sweep — every guard must hold data-blind",
     },
     {
@@ -384,9 +385,22 @@ def test_planner_eval(backend_url, tenant_config, eval_identities, case):
         # Exact-fragment check, but don't let e.g. "users_per_group" ban
         # "users_per_group_all" unless explicitly listed — match whole ids.
         assert not any(t.endswith(frag) or t == frag for t in tools), f"forbidden tool {frag!r} was executed{ctx}"
+    # Reply fragments match ignoring punctuation and spacing: Sisense renders
+    # one role three ways — "super" (internal), "sysAdmin" (ROLE_NAME in user
+    # listings) and "Sys. Admin" (displayName from get_roles) — and which one
+    # a reply quotes depends on the tool that fetched it. The identity pair
+    # ({user_a_role}/{user_a_role_alt}) covers internal-vs-display; squashing
+    # covers the punctuation variants, so "sys. admin" satisfies "sysadmin"
+    # without the case enumerating spellings forever.
+    squashed = re.sub(r"[^a-z0-9]", "", reply)
+
+    def _in_reply(frag: str) -> bool:
+        return frag in reply or re.sub(r"[^a-z0-9]", "", frag) in squashed
+
     if case["expect_reply_any"]:
-        assert any(frag in reply for frag in case["expect_reply_any"]), (
+        assert any(_in_reply(frag) for frag in case["expect_reply_any"]), (
             f"reply lacks all of {case['expect_reply_any']}{ctx}"
         )
     for frag in case["forbid_reply"]:
-        assert frag not in reply, f"reply contains forbidden {frag!r}{ctx}"
+        # Squashed here too: a leak spelled "Sys. Admin" is still a leak.
+        assert not _in_reply(frag), f"reply contains forbidden {frag!r}{ctx}"
