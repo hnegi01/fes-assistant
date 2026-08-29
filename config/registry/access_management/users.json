@@ -182,7 +182,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Create multiple users with the specified email, first name, and role ID.",
+        "user_query": "Create two users at once: john.doe@example.com with first name John and role admin, and jane.smith@example.com with first name Jane and role editor.",
         "arguments": {
           "users": [
             {

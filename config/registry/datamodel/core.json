@@ -350,7 +350,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Import this schema into a new data model, overwriting the existing model with ID '12345' if it exists.",
+        "user_query": "Import a schema with a Sales table containing an integer OrderID column and a float Amount column, overwriting the existing model with ID '12345'.",
         "arguments": {
           "schema": {
             "tables": [

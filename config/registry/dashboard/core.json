@@ -298,7 +298,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Migrate all dashboards, skipping any that already exist.",
+        "user_query": "Import dashboards dashboard_123 'Sales Overview' and dashboard_456 'Marketing Performance', skipping any that already exist.",
         "arguments": {
           "dashboards": [
             {

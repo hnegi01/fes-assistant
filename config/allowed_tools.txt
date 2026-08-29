@@ -176,29 +176,29 @@ wellcheck.check_pivot_widget_fields          # Analyze pivot widgets on one or m
 
 # ===== STAGED: new in the registry — uncomment a line to expose the tool =====
 # --- new in pysisense 1.1.0 ---
-# access_management.create_groups_bulk                  # [write] Create multiple groups in a single bulk request.
-# access_management.create_users_bulk                   # [write] Create multiple users in a single bulk request.
-# access_management.delete_group                        # [write] Delete a group by ID.
-# access_management.get_groups                          # Retrieve all groups.
-# access_management.get_tenants                         # Retrieve all tenants.
-# access_management.get_user_email_and_group_name_maps  # Fetch all users and groups and build ID-to-name lookup maps.
-# access_management.get_users_expanded                  # Retrieve all users with raw, unmodified role and group objects.
-# blox.get_blox_widget_style                            # Retrieve the style objects of a BloX widget.
-# blox.update_blox_widget_style                         # [write] Update the style objects of a BloX widget.
-# dashboard.change_dashboard_owner                      # [write] Transfer ownership of a dashboard to a different user.
-# dashboard.find_widgets_by_type                        # Find all widgets matching a given type across one or more dashboards.
-# dashboard.get_widget_by_id                            # Retrieve a single widget by its dashboard and widget IDs.
-# dashboard.import_dashboards_bulk                      # [write] Import one or more dashboards via the bulk import endpoint.
-# dashboard.update_widget                               # [write] Write updated widget data back to Sisense.
-# datamodel.delete_datasecurity                         # [write] Delete all datasecurity rules for one table/column of a datamodel.
-# datamodel.export_datamodel_schema                     # Export a data model's full schema definition for re-import elsewhere.
+access_management.create_groups_bulk                  # [write] Create multiple groups in a single bulk request.
+access_management.create_users_bulk                   # [write] Create multiple users in a single bulk request.
+access_management.delete_group                        # [write] Delete a group by ID.
+access_management.get_groups                          # Retrieve all groups.
+access_management.get_tenants                         # Retrieve all tenants.
+access_management.get_user_email_and_group_name_maps  # Fetch all users and groups and build ID-to-name lookup maps.
+access_management.get_users_expanded                  # Retrieve all users with raw, unmodified role and group objects.
+blox.get_blox_widget_style                            # Retrieve the style objects of a BloX widget.
+blox.update_blox_widget_style                         # [write] Update the style objects of a BloX widget.
+dashboard.change_dashboard_owner                      # [write] Transfer ownership of a dashboard to a different user.
+dashboard.find_widgets_by_type                        # Find all widgets matching a given type across one or more dashboards.
+dashboard.get_widget_by_id                            # Retrieve a single widget by its dashboard and widget IDs.
+dashboard.import_dashboards_bulk                      # [write] Import one or more dashboards via the bulk import endpoint.
+dashboard.update_widget                               # [write] Write updated widget data back to Sisense.
+datamodel.delete_datasecurity                         # [write] Delete all datasecurity rules for one table/column of a datamodel.
+datamodel.export_datamodel_schema                     # Export a data model's full schema definition for re-import elsewhere.
 datamodel.get_connections_all                         # Retrieve all connections.
-# datamodel.get_datamodel_permissions_extract           # Retrieve raw share entries for an EXTRACT (Elasticube) data model.
-# datamodel.get_datamodel_permissions_live              # Retrieve raw share entries for a LIVE data model.
-# datamodel.get_datasecurity_raw                        # Retrieve the raw, unprocessed datasecurity rules for a data model.
-# datamodel.import_datamodel_schema                     # [write] Import a data model schema (as produced by ``export_datamodel_schem...
-# datamodel.update_datamodel_permissions_extract        # [write] Replace share entries for an EXTRACT (Elasticube) data model.
-# datamodel.update_datamodel_permissions_live           # [write] Replace share entries for a LIVE data model.
+datamodel.get_datamodel_permissions_extract           # Retrieve raw share entries for an EXTRACT (Elasticube) data model.
+datamodel.get_datamodel_permissions_live              # Retrieve raw share entries for a LIVE data model.
+datamodel.get_datasecurity_raw                        # Retrieve the raw, unprocessed datasecurity rules for a data model.
+datamodel.import_datamodel_schema                     # [write] Import a data model schema (as produced by ``export_datamodel_schem...
+datamodel.update_datamodel_permissions_extract        # [write] Replace share entries for an EXTRACT (Elasticube) data model.
+datamodel.update_datamodel_permissions_live           # [write] Replace share entries for a LIVE data model.
 # mergetool.migrate_all_blox_actions                    # [write] Migrate all Blox actions from source to target.
 # mergetool.migrate_all_dashboards                      # [write] Migrate all dashboards from source to target.
 # mergetool.migrate_all_datamodels                      # [write] Migrate all data models from source to target.
@@ -219,9 +219,9 @@ datamodel.get_connections_all                         # Retrieve all connections
 # mergetool.migrate_saved_filters                       # [write] Migrate saved filter dimensions for specific data models from sourc...
 # mergetool.migrate_saved_formulas                      # [write] Migrate saved formula measures for specific data models from source...
 # mergetool.migrate_users                               # [write] Migrate specific users from source to target.
-# report_manager.create_report                          # [write] Create a new Report Manager report.
-# report_manager.delete_report                          # [write] Delete a Report Manager report by id.
-# report_manager.get_report                             # Retrieve a single Report Manager report by id.
-# report_manager.get_reports                            # Retrieve all reports configured in Report Manager.
-# report_manager.run_report                             # [write] Trigger an immediate run of a Report Manager report.
-# report_manager.update_report                          # [write] Update an existing Report Manager report.
+report_manager.create_report                          # [write] Create a new Report Manager report.
+report_manager.delete_report                          # [write] Delete a Report Manager report by id.
+report_manager.get_report                             # Retrieve a single Report Manager report by id.
+report_manager.get_reports                            # Retrieve all reports configured in Report Manager.
+report_manager.run_report                             # [write] Trigger an immediate run of a Report Manager report.
+report_manager.update_report                          # [write] Update an existing Report Manager report.

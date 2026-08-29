@@ -224,7 +224,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Replace all share entries for the 'Sales_Analytics_2023' EXTRACT data model with new permissions for users and groups.",
+        "user_query": "Replace the shares on the 'Sales_Analytics_2023' EXTRACT data model: give user_12345 read and group_67890 write.",
         "arguments": {
           "datamodel_title": "Sales_Analytics_2023",
           "shares": [
@@ -303,7 +303,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Replace all share entries for the LIVE data model with ID 'live_model_123', granting permissions to specified users and groups.",
+        "user_query": "Replace the shares on the LIVE data model 'live_model_123': give user_456 read and group_789 write.",
         "arguments": {
           "datamodel_id": "live_model_123",
           "shares": [

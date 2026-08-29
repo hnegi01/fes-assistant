@@ -142,7 +142,7 @@
     "mutates": true,
     "examples": [
       {
-        "user_query": "Update the widget with ID 'widget123' in dashboard 'dashboard456' to reflect the new data provided.",
+        "user_query": "Update widget widget123 on dashboard dashboard456: title it 'Updated Sales Chart', make it a bar chart in blue with font size 12, labelled Q1, Q2, Q3, Q4 with values 15000, 20000, 18000 and 22000.",
         "arguments": {
           "dashboard_id": "dashboard456",
           "widget_id": "widget123",

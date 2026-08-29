@@ -328,22 +328,44 @@ except Exception as exc:
 
 logger.info("pysisense SDK imported successfully. Clients will be created from inline connection at runtime.")
 
-# Maps registry module key → facade class.
-# Migration is excluded here — it uses a different constructor (source_client/target_client).
-# To add a new module: add ONE line here.
-_MODULE_CLASSES: Dict[str, type] = {
-    "access_management": AccessManagement,  # noqa: F405, F821
-    "blox": Blox,  # noqa: F405, F821
-    "custom_code": CustomCode,  # noqa: F405, F821
-    "dashboard": Dashboard,  # noqa: F405, F821
-    "datamodel": DataModel,  # noqa: F405, F821
-    "encryption": Encryption,  # noqa: F405, F821
-    "folder": Folder,  # noqa: F405, F821
-    "metadata": Metadata,  # noqa: F405, F821
-    "plugins": Plugins,  # noqa: F405, F821
-    "queries": Queries,  # noqa: F405, F821
-    "wellcheck": WellCheck,  # noqa: F405, F821
-}
+# Maps registry module key → facade class, derived from the SDK itself.
+#
+# pysisense >= 1.1 exports FACADES — the explicit tuple of tool-bearing classes
+# — so a new SDK package dispatches without editing this file. The previous
+# hardcoded map silently stranded new packages: report_manager shipped in
+# 1.1.0, passed the allowlist, and would have failed here with "unsupported
+# module" (found live 2026-08-29). Exposure is still gated entirely by
+# config/allowed_tools.txt; this only decides whether an ALREADY-allowed tool
+# can be dispatched.
+#
+# Excluded deliberately:
+#   SisenseClient — infrastructure, not a facade
+#   migration     — different constructor (source_client/target_client), handled
+#                   on its own path below
+#   mergetool     — duplicates the migration surface; kept off the agent
+_EXCLUDED_FACADES = {"SisenseClient", "Migration", "MergeTool"}
+
+
+def _discover_module_classes() -> Dict[str, type]:
+    import inspect as _inspect
+
+    import pysisense as _pysisense
+
+    facades = getattr(_pysisense, "FACADES", None)
+    candidates = (
+        list(facades) if facades else [getattr(_pysisense, n, None) for n in getattr(_pysisense, "__all__", [])]
+    )
+    out: Dict[str, type] = {}
+    for obj in candidates:
+        if not _inspect.isclass(obj) or obj.__name__ in _EXCLUDED_FACADES:
+            continue
+        mod = (getattr(obj, "__module__", "") or "").split(".")
+        key = mod[1] if len(mod) >= 2 and mod[0] == "pysisense" else obj.__name__.lower()
+        out[key] = obj
+    return out
+
+
+_MODULE_CLASSES: Dict[str, type] = _discover_module_classes()
 
 SUPPORTED_MODULES = sorted([*_MODULE_CLASSES.keys(), "migration"])
 
