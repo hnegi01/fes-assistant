@@ -1,6 +1,6 @@
 [project]
 name = "fes-assistant"
-version = "2.1.5"
+version = "2.2.0"
 description = "Agentic AI assistant for Sisense — token-scoped (planner -> orchestrator loop -> critic over MCP/PySisense)"
 requires-python = ">=3.11,<3.12"
 dependencies = [
@@ -22,7 +22,7 @@ dependencies = [
     "python-dotenv>=1.0,<2",
     "PyJWT>=2.10,<3",
     "python-multipart>=0.0.20,<0.0.21",
-    "pydantic>=2.12,<2.13",
+    "pydantic>=2.13.4,<2.14",
     "pydantic-settings>=2.12,<2.13",
     "sse-starlette>=3.0,<4",
     "pandas>=2.3,<2.4",
