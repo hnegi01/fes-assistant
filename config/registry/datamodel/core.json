@@ -128,6 +128,65 @@
     ]
   },
   {
+    "tool_id": "datamodel.export_datamodel_schema",
+    "description": "Export a data model's full schema definition for re-import elsewhere.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_id": {
+          "type": "string",
+          "description": "OID of the data model to export."
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "API dependency identifiers to include in the export (for example ``\"dataContext\"``, ``\"scopeConfiguration\"``, ``\"formulaManagement\"``, ``\"drillHierarchies\"``, ``\"perspectives\"``). Windows: has no effect — the export endpoint used there accepts no dependencies parameter."
+        }
+      },
+      "required": [
+        "datamodel_id"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Export the full schema for data model OID 'dm12345', including dependencies for 'dataContext' and 'formulaManagement'.",
+        "arguments": {
+          "datamodel_id": "dm12345",
+          "dependencies": [
+            "dataContext",
+            "formulaManagement"
+          ]
+        },
+        "notes": "This call exports the schema for the specified data model, including the 'dataContext' and 'formulaManagement' dependencies, which may be required for re-import in another Sisense environment."
+      },
+      {
+        "user_query": "How can I export the schema for data model 'dm67890' without including any dependencies?",
+        "arguments": {
+          "datamodel_id": "dm67890",
+          "dependencies": []
+        },
+        "notes": "This call exports the schema for the specified data model without including any optional dependencies. Use this when dependencies are not needed for the target environment."
+      },
+      {
+        "user_query": "I need to export the schema for data model 'dm54321' and include all available dependencies.",
+        "arguments": {
+          "datamodel_id": "dm54321",
+          "dependencies": [
+            "dataContext",
+            "scopeConfiguration",
+            "formulaManagement",
+            "drillHierarchies",
+            "perspectives"
+          ]
+        },
+        "notes": "This call exports the schema for the specified data model and includes all available dependencies. Use this when the target environment requires a fully detailed schema."
+      }
+    ]
+  },
+  {
     "tool_id": "datamodel.get_all_datamodel",
     "description": "Retrieve metadata for all data models using an internal API.",
     "parameters": {
@@ -258,6 +317,110 @@
           "datamodel_name": "Marketing Performance"
         },
         "notes": "This retrieves the schema of the 'Marketing Performance' data model, helping to identify the available tables and columns for analysis."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.import_datamodel_schema",
+    "description": "Import a data model schema (as produced by ``export_datamodel_schema``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "object",
+          "description": "Schema object to import, typically produced by ``export_datamodel_schema``."
+        },
+        "action": {
+          "type": "string",
+          "description": "One of ``\"overwrite\"`` or ``\"duplicate\"``. Any other value (including ``None``) performs a plain create."
+        },
+        "target_datamodel_id": {
+          "type": "string",
+          "description": "OID of the existing data model to overwrite. Required for ``action=\"overwrite\"`` to take effect."
+        },
+        "new_title": {
+          "type": "string",
+          "description": "Title for the duplicated data model. Used only when ``action=\"duplicate\"``."
+        }
+      },
+      "required": [
+        "schema"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Import this schema into a new data model, overwriting the existing model with ID '12345' if it exists.",
+        "arguments": {
+          "schema": {
+            "tables": [
+              {
+                "name": "Sales",
+                "columns": [
+                  {
+                    "name": "OrderID",
+                    "type": "integer"
+                  },
+                  {
+                    "name": "Amount",
+                    "type": "float"
+                  }
+                ]
+              }
+            ]
+          },
+          "action": "overwrite",
+          "target_datamodel_id": "12345"
+        },
+        "notes": "This call imports the provided schema and overwrites the existing data model with ID '12345' if it exists. If the target model is not found, it creates a new one."
+      },
+      {
+        "user_query": "Can you duplicate this schema into a new data model titled 'Sales Data Copy'?",
+        "arguments": {
+          "schema": {
+            "tables": [
+              {
+                "name": "Sales",
+                "columns": [
+                  {
+                    "name": "OrderID",
+                    "type": "integer"
+                  },
+                  {
+                    "name": "Amount",
+                    "type": "float"
+                  }
+                ]
+              }
+            ]
+          },
+          "action": "duplicate",
+          "new_title": "Sales Data Copy"
+        },
+        "notes": "This call duplicates the provided schema into a new data model with the title 'Sales Data Copy'."
+      },
+      {
+        "user_query": "Import this schema as a new data model without overwriting or duplicating.",
+        "arguments": {
+          "schema": {
+            "tables": [
+              {
+                "name": "Customers",
+                "columns": [
+                  {
+                    "name": "CustomerID",
+                    "type": "string"
+                  },
+                  {
+                    "name": "Name",
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "notes": "This call imports the provided schema as a new data model without specifying any action, resulting in a plain create."
       }
     ]
   },

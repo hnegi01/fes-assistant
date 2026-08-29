@@ -1,0 +1,124 @@
+[
+  {
+    "tool_id": "mergetool.migrate_all_folders",
+    "description": "Migrate all folders from source to target, preserving full hierarchy.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Conflict strategy applied to every folder."
+        },
+        "concurrency": {
+          "type": "integer",
+          "description": "Same as in ``migrate_folders`` — maximum number of folders to create/delete concurrently within each hierarchy depth level."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all folders, skipping any that already exist.",
+        "arguments": {
+          "action": "skip"
+        },
+        "notes": "This call migrates all folders from the source to the target environment, preserving the folder hierarchy. Existing folders in the target environment are skipped."
+      },
+      {
+        "user_query": "How can I migrate all folders and overwrite any existing ones in the target environment?",
+        "arguments": {
+          "action": "overwrite"
+        },
+        "notes": "This call migrates all folders from the source to the target environment, preserving the folder hierarchy. Any existing folders in the target environment are overwritten."
+      },
+      {
+        "user_query": "Migrate all folders and duplicate any that already exist, using a concurrency level of 5.",
+        "arguments": {
+          "action": "duplicate",
+          "concurrency": 5
+        },
+        "notes": "This call migrates all folders from the source to the target environment, preserving the folder hierarchy. Existing folders in the target environment are duplicated, and up to 5 folders are processed concurrently at each hierarchy depth level."
+      }
+    ]
+  },
+  {
+    "tool_id": "mergetool.migrate_folders",
+    "description": "Migrate specific folders and their full subtrees from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "folder_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Folder OIDs to migrate. Provide either this or ``folder_names``."
+        },
+        "folder_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Folder display names to migrate. Provide either this or ``folder_ids``."
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Conflict strategy when a folder at the same path already exists on the target. - ``\"skip\"`` — leave the existing folder unchanged and map its OID so child folders can still be placed under it correctly. - ``\"overwrite\"`` — delete the existing folder then recreate from source. **Warning:** deleting a folder on Sisense also removes all dashboards inside it. - ``\"duplicate\"`` — always create, regardless of conflicts."
+        },
+        "concurrency": {
+          "type": "integer",
+          "description": "Maximum number of folders to create/delete concurrently within each hierarchy depth level, run via a background thread pool (``asyncio.to_thread``) since the underlying HTTP client is synchronous. Folders at the same depth are independent — their parent was already migrated in an earlier, fully-completed depth level — so they're safe to run in parallel; different depths are still processed strictly in order, since a child's target parent OID must exist before it can be created. Values <= 1 (the default) process folders one at a time."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all dashboards, skipping any that already exist.",
+        "arguments": {
+          "folder_ids": [
+            "abc123",
+            "def456"
+          ],
+          "action": "skip"
+        },
+        "notes": "This call migrates the specified folders and their subtrees from the source to the target, skipping any folders that already exist on the target."
+      },
+      {
+        "user_query": "How can I duplicate the folders named 'Sales Reports' and 'Marketing Data' to a new environment?",
+        "arguments": {
+          "folder_names": [
+            "Sales Reports",
+            "Marketing Data"
+          ],
+          "action": "duplicate"
+        },
+        "notes": "This call duplicates the specified folders by name, ensuring that conflicts do not overwrite or skip existing folders on the target."
+      },
+      {
+        "user_query": "Overwrite the folders with IDs 'xyz789' and 'ghi012' in the target environment, processing them concurrently.",
+        "arguments": {
+          "folder_ids": [
+            "xyz789",
+            "ghi012"
+          ],
+          "action": "overwrite",
+          "concurrency": 5
+        },
+        "notes": "This call overwrites the specified folders by ID, recreating them on the target environment and processing up to 5 folders concurrently at each hierarchy depth."
+      }
+    ]
+  }
+]

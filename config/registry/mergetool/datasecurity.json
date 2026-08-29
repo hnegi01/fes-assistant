@@ -1,0 +1,87 @@
+[
+  {
+    "tool_id": "mergetool.migrate_all_datasecurity",
+    "description": "Migrate datasecurity rules for all data models from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all datasecurity rules for all data models, providing progress updates.",
+        "arguments": {
+          "emit": "lambda progress: print(progress)"
+        },
+        "notes": "This call migrates datasecurity rules for all data models from the source to the target environment, while providing progress updates via the specified callback function."
+      },
+      {
+        "user_query": "How can I migrate all datasecurity rules for every data model?",
+        "arguments": {},
+        "notes": "This call migrates datasecurity rules for all data models from the source to the target environment. No progress callback is provided in this case."
+      },
+      {
+        "user_query": "Migrate all datasecurity rules without any progress updates.",
+        "arguments": {},
+        "notes": "This call performs the migration of datasecurity rules for all data models without emitting any progress updates."
+      }
+    ]
+  },
+  {
+    "tool_id": "mergetool.migrate_datasecurity",
+    "description": "Migrate row-level datasecurity rules for specific data models from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Data model OIDs to migrate. Provide either this or ``datamodel_names``."
+        },
+        "datamodel_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Data model titles to migrate. Provide either this or ``datamodel_ids``."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate row-level security rules for data models with IDs 'dm_12345' and 'dm_67890'.",
+        "arguments": {
+          "datamodel_ids": [
+            "dm_12345",
+            "dm_67890"
+          ]
+        },
+        "notes": "This call migrates row-level security rules for the specified data models identified by their OIDs. Use this when you know the exact IDs of the data models to migrate."
+      },
+      {
+        "user_query": "How can I migrate row-level security rules for the data models named 'Sales Data' and 'Marketing Data'?",
+        "arguments": {
+          "datamodel_names": [
+            "Sales Data",
+            "Marketing Data"
+          ]
+        },
+        "notes": "This call migrates row-level security rules for the specified data models identified by their names. Use this when you know the titles of the data models to migrate."
+      },
+      {
+        "user_query": "Migrate row-level security rules for the data model with ID 'dm_54321'.",
+        "arguments": {
+          "datamodel_ids": [
+            "dm_54321"
+          ]
+        },
+        "notes": "This call migrates row-level security rules for a single data model identified by its OID. Use this when you need to migrate rules for a specific data model and have its ID."
+      }
+    ]
+  }
+]

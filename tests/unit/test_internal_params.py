@@ -116,9 +116,20 @@ class TestShippedRegistryIsClean:
         assert offenders == [], f"internal params in registry schemas: {offenders}"
 
     def test_no_internal_param_in_flat_examples(self):
+        # Allowlisted tools only: examples reach a consumer (a user in a dialog,
+        # the model at FES_TOOL_EXAMPLES>=1) exclusively for EXPOSED tools, and
+        # an SDK refresh lands dozens of unexposed tools with auto-generated
+        # examples (49 in the pysisense 1.1.0 bump). Gating on the allowlist
+        # makes this "curate the example before you expose the tool" — the
+        # check fires the moment a line is uncommented, which is the moment it
+        # starts mattering.
+        import backend.agent._registry as registry_m
+
+        allowed = registry_m.allowed_tool_ids()
         offenders = [
             r["tool_id"]
             for r in _flat_rows()
+            if allowed is None or r["tool_id"] in allowed
             for ex in (r.get("examples") or [])
             if set(ex.get("arguments") or {}) & routing_m.INTERNAL_PARAMS
         ]

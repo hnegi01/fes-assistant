@@ -200,8 +200,14 @@ class TestShippedExampleQuality:
 
     def test_first_example_never_invents_an_identity_value(self):
         rows = json.loads(registry_m.REGISTRY_PATH.read_text(encoding="utf-8"))
+        allowed = registry_m.allowed_tool_ids()
         offenders = {}
         for row in rows:
+            # Exposed tools only — see the note in test_internal_params.py:
+            # an unexposed tool's example is never shown to anyone, and the
+            # bar applies the moment it is allowlisted.
+            if allowed is not None and row["tool_id"] not in allowed:
+                continue
             examples = row.get("examples") or []
             if not examples:
                 continue
@@ -223,8 +229,14 @@ class TestShippedExampleQuality:
         (a command), not a question about it. Curated 2026-08-14; this pins
         the style against future registry regenerations."""
         rows = json.loads(registry_m.REGISTRY_PATH.read_text(encoding="utf-8"))
+        allowed = registry_m.allowed_tool_ids()
         offenders = {}
         for row in rows:
+            # Exposed tools only — see the note in test_internal_params.py:
+            # an unexposed tool's example is never shown to anyone, and the
+            # bar applies the moment it is allowlisted.
+            if allowed is not None and row["tool_id"] not in allowed:
+                continue
             examples = row.get("examples") or []
             if not examples:
                 continue
@@ -258,8 +270,14 @@ class TestShippedExampleQuality:
         batches) — the other way a few-shot demonstrates filling in values the
         user did not give."""
         rows = json.loads(registry_m.REGISTRY_PATH.read_text(encoding="utf-8"))
+        allowed = registry_m.allowed_tool_ids()
         offenders = {}
         for row in rows:
+            # Exposed tools only — see the note in test_internal_params.py:
+            # an unexposed tool's example is never shown to anyone, and the
+            # bar applies the moment it is allowlisted.
+            if allowed is not None and row["tool_id"] not in allowed:
+                continue
             examples = row.get("examples") or []
             if not examples:
                 continue

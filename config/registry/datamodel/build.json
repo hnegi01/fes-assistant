@@ -11,11 +11,11 @@
         },
         "datamodel_type": {
           "type": "string",
-          "description": "Either 'extract' (Elasticube/EC) or 'live'. If user says 'elasticube' or 'ec', normalize to 'extract'.",
           "enum": [
             "extract",
             "live"
           ],
+          "description": "Either 'extract' (Elasticube/EC) or 'live'. If user says 'elasticube' or 'ec', normalize to 'extract'.",
           "x-aliases": {
             "extract": [
               "ec",
@@ -78,7 +78,7 @@
         "connection_name": {
           "type": "string",
           "description": "Name of the connection to use.",
-          "x-options-tool": "datamodel.get_connections",
+          "x-options-tool": "datamodel.get_connections_all",
           "x-options-note": "Or let me know if you want to create a new connection first."
         },
         "database_name": {
@@ -233,12 +233,12 @@
         },
         "build_type": {
           "type": "string",
-          "description": "Build strategy for extract models. Omit for live/publish.",
           "enum": [
             "full",
             "by_table",
             "schema_changes"
           ],
+          "description": "Build strategy for extract models. Omit for live/publish.",
           "x-aliases": {
             "full": [
               "build",
@@ -267,11 +267,11 @@
         },
         "schema_origin": {
           "type": "string",
-          "description": "Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen in the Data page, the default) or ``\"running\"`` (last successfully built version). Ignored for LIVE models.",
           "enum": [
             "latest",
             "running"
-          ]
+          ],
+          "description": "Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen in the Data page, the default) or ``\"running\"`` (last successfully built version). Ignored for LIVE models."
         }
       },
       "required": [
@@ -320,11 +320,11 @@
         },
         "datamodel_type": {
           "type": "string",
-          "description": "Type of the data model. Should be either ``\"extract\"`` (for Elasticube) or ``\"live\"`` (for Live).",
           "enum": [
             "extract",
             "live"
           ],
+          "description": "Type of the data model: ``\"extract\"`` (Elasticube) or ``\"live\"``.",
           "x-aliases": {
             "extract": [
               "ec",
@@ -343,7 +343,7 @@
         "connection_name": {
           "type": "string",
           "description": "Name of the connection to use.",
-          "x-options-tool": "datamodel.get_connections",
+          "x-options-tool": "datamodel.get_connections_all",
           "x-options-note": "Or let me know if you want to create a new connection first."
         },
         "database_name": {

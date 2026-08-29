@@ -1,5 +1,61 @@
 [
   {
+    "tool_id": "datamodel.delete_datasecurity",
+    "description": "Delete all datasecurity rules for one table/column of a datamodel.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Title of the datamodel."
+        },
+        "table": {
+          "type": "string",
+          "description": "Table name the rules apply to."
+        },
+        "column": {
+          "type": "string",
+          "description": "Column name the rules apply to."
+        }
+      },
+      "required": [
+        "datamodel_name",
+        "table",
+        "column"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Delete all datasecurity rules for the column 'customer_id' in the 'orders' table of the 'Sales_Model' datamodel.",
+        "arguments": {
+          "datamodel_name": "Sales_Model",
+          "table": "orders",
+          "column": "customer_id"
+        },
+        "notes": "This call removes all datasecurity rules applied to the 'customer_id' column in the 'orders' table of the 'Sales_Model' datamodel. Use this when you need to reset or clear security rules for this specific column."
+      },
+      {
+        "user_query": "How can I remove all datasecurity rules for the 'email' column in the 'users' table of the 'Customer_Data' datamodel?",
+        "arguments": {
+          "datamodel_name": "Customer_Data",
+          "table": "users",
+          "column": "email"
+        },
+        "notes": "This example demonstrates how to delete all datasecurity rules for the 'email' column in the 'users' table of the 'Customer_Data' datamodel. Useful for clearing security rules before applying new ones."
+      },
+      {
+        "user_query": "Clear all datasecurity rules for the 'product_id' column in the 'inventory' table of the 'Warehouse_Analytics' datamodel.",
+        "arguments": {
+          "datamodel_name": "Warehouse_Analytics",
+          "table": "inventory",
+          "column": "product_id"
+        },
+        "notes": "This example removes all datasecurity rules for the 'product_id' column in the 'inventory' table of the 'Warehouse_Analytics' datamodel. This is helpful when you want to start fresh with no rules for this column."
+      }
+    ]
+  },
+  {
     "tool_id": "datamodel.get_datasecurity",
     "description": "Retrieve datasecurity table and column entries for a given data model.",
     "parameters": {
@@ -80,6 +136,52 @@
     ]
   },
   {
+    "tool_id": "datamodel.get_datasecurity_raw",
+    "description": "Retrieve the raw, unprocessed datasecurity rules for a data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_name": {
+          "type": "string",
+          "description": "Name (title) of the data model to retrieve raw datasecurity rules for."
+        },
+        "datamodel_type": {
+          "type": "string",
+          "description": "The data model's type (``\"extract\"`` or ``\"live\"``), if already known. When provided, the datasecurity endpoint is built directly from ``datamodel_name`` and this type, skipping the data model resolve call. When omitted, the data model is resolved by name first (matching ``get_datasecurity``)."
+        }
+      },
+      "required": [
+        "datamodel_name"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve the raw datasecurity rules for the 'Sales Data' extract model.",
+        "arguments": {
+          "datamodel_name": "Sales Data",
+          "datamodel_type": "extract"
+        },
+        "notes": "This retrieves the raw, unprocessed datasecurity rules for the 'Sales Data' data model of type 'extract'. Use this when you know the data model type and want to avoid resolving it by name."
+      },
+      {
+        "user_query": "What are the raw datasecurity rules for the 'Customer Insights' data model?",
+        "arguments": {
+          "datamodel_name": "Customer Insights"
+        },
+        "notes": "This retrieves the raw datasecurity rules for the 'Customer Insights' data model. The type is not specified, so the system will first resolve the data model by name."
+      },
+      {
+        "user_query": "Fetch the raw datasecurity rules for the 'Marketing Analytics' live model.",
+        "arguments": {
+          "datamodel_name": "Marketing Analytics",
+          "datamodel_type": "live"
+        },
+        "notes": "This fetches the raw datasecurity rules for the 'Marketing Analytics' data model of type 'live'. Specifying the type allows the system to skip resolving the data model by name."
+      }
+    ]
+  },
+  {
     "tool_id": "datamodel.set_live_datasecurity_add_many",
     "description": "Add multiple datasecurity rules to a LIVE datamodel.",
     "parameters": {
@@ -94,7 +196,7 @@
           "items": {
             "type": "object"
           },
-          "description": "Datasecurity rules to add in Sisense API format. Each rule typically includes fields such as ``table``, ``column``, ``datatype``, ``members``, ``exclusionary``, and ``shares``."
+          "description": "Datasecurity rules to add in Sisense API format. Each rule requires ``table``, ``column``, ``datatype``, ``members`` (list of strings), ``exclusionary``, ``shares``, ``allMembers``, ``live``, and ``fullname`` (``\"live:{title}\"``). ``live`` and ``fullname`` are filled in automatically when omitted; server-managed fields (``_id``, ``created``, ``lastModified``, ``importedIdIdentifier``) are stripped automatically."
         }
       },
       "required": [
@@ -196,7 +298,7 @@
   },
   {
     "tool_id": "datamodel.update_datasecurity",
-    "description": "Replace datasecurity rules on an EXTRACT (Elasticube) datamodel.",
+    "description": "Add datasecurity rules to an EXTRACT (Elasticube) datamodel.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -209,7 +311,7 @@
           "items": {
             "type": "object"
           },
-          "description": "Complete datasecurity rule list in Sisense API format. Each rule typically includes fields such as ``table``, ``column``, ``datatype``, ``members``, ``exclusionary``, and ``shares``."
+          "description": "Datasecurity rule list in Sisense API format. Each rule includes ``table``, ``column``, ``datatype``, ``members`` (list of strings), ``exclusionary``, ``shares``, and ``allMembers``."
         }
       },
       "required": [

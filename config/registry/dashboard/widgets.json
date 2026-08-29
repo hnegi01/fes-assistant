@@ -1,0 +1,244 @@
+[
+  {
+    "tool_id": "dashboard.find_widgets_by_type",
+    "description": "Find all widgets matching a given type across one or more dashboards.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "widget_type": {
+          "type": "string",
+          "description": "The widget type to match (for example ``\"BloX\"``, ``\"chart\"``, ``\"pivot\"``). Comparison is case-sensitive."
+        },
+        "dashboards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more dashboard IDs or titles to search. A bare string is treated as a single-item list. When ``None`` (default), all dashboards on the instance are searched."
+        },
+        "admin_access": {
+          "type": "boolean",
+          "description": "When ``True`` (default), enumerates all dashboards on the instance via the admin endpoint and fetches widgets using ``adminAccess=true``, so dashboards owned by other users are included. When ``False``, only dashboards visible to the API token user are scanned."
+        },
+        "max_results": {
+          "type": "integer",
+          "description": "Stop after collecting this many matching widgets. ``None`` (default) means no limit."
+        }
+      },
+      "required": [
+        "widget_type"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Find all BloX widgets across all dashboards visible to the API token user.",
+        "arguments": {
+          "widget_type": "BloX",
+          "admin_access": false
+        },
+        "notes": "This call searches for all widgets of type 'BloX' in dashboards accessible to the API token user, excluding dashboards owned by other users."
+      },
+      {
+        "user_query": "Which dashboards contain pivot widgets? Limit the results to 10 matches.",
+        "arguments": {
+          "widget_type": "pivot",
+          "max_results": 10
+        },
+        "notes": "This call searches for up to 10 widgets of type 'pivot' across all dashboards on the instance."
+      },
+      {
+        "user_query": "Search for chart widgets in dashboards with IDs 'dash123' and 'dash456'.",
+        "arguments": {
+          "widget_type": "chart",
+          "dashboards": [
+            "dash123",
+            "dash456"
+          ]
+        },
+        "notes": "This call looks for widgets of type 'chart' specifically in the dashboards with IDs 'dash123' and 'dash456'."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.get_widget_by_id",
+    "description": "Retrieve a single widget by its dashboard and widget IDs.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ``oid`` of the dashboard that contains the widget."
+        },
+        "widget_id": {
+          "type": "string",
+          "description": "The ``oid`` of the widget to retrieve."
+        },
+        "admin_access": {
+          "type": "boolean",
+          "description": "When ``True`` (default), appends ``?adminAccess=true`` to the request, allowing access to dashboards the API token user does not own. Some Sisense versions reject the ``adminAccess`` query parameter with HTTP 422 (strict query-schema validation); the request is then retried automatically without it."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "widget_id"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve the widget with ID 'widget123' from the dashboard 'dashboard456', ensuring admin access.",
+        "arguments": {
+          "dashboard_id": "dashboard456",
+          "widget_id": "widget123",
+          "admin_access": true
+        },
+        "notes": "This call retrieves the specified widget from the given dashboard, using admin access to bypass ownership restrictions if necessary."
+      },
+      {
+        "user_query": "What is the configuration of the widget with ID 'widget789' in dashboard 'dashboard101'?",
+        "arguments": {
+          "dashboard_id": "dashboard101",
+          "widget_id": "widget789"
+        },
+        "notes": "This call fetches the widget object from the specified dashboard without admin access, suitable for cases where the user owns the dashboard."
+      },
+      {
+        "user_query": "Can you fetch the widget 'widget555' from the dashboard 'dashboard999'?",
+        "arguments": {
+          "dashboard_id": "dashboard999",
+          "widget_id": "widget555",
+          "admin_access": false
+        },
+        "notes": "This call retrieves the widget from the specified dashboard without using admin access, ensuring compatibility with strict query-schema validation in some Sisense versions."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.update_widget",
+    "description": "Write updated widget data back to Sisense.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ``oid`` of the dashboard that contains the widget."
+        },
+        "widget_id": {
+          "type": "string",
+          "description": "The ``oid`` of the widget to update."
+        },
+        "widget_data": {
+          "type": "object",
+          "description": "The full widget payload with the desired changes applied. Server-managed fields are removed automatically before the PUT request."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "widget_id",
+        "widget_data"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Update the widget with ID 'widget123' in dashboard 'dashboard456' to reflect the new data provided.",
+        "arguments": {
+          "dashboard_id": "dashboard456",
+          "widget_id": "widget123",
+          "widget_data": {
+            "title": "Updated Sales Chart",
+            "type": "bar",
+            "data": {
+              "labels": [
+                "Q1",
+                "Q2",
+                "Q3",
+                "Q4"
+              ],
+              "values": [
+                15000,
+                20000,
+                18000,
+                22000
+              ]
+            },
+            "style": {
+              "color": "blue",
+              "fontSize": 12
+            }
+          }
+        },
+        "notes": "This call updates the specified widget in the given dashboard with new data and styling. Use this when you need to modify an existing widget's content or appearance."
+      },
+      {
+        "user_query": "How can I update the widget 'widget789' in dashboard 'dashboard123' to show the latest revenue data?",
+        "arguments": {
+          "dashboard_id": "dashboard123",
+          "widget_id": "widget789",
+          "widget_data": {
+            "title": "Revenue Overview",
+            "type": "line",
+            "data": {
+              "labels": [
+                "January",
+                "February",
+                "March"
+              ],
+              "values": [
+                5000,
+                7000,
+                8000
+              ]
+            },
+            "style": {
+              "color": "green",
+              "fontSize": 14
+            }
+          }
+        },
+        "notes": "This example demonstrates how to update a widget to display new revenue data for the first quarter. Useful for keeping dashboards up-to-date with the latest metrics."
+      },
+      {
+        "user_query": "Can I modify the widget 'widget456' in dashboard 'dashboard789' to include updated product performance data?",
+        "arguments": {
+          "dashboard_id": "dashboard789",
+          "widget_id": "widget456",
+          "widget_data": {
+            "title": "Product Performance",
+            "type": "table",
+            "data": {
+              "columns": [
+                "Product",
+                "Sales",
+                "Profit"
+              ],
+              "rows": [
+                [
+                  "Product A",
+                  12000,
+                  3000
+                ],
+                [
+                  "Product B",
+                  15000,
+                  4000
+                ],
+                [
+                  "Product C",
+                  10000,
+                  2500
+                ]
+              ]
+            },
+            "style": {
+              "border": "solid",
+              "headerColor": "gray"
+            }
+          }
+        },
+        "notes": "This call updates a table widget to reflect new product performance data. Ideal for presenting detailed tabular insights in a dashboard."
+      }
+    ]
+  }
+]

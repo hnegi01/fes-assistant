@@ -1,5 +1,115 @@
 [
   {
+    "tool_id": "access_management.create_groups_bulk",
+    "description": "Create multiple groups in a single bulk request.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Group definitions to create. Each dictionary should use canonical Sisense group fields, at minimum ``name``."
+        }
+      },
+      "required": [
+        "groups"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create multiple groups for the new project team: 'Data Analysts', 'Project Managers', and 'QA Engineers'.",
+        "arguments": {
+          "groups": [
+            {
+              "name": "Data Analysts"
+            },
+            {
+              "name": "Project Managers"
+            },
+            {
+              "name": "QA Engineers"
+            }
+          ]
+        },
+        "notes": "This call creates three new groups in bulk for organizing users in the new project team."
+      },
+      {
+        "user_query": "Can you bulk-create groups for 'Marketing Leads' and 'Sales Executives'?",
+        "arguments": {
+          "groups": [
+            {
+              "name": "Marketing Leads"
+            },
+            {
+              "name": "Sales Executives"
+            }
+          ]
+        },
+        "notes": "Use this call to quickly create multiple groups for department-specific roles."
+      },
+      {
+        "user_query": "I need to set up groups for 'HR Admins', 'Finance Team', and 'IT Support'.",
+        "arguments": {
+          "groups": [
+            {
+              "name": "HR Admins"
+            },
+            {
+              "name": "Finance Team"
+            },
+            {
+              "name": "IT Support"
+            }
+          ]
+        },
+        "notes": "This example demonstrates creating groups for different organizational functions in one request."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.delete_group",
+    "description": "Delete a group by ID.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "group_id": {
+          "type": "string",
+          "description": "The ID of the group to delete."
+        }
+      },
+      "required": [
+        "group_id"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Delete the group with ID 'group_12345'.",
+        "arguments": {
+          "group_id": "group_12345"
+        },
+        "notes": "This call deletes the group identified by 'group_12345' from the Sisense server. Use this when you need to remove a group permanently."
+      },
+      {
+        "user_query": "How do I remove a group with the ID 'marketing_team'?",
+        "arguments": {
+          "group_id": "marketing_team"
+        },
+        "notes": "This example demonstrates how to delete a group named 'marketing_team'. Use this when you want to clean up unused or obsolete groups."
+      },
+      {
+        "user_query": "Can you delete the group identified as 'archived_group_001'?",
+        "arguments": {
+          "group_id": "archived_group_001"
+        },
+        "notes": "This call removes the group 'archived_group_001'. This is useful for managing archived or deprecated groups in your system."
+      }
+    ]
+  },
+  {
     "tool_id": "access_management.get_group",
     "description": "Retrieve group details by name.",
     "parameters": {
@@ -36,6 +146,33 @@
           "name": "Marketing Users"
         },
         "notes": "This retrieves the 'Marketing Users' group details, which can help confirm its default role or troubleshoot access issues."
+      }
+    ]
+  },
+  {
+    "tool_id": "access_management.get_groups",
+    "description": "Retrieve all groups.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve all groups from the Sisense server.",
+        "arguments": {},
+        "notes": "This call fetches the complete list of groups defined on the Sisense server. Useful for auditing or managing group memberships."
+      },
+      {
+        "user_query": "What are all the groups currently defined in Sisense?",
+        "arguments": {},
+        "notes": "This call retrieves all groups, which can be used to review existing group configurations or permissions."
+      },
+      {
+        "user_query": "List all groups available on the Sisense server.",
+        "arguments": {},
+        "notes": "Use this call to get a comprehensive list of groups for administrative purposes or integration tasks."
       }
     ]
   },

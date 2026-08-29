@@ -1,0 +1,130 @@
+[
+  {
+    "tool_id": "blox.get_blox_widget_style",
+    "description": "Retrieve the style objects of a BloX widget.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ``oid`` of the dashboard that contains the widget."
+        },
+        "widget_id": {
+          "type": "string",
+          "description": "The ``oid`` of the BloX widget."
+        },
+        "admin_access": {
+          "type": "boolean",
+          "description": "When ``True`` (default), appends ``?adminAccess=true`` to the request, allowing access to dashboards the API token user does not own."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "widget_id"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve the style objects for the BloX widget with ID 'widget123' in dashboard 'dashboard456', using admin access.",
+        "arguments": {
+          "dashboard_id": "dashboard456",
+          "widget_id": "widget123",
+          "admin_access": true
+        },
+        "notes": "This retrieves the style configuration for a specific BloX widget in the specified dashboard, with admin access enabled to ensure the API token user can access the dashboard even if they do not own it."
+      },
+      {
+        "user_query": "What are the style objects for the BloX widget 'widget789' in dashboard 'dashboard101'?",
+        "arguments": {
+          "dashboard_id": "dashboard101",
+          "widget_id": "widget789"
+        },
+        "notes": "This fetches the style configuration for a BloX widget in a dashboard. Admin access is not explicitly enabled, so the API token user must have ownership or permissions for the dashboard."
+      },
+      {
+        "user_query": "Can you get the style details of the BloX widget with ID 'widget555' in dashboard 'dashboard999', ensuring admin access?",
+        "arguments": {
+          "dashboard_id": "dashboard999",
+          "widget_id": "widget555",
+          "admin_access": true
+        },
+        "notes": "This retrieves the style configuration for a BloX widget in a specified dashboard, explicitly enabling admin access to bypass ownership restrictions."
+      }
+    ]
+  },
+  {
+    "tool_id": "blox.update_blox_widget_style",
+    "description": "Update the style objects of a BloX widget.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The ``oid`` of the dashboard that contains the widget."
+        },
+        "widget_id": {
+          "type": "string",
+          "description": "The ``oid`` of the BloX widget to update."
+        },
+        "current_card": {
+          "type": "object",
+          "description": "Replacement for the ``style.currentCard`` object. Omit to leave the current value unchanged."
+        },
+        "current_config": {
+          "type": "object",
+          "description": "Replacement for the ``style.currentConfig`` object. Omit to leave the current value unchanged."
+        },
+        "executing_user_id": {
+          "type": "string",
+          "description": "Sisense user ID of the user who should own the dashboard during the write. Required when the API token user is not the dashboard owner."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "widget_id"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Update the style of the BloX widget with ID 'widget123' on dashboard 'dashboard456', replacing the current card style but leaving the config unchanged.",
+        "arguments": {
+          "dashboard_id": "dashboard456",
+          "widget_id": "widget123",
+          "current_card": {
+            "style": "background-color: #f0f0f0; color: #333;"
+          }
+        },
+        "notes": "This call updates the `style.currentCard` object for the specified BloX widget while leaving `style.currentConfig` unchanged."
+      },
+      {
+        "user_query": "Can you update the font family in the config of the BloX widget 'widget789' on dashboard 'dashboard101'?",
+        "arguments": {
+          "dashboard_id": "dashboard101",
+          "widget_id": "widget789",
+          "current_config": {
+            "fontFamily": "Arial, sans-serif"
+          }
+        },
+        "notes": "This call modifies the `style.currentConfig` object to update the font family, leaving the `style.currentCard` unchanged."
+      },
+      {
+        "user_query": "Transfer ownership to user 'user567' and update both the card and config styles for widget 'widget345' on dashboard 'dashboard678'.",
+        "arguments": {
+          "dashboard_id": "dashboard678",
+          "widget_id": "widget345",
+          "current_card": {
+            "style": "border: 1px solid #000; padding: 10px;"
+          },
+          "current_config": {
+            "fontFamily": "Roboto, sans-serif",
+            "fontSize": "14px"
+          },
+          "executing_user_id": "user567"
+        },
+        "notes": "This call updates both `style.currentCard` and `style.currentConfig` for the specified BloX widget, temporarily transferring ownership to the specified user during the write operation."
+      }
+    ]
+  }
+]

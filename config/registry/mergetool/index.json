@@ -1,0 +1,16 @@
+{
+  "package": "mergetool",
+  "class": "MergeTool",
+  "modules": {
+    "custom_code": "Notebook migration — copy custom-code notebooks from source to target with skip, overwrite, or duplicate conflict handling.",
+    "folder": "Folder migration — recreate the folder hierarchy from source on the target with skip, overwrite, or duplicate conflict handling.",
+    "blox": "Blox action migration — copy custom Blox actions from source to target with skip, overwrite, or duplicate conflict handling. Target must be a Linux deployment.",
+    "groups": "Group migration — copy groups from source to target with skip, overwrite, or duplicate conflict handling. Migrate groups before users, since user payloads reference target group IDs.",
+    "users": "User migration — copy users from source to target with skip, overwrite, or duplicate conflict handling, resolving role and group assignments to target IDs.",
+    "datamodels": "Data model migration — export data model schemas from source and import them into target with skip, overwrite, or duplicate conflict handling, remapping connection credentials via a provider map and optionally migrating shares.",
+    "datasecurity": "Data security (row-level security) migration — copy datasecurity rules for data models that already exist on the target, remapping rule shares to target users and groups by email/name. Migrate data models before data security.",
+    "formulas": "Saved formula migration — copy saved formula measures for data models that already exist on the target, with skip or duplicate-on-create conflict handling.",
+    "filters": "Saved filter migration — copy saved filter dimensions for data models that already exist on the target, with skip or duplicate-on-create conflict handling.",
+    "dashboards": "Dashboard migration — export dashboards from source and import them into target with skip, overwrite, or duplicate conflict handling, remapping owner/shares to target users and groups and placing each dashboard in its corresponding target folder. Migrate groups, users, folders, and data models first, since dashboards reference all four."
+  }
+}

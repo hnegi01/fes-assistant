@@ -1,0 +1,103 @@
+[
+  {
+    "tool_id": "mergetool.migrate_all_groups",
+    "description": "Migrate all eligible groups from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Conflict strategy applied to every group."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all groups, skipping any that already exist.",
+        "arguments": {
+          "action": "skip"
+        },
+        "notes": "This call migrates all eligible groups from the source environment to the target, skipping any groups that already exist in the target environment. Use this when you want to avoid overwriting existing groups."
+      },
+      {
+        "user_query": "How can I migrate all groups and overwrite any existing ones in the target?",
+        "arguments": {
+          "action": "overwrite"
+        },
+        "notes": "This call migrates all eligible groups from the source environment to the target, overwriting any groups in the target environment that have the same name. Use this when you want to ensure the target environment has the latest group definitions."
+      },
+      {
+        "user_query": "Can I migrate all groups but create duplicates if there are conflicts?",
+        "arguments": {
+          "action": "duplicate"
+        },
+        "notes": "This call migrates all eligible groups from the source environment to the target, creating duplicate groups in the target environment if there are naming conflicts. Use this when you want to preserve all group data without overwriting or skipping."
+      }
+    ]
+  },
+  {
+    "tool_id": "mergetool.migrate_groups",
+    "description": "Migrate specific groups from source to target.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "group_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Group names to migrate. If ``None``, every group on the source is migrated."
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "skip",
+            "overwrite",
+            "duplicate"
+          ],
+          "description": "Conflict strategy when a group with the same ``name`` already exists on the target. - ``\"skip\"`` — leave the existing group unchanged. - ``\"overwrite\"`` — delete the existing group then recreate from source. **Warning:** this can disrupt user/group associations still referencing the deleted group on the target. - ``\"duplicate\"`` — always create, regardless of conflicts."
+        }
+      },
+      "required": []
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Migrate all groups, skipping any that already exist.",
+        "arguments": {
+          "group_names": null,
+          "action": "skip"
+        },
+        "notes": "This call migrates all groups from the source to the target environment, skipping any groups that already exist on the target."
+      },
+      {
+        "user_query": "How can I migrate the 'Sales' and 'Marketing' groups, overwriting any existing groups with the same names?",
+        "arguments": {
+          "group_names": [
+            "Sales",
+            "Marketing"
+          ],
+          "action": "overwrite"
+        },
+        "notes": "This call migrates the 'Sales' and 'Marketing' groups from the source to the target environment. If groups with the same names already exist on the target, they will be deleted and recreated from the source."
+      },
+      {
+        "user_query": "I want to migrate the 'HR' group and create duplicates if it already exists on the target.",
+        "arguments": {
+          "group_names": [
+            "HR"
+          ],
+          "action": "duplicate"
+        },
+        "notes": "This call migrates the 'HR' group from the source to the target environment. If a group with the same name already exists on the target, a duplicate group will be created."
+      }
+    ]
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "package": "report_manager",
+  "class": "ReportManager",
+  "modules": {
+    "core": "CRUD operations on scheduled reports (list, get, create, update, delete) and triggering an on-demand run of a report."
+  }
+}

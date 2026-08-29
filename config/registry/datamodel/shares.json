@@ -79,6 +79,86 @@
     ]
   },
   {
+    "tool_id": "datamodel.get_datamodel_permissions_extract",
+    "description": "Retrieve raw share entries for an EXTRACT (Elasticube) data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_title": {
+          "type": "string",
+          "description": "Title of the EXTRACT data model."
+        }
+      },
+      "required": [
+        "datamodel_title"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve raw share entries for the 'Sales_Data_2023' EXTRACT data model.",
+        "arguments": {
+          "datamodel_title": "Sales_Data_2023"
+        },
+        "notes": "This call retrieves the raw share entries for the 'Sales_Data_2023' EXTRACT data model, useful for migrating or auditing permissions."
+      },
+      {
+        "user_query": "What are the raw share permissions for the 'Marketing_Analytics' data model?",
+        "arguments": {
+          "datamodel_title": "Marketing_Analytics"
+        },
+        "notes": "This retrieves the raw share entries for the 'Marketing_Analytics' EXTRACT data model, allowing inspection of permissions in their original form."
+      },
+      {
+        "user_query": "Get the raw permissions data for the 'Customer_Segmentation' Elasticube.",
+        "arguments": {
+          "datamodel_title": "Customer_Segmentation"
+        },
+        "notes": "This call fetches the raw share entries for the 'Customer_Segmentation' EXTRACT data model, which can be used for backup or migration purposes."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.get_datamodel_permissions_live",
+    "description": "Retrieve raw share entries for a LIVE data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_id": {
+          "type": "string",
+          "description": "OID of the LIVE data model."
+        }
+      },
+      "required": [
+        "datamodel_id"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve all raw share entries for the LIVE data model with ID 'live-dm-12345'.",
+        "arguments": {
+          "datamodel_id": "live-dm-12345"
+        },
+        "notes": "This call retrieves the raw share entries for the specified LIVE data model, which can be used for tasks like migrating permissions between environments."
+      },
+      {
+        "user_query": "What are the raw share entries for the LIVE data model with ID 'live-dm-67890'?",
+        "arguments": {
+          "datamodel_id": "live-dm-67890"
+        },
+        "notes": "Use this call to fetch the raw share entries for a specific LIVE data model, useful for auditing or exporting permissions."
+      },
+      {
+        "user_query": "Can you fetch the share list for the LIVE data model with ID 'live-dm-abcde'?",
+        "arguments": {
+          "datamodel_id": "live-dm-abcde"
+        },
+        "notes": "This example retrieves the raw share list for the given LIVE data model, which can be used to analyze or replicate sharing configurations."
+      }
+    ]
+  },
+  {
     "tool_id": "datamodel.get_datamodel_shares",
     "description": "Retrieve all share entries (users and groups) for a given data model.",
     "parameters": {
@@ -115,6 +195,169 @@
           "datamodel_name": "Customer_Segmentation"
         },
         "notes": "Provides a breakdown of all share entries for the 'Customer_Segmentation' data model, including resolved user/group names and permission levels."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.update_datamodel_permissions_extract",
+    "description": "Replace share entries for an EXTRACT (Elasticube) data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_title": {
+          "type": "string",
+          "description": "Title of the EXTRACT data model."
+        },
+        "shares": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Raw share objects, each with ``partyId``, ``type`` (``\"user\"`` or ``\"group\"``), and ``permission``."
+        }
+      },
+      "required": [
+        "datamodel_title",
+        "shares"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Replace all share entries for the 'Sales_Analytics_2023' EXTRACT data model with new permissions for users and groups.",
+        "arguments": {
+          "datamodel_title": "Sales_Analytics_2023",
+          "shares": [
+            {
+              "partyId": "user_12345",
+              "type": "user",
+              "permission": "read"
+            },
+            {
+              "partyId": "group_67890",
+              "type": "group",
+              "permission": "write"
+            }
+          ]
+        },
+        "notes": "This call replaces all existing share entries for the 'Sales_Analytics_2023' EXTRACT data model with the specified permissions for users and groups."
+      },
+      {
+        "user_query": "How can I update the permissions for the 'Marketing_Data_2022' EXTRACT data model to include a new user and group?",
+        "arguments": {
+          "datamodel_title": "Marketing_Data_2022",
+          "shares": [
+            {
+              "partyId": "user_54321",
+              "type": "user",
+              "permission": "write"
+            },
+            {
+              "partyId": "group_98765",
+              "type": "group",
+              "permission": "read"
+            }
+          ]
+        },
+        "notes": "This call updates the permissions for the 'Marketing_Data_2022' EXTRACT data model by replacing the current share entries with the provided user and group permissions."
+      },
+      {
+        "user_query": "Can you reset the permissions for the 'Finance_Reports_2021' EXTRACT data model to only allow read access for a specific group?",
+        "arguments": {
+          "datamodel_title": "Finance_Reports_2021",
+          "shares": [
+            {
+              "partyId": "group_112233",
+              "type": "group",
+              "permission": "read"
+            }
+          ]
+        },
+        "notes": "This call resets the permissions for the 'Finance_Reports_2021' EXTRACT data model, allowing only read access for the specified group."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.update_datamodel_permissions_live",
+    "description": "Replace share entries for a LIVE data model.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel_id": {
+          "type": "string",
+          "description": "OID of the LIVE data model."
+        },
+        "shares": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Raw share objects, each with ``partyId``, ``type`` (``\"user\"`` or ``\"group\"``), and ``permission``."
+        }
+      },
+      "required": [
+        "datamodel_id",
+        "shares"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Replace all share entries for the LIVE data model with ID 'live_model_123', granting permissions to specified users and groups.",
+        "arguments": {
+          "datamodel_id": "live_model_123",
+          "shares": [
+            {
+              "partyId": "user_456",
+              "type": "user",
+              "permission": "read"
+            },
+            {
+              "partyId": "group_789",
+              "type": "group",
+              "permission": "write"
+            }
+          ]
+        },
+        "notes": "This call replaces all existing share entries for the specified LIVE data model with the provided list of users and groups."
+      },
+      {
+        "user_query": "How can I update permissions for the LIVE data model 'live_model_abc' to grant 'write' access to a group and 'read' access to a user?",
+        "arguments": {
+          "datamodel_id": "live_model_abc",
+          "shares": [
+            {
+              "partyId": "group_xyz",
+              "type": "group",
+              "permission": "write"
+            },
+            {
+              "partyId": "user_def",
+              "type": "user",
+              "permission": "read"
+            }
+          ]
+        },
+        "notes": "Use this call to update the permissions for a LIVE data model by specifying the new share entries for users and groups."
+      },
+      {
+        "user_query": "Can you help me set 'read' permissions for two users on the LIVE data model 'live_model_789'?",
+        "arguments": {
+          "datamodel_id": "live_model_789",
+          "shares": [
+            {
+              "partyId": "user_123",
+              "type": "user",
+              "permission": "read"
+            },
+            {
+              "partyId": "user_456",
+              "type": "user",
+              "permission": "read"
+            }
+          ]
+        },
+        "notes": "This example demonstrates how to grant 'read' permissions to multiple users for a specific LIVE data model."
       }
     ]
   }
