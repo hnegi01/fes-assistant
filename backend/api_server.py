@@ -302,11 +302,19 @@ def list_tools() -> Dict[str, Any]:
     # Keep only JSON-safe fields that UI needs.
     registry_public: Dict[str, Dict[str, Any]] = {}
     for tool_id, meta in registry_raw.items():
+        # example[0] only — the curated one, already shown to users in
+        # clarifications and approval dialogs. The UI's capability view reuses
+        # it as "you could ask …"; the uncurated siblings never leave the
+        # registry (see test_tool_examples.py for the bar example[0] meets).
+        examples = meta.get("examples") or []
+        first_query = (examples[0] or {}).get("user_query") if examples else None
         registry_public[tool_id] = {
             "id": meta.get("id", tool_id),
             "module": meta.get("module"),
+            "sub_module": meta.get("sub_module"),
             "mutates": bool(meta.get("mutates", False)),
             "description": meta.get("description"),
+            "example": first_query,
         }
 
     return {"tools": tools, "registry": registry_public}

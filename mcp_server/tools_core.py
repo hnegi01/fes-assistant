@@ -665,17 +665,40 @@ def _resolve_sdk_callable(
     return func, meta, coerced
 
 
+# Keys an SDK failure envelope may carry alongside "error". Deliberately a
+# CLOSED set rather than a bare `"error" in candidate`: a legitimate data row
+# can carry an incidental error field (a per-item build status, a wellcheck
+# finding), and reading one of those as a failed call would turn a good result
+# into a false failure — the opposite of the bug this guards.
+_ERROR_ENVELOPE_KEYS = {"error", "failed_references", "error_type", "status_code"}
+
+
 def _sdk_error_payload(tool_id: str, result: Any) -> Optional[Dict[str, Any]]:
     """
     SDK methods that fail return {"error": "..."} instead of raising — sometimes
-    wrapped in a single-item list ([{"error": "..."}]) by list-returning methods.
-    Detect both patterns and normalise to ok=False so callers don't have to
-    inspect the result themselves.
+    wrapped in a single-item list ([{"error": "..."}]) by list-returning methods,
+    and sometimes with extra detail beside the message
+    ({"error": ..., "failed_references": [...]}). Detect all of these and
+    normalise to ok=False so callers don't have to inspect the result themselves.
+
+    The match was once `list(keys) == ["error"]` — an exact SOLE-key test, which
+    silently stopped recognising failures the moment the SDK enriched the
+    envelope. get_unused_columns_bulk (pysisense, 2026-08-29) is the case that
+    found it: asked about a data model that does not exist, it returns
+    {"error": "None of the given data model references could be processed …",
+    "failed_references": [...]} — two keys, so the old test returned None and the
+    call was reported as `ok: true`.
+
+    That is worst with summarization OFF, which is the production default: the
+    payload never reaches the LLM, so it sees `ok: true` with no count and
+    reports a successful lookup of a data model that isn't there. The whole
+    point of the envelope is to announce the failure; matching it loosely enough
+    to actually catch it is what makes `ok` trustworthy downstream.
     """
     candidate = result
     if isinstance(result, list) and len(result) == 1:
         candidate = result[0]
-    if isinstance(candidate, dict) and list(candidate.keys()) == ["error"]:
+    if isinstance(candidate, dict) and candidate.get("error") and set(candidate) <= _ERROR_ENVELOPE_KEYS:
         return {"tool_id": tool_id, "ok": False, "error": candidate["error"], "error_type": "SDKError"}
     return None
 

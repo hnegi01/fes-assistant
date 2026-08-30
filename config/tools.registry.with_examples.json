@@ -46,10 +46,10 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
-        "user_query": "Transfer ownership of the 'Sales Reports' folder to jane.doe@example.com, running as admin@example.com, and transfer the dashboards inside it too — the previous owner should keep edit access.",
+        "user_query": "Transfer ownership of the 'Sales Reports' folder to jane.doe@example.com, running as admin@example.com, and transfer the dashboards inside it too \u2014 the previous owner should keep edit access.",
         "arguments": {
           "executing_user": "admin@example.com",
           "folder_name": "Sales Reports",
@@ -115,7 +115,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Change the password for user 'user123' to 'NewSecurePassword123!'.",
@@ -173,7 +173,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create multiple groups for the new project team: 'Data Analysts', 'Project Managers', and 'QA Engineers'.",
@@ -282,7 +282,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Schedule a full build for the 'SalesDataModel' data model every Monday at 3:00 UTC.",
@@ -329,7 +329,7 @@
     "class": "AccessManagement",
     "method": "create_user",
     "description": "Create a new user in Sisense.",
-    "full_doc": "Create a new user in Sisense.\n\nValidates that the required fields are present, then resolves the role\nname and group names to their corresponding IDs and sends a POST\nrequest to create the user. The ``role`` field is matched\ncase-insensitively (with ``\"VIEWER\"`` mapped to ``\"CONSUMER\"`` and\n``\"DESIGNER\"`` to ``\"CONTRIBUTOR\"``) and replaced with the resolved\n``roleId``; group names in ``groups`` are resolved to group IDs.\n\nParameters\n----------\nuser_data : CreateUserPayload\n    User details, using canonical Sisense payload field names:\n\n    - ``email`` : str — the user's email address. **Required.**\n    - ``role`` : str — role name to assign (resolved to ``roleId``).\n      **Required.**\n    - ``userName`` : str — the user's login name (optional).\n    - ``firstName`` : str — the user's first name (optional).\n    - ``lastName`` : str — the user's last name (optional).\n    - ``groups`` : list[str] — group names to assign, resolved to IDs\n      (optional).\n    - ``password`` : str — initial password; if omitted, the user\n      receives an email to set one (optional).\n    - ``preferences`` : dict — user preference settings (optional).\n\nReturns\n-------\ndict[str, Any]\n    The created user object returned by the API if successful, or a\n    dictionary with an ``error`` key if the operation fails. Missing\n    required fields are rejected up front, before any API call.",
+    "full_doc": "Create a new user in Sisense.\n\nValidates that the required fields are present, then resolves the role\nname and group names to their corresponding IDs and sends a POST\nrequest to create the user. The ``role`` field is matched\ncase-insensitively (with ``\"VIEWER\"`` mapped to ``\"CONSUMER\"`` and\n``\"DESIGNER\"`` to ``\"CONTRIBUTOR\"``) and replaced with the resolved\n``roleId``; group names in ``groups`` are resolved to group IDs.\n\nParameters\n----------\nuser_data : CreateUserPayload\n    User details, using canonical Sisense payload field names:\n\n    - ``email`` : str \u2014 the user's email address. **Required.**\n    - ``role`` : str \u2014 role name to assign (resolved to ``roleId``).\n      **Required.**\n    - ``userName`` : str \u2014 the user's login name (optional).\n    - ``firstName`` : str \u2014 the user's first name (optional).\n    - ``lastName`` : str \u2014 the user's last name (optional).\n    - ``groups`` : list[str] \u2014 group names to assign, resolved to IDs\n      (optional).\n    - ``password`` : str \u2014 initial password; if omitted, the user\n      receives an email to set one (optional).\n    - ``preferences`` : dict \u2014 user preference settings (optional).\n\nReturns\n-------\ndict[str, Any]\n    The created user object returned by the API if successful, or a\n    dictionary with an ``error`` key if the operation fails. Missing\n    required fields are rejected up front, before any API call.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -374,7 +374,7 @@
             "email",
             "role"
           ],
-          "description": "User details, using canonical Sisense payload field names: - ``email`` : str — the user's email address. **Required.** - ``role`` : str — role name to assign (resolved to ``roleId``). **Required.** - ``userName`` : str — the user's login name (optional). - ``firstName`` : str — the user's first name (optional). - ``lastName`` : str — the user's last name (optional). - ``groups`` : list[str] — group names to assign, resolved to IDs (optional). - ``password`` : str — initial password; if omitted, the user receives an email to set one (optional). - ``preferences`` : dict — user preference settings (optional)."
+          "description": "User details, using canonical Sisense payload field names: - ``email`` : str \u2014 the user's email address. **Required.** - ``role`` : str \u2014 role name to assign (resolved to ``roleId``). **Required.** - ``userName`` : str \u2014 the user's login name (optional). - ``firstName`` : str \u2014 the user's first name (optional). - ``lastName`` : str \u2014 the user's last name (optional). - ``groups`` : list[str] \u2014 group names to assign, resolved to IDs (optional). - ``password`` : str \u2014 initial password; if omitted, the user receives an email to set one (optional). - ``preferences`` : dict \u2014 user preference settings (optional)."
         }
       },
       "required": [
@@ -388,7 +388,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a Viewer user for Jane Doe at jane.doe@example.com, add them to the Sales and Marketing groups, and set their language to English and timezone to America/New_York.",
@@ -455,7 +455,7 @@
     "class": "AccessManagement",
     "method": "create_users_bulk",
     "description": "Create multiple users in a single bulk request.",
-    "full_doc": "Create multiple users in a single bulk request.\n\nSends the provided user definitions to the bulk user creation\nendpoint. Each entry must already carry a resolved ``roleId`` and\n``groups`` (list of group IDs) — no name-to-ID resolution is\nperformed by this method.\n\nParameters\n----------\nusers : list[dict[str, Any]]\n    User definitions to create. Each dictionary should use canonical\n    Sisense user fields (at minimum ``email``, ``firstName``, and\n    ``roleId``).\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    The list of created user objects on success, or\n    ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Create multiple users in a single bulk request.\n\nSends the provided user definitions to the bulk user creation\nendpoint. Each entry must already carry a resolved ``roleId`` and\n``groups`` (list of group IDs) \u2014 no name-to-ID resolution is\nperformed by this method.\n\nParameters\n----------\nusers : list[dict[str, Any]]\n    User definitions to create. Each dictionary should use canonical\n    Sisense user fields (at minimum ``email``, ``firstName``, and\n    ``roleId``).\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    The list of created user objects on success, or\n    ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -478,7 +478,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create two users at once: john.doe@example.com with first name John and role admin, and jane.smith@example.com with first name Jane and role editor.",
@@ -568,7 +568,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete the group with ID 'group_12345'.",
@@ -621,7 +621,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Remove the user with the email john.doe@example.com from the system.",
@@ -666,7 +666,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me all the dashboards and who they are shared with.",
@@ -712,7 +712,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the columns available in the 'SalesAnalytics' DataModel.",
@@ -764,7 +764,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the details of the 'Data Analysts' group.",
@@ -809,7 +809,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve all groups from the Sisense server.",
@@ -848,7 +848,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show which user I am currently logged in as.",
@@ -886,7 +886,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all roles available in our Sisense instance.",
@@ -924,7 +924,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve all tenants from the Sisense server.",
@@ -969,7 +969,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the columns in the 'Sales_Analytics' DataModel that are not used in any dashboards.",
@@ -1021,7 +1021,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the unused columns in the 'Sales Data' and 'Marketing Analytics' data models.",
@@ -1051,7 +1051,7 @@
             "dm_54321"
           ]
         },
-        "notes": "This call processes three data models—two by ID and one by title—to identify unused columns across all of them."
+        "notes": "This call processes three data models\u2014two by ID and one by title\u2014to identify unused columns across all of them."
       }
     ]
   },
@@ -1083,7 +1083,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find details for the user with email john.doe@example.com.",
@@ -1129,7 +1129,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch all user emails and group names to resolve share entries.",
@@ -1177,7 +1177,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the user details for john.doe@example.com, including their roles and groups.",
@@ -1222,7 +1222,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me all the users in the system along with their roles and group memberships.",
@@ -1261,7 +1261,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve all users with their raw roles and groups for cross-environment role mapping.",
@@ -1287,7 +1287,7 @@
     "class": "AccessManagement",
     "method": "get_users_with_role_names_and_group_names",
     "description": "Retrieve all users enriched with role names and group names.",
-    "full_doc": "Retrieve all users enriched with role names and group names.\n\nFetches users with ``groups`` and ``role`` expanded in a single call\nand resolves each user's role/group IDs and names from the expanded\nobjects. Role names are returned exactly as stored by Sisense (e.g.\n``\"consumer\"``), not the public alias — use\n``get_user_with_role_and_group_names`` for a single user if the\naliased name (``\"viewer\"``) is needed instead.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list where each entry contains ``USER_ID``, ``USER_NAME``,\n    ``FIRST_NAME``, ``LAST_NAME``, ``EMAIL``, ``IS_ACTIVE``, ``ROLE_ID``,\n    ``ROLE_NAME``, ``GROUP_IDS``, and ``GROUP_NAMES``. If any API call\n    fails, a single-item list with an ``error`` key is returned.",
+    "full_doc": "Retrieve all users enriched with role names and group names.\n\nFetches users with ``groups`` and ``role`` expanded in a single call\nand resolves each user's role/group IDs and names from the expanded\nobjects. Role names are returned exactly as stored by Sisense (e.g.\n``\"consumer\"``), not the public alias \u2014 use\n``get_user_with_role_and_group_names`` for a single user if the\naliased name (``\"viewer\"``) is needed instead.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list where each entry contains ``USER_ID``, ``USER_NAME``,\n    ``FIRST_NAME``, ``LAST_NAME``, ``EMAIL``, ``IS_ACTIVE``, ``ROLE_ID``,\n    ``ROLE_NAME``, ``GROUP_IDS``, and ``GROUP_NAMES``. If any API call\n    fails, a single-item list with an ``error`` key is returned.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -1301,7 +1301,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all users in the system along with their role names and group names.",
@@ -1385,7 +1385,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Change john.doe@example.com's email address to john.doe.new@example.com and set their role to designer.",
@@ -1450,7 +1450,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the members of the 'Data Analysts' group.",
@@ -1496,7 +1496,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show all groups with the users belonging to each.",
@@ -1541,7 +1541,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Remove the custom Blox action called 'export_to_csv' from my Sisense instance.",
@@ -1585,7 +1585,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the custom Blox actions available in my Sisense instance.",
@@ -1639,7 +1639,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve the style objects for the BloX widget with ID 'widget123' in dashboard 'dashboard456', using admin access.",
@@ -1695,7 +1695,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Save a custom Blox action named 'ExportDashboardAction' that exports dashboard dashboard_12345 to PDF.",
@@ -1793,7 +1793,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Update the style of the BloX widget with ID 'widget123' on dashboard 'dashboard456', replacing the current card style but leaving the config unchanged.",
@@ -1880,7 +1880,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a new Python notebook named 'Sales Analysis 2023'.",
@@ -1956,7 +1956,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete the notebook with ID 'abc123'.",
@@ -2007,7 +2007,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Export the notebook definition for notebook 123e4567-e89b-12d3-a456-426614174000.",
@@ -2060,7 +2060,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch all available notebooks in the system.",
@@ -2113,7 +2113,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the files in the 'data-analysis' notebook folder.",
@@ -2169,7 +2169,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Rename the notebook file at 'notebooks/custom_code_notebooks/12345/analysis.ipynb' to 'sales_analysis.ipynb'.",
@@ -2235,7 +2235,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Rename the 'DataScienceProjects' notebook folder to 'MLProjects'.",
@@ -2276,7 +2276,7 @@
     "class": "CustomCode",
     "method": "update_notebook",
     "description": "Update an existing notebook.",
-    "full_doc": "Update an existing notebook.\n\nSends ``PATCH /api/v1/notebooks/{notebook_id}``. Only fields present in\n``notebook_data`` are sent; omitted fields are not modified. By default\nincludes the ``Internal`` header.\n\nParameters\n----------\nnotebook_id : str\n    Notebook UUID or identifier. (format: uuid)\nnotebook_data : NotebookUpdatePayload\n    Fields to update — only include fields you want to change.\nuse_internal_header : bool, optional\n    When ``True`` (default), send ``Internal: true`` header.\n\nReturns\n-------\ndict[str, Any]\n    Updated notebook object on success, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "full_doc": "Update an existing notebook.\n\nSends ``PATCH /api/v1/notebooks/{notebook_id}``. Only fields present in\n``notebook_data`` are sent; omitted fields are not modified. By default\nincludes the ``Internal`` header.\n\nParameters\n----------\nnotebook_id : str\n    Notebook UUID or identifier. (format: uuid)\nnotebook_data : NotebookUpdatePayload\n    Fields to update \u2014 only include fields you want to change.\nuse_internal_header : bool, optional\n    When ``True`` (default), send ``Internal: true`` header.\n\nReturns\n-------\ndict[str, Any]\n    Updated notebook object on success, or ``{\"error\": \"...\"}`` on\n    failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2298,7 +2298,7 @@
               "type": "string"
             }
           },
-          "description": "Fields to update — only include fields you want to change."
+          "description": "Fields to update \u2014 only include fields you want to change."
         },
         "use_internal_header": {
           "type": "boolean",
@@ -2316,10 +2316,10 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
-        "user_query": "Update notebook 123e4567-e89b-12d3-a456-426614174000 — set its title to 'Updated Sales Analysis' and its description to 'Notebook with updated insights for Q4 sales.'",
+        "user_query": "Update notebook 123e4567-e89b-12d3-a456-426614174000 \u2014 set its title to 'Updated Sales Analysis' and its description to 'Notebook with updated insights for Q4 sales.'",
         "arguments": {
           "notebook_id": "123e4567-e89b-12d3-a456-426614174000",
           "notebook_data": {
@@ -2396,7 +2396,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "As admin@sisense.com, add this raw script to dashboard dashboard_12345: function customBehavior() { console.log('Custom script executed'); }",
@@ -2473,7 +2473,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Give john.doe@example.com and the 'sales-team' group view access to dashboard 63f2c9e4b8a4e2001d3f9a23.",
@@ -2575,7 +2575,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "As admin@sisense.com, add the script console.log('Widget script executed'); to widget widget_67890 on dashboard dashboard_12345.",
@@ -2645,7 +2645,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Check whether I can take ownership of the dashboard with ID '12345abcde'.",
@@ -2710,7 +2710,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Transfer ownership of dashboard 'sales_dashboard_2023' to user 'new_owner_123', and set the original owner's access to 'view'.",
@@ -2768,7 +2768,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Export the definition of dashboard 5f7d3b2e4c8b9a0012345678.",
@@ -2834,7 +2834,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find all BloX widgets across all dashboards visible to the API token user.",
@@ -2885,7 +2885,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all dashboards available on the Sisense server.",
@@ -2931,7 +2931,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch the dashboard with ID '5f7d3a2e4b8c9a0012345678'.",
@@ -2983,7 +2983,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the dashboard named 'Sales Performance Overview'.",
@@ -3035,7 +3035,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the columns used in the 'Sales Performance' dashboard.",
@@ -3067,7 +3067,7 @@
     "class": "Dashboard",
     "method": "get_dashboard_script",
     "description": "Build a formatted dashboard script helper object.",
-    "full_doc": "Build a formatted dashboard script helper object.\n\nRetrieves a dashboard export payload and wraps its script content in a\n:class:`SisenseScript` helper that can render plain text, markdown, or file output.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the dashboard is retrieved and\n    has a script. ``{\"error\": \"...\"}`` when the export fails (including\n    ``status_code`` for HTTP failures such as missing access) or when the\n    dashboard has no script — a normal state, reported explicitly.",
+    "full_doc": "Build a formatted dashboard script helper object.\n\nRetrieves a dashboard export payload and wraps its script content in a\n:class:`SisenseScript` helper that can render plain text, markdown, or file output.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the dashboard is retrieved and\n    has a script. ``{\"error\": \"...\"}`` when the export fails (including\n    ``status_code`` for HTTP failures such as missing access) or when the\n    dashboard has no script \u2014 a normal state, reported explicitly.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3087,7 +3087,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Get the script for dashboard sales_dashboard_2023.",
@@ -3139,7 +3139,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show who has access to the 'Sales Overview' dashboard.",
@@ -3195,7 +3195,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show who has access to dashboard 5f7d3a2b8e4b0c0012345678, using admin access.",
@@ -3230,7 +3230,7 @@
     "class": "Dashboard",
     "method": "get_dashboard_widgets",
     "description": "Retrieve widget definitions from an admin export of the dashboard.",
-    "full_doc": "Retrieve widget definitions from an admin export of the dashboard.\n\nUses ``export_dashboard`` (``GET /api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``), then reads the ``widgets``\nfield from the first exported dashboard object—the same payload shape\nused by ``get_dashboard_script`` and ``get_widget_script``. If\n``widgets`` is missing or empty, an empty list is returned.\n\n``dashboard_ref`` is resolved with ``resolve_dashboard_reference`` so it\nmay be either a 24-character dashboard ``oid`` or a dashboard title.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard ``oid`` or title.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of widget objects on success (possibly empty). On failure,\n    ``{\"error\": \"...\"}`` when the reference cannot be resolved or\n    ``export_dashboard`` fails. If ``widgets`` is present but neither a\n    list nor a mapping of widget objects, returns an error dict.",
+    "full_doc": "Retrieve widget definitions from an admin export of the dashboard.\n\nUses ``export_dashboard`` (``GET /api/v1/dashboards/export`` with\n``dashboardIds`` and ``adminAccess=true``), then reads the ``widgets``\nfield from the first exported dashboard object\u2014the same payload shape\nused by ``get_dashboard_script`` and ``get_widget_script``. If\n``widgets`` is missing or empty, an empty list is returned.\n\n``dashboard_ref`` is resolved with ``resolve_dashboard_reference`` so it\nmay be either a 24-character dashboard ``oid`` or a dashboard title.\n\nParameters\n----------\ndashboard_ref : str\n    Dashboard ``oid`` or title.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of widget objects on success (possibly empty). On failure,\n    ``{\"error\": \"...\"}`` when the reference cannot be resolved or\n    ``export_dashboard`` fails. If ``widgets`` is present but neither a\n    list nor a mapping of widget objects, returns an error dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3250,7 +3250,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the widgets in the dashboard titled 'Sales Overview'.",
@@ -3282,7 +3282,7 @@
     "class": "Dashboard",
     "method": "get_dashboards",
     "description": "Retrieve dashboards visible to the authenticated user.",
-    "full_doc": "Retrieve dashboards visible to the authenticated user.\n\nSends ``GET /api/v1/dashboards``, which returns dashboards the current\nuser owns or has been shared to — as opposed to\n``get_all_dashboards``, which uses the admin endpoint and requires\nelevated access.\n\nParameters\n----------\nfields : list[str], optional\n    Subset of fields to include in the response (for example\n    ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are\n    returned.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dashboard objects on success, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "full_doc": "Retrieve dashboards visible to the authenticated user.\n\nSends ``GET /api/v1/dashboards``, which returns dashboards the current\nuser owns or has been shared to \u2014 as opposed to\n``get_all_dashboards``, which uses the admin endpoint and requires\nelevated access.\n\nParameters\n----------\nfields : list[str], optional\n    Subset of fields to include in the response (for example\n    ``[\"oid\", \"title\", \"owner\"]``). When omitted, all fields are\n    returned.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dashboard objects on success, or ``{\"error\": \"...\"}`` on\n    failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3303,7 +3303,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me the dashboards I own with their titles and IDs.",
@@ -3369,7 +3369,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve the widget with ID 'widget123' from the dashboard 'dashboard456', ensuring admin access.",
@@ -3406,7 +3406,7 @@
     "class": "Dashboard",
     "method": "get_widget_script",
     "description": "Build a formatted widget script helper object.",
-    "full_doc": "Build a formatted widget script helper object.\n\nRetrieves a dashboard export payload, selects a widget by index/key, and\nwraps its script content in a :class:`SisenseScript` helper for downstream rendering.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\nwidget_id : str\n    The widget identifier or lookup key used in the exported widget mapping.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the widget is found and has a\n    script. ``{\"error\": \"...\"}`` when the export fails (including\n    ``status_code`` for HTTP failures such as missing access), the widget\n    is not found, or the widget has no script — a normal state, reported\n    explicitly.",
+    "full_doc": "Build a formatted widget script helper object.\n\nRetrieves a dashboard export payload, selects a widget by index/key, and\nwraps its script content in a :class:`SisenseScript` helper for downstream rendering.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard identifier to export.\nwidget_id : str\n    The widget identifier or lookup key used in the exported widget mapping.\n\nReturns\n-------\nSisenseScript | dict[str, str]\n    A :class:`SisenseScript` instance when the widget is found and has a\n    script. ``{\"error\": \"...\"}`` when the export fails (including\n    ``status_code`` for HTTP failures such as missing access), the widget\n    is not found, or the widget has no script \u2014 a normal state, reported\n    explicitly.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3430,7 +3430,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Get the script for widget Sales_Overview in dashboard Q3_Performance.",
@@ -3465,7 +3465,7 @@
     "class": "Dashboard",
     "method": "import_dashboards_bulk",
     "description": "Import one or more dashboards via the bulk import endpoint.",
-    "full_doc": "Import one or more dashboards via the bulk import endpoint.\n\nSends ``POST /api/v1/dashboards/import/bulk`` with ``action`` as a\nquery parameter and ``dashboards`` as the request body. Each\ndashboard object is typically the payload returned by\n``export_dashboard`` on another environment. The server matches\ndashboards by their ``oid``: when a dashboard with the same ``oid``\nalready exists, ``action`` controls whether it is left unchanged,\nreplaced, or a new copy is created alongside it.\n\nParameters\n----------\ndashboards : list[dict[str, Any]]\n    Dashboard objects to import.\naction : str, optional\n    Conflict behavior for dashboards whose ``oid`` already exists.\n    One of ``\"skip\"``, ``\"overwrite\"``, or ``\"duplicate\"``. Default\n    is ``\"skip\"``.\n\nReturns\n-------\ndict[str, Any]\n    The API response body — including ``succeded`` and ``failed``\n    lists describing the outcome for each dashboard — or\n    ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Import one or more dashboards via the bulk import endpoint.\n\nSends ``POST /api/v1/dashboards/import/bulk`` with ``action`` as a\nquery parameter and ``dashboards`` as the request body. Each\ndashboard object is typically the payload returned by\n``export_dashboard`` on another environment. The server matches\ndashboards by their ``oid``: when a dashboard with the same ``oid``\nalready exists, ``action`` controls whether it is left unchanged,\nreplaced, or a new copy is created alongside it.\n\nParameters\n----------\ndashboards : list[dict[str, Any]]\n    Dashboard objects to import.\naction : str, optional\n    Conflict behavior for dashboards whose ``oid`` already exists.\n    One of ``\"skip\"``, ``\"overwrite\"``, or ``\"duplicate\"``. Default\n    is ``\"skip\"``.\n\nReturns\n-------\ndict[str, Any]\n    The API response body \u2014 including ``succeded`` and ``failed``\n    lists describing the outcome for each dashboard \u2014 or\n    ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3492,7 +3492,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Import dashboards dashboard_123 'Sales Overview' and dashboard_456 'Marketing Performance', skipping any that already exist.",
@@ -3579,7 +3579,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Move dashboard dashboard_12345 into folder folder_67890.",
@@ -3642,7 +3642,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Publish the dashboard with ID 'dashboard_12345'.",
@@ -3703,7 +3703,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Rename dashboard 62f1a2b3c4d5e6f7890abc12 to 'Q3 Sales Performance'.",
@@ -3758,7 +3758,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Resolve 'Sales Overview' to its dashboard ID and title.",
@@ -3819,7 +3819,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Update widget widget123 on dashboard dashboard456: title it 'Updated Sales Chart', make it a bar chart in blue with font size 12, labelled Q1, Q2, Q3, Q4 with values 15000, 20000, 18000 and 22000.",
@@ -3955,7 +3955,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Give the 'Sales Team' group edit access and john.doe@example.com read access to the 'Revenue Analysis' data model.",
@@ -4068,7 +4068,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a PostgreSQL connection named 'SalesDB Connection' pointing at host sales-db.example.com on port 5432, database 'sales', with username analytics_user and password securepassword123, created by admin_user, enabled for live and elasticube models.",
@@ -4146,7 +4146,7 @@
     "class": "DataModel",
     "method": "create_datamodel",
     "description": "Create a new data model in Sisense.",
-    "full_doc": "Create a new data model in Sisense.\n\nNormalizes and validates the model type, checks that no data model with\nthe same title already exists (the API otherwise fails with an opaque\nHTTP 500), then sends a request to create the data model and returns\nits assigned ID.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model.\ndatamodel_type : Literal[\"extract\", \"live\"]\n    Type of the data model: ``\"extract\"`` (Elasticube) or ``\"live\"``.\n\nReturns\n-------\ndict[str, Any]\n    Dictionary with the data model ID under ``\"datamodel_id\"`` on success,\n    or ``{\"error\": \"...\"}`` on failure — including a clear\n    \"already exists\" error when the title is taken.",
+    "full_doc": "Create a new data model in Sisense.\n\nNormalizes and validates the model type, checks that no data model with\nthe same title already exists (the API otherwise fails with an opaque\nHTTP 500), then sends a request to create the data model and returns\nits assigned ID.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model.\ndatamodel_type : Literal[\"extract\", \"live\"]\n    Type of the data model: ``\"extract\"`` (Elasticube) or ``\"live\"``.\n\nReturns\n-------\ndict[str, Any]\n    Dictionary with the data model ID under ``\"datamodel_id\"`` on success,\n    or ``{\"error\": \"...\"}`` on failure \u2014 including a clear\n    \"already exists\" error when the title is taken.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -4188,7 +4188,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a new extract (Elasticube) data model called 'Sales Analytics'.",
@@ -4263,7 +4263,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a dataset named 'SalesDataset' in the 'SalesDataModel' data model, using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema.",
@@ -4365,7 +4365,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a new table named 'sales_summary' in the 'ecommerce_data' data model.",
@@ -4433,7 +4433,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete the 'Sales Data' model from the 'LocalHost' server.",
@@ -4497,7 +4497,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete all datasecurity rules for the column 'customer_id' in the 'orders' table of the 'Sales_Model' datamodel.",
@@ -4596,7 +4596,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Run a full build of the 'Sales_Analytics' data model.",
@@ -4652,7 +4652,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Describe the structure of the 'Sales Analytics' data model.",
@@ -4703,7 +4703,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the detailed definition of the 'Sales Analytics' data model.",
@@ -4735,7 +4735,7 @@
     "class": "DataModel",
     "method": "export_datamodel_schema",
     "description": "Export a data model's full schema definition for re-import elsewhere.",
-    "full_doc": "Export a data model's full schema definition for re-import elsewhere.\n\nSends ``GET /api/v2/datamodel-exports/schema`` (or, on Windows\ndeployments, the legacy streaming export endpoint) and returns the\nexported schema JSON as-is, ready to be passed to\n``import_datamodel_schema`` — typically against a different Sisense\nenvironment.\n\nParameters\n----------\ndatamodel_id : str\n    OID of the data model to export.\ndependencies : list[str] or None, optional\n    API dependency identifiers to include in the export (for example\n    ``\"dataContext\"``, ``\"scopeConfiguration\"``,\n    ``\"formulaManagement\"``, ``\"drillHierarchies\"``,\n    ``\"perspectives\"``). Windows: has no effect — the export endpoint\n    used there accepts no dependencies parameter.\n\nReturns\n-------\ndict[str, Any]\n    The exported schema object on success, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "full_doc": "Export a data model's full schema definition for re-import elsewhere.\n\nSends ``GET /api/v2/datamodel-exports/schema`` (or, on Windows\ndeployments, the legacy streaming export endpoint) and returns the\nexported schema JSON as-is, ready to be passed to\n``import_datamodel_schema`` \u2014 typically against a different Sisense\nenvironment.\n\nParameters\n----------\ndatamodel_id : str\n    OID of the data model to export.\ndependencies : list[str] or None, optional\n    API dependency identifiers to include in the export (for example\n    ``\"dataContext\"``, ``\"scopeConfiguration\"``,\n    ``\"formulaManagement\"``, ``\"drillHierarchies\"``,\n    ``\"perspectives\"``). Windows: has no effect \u2014 the export endpoint\n    used there accepts no dependencies parameter.\n\nReturns\n-------\ndict[str, Any]\n    The exported schema object on success, or ``{\"error\": \"...\"}`` on\n    failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -4748,7 +4748,7 @@
           "items": {
             "type": "string"
           },
-          "description": "API dependency identifiers to include in the export (for example ``\"dataContext\"``, ``\"scopeConfiguration\"``, ``\"formulaManagement\"``, ``\"drillHierarchies\"``, ``\"perspectives\"``). Windows: has no effect — the export endpoint used there accepts no dependencies parameter."
+          "description": "API dependency identifiers to include in the export (for example ``\"dataContext\"``, ``\"scopeConfiguration\"``, ``\"formulaManagement\"``, ``\"drillHierarchies\"``, ``\"perspectives\"``). Windows: has no effect \u2014 the export endpoint used there accepts no dependencies parameter."
         }
       },
       "required": [
@@ -4761,7 +4761,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Export the full schema for data model OID 'dm12345', including dependencies for 'dataContext' and 'formulaManagement'.",
@@ -4906,7 +4906,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Build an Athena connection payload named 'Athena_Connection_1' for region us-west-2 with S3 output location s3://athena-query-results/, schema 'default', workgroup 'primary', using access key AKIAEXAMPLE and secret SECRETEXAMPLE.",
@@ -4977,7 +4977,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all data models in the system with their metadata.",
@@ -5022,7 +5022,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the connection details for the 'Salesforce_Prod' data source.",
@@ -5066,7 +5066,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all the connections available in my Sisense environment.",
@@ -5120,7 +5120,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch all rows from the 'sales_data' table in the 'ecommerce_model'.",
@@ -5175,7 +5175,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch the data model titled 'Sales Dashboard'.",
@@ -5207,7 +5207,7 @@
     "class": "DataModel",
     "method": "get_datamodel_permissions_extract",
     "description": "Retrieve raw share entries for an EXTRACT (Elasticube) data model.",
-    "full_doc": "Retrieve raw share entries for an EXTRACT (Elasticube) data model.\n\nSends ``GET /api/elasticubes/localhost/{datamodel_title}/permissions``\nand returns the raw ``shares`` list — each entry keyed by\n``partyId`` and not resolved to a user/group name. Intended for\ncallers that need to round-trip shares as-is (for example, migrating\nthem between environments). Use ``get_datamodel_shares`` instead for\na resolved, human-readable view.\n\nParameters\n----------\ndatamodel_title : str\n    Title of the EXTRACT data model.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    The raw list of share objects from the API, or\n    ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Retrieve raw share entries for an EXTRACT (Elasticube) data model.\n\nSends ``GET /api/elasticubes/localhost/{datamodel_title}/permissions``\nand returns the raw ``shares`` list \u2014 each entry keyed by\n``partyId`` and not resolved to a user/group name. Intended for\ncallers that need to round-trip shares as-is (for example, migrating\nthem between environments). Use ``get_datamodel_shares`` instead for\na resolved, human-readable view.\n\nParameters\n----------\ndatamodel_title : str\n    Title of the EXTRACT data model.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    The raw list of share objects from the API, or\n    ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -5226,7 +5226,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve raw share entries for the 'Sales_Data_2023' EXTRACT data model.",
@@ -5258,7 +5258,7 @@
     "class": "DataModel",
     "method": "get_datamodel_permissions_live",
     "description": "Retrieve raw share entries for a LIVE data model.",
-    "full_doc": "Retrieve raw share entries for a LIVE data model.\n\nSends ``GET /api/v1/elasticubes/live/{datamodel_id}/permissions`` and\nreturns the raw share list — each entry keyed by ``partyId`` and not\nresolved to a user/group name. Intended for callers that need to\nround-trip shares as-is (for example, migrating them between\nenvironments).\n\nParameters\n----------\ndatamodel_id : str\n    OID of the LIVE data model.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    The raw list of share objects from the API, or\n    ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Retrieve raw share entries for a LIVE data model.\n\nSends ``GET /api/v1/elasticubes/live/{datamodel_id}/permissions`` and\nreturns the raw share list \u2014 each entry keyed by ``partyId`` and not\nresolved to a user/group name. Intended for callers that need to\nround-trip shares as-is (for example, migrating them between\nenvironments).\n\nParameters\n----------\ndatamodel_id : str\n    OID of the LIVE data model.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    The raw list of share objects from the API, or\n    ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -5277,7 +5277,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve all raw share entries for the LIVE data model with ID 'live-dm-12345'.",
@@ -5328,7 +5328,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show who has access to the 'Sales_Analytics' data model.",
@@ -5379,7 +5379,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the data security rules for the 'SalesAnalytics' data model.",
@@ -5430,7 +5430,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the detailed data security rules for the 'SalesAnalytics' data model, including share-level visibility.",
@@ -5462,7 +5462,7 @@
     "class": "DataModel",
     "method": "get_datasecurity_raw",
     "description": "Retrieve the raw, unprocessed datasecurity rules for a data model.",
-    "full_doc": "Retrieve the raw, unprocessed datasecurity rules for a data model.\n\nUnlike ``get_datasecurity``/``get_datasecurity_detail``, this returns\neach rule exactly as the API provides it — including ``members``,\n``exclusionary``, and raw ``shares`` — with no flattening,\ndeduplication, or share-name resolution. Intended for callers that\nneed to round-trip a full rule definition, for example migrating\nrules between environments.\n\nParameters\n----------\ndatamodel_name : str\n    Name (title) of the data model to retrieve raw datasecurity\n    rules for.\ndatamodel_type : str or None, optional\n    The data model's type (``\"extract\"`` or ``\"live\"``), if already\n    known. When provided, the datasecurity endpoint is built\n    directly from ``datamodel_name`` and this type, skipping the\n    data model resolve call. When omitted, the data model is\n    resolved by name first (matching ``get_datasecurity``).\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    The raw list of datasecurity rule objects from the API, or\n    ``{\"error\": \"...\"}`` on failure (including when the data model\n    cannot be resolved).",
+    "full_doc": "Retrieve the raw, unprocessed datasecurity rules for a data model.\n\nUnlike ``get_datasecurity``/``get_datasecurity_detail``, this returns\neach rule exactly as the API provides it \u2014 including ``members``,\n``exclusionary``, and raw ``shares`` \u2014 with no flattening,\ndeduplication, or share-name resolution. Intended for callers that\nneed to round-trip a full rule definition, for example migrating\nrules between environments.\n\nParameters\n----------\ndatamodel_name : str\n    Name (title) of the data model to retrieve raw datasecurity\n    rules for.\ndatamodel_type : str or None, optional\n    The data model's type (``\"extract\"`` or ``\"live\"``), if already\n    known. When provided, the datasecurity endpoint is built\n    directly from ``datamodel_name`` and this type, skipping the\n    data model resolve call. When omitted, the data model is\n    resolved by name first (matching ``get_datasecurity``).\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    The raw list of datasecurity rule objects from the API, or\n    ``{\"error\": \"...\"}`` on failure (including when the data model\n    cannot be resolved).",
     "parameters": {
       "type": "object",
       "properties": {
@@ -5485,7 +5485,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve the raw datasecurity rules for the 'Sales Data' extract model.",
@@ -5531,7 +5531,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me a list of all ElastiCubes available on the server.",
@@ -5576,7 +5576,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the schema of the 'Sales Analytics' data model, including its tables and columns.",
@@ -5627,7 +5627,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Count the rows in each table of the 'SalesData' model.",
@@ -5693,7 +5693,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the schema of the 'sales_data' table in the 'analytics_db' database, 'public' schema, on the 'primary_data_source' connection.",
@@ -5765,7 +5765,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Import a schema with a Sales table containing an integer OrderID column and a float Amount column, overwriting the existing model with ID '12345'.",
@@ -5872,7 +5872,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Look up the OID of the data model titled 'Sales Dashboard' on the 'LocalHost' server.",
@@ -5926,7 +5926,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Resolve 'Sales Analytics' to its data model ID and title.",
@@ -5958,7 +5958,7 @@
     "class": "DataModel",
     "method": "set_live_datasecurity_add_many",
     "description": "Add multiple datasecurity rules to a LIVE datamodel.",
-    "full_doc": "Add multiple datasecurity rules to a LIVE datamodel.\n\nSends ``POST /api/v1/elasticubes/live/{datamodel_name}/datasecurity/addMany``\nwith a bulk rule payload.\n\nParameters\n----------\ndatamodel_name : str\n    Title of the LIVE datamodel to update.\nrules : list[dict[str, Any]]\n    Datasecurity rules to add in Sisense API format. Each rule\n    requires ``table``, ``column``, ``datatype``, ``members`` (list of\n    strings), ``exclusionary``, ``shares``, ``allMembers``, ``live``,\n    and ``fullname`` (``\"live:{title}\"``). ``live`` and ``fullname``\n    are filled in automatically when omitted; server-managed fields\n    (``_id``, ``created``, ``lastModified``, ``importedIdIdentifier``)\n    are stripped automatically.\n\nReturns\n-------\ndict[str, Any]\n    API response on success, or ``{\"error\": \"...\"}`` on failure.\n\nNotes\n-----\nThe LIVE datamodel must be **published** — the API answers\n``\"Elasticube has not been found\"`` for unpublished (draft) live\nmodels.",
+    "full_doc": "Add multiple datasecurity rules to a LIVE datamodel.\n\nSends ``POST /api/v1/elasticubes/live/{datamodel_name}/datasecurity/addMany``\nwith a bulk rule payload.\n\nParameters\n----------\ndatamodel_name : str\n    Title of the LIVE datamodel to update.\nrules : list[dict[str, Any]]\n    Datasecurity rules to add in Sisense API format. Each rule\n    requires ``table``, ``column``, ``datatype``, ``members`` (list of\n    strings), ``exclusionary``, ``shares``, ``allMembers``, ``live``,\n    and ``fullname`` (``\"live:{title}\"``). ``live`` and ``fullname``\n    are filled in automatically when omitted; server-managed fields\n    (``_id``, ``created``, ``lastModified``, ``importedIdIdentifier``)\n    are stripped automatically.\n\nReturns\n-------\ndict[str, Any]\n    API response on success, or ``{\"error\": \"...\"}`` on failure.\n\nNotes\n-----\nThe LIVE datamodel must be **published** \u2014 the API answers\n``\"Elasticube has not been found\"`` for unpublished (draft) live\nmodels.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -5985,7 +5985,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Add data security rules to the 'Sales_Live' datamodel: limit the Orders table's Region column to North and South, and exclude Premium in the Customers table's CustomerType column.",
@@ -6208,7 +6208,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Set up a live data model called 'Sales_Live_Model' with dataset 'Sales_Live_Dataset', using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema, including the customers and orders tables.",
@@ -6352,10 +6352,10 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
-        "user_query": "Update connection conn_12345 — rename it to 'Updated Connection Name' and point it at host new-database-host.example.com on port 5432.",
+        "user_query": "Update connection conn_12345 \u2014 rename it to 'Updated Connection Name' and point it at host new-database-host.example.com on port 5432.",
         "arguments": {
           "connection_id": "conn_12345",
           "connection_data": {
@@ -6402,7 +6402,7 @@
     "class": "DataModel",
     "method": "update_datamodel_permissions_extract",
     "description": "Replace share entries for an EXTRACT (Elasticube) data model.",
-    "full_doc": "Replace share entries for an EXTRACT (Elasticube) data model.\n\nSends ``PUT /api/elasticubes/localhost/{datamodel_title}/permissions``\nwith the full raw share list (each entry keyed by ``partyId``). Use\n``add_datamodel_shares`` instead for name/email-based share\nmanagement.\n\nUses ``PUT`` because that is what the EXTRACT permissions endpoint\nrequires — the LIVE counterpart, ``update_datamodel_permissions_live``,\nrequires ``PATCH`` instead. This is an API difference between the two\nendpoints, not an inconsistency between the two methods.\n\nParameters\n----------\ndatamodel_title : str\n    Title of the EXTRACT data model.\nshares : list[dict[str, Any]]\n    Raw share objects, each with ``partyId``, ``type`` (``\"user\"`` or\n    ``\"group\"``), and ``permission``.\n\nReturns\n-------\ndict[str, Any]\n    API response on success, or ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Replace share entries for an EXTRACT (Elasticube) data model.\n\nSends ``PUT /api/elasticubes/localhost/{datamodel_title}/permissions``\nwith the full raw share list (each entry keyed by ``partyId``). Use\n``add_datamodel_shares`` instead for name/email-based share\nmanagement.\n\nUses ``PUT`` because that is what the EXTRACT permissions endpoint\nrequires \u2014 the LIVE counterpart, ``update_datamodel_permissions_live``,\nrequires ``PATCH`` instead. This is an API difference between the two\nendpoints, not an inconsistency between the two methods.\n\nParameters\n----------\ndatamodel_title : str\n    Title of the EXTRACT data model.\nshares : list[dict[str, Any]]\n    Raw share objects, each with ``partyId``, ``type`` (``\"user\"`` or\n    ``\"group\"``), and ``permission``.\n\nReturns\n-------\ndict[str, Any]\n    API response on success, or ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -6429,7 +6429,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Replace the shares on the 'Sales_Analytics_2023' EXTRACT data model: give user_12345 read and group_67890 write.",
@@ -6492,7 +6492,7 @@
     "class": "DataModel",
     "method": "update_datamodel_permissions_live",
     "description": "Replace share entries for a LIVE data model.",
-    "full_doc": "Replace share entries for a LIVE data model.\n\nSends ``PATCH /api/v1/elasticubes/live/{datamodel_id}/permissions``\nwith the full raw share list (each entry keyed by ``partyId``). The\nLIVE model must already be published — publish it first with\n``deploy_datamodel`` if it has never been built.\n\nUses ``PATCH`` because that is what the LIVE permissions endpoint\nrequires — the EXTRACT counterpart, ``update_datamodel_permissions_extract``,\nrequires ``PUT`` instead. This is an API difference between the two\nendpoints, not an inconsistency between the two methods.\n\nParameters\n----------\ndatamodel_id : str\n    OID of the LIVE data model.\nshares : list[dict[str, Any]]\n    Raw share objects, each with ``partyId``, ``type`` (``\"user\"`` or\n    ``\"group\"``), and ``permission``.\n\nReturns\n-------\ndict[str, Any]\n    API response on success, or ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Replace share entries for a LIVE data model.\n\nSends ``PATCH /api/v1/elasticubes/live/{datamodel_id}/permissions``\nwith the full raw share list (each entry keyed by ``partyId``). The\nLIVE model must already be published \u2014 publish it first with\n``deploy_datamodel`` if it has never been built.\n\nUses ``PATCH`` because that is what the LIVE permissions endpoint\nrequires \u2014 the EXTRACT counterpart, ``update_datamodel_permissions_extract``,\nrequires ``PUT`` instead. This is an API difference between the two\nendpoints, not an inconsistency between the two methods.\n\nParameters\n----------\ndatamodel_id : str\n    OID of the LIVE data model.\nshares : list[dict[str, Any]]\n    Raw share objects, each with ``partyId``, ``type`` (``\"user\"`` or\n    ``\"group\"``), and ``permission``.\n\nReturns\n-------\ndict[str, Any]\n    API response on success, or ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -6519,7 +6519,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Replace the shares on the LIVE data model 'live_model_123': give user_456 read and group_789 write.",
@@ -6587,7 +6587,7 @@
     "class": "DataModel",
     "method": "update_datasecurity",
     "description": "Add datasecurity rules to an EXTRACT (Elasticube) datamodel.",
-    "full_doc": "Add datasecurity rules to an EXTRACT (Elasticube) datamodel.\n\nSends ``POST /api/elasticubes/localhost/{datamodel_name}/datasecurity``\nwith the rule list. The API **adds** the given rules (bulk); it does not\nreplace existing ones — to replace a column's rules, remove them first\nwith :meth:`delete_datasecurity`. Use this for a standalone\n``migrate_datasecurity`` phase after the datamodel exists on the target.\n\nServer-managed fields (``_id``, ``created``, ``lastModified``,\n``importedIdIdentifier``) are stripped from each rule automatically, so\nrules read back via ``get_datasecurity_raw`` can be re-submitted as-is.\n\nParameters\n----------\ndatamodel_name : str\n    Title of the EXTRACT datamodel to update.\ndatasecurity : list[dict[str, Any]]\n    Datasecurity rule list in Sisense API format. Each rule includes\n    ``table``, ``column``, ``datatype``, ``members`` (list of strings),\n    ``exclusionary``, ``shares``, and ``allMembers``.\n\nReturns\n-------\ndict[str, Any]\n    API response on success, or ``{\"error\": \"...\"}`` on failure.\n\nNotes\n-----\nThe Elasticube must be **built and running** — datasecurity writes are\nrejected by the API for unbuilt (draft) cubes.",
+    "full_doc": "Add datasecurity rules to an EXTRACT (Elasticube) datamodel.\n\nSends ``POST /api/elasticubes/localhost/{datamodel_name}/datasecurity``\nwith the rule list. The API **adds** the given rules (bulk); it does not\nreplace existing ones \u2014 to replace a column's rules, remove them first\nwith :meth:`delete_datasecurity`. Use this for a standalone\n``migrate_datasecurity`` phase after the datamodel exists on the target.\n\nServer-managed fields (``_id``, ``created``, ``lastModified``,\n``importedIdIdentifier``) are stripped from each rule automatically, so\nrules read back via ``get_datasecurity_raw`` can be re-submitted as-is.\n\nParameters\n----------\ndatamodel_name : str\n    Title of the EXTRACT datamodel to update.\ndatasecurity : list[dict[str, Any]]\n    Datasecurity rule list in Sisense API format. Each rule includes\n    ``table``, ``column``, ``datatype``, ``members`` (list of strings),\n    ``exclusionary``, ``shares``, and ``allMembers``.\n\nReturns\n-------\ndict[str, Any]\n    API response on success, or ``{\"error\": \"...\"}`` on failure.\n\nNotes\n-----\nThe Elasticube must be **built and running** \u2014 datasecurity writes are\nrejected by the API for unbuilt (draft) cubes.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -6614,7 +6614,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Replace the data security rules on the 'Sales_Elasticube' datamodel: allow North America and Europe in the Orders table's Region column, and exclude Enterprise in the Customers table's CustomerType column.",
@@ -6719,7 +6719,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Decrypt the value 'ENCRYPTED_PASSWORD_12345'.",
@@ -6776,7 +6776,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Encrypt the value 'my_secure_password_123' so it can be stored safely.",
@@ -6837,7 +6837,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a folder named 'Sales Reports' under parent folder 63f2b8c9e4b0a3d2f8e4a123.",
@@ -6890,7 +6890,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete the folder with ID '12345abcde'.",
@@ -6934,7 +6934,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me the entire folder structure for organizing dashboards.",
@@ -6960,7 +6960,7 @@
     "class": "Folder",
     "method": "get_folder_ancestors",
     "description": "Retrieve folders by a caller-supplied structure value.",
-    "full_doc": "Retrieve folders by a caller-supplied structure value.\n\nThin alias for ``get_folders(structure)`` — passes the ``structure``\nstring through to ``GET /api/v1/folders?structure={structure}``\nunchanged. Provided for compatibility with win2linux workflows that\npass an ancestors-specific structure string.\n\nParameters\n----------\nstructure : str\n    Sisense folder structure type for the request.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    Folder data from the API, or ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Retrieve folders by a caller-supplied structure value.\n\nThin alias for ``get_folders(structure)`` \u2014 passes the ``structure``\nstring through to ``GET /api/v1/folders?structure={structure}``\nunchanged. Provided for compatibility with win2linux workflows that\npass an ancestors-specific structure string.\n\nParameters\n----------\nstructure : str\n    Sisense folder structure type for the request.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    Folder data from the API, or ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -6979,7 +6979,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the ancestor folders for the 'SalesData' structure.",
@@ -7030,7 +7030,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch the details of the folder with ID '12345abcde'.",
@@ -7079,7 +7079,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me all folders in a flat structure.",
@@ -7121,7 +7121,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the navigation tree for our Sisense folders.",
@@ -7178,7 +7178,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Rename the folder with ID '12345abcde' to 'Sales Reports'.",
@@ -7239,7 +7239,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all Blox actions, skipping any that already exist.",
@@ -7299,7 +7299,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7374,7 +7374,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7407,7 +7407,7 @@
     "class": "MergeTool",
     "method": "migrate_all_datasecurity",
     "description": "Migrate datasecurity rules for all data models from source to target.",
-    "full_doc": "Migrate datasecurity rules for all data models from source to target.\n\nFetches every data model from the source environment and delegates\nto ``migrate_datasecurity``. Data models not yet present on the\ntarget are skipped — run ``migrate_all_datamodels`` first.\n\nParameters\n----------\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_datasecurity``.",
+    "full_doc": "Migrate datasecurity rules for all data models from source to target.\n\nFetches every data model from the source environment and delegates\nto ``migrate_datasecurity``. Data models not yet present on the\ntarget are skipped \u2014 run ``migrate_all_datamodels`` first.\n\nParameters\n----------\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_datasecurity``.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -7419,7 +7419,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all datasecurity rules for all data models, providing progress updates.",
@@ -7447,7 +7447,7 @@
     "class": "MergeTool",
     "method": "migrate_all_folders",
     "description": "Migrate all folders from source to target, preserving full hierarchy.",
-    "full_doc": "Migrate all folders from source to target, preserving full hierarchy.\n\nFetches every folder from the source environment and delegates to\n``migrate_folders``.\n\nParameters\n----------\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy applied to every folder.\nconcurrency : int, default 1\n    Same as in ``migrate_folders`` — maximum number of folders to\n    create/delete concurrently within each hierarchy depth level.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_folders``.",
+    "full_doc": "Migrate all folders from source to target, preserving full hierarchy.\n\nFetches every folder from the source environment and delegates to\n``migrate_folders``.\n\nParameters\n----------\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy applied to every folder.\nconcurrency : int, default 1\n    Same as in ``migrate_folders`` \u2014 maximum number of folders to\n    create/delete concurrently within each hierarchy depth level.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_folders``.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -7462,7 +7462,7 @@
         },
         "concurrency": {
           "type": "integer",
-          "description": "Same as in ``migrate_folders`` — maximum number of folders to create/delete concurrently within each hierarchy depth level."
+          "description": "Same as in ``migrate_folders`` \u2014 maximum number of folders to create/delete concurrently within each hierarchy depth level."
         }
       },
       "required": []
@@ -7473,7 +7473,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all folders, skipping any that already exist.",
@@ -7506,7 +7506,7 @@
     "class": "MergeTool",
     "method": "migrate_all_groups",
     "description": "Migrate all eligible groups from source to target.",
-    "full_doc": "Migrate all eligible groups from source to target.\n\nFetches every group from the source environment, excludes the\nbuilt-in ``Admins``, ``All users in system``, and ``Everyone`` groups,\nand — when the source environment exposes tenant information —\nrestricts migration to groups belonging to the system tenant, then\ndelegates to ``migrate_groups``.\n\nParameters\n----------\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy applied to every group.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_groups``.\n\nNotes\n-----\nIf the source environment does not expose tenant information (single\ntenant on-premises deployments), tenant-based filtering is skipped and\nevery non-excluded group is treated as eligible.",
+    "full_doc": "Migrate all eligible groups from source to target.\n\nFetches every group from the source environment, excludes the\nbuilt-in ``Admins``, ``All users in system``, and ``Everyone`` groups,\nand \u2014 when the source environment exposes tenant information \u2014\nrestricts migration to groups belonging to the system tenant, then\ndelegates to ``migrate_groups``.\n\nParameters\n----------\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy applied to every group.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_groups``.\n\nNotes\n-----\nIf the source environment does not expose tenant information (single\ntenant on-premises deployments), tenant-based filtering is skipped and\nevery non-excluded group is treated as eligible.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -7529,7 +7529,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all groups, skipping any that already exist.",
@@ -7587,7 +7587,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all notebooks, skipping any that already exist.",
@@ -7620,7 +7620,7 @@
     "class": "MergeTool",
     "method": "migrate_all_saved_filters",
     "description": "Migrate saved filter dimensions for all data models from source to target.",
-    "full_doc": "Migrate saved filter dimensions for all data models from source to target.\n\nFetches every data model from the source environment and delegates\nto ``migrate_saved_filters``. Data models not yet present on the\ntarget are skipped — run ``migrate_all_datamodels`` first.\n\nParameters\n----------\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Same as in ``migrate_saved_filters``.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_saved_filters``.",
+    "full_doc": "Migrate saved filter dimensions for all data models from source to target.\n\nFetches every data model from the source environment and delegates\nto ``migrate_saved_filters``. Data models not yet present on the\ntarget are skipped \u2014 run ``migrate_all_datamodels`` first.\n\nParameters\n----------\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Same as in ``migrate_saved_filters``.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_saved_filters``.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -7642,7 +7642,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all saved filters for all data models, skipping any that already exist.",
@@ -7674,7 +7674,7 @@
     "class": "MergeTool",
     "method": "migrate_all_saved_formulas",
     "description": "Migrate saved formula measures for all data models from source to target.",
-    "full_doc": "Migrate saved formula measures for all data models from source to target.\n\nFetches every data model from the source environment and delegates\nto ``migrate_saved_formulas``. Data models not yet present on the\ntarget are skipped — run ``migrate_all_datamodels`` first.\n\nParameters\n----------\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Same as in ``migrate_saved_formulas``.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_saved_formulas``.",
+    "full_doc": "Migrate saved formula measures for all data models from source to target.\n\nFetches every data model from the source environment and delegates\nto ``migrate_saved_formulas``. Data models not yet present on the\ntarget are skipped \u2014 run ``migrate_all_datamodels`` first.\n\nParameters\n----------\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Same as in ``migrate_saved_formulas``.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_saved_formulas``.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -7696,7 +7696,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all saved formulas, skipping any that already exist.",
@@ -7728,7 +7728,7 @@
     "class": "MergeTool",
     "method": "migrate_all_users",
     "description": "Migrate all eligible users from source to target.",
-    "full_doc": "Migrate all eligible users from source to target.\n\nFetches every user from the source environment, excludes users with\nthe built-in ``super`` role (the source and target super admin\naccounts are expected to already exist independently on each\nenvironment), and — when the source environment exposes tenant\ninformation — restricts migration to users belonging to the system\ntenant, then delegates to ``migrate_users``.\n\nParameters\n----------\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy applied to every user.\nignore_custom_roles : bool, default False\n    When ``True``, strips a ``custom_`` prefix from source role names\n    before matching them against target roles.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_users``.\n\nNotes\n-----\nIf the source environment does not expose tenant information (single\ntenant on-premises deployments), tenant-based filtering is skipped and\nevery non-``super`` user is treated as eligible.",
+    "full_doc": "Migrate all eligible users from source to target.\n\nFetches every user from the source environment, excludes users with\nthe built-in ``super`` role (the source and target super admin\naccounts are expected to already exist independently on each\nenvironment), and \u2014 when the source environment exposes tenant\ninformation \u2014 restricts migration to users belonging to the system\ntenant, then delegates to ``migrate_users``.\n\nParameters\n----------\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy applied to every user.\nignore_custom_roles : bool, default False\n    When ``True``, strips a ``custom_`` prefix from source role names\n    before matching them against target roles.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback.\n\nReturns\n-------\ndict[str, Any]\n    Same structure as ``migrate_users``.\n\nNotes\n-----\nIf the source environment does not expose tenant information (single\ntenant on-premises deployments), tenant-based filtering is skipped and\nevery non-``super`` user is treated as eligible.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -7755,7 +7755,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all users, overwriting any conflicts and ignoring custom roles.",
@@ -7788,7 +7788,7 @@
     "class": "MergeTool",
     "method": "migrate_blox_actions",
     "description": "Migrate specific Blox actions from source to target.",
-    "full_doc": "Migrate specific Blox actions from source to target.\n\nFetches the requested actions from the source environment, transforms\neach into a save-ready payload, and creates or overwrites it on the\ntarget. Conflict detection is based on the action's ``type`` field.\nSaving and deleting Blox actions is Linux-only, so the target\nenvironment must be a Linux deployment.\n\nParameters\n----------\naction_types : list[str] or None, default None\n    The ``type`` identifiers of the Blox actions to migrate. If\n    ``None``, every Blox action on the source is migrated.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when an action with the same ``type`` already\n    exists on the target.\n\n    - ``\"skip\"`` — leave the existing action unchanged.\n    - ``\"overwrite\"`` — delete the existing action then recreate from\n      source.\n    - ``\"duplicate\"`` — always create, regardless of conflicts.\nconcurrency : int, default 1\n    Maximum number of Blox actions to migrate concurrently, run via a\n    background thread pool (``asyncio.to_thread``) since the\n    underlying HTTP client is synchronous. Blox actions are\n    independent of each other, so any value is safe. Values <= 1\n    (the default) process actions one at a time.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys. When\n    ``concurrency`` is greater than 1, this callback may be invoked\n    from multiple worker threads concurrently.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] — each has ``type``\n    - ``skipped`` : list[dict] — each has ``type`` and ``reason``\n    - ``failed`` : list[dict] — each has ``type`` and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nNotes\n-----\nIf called from code that is already running an asyncio event loop,\n``concurrency`` greater than 1 falls back to sequential processing (a\nnested event loop cannot be started) and logs a warning.",
+    "full_doc": "Migrate specific Blox actions from source to target.\n\nFetches the requested actions from the source environment, transforms\neach into a save-ready payload, and creates or overwrites it on the\ntarget. Conflict detection is based on the action's ``type`` field.\nSaving and deleting Blox actions is Linux-only, so the target\nenvironment must be a Linux deployment.\n\nParameters\n----------\naction_types : list[str] or None, default None\n    The ``type`` identifiers of the Blox actions to migrate. If\n    ``None``, every Blox action on the source is migrated.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when an action with the same ``type`` already\n    exists on the target.\n\n    - ``\"skip\"`` \u2014 leave the existing action unchanged.\n    - ``\"overwrite\"`` \u2014 delete the existing action then recreate from\n      source.\n    - ``\"duplicate\"`` \u2014 always create, regardless of conflicts.\nconcurrency : int, default 1\n    Maximum number of Blox actions to migrate concurrently, run via a\n    background thread pool (``asyncio.to_thread``) since the\n    underlying HTTP client is synchronous. Blox actions are\n    independent of each other, so any value is safe. Values <= 1\n    (the default) process actions one at a time.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys. When\n    ``concurrency`` is greater than 1, this callback may be invoked\n    from multiple worker threads concurrently.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] \u2014 each has ``type``\n    - ``skipped`` : list[dict] \u2014 each has ``type`` and ``reason``\n    - ``failed`` : list[dict] \u2014 each has ``type`` and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nNotes\n-----\nIf called from code that is already running an asyncio event loop,\n``concurrency`` greater than 1 falls back to sequential processing (a\nnested event loop cannot be started) and logs a warning.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -7806,7 +7806,7 @@
             "overwrite",
             "duplicate"
           ],
-          "description": "Conflict strategy when an action with the same ``type`` already exists on the target. - ``\"skip\"`` — leave the existing action unchanged. - ``\"overwrite\"`` — delete the existing action then recreate from source. - ``\"duplicate\"`` — always create, regardless of conflicts."
+          "description": "Conflict strategy when an action with the same ``type`` already exists on the target. - ``\"skip\"`` \u2014 leave the existing action unchanged. - ``\"overwrite\"`` \u2014 delete the existing action then recreate from source. - ``\"duplicate\"`` \u2014 always create, regardless of conflicts."
         },
         "concurrency": {
           "type": "integer",
@@ -7821,7 +7821,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7860,7 +7860,7 @@
     "class": "MergeTool",
     "method": "migrate_dashboards",
     "description": "Migrate specific dashboards from source to target.",
-    "full_doc": "Migrate specific dashboards from source to target.\n\nExports each dashboard from the source environment, repoints its\nembedded datasource references to the target's local Elasticube, and\nimports it into the target via the bulk import endpoint, which\nmatches dashboards by ``oid`` and applies ``action`` natively.\nAfter a successful import, the dashboard's owner and shares are\nremapped from source to target users/groups (matched by email/name),\nand the dashboard is moved into the target folder whose path matches\nits source parent folder's path — if that folder has already been\nmigrated with ``migrate_folders``. Conflict detection for the\n``action`` parameter itself is based on the dashboard's ``oid``.\n\nParameters\n----------\ndashboard_ids : list[str] or None, default None\n    Dashboard OIDs to migrate. Provide either this or\n    ``dashboard_names``.\ndashboard_names : list[str] or None, default None\n    Dashboard titles to migrate. Provide either this or\n    ``dashboard_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a dashboard with the same ``oid`` already\n    exists on the target.\n\n    - ``\"skip\"`` — leave the existing dashboard unchanged.\n    - ``\"overwrite\"`` — replace the existing dashboard with the\n      source version.\n    - ``\"duplicate\"`` — always create, regardless of conflicts.\nconcurrency : int, default 1\n    Maximum number of dashboards to migrate concurrently, run via a\n    background thread pool (``asyncio.to_thread``) since the\n    underlying HTTP client is synchronous. Dashboards are independent\n    of each other, so any value is safe. Values <= 1 (the default)\n    process dashboards one at a time.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys. When\n    ``concurrency`` is greater than 1, this callback may be invoked\n    from multiple worker threads concurrently.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] — each has ``title``, ``oid``, and\n      ``source_oid``\n    - ``skipped`` : list[dict] — each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``failed`` : list[dict] — each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``dashboard_ids`` and ``dashboard_names``\n    are provided.\n\nNotes\n-----\nIf called from code that is already running an asyncio event loop,\n``concurrency`` greater than 1 falls back to sequential processing (a\nnested event loop cannot be started) and logs a warning.",
+    "full_doc": "Migrate specific dashboards from source to target.\n\nExports each dashboard from the source environment, repoints its\nembedded datasource references to the target's local Elasticube, and\nimports it into the target via the bulk import endpoint, which\nmatches dashboards by ``oid`` and applies ``action`` natively.\nAfter a successful import, the dashboard's owner and shares are\nremapped from source to target users/groups (matched by email/name),\nand the dashboard is moved into the target folder whose path matches\nits source parent folder's path \u2014 if that folder has already been\nmigrated with ``migrate_folders``. Conflict detection for the\n``action`` parameter itself is based on the dashboard's ``oid``.\n\nParameters\n----------\ndashboard_ids : list[str] or None, default None\n    Dashboard OIDs to migrate. Provide either this or\n    ``dashboard_names``.\ndashboard_names : list[str] or None, default None\n    Dashboard titles to migrate. Provide either this or\n    ``dashboard_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a dashboard with the same ``oid`` already\n    exists on the target.\n\n    - ``\"skip\"`` \u2014 leave the existing dashboard unchanged.\n    - ``\"overwrite\"`` \u2014 replace the existing dashboard with the\n      source version.\n    - ``\"duplicate\"`` \u2014 always create, regardless of conflicts.\nconcurrency : int, default 1\n    Maximum number of dashboards to migrate concurrently, run via a\n    background thread pool (``asyncio.to_thread``) since the\n    underlying HTTP client is synchronous. Dashboards are independent\n    of each other, so any value is safe. Values <= 1 (the default)\n    process dashboards one at a time.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys. When\n    ``concurrency`` is greater than 1, this callback may be invoked\n    from multiple worker threads concurrently.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] \u2014 each has ``title``, ``oid``, and\n      ``source_oid``\n    - ``skipped`` : list[dict] \u2014 each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``failed`` : list[dict] \u2014 each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``dashboard_ids`` and ``dashboard_names``\n    are provided.\n\nNotes\n-----\nIf called from code that is already running an asyncio event loop,\n``concurrency`` greater than 1 falls back to sequential processing (a\nnested event loop cannot be started) and logs a warning.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -7885,7 +7885,7 @@
             "overwrite",
             "duplicate"
           ],
-          "description": "Conflict strategy when a dashboard with the same ``oid`` already exists on the target. - ``\"skip\"`` — leave the existing dashboard unchanged. - ``\"overwrite\"`` — replace the existing dashboard with the source version. - ``\"duplicate\"`` — always create, regardless of conflicts."
+          "description": "Conflict strategy when a dashboard with the same ``oid`` already exists on the target. - ``\"skip\"`` \u2014 leave the existing dashboard unchanged. - ``\"overwrite\"`` \u2014 replace the existing dashboard with the source version. - ``\"duplicate\"`` \u2014 always create, regardless of conflicts."
         },
         "concurrency": {
           "type": "integer",
@@ -7901,7 +7901,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7941,7 +7941,7 @@
     "class": "MergeTool",
     "method": "migrate_datamodels",
     "description": "Migrate specific data models from source to target.",
-    "full_doc": "Migrate specific data models from source to target.\n\nExports each data model's schema from the source environment and\nimports it into the target via the schema import endpoint. Conflict\ndetection is based on the data model's ``title``. Embedded connection\ncredentials are repointed using ``provider_connection_map`` when a\nmatching provider entry is supplied, and stripped otherwise — they\nmust be re-entered (or reconnected) on the target after migration.\n\nParameters\n----------\ndatamodel_ids : list[str] or None, default None\n    Data model OIDs to migrate. Provide either this or\n    ``datamodel_names``.\ndatamodel_names : list[str] or None, default None\n    Data model titles to migrate. Provide either this or\n    ``datamodel_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a data model with the same ``title``\n    already exists on the target.\n\n    - ``\"skip\"`` — leave the existing data model unchanged.\n    - ``\"overwrite\"`` — replace the existing data model's schema with\n      the source version, matched by the target model's own OID.\n    - ``\"duplicate\"`` — always create a new data model titled\n      ``\"<title> (Duplicate)\"``, regardless of conflicts.\ndependencies : list[str] or str or None, default None\n    Dependencies to include in the export. One or more of\n    ``\"dataSecurity\"``, ``\"formulas\"``, ``\"hierarchies\"``,\n    ``\"perspectives\"``. Defaults to all of them when ``None`` or\n    ``\"all\"``. Windows: has no effect when the source is a Windows\n    deployment — its export endpoint accepts no dependencies parameter.\nprovider_connection_map : dict[str, str] or None, default None\n    Maps a connection provider name (for example ``\"Athena\"``) to a\n    target-environment connection OID. Datasets whose provider is not\n    present in this map have their connection parameters cleared on\n    import.\nshares : bool, default False\n    Whether to also migrate each data model's shares after a\n    successful import, remapping users and groups by email/name.\nconcurrency : int, default 1\n    Maximum number of data models to migrate concurrently, run via a\n    background thread pool (``asyncio.to_thread``) since the\n    underlying HTTP client is synchronous. Data models are\n    independent of each other, so any value is safe. Values <= 1\n    (the default) process data models one at a time.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys. When\n    ``concurrency`` is greater than 1, this callback may be invoked\n    from multiple worker threads concurrently.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] — each has ``title``, ``source_oid``,\n      and ``target_id``\n    - ``skipped`` : list[dict] — each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``failed`` : list[dict] — each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``datamodel_ids`` and ``datamodel_names``\n    are provided.\n\nNotes\n-----\nIf called from code that is already running an asyncio event loop,\n``concurrency`` greater than 1 falls back to sequential processing (a\nnested event loop cannot be started) and logs a warning.",
+    "full_doc": "Migrate specific data models from source to target.\n\nExports each data model's schema from the source environment and\nimports it into the target via the schema import endpoint. Conflict\ndetection is based on the data model's ``title``. Embedded connection\ncredentials are repointed using ``provider_connection_map`` when a\nmatching provider entry is supplied, and stripped otherwise \u2014 they\nmust be re-entered (or reconnected) on the target after migration.\n\nParameters\n----------\ndatamodel_ids : list[str] or None, default None\n    Data model OIDs to migrate. Provide either this or\n    ``datamodel_names``.\ndatamodel_names : list[str] or None, default None\n    Data model titles to migrate. Provide either this or\n    ``datamodel_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a data model with the same ``title``\n    already exists on the target.\n\n    - ``\"skip\"`` \u2014 leave the existing data model unchanged.\n    - ``\"overwrite\"`` \u2014 replace the existing data model's schema with\n      the source version, matched by the target model's own OID.\n    - ``\"duplicate\"`` \u2014 always create a new data model titled\n      ``\"<title> (Duplicate)\"``, regardless of conflicts.\ndependencies : list[str] or str or None, default None\n    Dependencies to include in the export. One or more of\n    ``\"dataSecurity\"``, ``\"formulas\"``, ``\"hierarchies\"``,\n    ``\"perspectives\"``. Defaults to all of them when ``None`` or\n    ``\"all\"``. Windows: has no effect when the source is a Windows\n    deployment \u2014 its export endpoint accepts no dependencies parameter.\nprovider_connection_map : dict[str, str] or None, default None\n    Maps a connection provider name (for example ``\"Athena\"``) to a\n    target-environment connection OID. Datasets whose provider is not\n    present in this map have their connection parameters cleared on\n    import.\nshares : bool, default False\n    Whether to also migrate each data model's shares after a\n    successful import, remapping users and groups by email/name.\nconcurrency : int, default 1\n    Maximum number of data models to migrate concurrently, run via a\n    background thread pool (``asyncio.to_thread``) since the\n    underlying HTTP client is synchronous. Data models are\n    independent of each other, so any value is safe. Values <= 1\n    (the default) process data models one at a time.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys. When\n    ``concurrency`` is greater than 1, this callback may be invoked\n    from multiple worker threads concurrently.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] \u2014 each has ``title``, ``source_oid``,\n      and ``target_id``\n    - ``skipped`` : list[dict] \u2014 each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``failed`` : list[dict] \u2014 each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``datamodel_ids`` and ``datamodel_names``\n    are provided.\n\nNotes\n-----\nIf called from code that is already running an asyncio event loop,\n``concurrency`` greater than 1 falls back to sequential processing (a\nnested event loop cannot be started) and logs a warning.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -7966,14 +7966,14 @@
             "overwrite",
             "duplicate"
           ],
-          "description": "Conflict strategy when a data model with the same ``title`` already exists on the target. - ``\"skip\"`` — leave the existing data model unchanged. - ``\"overwrite\"`` — replace the existing data model's schema with the source version, matched by the target model's own OID. - ``\"duplicate\"`` — always create a new data model titled ``\"<title> (Duplicate)\"``, regardless of conflicts."
+          "description": "Conflict strategy when a data model with the same ``title`` already exists on the target. - ``\"skip\"`` \u2014 leave the existing data model unchanged. - ``\"overwrite\"`` \u2014 replace the existing data model's schema with the source version, matched by the target model's own OID. - ``\"duplicate\"`` \u2014 always create a new data model titled ``\"<title> (Duplicate)\"``, regardless of conflicts."
         },
         "dependencies": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Dependencies to include in the export. One or more of ``\"dataSecurity\"``, ``\"formulas\"``, ``\"hierarchies\"``, ``\"perspectives\"``. Defaults to all of them when ``None`` or ``\"all\"``. Windows: has no effect when the source is a Windows deployment — its export endpoint accepts no dependencies parameter."
+          "description": "Dependencies to include in the export. One or more of ``\"dataSecurity\"``, ``\"formulas\"``, ``\"hierarchies\"``, ``\"perspectives\"``. Defaults to all of them when ``None`` or ``\"all\"``. Windows: has no effect when the source is a Windows deployment \u2014 its export endpoint accepts no dependencies parameter."
         },
         "provider_connection_map": {
           "type": "object",
@@ -7997,7 +7997,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8046,7 +8046,7 @@
     "class": "MergeTool",
     "method": "migrate_datasecurity",
     "description": "Migrate row-level datasecurity rules for specific data models from source to target.",
-    "full_doc": "Migrate row-level datasecurity rules for specific data models from source to target.\n\nFetches each data model's raw datasecurity rules from the source,\nremaps the user/group shares on every rule to their target-environment\nids (matched by email for users and by name for groups), and writes\nthe resolved rules onto the already-existing target data model.\nRequires the target data model to already exist — run\n``migrate_datamodels``/``migrate_all_datamodels`` first.\n\nParameters\n----------\ndatamodel_ids : list[str] or None, default None\n    Data model OIDs to migrate. Provide either this or\n    ``datamodel_names``.\ndatamodel_names : list[str] or None, default None\n    Data model titles to migrate. Provide either this or\n    ``datamodel_ids``.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] — each has ``title``, ``source_oid``,\n      and ``rule_count``\n    - ``skipped`` : list[dict] — each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``failed`` : list[dict] — each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``datamodel_ids`` and ``datamodel_names``\n    are provided.",
+    "full_doc": "Migrate row-level datasecurity rules for specific data models from source to target.\n\nFetches each data model's raw datasecurity rules from the source,\nremaps the user/group shares on every rule to their target-environment\nids (matched by email for users and by name for groups), and writes\nthe resolved rules onto the already-existing target data model.\nRequires the target data model to already exist \u2014 run\n``migrate_datamodels``/``migrate_all_datamodels`` first.\n\nParameters\n----------\ndatamodel_ids : list[str] or None, default None\n    Data model OIDs to migrate. Provide either this or\n    ``datamodel_names``.\ndatamodel_names : list[str] or None, default None\n    Data model titles to migrate. Provide either this or\n    ``datamodel_ids``.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] \u2014 each has ``title``, ``source_oid``,\n      and ``rule_count``\n    - ``skipped`` : list[dict] \u2014 each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``failed`` : list[dict] \u2014 each has ``title``, ``source_oid``,\n      and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``datamodel_ids`` and ``datamodel_names``\n    are provided.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -8073,7 +8073,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate row-level security rules for data models with IDs 'dm_12345' and 'dm_67890'.",
@@ -8113,7 +8113,7 @@
     "class": "MergeTool",
     "method": "migrate_folders",
     "description": "Migrate specific folders and their full subtrees from source to target.",
-    "full_doc": "Migrate specific folders and their full subtrees from source to target.\n\nResolves the requested root folders by ID or display name, expands\neach to its complete subtree, then recreates the hierarchy on the\ntarget in depth-first order. Conflict detection is path-based (full\n``parent/child`` path), so identically-named folders in different\nbranches are treated independently.\n\nFolders whose parent is not part of the migration (e.g. when migrating\na sub-folder in isolation) are created at the root level on the target.\n\nParameters\n----------\nfolder_ids : list[str] or None, default None\n    Folder OIDs to migrate. Provide either this or ``folder_names``.\nfolder_names : list[str] or None, default None\n    Folder display names to migrate. Provide either this or\n    ``folder_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a folder at the same path already exists on\n    the target.\n\n    - ``\"skip\"`` — leave the existing folder unchanged and map its OID\n      so child folders can still be placed under it correctly.\n    - ``\"overwrite\"`` — delete the existing folder then recreate from\n      source. **Warning:** deleting a folder on Sisense also removes\n      all dashboards inside it.\n    - ``\"duplicate\"`` — always create, regardless of conflicts.\nconcurrency : int, default 1\n    Maximum number of folders to create/delete concurrently within\n    each hierarchy depth level, run via a background thread pool\n    (``asyncio.to_thread``) since the underlying HTTP client is\n    synchronous. Folders at the same depth are independent — their\n    parent was already migrated in an earlier, fully-completed depth\n    level — so they're safe to run in parallel; different depths are\n    still processed strictly in order, since a child's target parent\n    OID must exist before it can be created. Values <= 1 (the\n    default) process folders one at a time.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys. When\n    ``concurrency`` is greater than 1, this callback may be invoked\n    from multiple worker threads concurrently for folders in the same\n    depth level.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] — each has ``name``, ``path``, and\n      ``source_oid``\n    - ``skipped`` : list[dict] — each has ``name``, ``path``,\n      ``source_oid``, and ``reason``\n    - ``failed`` : list[dict] — each has ``name``, ``path``,\n      ``source_oid``, and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``folder_ids`` and ``folder_names`` are\n    provided.\n\nNotes\n-----\nIf called from code that is already running an asyncio event loop,\n``concurrency`` greater than 1 falls back to sequential processing for\nthe affected depth level (a nested event loop cannot be started) and\nlogs a warning.",
+    "full_doc": "Migrate specific folders and their full subtrees from source to target.\n\nResolves the requested root folders by ID or display name, expands\neach to its complete subtree, then recreates the hierarchy on the\ntarget in depth-first order. Conflict detection is path-based (full\n``parent/child`` path), so identically-named folders in different\nbranches are treated independently.\n\nFolders whose parent is not part of the migration (e.g. when migrating\na sub-folder in isolation) are created at the root level on the target.\n\nParameters\n----------\nfolder_ids : list[str] or None, default None\n    Folder OIDs to migrate. Provide either this or ``folder_names``.\nfolder_names : list[str] or None, default None\n    Folder display names to migrate. Provide either this or\n    ``folder_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a folder at the same path already exists on\n    the target.\n\n    - ``\"skip\"`` \u2014 leave the existing folder unchanged and map its OID\n      so child folders can still be placed under it correctly.\n    - ``\"overwrite\"`` \u2014 delete the existing folder then recreate from\n      source. **Warning:** deleting a folder on Sisense also removes\n      all dashboards inside it.\n    - ``\"duplicate\"`` \u2014 always create, regardless of conflicts.\nconcurrency : int, default 1\n    Maximum number of folders to create/delete concurrently within\n    each hierarchy depth level, run via a background thread pool\n    (``asyncio.to_thread``) since the underlying HTTP client is\n    synchronous. Folders at the same depth are independent \u2014 their\n    parent was already migrated in an earlier, fully-completed depth\n    level \u2014 so they're safe to run in parallel; different depths are\n    still processed strictly in order, since a child's target parent\n    OID must exist before it can be created. Values <= 1 (the\n    default) process folders one at a time.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys. When\n    ``concurrency`` is greater than 1, this callback may be invoked\n    from multiple worker threads concurrently for folders in the same\n    depth level.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] \u2014 each has ``name``, ``path``, and\n      ``source_oid``\n    - ``skipped`` : list[dict] \u2014 each has ``name``, ``path``,\n      ``source_oid``, and ``reason``\n    - ``failed`` : list[dict] \u2014 each has ``name``, ``path``,\n      ``source_oid``, and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``folder_ids`` and ``folder_names`` are\n    provided.\n\nNotes\n-----\nIf called from code that is already running an asyncio event loop,\n``concurrency`` greater than 1 falls back to sequential processing for\nthe affected depth level (a nested event loop cannot be started) and\nlogs a warning.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -8138,11 +8138,11 @@
             "overwrite",
             "duplicate"
           ],
-          "description": "Conflict strategy when a folder at the same path already exists on the target. - ``\"skip\"`` — leave the existing folder unchanged and map its OID so child folders can still be placed under it correctly. - ``\"overwrite\"`` — delete the existing folder then recreate from source. **Warning:** deleting a folder on Sisense also removes all dashboards inside it. - ``\"duplicate\"`` — always create, regardless of conflicts."
+          "description": "Conflict strategy when a folder at the same path already exists on the target. - ``\"skip\"`` \u2014 leave the existing folder unchanged and map its OID so child folders can still be placed under it correctly. - ``\"overwrite\"`` \u2014 delete the existing folder then recreate from source. **Warning:** deleting a folder on Sisense also removes all dashboards inside it. - ``\"duplicate\"`` \u2014 always create, regardless of conflicts."
         },
         "concurrency": {
           "type": "integer",
-          "description": "Maximum number of folders to create/delete concurrently within each hierarchy depth level, run via a background thread pool (``asyncio.to_thread``) since the underlying HTTP client is synchronous. Folders at the same depth are independent — their parent was already migrated in an earlier, fully-completed depth level — so they're safe to run in parallel; different depths are still processed strictly in order, since a child's target parent OID must exist before it can be created. Values <= 1 (the default) process folders one at a time."
+          "description": "Maximum number of folders to create/delete concurrently within each hierarchy depth level, run via a background thread pool (``asyncio.to_thread``) since the underlying HTTP client is synchronous. Folders at the same depth are independent \u2014 their parent was already migrated in an earlier, fully-completed depth level \u2014 so they're safe to run in parallel; different depths are still processed strictly in order, since a child's target parent OID must exist before it can be created. Values <= 1 (the default) process folders one at a time."
         }
       },
       "required": []
@@ -8153,7 +8153,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8198,7 +8198,7 @@
     "class": "MergeTool",
     "method": "migrate_groups",
     "description": "Migrate specific groups from source to target.",
-    "full_doc": "Migrate specific groups from source to target.\n\nFetches the requested groups from the source environment and creates\n(or replaces) them on the target via the bulk group endpoint. Conflict\ndetection is based on the group's ``name`` field.\n\nParameters\n----------\ngroup_names : list[str] or None, default None\n    Group names to migrate. If ``None``, every group on the source is\n    migrated.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a group with the same ``name`` already\n    exists on the target.\n\n    - ``\"skip\"`` — leave the existing group unchanged.\n    - ``\"overwrite\"`` — delete the existing group then recreate from\n      source. **Warning:** this can disrupt user/group associations\n      still referencing the deleted group on the target.\n    - ``\"duplicate\"`` — always create, regardless of conflicts.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] — each has ``name``\n    - ``skipped`` : list[dict] — each has ``name`` and ``reason``\n    - ``failed`` : list[dict] — each has ``name`` and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int",
+    "full_doc": "Migrate specific groups from source to target.\n\nFetches the requested groups from the source environment and creates\n(or replaces) them on the target via the bulk group endpoint. Conflict\ndetection is based on the group's ``name`` field.\n\nParameters\n----------\ngroup_names : list[str] or None, default None\n    Group names to migrate. If ``None``, every group on the source is\n    migrated.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a group with the same ``name`` already\n    exists on the target.\n\n    - ``\"skip\"`` \u2014 leave the existing group unchanged.\n    - ``\"overwrite\"`` \u2014 delete the existing group then recreate from\n      source. **Warning:** this can disrupt user/group associations\n      still referencing the deleted group on the target.\n    - ``\"duplicate\"`` \u2014 always create, regardless of conflicts.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] \u2014 each has ``name``\n    - ``skipped`` : list[dict] \u2014 each has ``name`` and ``reason``\n    - ``failed`` : list[dict] \u2014 each has ``name`` and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int",
     "parameters": {
       "type": "object",
       "properties": {
@@ -8216,7 +8216,7 @@
             "overwrite",
             "duplicate"
           ],
-          "description": "Conflict strategy when a group with the same ``name`` already exists on the target. - ``\"skip\"`` — leave the existing group unchanged. - ``\"overwrite\"`` — delete the existing group then recreate from source. **Warning:** this can disrupt user/group associations still referencing the deleted group on the target. - ``\"duplicate\"`` — always create, regardless of conflicts."
+          "description": "Conflict strategy when a group with the same ``name`` already exists on the target. - ``\"skip\"`` \u2014 leave the existing group unchanged. - ``\"overwrite\"`` \u2014 delete the existing group then recreate from source. **Warning:** this can disrupt user/group associations still referencing the deleted group on the target. - ``\"duplicate\"`` \u2014 always create, regardless of conflicts."
         }
       },
       "required": []
@@ -8228,7 +8228,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all groups, skipping any that already exist.",
@@ -8268,7 +8268,7 @@
     "class": "MergeTool",
     "method": "migrate_notebooks",
     "description": "Migrate specific notebooks from source to target.",
-    "full_doc": "Migrate specific notebooks from source to target.\n\nExports each notebook from the source environment and creates or\nupdates it on the target. Conflict detection is based on ``displayName``.\n\nParameters\n----------\nnotebook_ids : list[str] or None, default None\n    Notebook IDs to migrate. Provide either this or ``notebook_names``.\nnotebook_names : list[str] or None, default None\n    Notebook display names to migrate. Provide either this or\n    ``notebook_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a notebook with the same ``displayName``\n    already exists on the target.\n\n    - ``\"skip\"`` — leave the existing notebook unchanged.\n    - ``\"overwrite\"`` — delete the existing notebook then recreate from\n      source.\n    - ``\"duplicate\"`` — always create, regardless of conflicts.\nconcurrency : int, default 1\n    Maximum number of notebooks to migrate concurrently, run via a\n    background thread pool (``asyncio.to_thread``) since the\n    underlying HTTP client is synchronous. Notebooks are independent\n    of each other, so any value is safe. Values <= 1 (the default)\n    process notebooks one at a time.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys. When\n    ``concurrency`` is greater than 1, this callback may be invoked\n    from multiple worker threads concurrently.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] — each has ``name`` and ``source_id``\n    - ``skipped`` : list[dict] — each has ``name``, ``source_id``, and\n      ``reason``\n    - ``failed`` : list[dict] — each has ``name``, ``source_id``, and\n      ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``notebook_ids`` and ``notebook_names`` are\n    provided.\n\nNotes\n-----\nIf called from code that is already running an asyncio event loop,\n``concurrency`` greater than 1 falls back to sequential processing (a\nnested event loop cannot be started) and logs a warning.",
+    "full_doc": "Migrate specific notebooks from source to target.\n\nExports each notebook from the source environment and creates or\nupdates it on the target. Conflict detection is based on ``displayName``.\n\nParameters\n----------\nnotebook_ids : list[str] or None, default None\n    Notebook IDs to migrate. Provide either this or ``notebook_names``.\nnotebook_names : list[str] or None, default None\n    Notebook display names to migrate. Provide either this or\n    ``notebook_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a notebook with the same ``displayName``\n    already exists on the target.\n\n    - ``\"skip\"`` \u2014 leave the existing notebook unchanged.\n    - ``\"overwrite\"`` \u2014 delete the existing notebook then recreate from\n      source.\n    - ``\"duplicate\"`` \u2014 always create, regardless of conflicts.\nconcurrency : int, default 1\n    Maximum number of notebooks to migrate concurrently, run via a\n    background thread pool (``asyncio.to_thread``) since the\n    underlying HTTP client is synchronous. Notebooks are independent\n    of each other, so any value is safe. Values <= 1 (the default)\n    process notebooks one at a time.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys. When\n    ``concurrency`` is greater than 1, this callback may be invoked\n    from multiple worker threads concurrently.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] \u2014 each has ``name`` and ``source_id``\n    - ``skipped`` : list[dict] \u2014 each has ``name``, ``source_id``, and\n      ``reason``\n    - ``failed`` : list[dict] \u2014 each has ``name``, ``source_id``, and\n      ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``notebook_ids`` and ``notebook_names`` are\n    provided.\n\nNotes\n-----\nIf called from code that is already running an asyncio event loop,\n``concurrency`` greater than 1 falls back to sequential processing (a\nnested event loop cannot be started) and logs a warning.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -8293,7 +8293,7 @@
             "overwrite",
             "duplicate"
           ],
-          "description": "Conflict strategy when a notebook with the same ``displayName`` already exists on the target. - ``\"skip\"`` — leave the existing notebook unchanged. - ``\"overwrite\"`` — delete the existing notebook then recreate from source. - ``\"duplicate\"`` — always create, regardless of conflicts."
+          "description": "Conflict strategy when a notebook with the same ``displayName`` already exists on the target. - ``\"skip\"`` \u2014 leave the existing notebook unchanged. - ``\"overwrite\"`` \u2014 delete the existing notebook then recreate from source. - ``\"duplicate\"`` \u2014 always create, regardless of conflicts."
         },
         "concurrency": {
           "type": "integer",
@@ -8308,7 +8308,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all notebooks by their IDs, skipping any that already exist.",
@@ -8353,7 +8353,7 @@
     "class": "MergeTool",
     "method": "migrate_saved_filters",
     "description": "Migrate saved filter dimensions for specific data models from source to target.",
-    "full_doc": "Migrate saved filter dimensions for specific data models from source to target.\n\nFetches each data model's dimensions from the source, keeps only the\nones that carry a saved filter definition (a truthy ``filter`` key),\nand recreates them on the target via a raw metadata query. Conflict\ndetection is based on a filter's ``title``. Requires the target data\nmodel to already exist — run\n``migrate_datamodels``/``migrate_all_datamodels`` first.\n\nParameters\n----------\ndatamodel_ids : list[str] or None, default None\n    Data model OIDs to migrate. Provide either this or\n    ``datamodel_names``.\ndatamodel_names : list[str] or None, default None\n    Data model titles to migrate. Provide either this or\n    ``datamodel_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy for filters whose ``title`` already exists on\n    the target datasource.\n\n    - ``\"skip\"`` — leave the existing filter unchanged (default).\n    - ``\"overwrite\"`` or ``\"duplicate\"`` — always create, regardless\n      of conflicts. The Sisense metadata API exposes no update or\n      delete endpoint for saved filters, so ``\"overwrite\"`` cannot\n      replace the existing filter in place and behaves identically to\n      ``\"duplicate\"``.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] — each has ``datamodel`` and\n      ``filter`` (the filter's title)\n    - ``skipped`` : list[dict] — each has ``datamodel``, ``filter``,\n      and ``reason``\n    - ``failed`` : list[dict] — each has ``datamodel``, ``filter``,\n      and ``reason``\n    - ``source_count`` : int — total saved filters found across the\n      resolved data models\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``datamodel_ids`` and ``datamodel_names``\n    are provided.",
+    "full_doc": "Migrate saved filter dimensions for specific data models from source to target.\n\nFetches each data model's dimensions from the source, keeps only the\nones that carry a saved filter definition (a truthy ``filter`` key),\nand recreates them on the target via a raw metadata query. Conflict\ndetection is based on a filter's ``title``. Requires the target data\nmodel to already exist \u2014 run\n``migrate_datamodels``/``migrate_all_datamodels`` first.\n\nParameters\n----------\ndatamodel_ids : list[str] or None, default None\n    Data model OIDs to migrate. Provide either this or\n    ``datamodel_names``.\ndatamodel_names : list[str] or None, default None\n    Data model titles to migrate. Provide either this or\n    ``datamodel_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy for filters whose ``title`` already exists on\n    the target datasource.\n\n    - ``\"skip\"`` \u2014 leave the existing filter unchanged (default).\n    - ``\"overwrite\"`` or ``\"duplicate\"`` \u2014 always create, regardless\n      of conflicts. The Sisense metadata API exposes no update or\n      delete endpoint for saved filters, so ``\"overwrite\"`` cannot\n      replace the existing filter in place and behaves identically to\n      ``\"duplicate\"``.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] \u2014 each has ``datamodel`` and\n      ``filter`` (the filter's title)\n    - ``skipped`` : list[dict] \u2014 each has ``datamodel``, ``filter``,\n      and ``reason``\n    - ``failed`` : list[dict] \u2014 each has ``datamodel``, ``filter``,\n      and ``reason``\n    - ``source_count`` : int \u2014 total saved filters found across the\n      resolved data models\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``datamodel_ids`` and ``datamodel_names``\n    are provided.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -8378,7 +8378,7 @@
             "overwrite",
             "duplicate"
           ],
-          "description": "Conflict strategy for filters whose ``title`` already exists on the target datasource. - ``\"skip\"`` — leave the existing filter unchanged (default). - ``\"overwrite\"`` or ``\"duplicate\"`` — always create, regardless of conflicts. The Sisense metadata API exposes no update or delete endpoint for saved filters, so ``\"overwrite\"`` cannot replace the existing filter in place and behaves identically to ``\"duplicate\"``."
+          "description": "Conflict strategy for filters whose ``title`` already exists on the target datasource. - ``\"skip\"`` \u2014 leave the existing filter unchanged (default). - ``\"overwrite\"`` or ``\"duplicate\"`` \u2014 always create, regardless of conflicts. The Sisense metadata API exposes no update or delete endpoint for saved filters, so ``\"overwrite\"`` cannot replace the existing filter in place and behaves identically to ``\"duplicate\"``."
         }
       },
       "required": []
@@ -8389,7 +8389,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate saved filters for data models 'Sales_Data' and 'Marketing_Analytics', skipping any that already exist.",
@@ -8432,7 +8432,7 @@
     "class": "MergeTool",
     "method": "migrate_saved_formulas",
     "description": "Migrate saved formula measures for specific data models from source to target.",
-    "full_doc": "Migrate saved formula measures for specific data models from source to target.\n\nFetches each data model's saved formula measures from the source and\ncreates them on the target via the metadata measure endpoint.\nConflict detection is based on a formula's ``title``. Requires the\ntarget data model to already exist — run\n``migrate_datamodels``/``migrate_all_datamodels`` first.\n\nParameters\n----------\ndatamodel_ids : list[str] or None, default None\n    Data model OIDs to migrate. Provide either this or\n    ``datamodel_names``.\ndatamodel_names : list[str] or None, default None\n    Data model titles to migrate. Provide either this or\n    ``datamodel_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy for formulas whose ``title`` already exists on\n    the target datasource.\n\n    - ``\"skip\"`` — leave the existing formula unchanged (default).\n    - ``\"overwrite\"`` or ``\"duplicate\"`` — always create, regardless\n      of conflicts. The Sisense metadata API exposes no update or\n      delete endpoint for saved formulas, so ``\"overwrite\"`` cannot\n      replace the existing formula in place and behaves identically\n      to ``\"duplicate\"``.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] — each has ``datamodel`` and\n      ``formula`` (the formula's title)\n    - ``skipped`` : list[dict] — each has ``datamodel``, ``formula``,\n      and ``reason``\n    - ``failed`` : list[dict] — each has ``datamodel``, ``formula``,\n      and ``reason``\n    - ``source_count`` : int — total saved formulas found across the\n      resolved data models\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``datamodel_ids`` and ``datamodel_names``\n    are provided.",
+    "full_doc": "Migrate saved formula measures for specific data models from source to target.\n\nFetches each data model's saved formula measures from the source and\ncreates them on the target via the metadata measure endpoint.\nConflict detection is based on a formula's ``title``. Requires the\ntarget data model to already exist \u2014 run\n``migrate_datamodels``/``migrate_all_datamodels`` first.\n\nParameters\n----------\ndatamodel_ids : list[str] or None, default None\n    Data model OIDs to migrate. Provide either this or\n    ``datamodel_names``.\ndatamodel_names : list[str] or None, default None\n    Data model titles to migrate. Provide either this or\n    ``datamodel_ids``.\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy for formulas whose ``title`` already exists on\n    the target datasource.\n\n    - ``\"skip\"`` \u2014 leave the existing formula unchanged (default).\n    - ``\"overwrite\"`` or ``\"duplicate\"`` \u2014 always create, regardless\n      of conflicts. The Sisense metadata API exposes no update or\n      delete endpoint for saved formulas, so ``\"overwrite\"`` cannot\n      replace the existing formula in place and behaves identically\n      to ``\"duplicate\"``.\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] \u2014 each has ``datamodel`` and\n      ``formula`` (the formula's title)\n    - ``skipped`` : list[dict] \u2014 each has ``datamodel``, ``formula``,\n      and ``reason``\n    - ``failed`` : list[dict] \u2014 each has ``datamodel``, ``formula``,\n      and ``reason``\n    - ``source_count`` : int \u2014 total saved formulas found across the\n      resolved data models\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int\n\nRaises\n------\nValueError\n    If both or neither of ``datamodel_ids`` and ``datamodel_names``\n    are provided.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -8457,7 +8457,7 @@
             "overwrite",
             "duplicate"
           ],
-          "description": "Conflict strategy for formulas whose ``title`` already exists on the target datasource. - ``\"skip\"`` — leave the existing formula unchanged (default). - ``\"overwrite\"`` or ``\"duplicate\"`` — always create, regardless of conflicts. The Sisense metadata API exposes no update or delete endpoint for saved formulas, so ``\"overwrite\"`` cannot replace the existing formula in place and behaves identically to ``\"duplicate\"``."
+          "description": "Conflict strategy for formulas whose ``title`` already exists on the target datasource. - ``\"skip\"`` \u2014 leave the existing formula unchanged (default). - ``\"overwrite\"`` or ``\"duplicate\"`` \u2014 always create, regardless of conflicts. The Sisense metadata API exposes no update or delete endpoint for saved formulas, so ``\"overwrite\"`` cannot replace the existing formula in place and behaves identically to ``\"duplicate\"``."
         }
       },
       "required": []
@@ -8468,7 +8468,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all saved formulas for data models 'Sales Dashboard' and 'Marketing Dashboard', skipping any that already exist.",
@@ -8511,7 +8511,7 @@
     "class": "MergeTool",
     "method": "migrate_users",
     "description": "Migrate specific users from source to target.",
-    "full_doc": "Migrate specific users from source to target.\n\nFetches the requested users from the source environment, resolves\ntheir role and group assignments to target environment IDs, and\ncreates (or replaces) them on the target via the bulk user endpoint.\nConflict detection is based on the user's ``email`` field.\n\nRole resolution mirrors the legacy Win2Linux merge tool: when the\ntarget environment is multi-tenant (its role list includes\n``tenantAdmin``), source ``super``/``admin`` roles are mapped to\n``tenantAdmin``; when the target is a Windows deployment, source\n``tenantAdmin`` is mapped back to ``admin``.\n\nParameters\n----------\nuser_emails : list[str] or None, default None\n    Email addresses of the users to migrate. If ``None``, every user\n    on the source is migrated. (format: email)\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a user with the same ``email`` already\n    exists on the target.\n\n    - ``\"skip\"`` — leave the existing user unchanged.\n    - ``\"overwrite\"`` — delete the existing user then recreate from\n      source.\n    - ``\"duplicate\"`` — always create, regardless of conflicts.\nignore_custom_roles : bool, default False\n    When ``True``, strips a ``custom_`` prefix from source role names\n    before matching them against target roles (and matches target\n    roles with the same prefix stripped).\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] — each has ``email``\n    - ``skipped`` : list[dict] — each has ``email`` and ``reason``\n    - ``failed`` : list[dict] — each has ``email`` and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int",
+    "full_doc": "Migrate specific users from source to target.\n\nFetches the requested users from the source environment, resolves\ntheir role and group assignments to target environment IDs, and\ncreates (or replaces) them on the target via the bulk user endpoint.\nConflict detection is based on the user's ``email`` field.\n\nRole resolution mirrors the legacy Win2Linux merge tool: when the\ntarget environment is multi-tenant (its role list includes\n``tenantAdmin``), source ``super``/``admin`` roles are mapped to\n``tenantAdmin``; when the target is a Windows deployment, source\n``tenantAdmin`` is mapped back to ``admin``.\n\nParameters\n----------\nuser_emails : list[str] or None, default None\n    Email addresses of the users to migrate. If ``None``, every user\n    on the source is migrated. (format: email)\naction : {\"skip\", \"overwrite\", \"duplicate\"}, default \"skip\"\n    Conflict strategy when a user with the same ``email`` already\n    exists on the target.\n\n    - ``\"skip\"`` \u2014 leave the existing user unchanged.\n    - ``\"overwrite\"`` \u2014 delete the existing user then recreate from\n      source.\n    - ``\"duplicate\"`` \u2014 always create, regardless of conflicts.\nignore_custom_roles : bool, default False\n    When ``True``, strips a ``custom_`` prefix from source role names\n    before matching them against target roles (and matches target\n    roles with the same prefix stripped).\nemit : Callable[[dict[str, Any]], None], optional\n    Optional progress callback. Each invocation receives a dict with at\n    least ``type``, ``step``, and ``message`` keys.\n\nReturns\n-------\ndict[str, Any]\n    - ``ok`` : bool\n    - ``status`` : \"success\" | \"failed\" | \"noop\"\n    - ``succeeded`` : list[dict] \u2014 each has ``email``\n    - ``skipped`` : list[dict] \u2014 each has ``email`` and ``reason``\n    - ``failed`` : list[dict] \u2014 each has ``email`` and ``reason``\n    - ``source_count`` : int\n    - ``succeeded_count`` : int\n    - ``skipped_count`` : int\n    - ``failed_count`` : int",
     "parameters": {
       "type": "object",
       "properties": {
@@ -8530,7 +8530,7 @@
             "overwrite",
             "duplicate"
           ],
-          "description": "Conflict strategy when a user with the same ``email`` already exists on the target. - ``\"skip\"`` — leave the existing user unchanged. - ``\"overwrite\"`` — delete the existing user then recreate from source. - ``\"duplicate\"`` — always create, regardless of conflicts."
+          "description": "Conflict strategy when a user with the same ``email`` already exists on the target. - ``\"skip\"`` \u2014 leave the existing user unchanged. - ``\"overwrite\"`` \u2014 delete the existing user then recreate from source. - ``\"duplicate\"`` \u2014 always create, regardless of conflicts."
         },
         "ignore_custom_roles": {
           "type": "boolean",
@@ -8546,7 +8546,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all users, skipping any that already exist.",
@@ -8631,7 +8631,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Add a measure 'total_sales' on the 'sales_data' table of the 'sales_db' datasource that sums the sales_amount column (datasource fullname localhost/sales_db).",
@@ -8723,7 +8723,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the saved dimensions for the 'SalesData' datasource.",
@@ -8777,7 +8777,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the saved measures for the 'Sales' datasource.",
@@ -8822,7 +8822,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the datasources I can access in my Sisense environment.",
@@ -8867,7 +8867,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve metadata for the 'sales_dashboard' object.",
@@ -8951,7 +8951,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards to the target environment, skipping any that already exist there.",
@@ -9040,7 +9040,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all data models with data security and formulas included, and overwrite any existing models in the target environment.",
@@ -9099,17 +9099,17 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all user groups from the source environment to the target environment.",
         "arguments": {},
-        "notes": "This tool takes no arguments — source and target come from the configured connections."
+        "notes": "This tool takes no arguments \u2014 source and target come from the configured connections."
       },
       {
         "user_query": "Copy every group over to the new environment.",
         "arguments": {},
-        "notes": "This tool takes no arguments — source and target come from the configured connections."
+        "notes": "This tool takes no arguments \u2014 source and target come from the configured connections."
       }
     ]
   },
@@ -9133,17 +9133,17 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all users from the source environment to the target environment.",
         "arguments": {},
-        "notes": "This tool takes no arguments — source and target come from the configured connections."
+        "notes": "This tool takes no arguments \u2014 source and target come from the configured connections."
       },
       {
         "user_query": "Copy every eligible user over to the new environment.",
         "arguments": {},
-        "notes": "This tool takes no arguments — source and target come from the configured connections."
+        "notes": "This tool takes no arguments \u2014 source and target come from the configured connections."
       }
     ]
   },
@@ -9189,7 +9189,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate shares from source dashboards dash123, dash456 and dash789 to target dashboards dashABC, dashDEF and dashGHI, without changing ownership.",
@@ -9296,7 +9296,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate the dashboards with IDs 'dash123' and 'dash456' to the target environment, skipping any that already exist.",
@@ -9407,7 +9407,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate the data models 'SalesData' and 'CustomerAnalytics' along with their shares to the target environment, and overwrite any existing models.",
@@ -9484,7 +9484,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate the 'Sales Team' and 'Marketing Team' groups to the target environment.",
@@ -9548,7 +9548,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate the users john.doe@example.com and jane.smith@example.com to the target environment.",
@@ -9609,7 +9609,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Disable the 'plugin-advanced-analytics' plugin.",
@@ -9667,7 +9667,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Disable the 'plugin-advanced-viz' and 'plugin-data-export' plugins in one bulk operation.",
@@ -9729,7 +9729,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Enable the 'plugin-sample' plugin.",
@@ -9787,7 +9787,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Enable the 'plugin-advanced-charts' and 'plugin-data-export' plugins in one bulk operation.",
@@ -9842,7 +9842,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all plugins installed on my Sisense instance.",
@@ -9887,7 +9887,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the plugin named 'plugin-custom-theme'.",
@@ -9919,7 +9919,7 @@
     "class": "Plugins",
     "method": "restore_snapshot",
     "description": "Restore plugin states to exactly match a previously saved snapshot.",
-    "full_doc": "Restore plugin states to exactly match a previously saved snapshot.\n\nCompares the snapshot's plugin list against the live instance state and\ncomputes the minimal set of changes needed — enabling plugins that should\nbe on, disabling plugins that should be off. Plugins already in the\ncorrect state are skipped.\n\nParameters\n----------\nsnapshot : PluginSnapshot\n    A snapshot dict as returned by :meth:`save_snapshot`, containing at\n    minimum a ``\"plugins\"`` key with a list of ``folderName`` values for\n    the plugins that should be enabled. All other plugins will be disabled.\nbulk : bool, optional\n    When ``True`` (default), all enable and disable changes are sent in a\n    single PATCH request. When ``False``, one PATCH request is made per\n    plugin change.\n\nReturns\n-------\ndict[str, Any]\n    A summary dict with keys:\n\n    - ``enabled`` (list[str]): ``folderName`` values that were enabled.\n    - ``disabled`` (list[str]): ``folderName`` values that were disabled.\n    - ``already_set`` (int): Count of plugins already in the correct state.\n    - ``not_in_instance`` (list[str]): Snapshot entries with no matching plugin.\n    - ``errors`` (list[str]): ``folderName`` values where the PATCH failed\n      (non-bulk mode only).\n\n    Returns ``{\"error\": \"...\"}`` if the plugin list could not be fetched or\n    the snapshot is missing the ``\"plugins\"`` key.",
+    "full_doc": "Restore plugin states to exactly match a previously saved snapshot.\n\nCompares the snapshot's plugin list against the live instance state and\ncomputes the minimal set of changes needed \u2014 enabling plugins that should\nbe on, disabling plugins that should be off. Plugins already in the\ncorrect state are skipped.\n\nParameters\n----------\nsnapshot : PluginSnapshot\n    A snapshot dict as returned by :meth:`save_snapshot`, containing at\n    minimum a ``\"plugins\"`` key with a list of ``folderName`` values for\n    the plugins that should be enabled. All other plugins will be disabled.\nbulk : bool, optional\n    When ``True`` (default), all enable and disable changes are sent in a\n    single PATCH request. When ``False``, one PATCH request is made per\n    plugin change.\n\nReturns\n-------\ndict[str, Any]\n    A summary dict with keys:\n\n    - ``enabled`` (list[str]): ``folderName`` values that were enabled.\n    - ``disabled`` (list[str]): ``folderName`` values that were disabled.\n    - ``already_set`` (int): Count of plugins already in the correct state.\n    - ``not_in_instance`` (list[str]): Snapshot entries with no matching plugin.\n    - ``errors`` (list[str]): ``folderName`` values where the PATCH failed\n      (non-bulk mode only).\n\n    Returns ``{\"error\": \"...\"}`` if the plugin list could not be fetched or\n    the snapshot is missing the ``\"plugins\"`` key.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -9956,7 +9956,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Restore the plugin snapshot containing data_connector_v2, custom_theme_manager and audit_logger, in one bulk operation.",
@@ -10018,7 +10018,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Save the current enabled and disabled state of all plugins as a snapshot so it can be restored later.",
@@ -10068,7 +10068,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch total sales by region for 2023 from the 'SalesElasticube' datasource.",
@@ -10205,7 +10205,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Export Q3 2023 sales amounts from the 'sales_elasticube' datasource as CSV.",
@@ -10282,7 +10282,7 @@
     "class": "ReportManager",
     "method": "create_report",
     "description": "Create a new Report Manager report.",
-    "full_doc": "Create a new Report Manager report.\n\nSends ``POST /api/v1/report_manager/reports``. Supported fields (canonical\nSisense payload names): ``name`` (required), ``reportType``\n(optional — defaults to all formats disabled when omitted; if\nprovided, must include the ``PDF``, ``CSV``, and ``URL`` boolean\nflags), ``runOnFinish`` (optional — defaults to\n``{\"fileShare\": {\"overwriteExisting\": False}}`` when omitted; if\nprovided, must include ``fileShare.overwriteExisting``), ``events``\n(defaults to ``[]`` when omitted), ``enabled``, ``schedule``,\n``dashboards``, ``recipients``, ``templateId``, ``priority``,\n``errorEmails``.\n\nParameters\n----------\nreport : dict[str, Any]\n    The report definition to create.\n\nReturns\n-------\ndict[str, Any]\n    The API response body on success, or ``{\"error\": \"...\"}`` on\n    failure.",
+    "full_doc": "Create a new Report Manager report.\n\nSends ``POST /api/v1/report_manager/reports``. Supported fields (canonical\nSisense payload names): ``name`` (required), ``reportType``\n(optional \u2014 defaults to all formats disabled when omitted; if\nprovided, must include the ``PDF``, ``CSV``, and ``URL`` boolean\nflags), ``runOnFinish`` (optional \u2014 defaults to\n``{\"fileShare\": {\"overwriteExisting\": False}}`` when omitted; if\nprovided, must include ``fileShare.overwriteExisting``), ``events``\n(defaults to ``[]`` when omitted), ``enabled``, ``schedule``,\n``dashboards``, ``recipients``, ``templateId``, ``priority``,\n``errorEmails``.\n\nParameters\n----------\nreport : dict[str, Any]\n    The report definition to create.\n\nReturns\n-------\ndict[str, Any]\n    The API response body on success, or ``{\"error\": \"...\"}`` on\n    failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -10301,7 +10301,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a new report named 'Weekly Sales Report' with PDF and CSV formats enabled, and set it to overwrite existing files on the file share.",
@@ -10384,7 +10384,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete the report with ID 'report_12345'.",
@@ -10451,7 +10451,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve the report with ID 'report123' and include recipient data.",
@@ -10544,7 +10544,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve all enabled reports owned by user ID 'user123'.",
@@ -10602,7 +10602,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Run the report with ID 'sales_report_2023' immediately.",
@@ -10658,7 +10658,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Update the report with ID 'report123' to enable it and set its priority to high.",
@@ -10734,7 +10734,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Analyze the structure of the dashboard titled 'Sales Overview'.",
@@ -10794,7 +10794,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Count the widgets on the 'Sales Overview' and 'Marketing Performance' dashboards.",
@@ -10855,7 +10855,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Check if any custom tables in the 'Sales Analytics' data model use UNION.",
@@ -10915,7 +10915,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Check if the tables in the 'Sales Analytics' data model have import queries configured.",
@@ -10975,7 +10975,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find all island tables in the 'Sales Analytics' data model.",
@@ -11035,7 +11035,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Check for many-to-many relationships in the 'Sales Data' data model.",
@@ -11095,7 +11095,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Check the datatypes of the columns used in RLS rules for the 'Sales Dashboard' data model.",
@@ -11158,7 +11158,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T02:12:04Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find pivot widgets with more than 25 fields on the 'Sales Dashboard' and 'Marketing Dashboard' dashboards.",

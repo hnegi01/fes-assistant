@@ -1,62 +1,134 @@
 {
   "sdk_version": "1.1.0",
-  "updated_at": "2026-08-29T02:12:05Z",
+  "updated_at": "2026-08-30T00:47:07Z",
   "packages": {
     "access_management": {
       "class": "AccessManagement",
-      "description": "Manage Sisense users, groups, permissions, and access control.\n\nCovers user lifecycle (create, update, deactivate), group membership,\nrole assignment, folder and dashboard ownership transfer, column-level\nsecurity restrictions, tenant lookup, and administrative reporting on\ndashboard shares and scheduled builds."
+      "description": "Manage Sisense users, groups, permissions, and access control.\n\nCovers user lifecycle (create, update, deactivate), group membership,\nrole assignment, folder and dashboard ownership transfer, column-level\nsecurity restrictions, tenant lookup, and administrative reporting on\ndashboard shares and scheduled builds.",
+      "modules": {
+        "users": "User CRUD — get, create, update, and deactivate users; resolve by email or ID; map role and group names to internal IDs.",
+        "groups": "Group CRUD — get, list, create (bulk), and delete groups; list members per group.",
+        "columns": "Column-level data model security — list all columns in a data model, identify unused columns across one or more data models.",
+        "ownership": "Transfer folder and dashboard ownership — reassign an entire folder tree (including subfolders and dashboards) to a new owner.",
+        "admin": "Administrative reporting — retrieve share entries for every dashboard on the instance; schedule elasticube builds.",
+        "tenants": "Tenant lookup — list tenants on multi-tenant deployments."
+      }
     },
     "blox": {
       "class": "Blox",
-      "description": "Manage custom Blox actions and BloX widget styles on a Sisense instance.\n\nProvides read, write, and delete access to Blox custom actions, and\nread/write access to individual BloX widget styles. Fetch operations for\ncustom actions are supported on both Linux and Windows deployments via\nOS-routed endpoints; save and delete are Linux-only."
+      "description": "Manage custom Blox actions and BloX widget styles on a Sisense instance.\n\nProvides read, write, and delete access to Blox custom actions, and\nread/write access to individual BloX widget styles. Fetch operations for\ncustom actions are supported on both Linux and Windows deployments via\nOS-routed endpoints; save and delete are Linux-only.",
+      "modules": {
+        "core": "Custom Blox actions — retrieve all actions (OS-routed), save a new action (Linux), and delete an existing action (Linux).",
+        "widgets": "BloX widget styles — read and update the CSS and font family of BloX widgets, with optional temporary ownership transfer for dashboards the API token user does not own."
+      }
     },
     "custom_code": {
       "class": "CustomCode",
-      "description": "Manage Sisense custom-code notebooks and their file system layout.\n\nCovers the full notebook lifecycle — create, retrieve, update, export,\nand delete notebooks — as well as renaming notebook files and folders\nwithin the Sisense custom-code directory structure."
+      "description": "Manage Sisense custom-code notebooks and their file system layout.\n\nCovers the full notebook lifecycle — create, retrieve, update, export,\nand delete notebooks — as well as renaming notebook files and folders\nwithin the Sisense custom-code directory structure.",
+      "modules": {
+        "core": "Notebook lifecycle — get, create, update, delete, and export notebooks; list folder contents; rename notebook files and folders."
+      }
     },
     "dashboard": {
       "class": "Dashboard",
-      "description": "Manage Sisense dashboards, their shares, columns, scripts, and widgets.\n\nCovers dashboard CRUD (get, export, rename, move, publish), share\nmanagement for users and groups, inspection of all table/column\nreferences used within a dashboard, reading or writing JavaScript\nscripts attached to dashboards and individual widgets, and direct\nwidget read/write operations."
+      "description": "Manage Sisense dashboards, their shares, columns, scripts, and widgets.\n\nCovers dashboard CRUD (get, export, rename, move, publish), share\nmanagement for users and groups, inspection of all table/column\nreferences used within a dashboard, reading or writing JavaScript\nscripts attached to dashboards and individual widgets, and direct\nwidget read/write operations.",
+      "modules": {
+        "core": "Dashboard CRUD — get all dashboards, find by ID or title, export, rename, move to folder, publish; resolve dashboard references.",
+        "shares": "Dashboard share management — add or update share entries for users and groups; retrieve current shares; change dashboard owner.",
+        "columns": "Column inspection — extract every distinct table/column reference used across widgets and filters in a dashboard.",
+        "scripts": "Dashboard and widget scripts — read and write JavaScript attached to a dashboard or to a specific widget within it.",
+        "widgets": "Widget operations — fetch a single widget by ID, write widget data back to Sisense, and search for widgets by type across dashboards."
+      }
     },
     "datamodel": {
       "class": "DataModel",
-      "description": "Manage Sisense data models, connections, builds, security, and data.\n\nCovers the full data model lifecycle — schema retrieval, provisioning\nnew models and tables, connection management, row-level security rules,\nuser/group share assignments, and direct table-level data access via SQL."
+      "description": "Manage Sisense data models, connections, builds, security, and data.\n\nCovers the full data model lifecycle — schema retrieval, provisioning\nnew models and tables, connection management, row-level security rules,\nuser/group share assignments, and direct table-level data access via SQL.",
+      "modules": {
+        "core": "Data model schema — get, list, describe, load, and delete data models; resolve by ID or title; list elasticubes; export/import a full schema definition for cross-environment migration.",
+        "connections": "Connection management — get, update, and create data source connections; generate connection payloads for supported providers.",
+        "build": "Schema provisioning — create data models, datasets, and tables; deploy a data model with configurable build behavior.",
+        "security": "Row-level security — get, update, and bulk-add datasecurity rules that restrict data access per user or group; retrieve raw, unprocessed rules for round-tripping between environments.",
+        "shares": "Data model access — get and add share entries (users and groups) with READ, USE, or EDIT permission levels; get/replace raw (partyId-keyed) permissions for cross-environment migration.",
+        "data": "Data retrieval — query table contents via SQL; get row counts per table across an entire data model (``get_data``, ``get_row_count``)."
+      }
     },
     "encryption": {
       "class": "Encryption",
-      "description": "Encrypt and decrypt Sisense connection parameter values.\n\nWraps the Sisense encryption service for preparing or recovering\nconnection credentials (such as passwords and keys) used during\ncross-server data model migration."
+      "description": "Encrypt and decrypt Sisense connection parameter values.\n\nWraps the Sisense encryption service for preparing or recovering\nconnection credentials (such as passwords and keys) used during\ncross-server data model migration.",
+      "modules": {
+        "core": "Encryption operations — encrypt a plaintext value via the Sisense encryption API; decrypt a previously encrypted value."
+      }
     },
     "folder": {
       "class": "Folder",
-      "description": "Manage the Sisense folder hierarchy and individual folder records.\n\nCovers folder CRUD (create, update, delete), lookup by name or ID,\nnavigation of the full folder tree, and retrieval of a folder's\nancestor chain. Does not manage dashboard content inside folders —\nuse the Dashboard class for that."
+      "description": "Manage the Sisense folder hierarchy and individual folder records.\n\nCovers folder CRUD (create, update, delete), lookup by name or ID,\nnavigation of the full folder tree, and retrieval of a folder's\nancestor chain. Does not manage dashboard content inside folders —\nuse the Dashboard class for that.",
+      "modules": {
+        "core": "Folder operations — create, update, and delete folders; look up a folder ID by name; retrieve the flat or tree folder structure; get a folder's ancestor chain."
+      }
     },
     "mergetool": {
       "class": "MergeTool",
-      "description": "Copy Sisense content between two separate Sisense environments.\n\nConnects to a source and a target Sisense instance (via YAML config files\nor injected clients) and merges custom-code notebooks, folders, Blox\nactions, groups, users, data models, data security rules, saved\nformulas, saved filters, and dashboards from one to the other. Does not\noperate on a single instance — use CustomCode, Folder, Blox,\nAccessManagement, DataModel, or Metadata for single-environment changes."
+      "description": "Copy Sisense content between two separate Sisense environments.\n\nConnects to a source and a target Sisense instance (via YAML config files\nor injected clients) and merges custom-code notebooks, folders, Blox\nactions, groups, users, data models, data security rules, saved\nformulas, saved filters, and dashboards from one to the other. Does not\noperate on a single instance — use CustomCode, Folder, Blox,\nAccessManagement, DataModel, or Metadata for single-environment changes.",
+      "modules": {
+        "custom_code": "Notebook migration — copy custom-code notebooks from source to target with skip, overwrite, or duplicate conflict handling.",
+        "folder": "Folder migration — recreate the folder hierarchy from source on the target with skip, overwrite, or duplicate conflict handling.",
+        "blox": "Blox action migration — copy custom Blox actions from source to target with skip, overwrite, or duplicate conflict handling. Target must be a Linux deployment.",
+        "groups": "Group migration — copy groups from source to target with skip, overwrite, or duplicate conflict handling. Migrate groups before users, since user payloads reference target group IDs.",
+        "users": "User migration — copy users from source to target with skip, overwrite, or duplicate conflict handling, resolving role and group assignments to target IDs.",
+        "datamodels": "Data model migration — export data model schemas from source and import them into target with skip, overwrite, or duplicate conflict handling, remapping connection credentials via a provider map and optionally migrating shares.",
+        "datasecurity": "Data security (row-level security) migration — copy datasecurity rules for data models that already exist on the target, remapping rule shares to target users and groups by email/name. Migrate data models before data security.",
+        "formulas": "Saved formula migration — copy saved formula measures for data models that already exist on the target, with skip or duplicate-on-create conflict handling.",
+        "filters": "Saved filter migration — copy saved filter dimensions for data models that already exist on the target, with skip or duplicate-on-create conflict handling.",
+        "dashboards": "Dashboard migration — export dashboards from source and import them into target with skip, overwrite, or duplicate conflict handling, remapping owner/shares to target users and groups and placing each dashboard in its corresponding target folder. Migrate groups, users, folders, and data models first, since dashboards reference all four."
+      }
     },
     "metadata": {
       "class": "Metadata",
-      "description": "Retrieve datasource metadata — measures, dimensions, and field definitions.\n\nProvides read-only access to the semantic layer of a Sisense datasource:\nsaved formula measures, dimension definitions, the list of available\ndatasources, and the ability to run raw metadata queries. Does not\nbuild or modify data model schemas — use the DataModel class for that."
+      "description": "Retrieve datasource metadata — measures, dimensions, and field definitions.\n\nProvides read-only access to the semantic layer of a Sisense datasource:\nsaved formula measures, dimension definitions, the list of available\ndatasources, and the ability to run raw metadata queries. Does not\nbuild or modify data model schemas — use the DataModel class for that.",
+      "modules": {
+        "core": "Datasource metadata — retrieve saved measures, retrieve dimensions, list available datasources, add a measure, run a metadata query."
+      }
     },
     "migration": {
       "class": "Migration",
-      "description": "Copy Sisense content between two separate Sisense environments.\n\nConnects to a source and a target Sisense instance (via YAML config files\nor injected clients) and migrates groups, users, dashboards, and data\nmodels from one to the other. Does not operate on a single instance —\nuse AccessManagement or Dashboard for single-environment changes."
+      "description": "Copy Sisense content between two separate Sisense environments.\n\nConnects to a source and a target Sisense instance (via YAML config files\nor injected clients) and migrates groups, users, dashboards, and data\nmodels from one to the other. Does not operate on a single instance —\nuse AccessManagement or Dashboard for single-environment changes.",
+      "modules": {
+        "base": "Progress emission — internal helper for reporting migration events to a caller-provided callback.",
+        "groups": "Group migration — copy specific groups or all groups from source to target using the bulk group endpoint.",
+        "users": "User migration — copy specific users or all users from source to target, preserving role and group assignments.",
+        "dashboards": "Dashboard migration — copy dashboards and their share entries across environments; migrate all dashboards in bulk.",
+        "datamodels": "Data model migration — copy data model schemas and connection definitions from source to target; supports bulk migration."
+      }
     },
     "plugins": {
       "class": "Plugins",
-      "description": "Manage Sisense plugin installation state and enable/disable lifecycle.\n\nCovers listing installed plugins, toggling individual plugins or batches\nof plugins, and capturing or restoring a full plugin state snapshot.\nDoes not install or remove plugin packages from the filesystem."
+      "description": "Manage Sisense plugin installation state and enable/disable lifecycle.\n\nCovers listing installed plugins, toggling individual plugins or batches\nof plugins, and capturing or restoring a full plugin state snapshot.\nDoes not install or remove plugin packages from the filesystem.",
+      "modules": {
+        "core": "Plugin lifecycle — list all plugins, get a single plugin by name, enable or disable a plugin individually, enable or disable in bulk.",
+        "snapshots": "Plugin state snapshots — capture the current enabled/disabled state of all plugins; restore a previously captured snapshot."
+      }
     },
     "queries": {
       "class": "Queries",
-      "description": "Execute custom JAQL and SQL queries against Sisense datasources.\n\nSends caller-supplied query payloads directly to the elasticube or live\ndatasource engine. Requires the caller to already know the internal table\nand column names — not for discovering schema, listing measures, or\nretrieving row counts. Use DataModel for row counts per table, and\nMetadata for browsing the semantic layer (measures, dimensions)."
+      "description": "Execute custom JAQL and SQL queries against Sisense datasources.\n\nSends caller-supplied query payloads directly to the elasticube or live\ndatasource engine. Requires the caller to already know the internal table\nand column names — not for discovering schema, listing measures, or\nretrieving row counts. Use DataModel for row counts per table, and\nMetadata for browsing the semantic layer (measures, dimensions).",
+      "modules": {
+        "core": "Query execution — run a JAQL query against an elasticube (``elasticube_run_jaql_query``), run a JAQL query and return results as CSV (``elasticubes_run_jaql_csv``)."
+      }
     },
     "report_manager": {
       "class": "ReportManager",
-      "description": "Manage scheduled reports through the Report Manager plugin.\n\nReport Manager is an on-demand Sisense plugin and is not guaranteed to\nbe installed or enabled on every instance. All methods return\n``{\"error\": \"...\"}`` rather than raising when the plugin's endpoints are\nunavailable, so callers can detect and handle that case directly."
+      "description": "Manage scheduled reports through the Report Manager plugin.\n\nReport Manager is an on-demand Sisense plugin and is not guaranteed to\nbe installed or enabled on every instance. All methods return\n``{\"error\": \"...\"}`` rather than raising when the plugin's endpoints are\nunavailable, so callers can detect and handle that case directly.",
+      "modules": {
+        "core": "CRUD operations on scheduled reports (list, get, create, update, delete) and triggering an on-demand run of a report."
+      }
     },
     "wellcheck": {
       "class": "WellCheck",
-      "description": "Analyze Sisense dashboards and data models for health and complexity issues.\n\nRuns structural and best-practice checks across dashboards (widget counts,\npivot field density, tabber/accordion/jump-to-dashboard usage) and data\nmodels (custom table SQL, island tables, RLS column datatypes, import\nqueries, many-to-many relationships, unused columns). Results are returned\nas structured row lists suitable for export or further analysis."
+      "description": "Analyze Sisense dashboards and data models for health and complexity issues.\n\nRuns structural and best-practice checks across dashboards (widget counts,\npivot field density, tabber/accordion/jump-to-dashboard usage) and data\nmodels (custom table SQL, island tables, RLS column datatypes, import\nqueries, many-to-many relationships). Results are returned\nas structured row lists suitable for export or further analysis.",
+      "modules": {
+        "dashboard_checks": "Dashboard health — count pivot, tabber, accordion, and jump-to-dashboard widgets; flag dashboards with high widget counts; identify pivot widgets that exceed a field-count threshold.",
+        "datamodel_checks": "Data model health — flag custom tables using UNION; detect island tables with no relationships; report RLS column datatypes; identify tables with import queries; detect many-to-many join relationships."
+      }
     }
   }
 }

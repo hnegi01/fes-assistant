@@ -433,3 +433,42 @@ class TestSchemaRulesDrift:
                     f"{tool_id}: shipped registry value at '{dotted}' differs from SCHEMA_RULES — "
                     "regenerate the registry (scripts/01) to sync them"
                 )
+
+
+class TestPackageDocCorrections:
+    """Corrections strip capability claims that are factually wrong about a
+    package — the Level 1 router picks a package from its description alone, so
+    a false claim silently misroutes every such request (wellcheck advertised
+    "unused columns" it does not have; requests landed on island tables).
+
+    These are stand-ins for upstream docstring fixes, so each one must expire:
+    when the SDK stops making the claim, the correction is dead weight that
+    hides what the docstring now says."""
+
+    def test_every_correction_still_matches_the_sdk_docstring(self):
+
+        from scripts.registry_core import _PACKAGE_DOC_CORRECTIONS, MODULES, _parse_class_docstring
+
+        stale = {}
+        for pkg, phrases in _PACKAGE_DOC_CORRECTIONS.items():
+            klass = MODULES.get(pkg)
+            assert klass is not None, f"correction targets unknown package {pkg!r}"
+            doc = _parse_class_docstring(klass)["description"]
+            missing = [p for p in phrases if p not in doc]
+            if missing:
+                stale[pkg] = missing
+        assert stale == {}, f"the SDK no longer makes these claims — delete the corrections: {stale}"
+
+    def test_corrected_claim_is_absent_from_the_shipped_index(self):
+        import json
+        from pathlib import Path
+
+        from scripts.registry_core import _PACKAGE_DOC_CORRECTIONS
+
+        idx = json.loads(
+            (Path(__file__).resolve().parents[2] / "config" / "registry" / "index.json").read_text(encoding="utf-8")
+        )["packages"]
+        for pkg, phrases in _PACKAGE_DOC_CORRECTIONS.items():
+            desc = idx.get(pkg, {}).get("description", "")
+            for phrase in phrases:
+                assert phrase not in desc, f"{pkg} index still carries the corrected claim {phrase!r}"

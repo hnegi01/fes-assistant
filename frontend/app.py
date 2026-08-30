@@ -774,6 +774,107 @@ _DL_SEQ = itertools.count()
 CHAT_BOX_HEIGHT = 1600
 
 
+# -----------------------------------------------------------------------------
+# "What can I ask?" — the capability browser
+# -----------------------------------------------------------------------------
+# Built from the LIVE registry the backend serves, never a hand-written list, so
+# it cannot drift from what the assistant can actually do: enable a tool and it
+# appears here, delist one and it disappears. Rendered with Streamlit's own
+# widgets rather than embedded HTML so it inherits the app's theme.
+_CAPABILITY_AREAS = {
+    "access_management": "Users, groups & access",
+    "dashboard": "Dashboards & widgets",
+    "datamodel": "Data models & connections",
+    "migration": "Moving between environments",
+    "wellcheck": "Health checks",
+    "folder": "Folders",
+    "metadata": "Measures & metadata",
+    "queries": "Queries",
+    "report_manager": "Report Manager",
+    "custom_code": "Notebooks & custom code",
+    "blox": "BloX widgets",
+    "plugins": "Plugins",
+    "encryption": "Encryption",
+}
+
+
+def _render_capabilities(registry: Dict[str, Any], mode_label: str) -> None:
+    """Searchable list of everything the assistant can do, grouped by area."""
+    rows = [
+        {
+            "id": tid,
+            "name": tid.split(".", 1)[-1],
+            "area": (meta.get("module") or "other"),
+            "write": bool(meta.get("mutates")),
+            "desc": (meta.get("description") or "").strip().splitlines()[0] if meta.get("description") else "",
+            "example": meta.get("example") or "",
+        }
+        for tid, meta in (registry or {}).items()
+    ]
+    # Mode decides the surface, exactly as it does for the agent: migration
+    # tools are unusable in chat and vice versa, so listing them here would
+    # promise something this session cannot do.
+    want_migration = mode_label == "migration"
+    rows = [r for r in rows if (r["area"] == "migration") == want_migration]
+    writes = sum(1 for r in rows if r["write"])
+
+    st.caption(
+        f"**{len(rows)}** operations available in this mode · **{writes}** of them change "
+        "something and always ask for your approval first · everything runs with *your* "
+        "Sisense token, so it can only do what you can do."
+    )
+    term = (
+        st.text_input(
+            "Search",
+            key=f"cap_q_{mode_label}",
+            placeholder="Search — try “user”, “dashboard”, “unused”",
+            label_visibility="collapsed",
+        )
+        .strip()
+        .lower()
+    )
+    kind = st.radio(
+        "Show",
+        ["Everything", "Read only", "Changes things"],
+        horizontal=True,
+        key=f"cap_kind_{mode_label}",
+        label_visibility="collapsed",
+    )
+
+    shown = 0
+    for area in [a for a in _CAPABILITY_AREAS if any(r["area"] == a for r in rows)]:
+        group = [r for r in rows if r["area"] == area]
+        if kind == "Read only":
+            group = [r for r in group if not r["write"]]
+        elif kind == "Changes things":
+            group = [r for r in group if r["write"]]
+        if term:
+            group = [
+                r
+                for r in group
+                if term in r["name"].lower() or term in r["desc"].lower() or term in r["example"].lower()
+            ]
+        if not group:
+            continue
+        shown += len(group)
+        with st.expander(f"{_CAPABILITY_AREAS.get(area, area)}  ·  {len(group)}", expanded=bool(term)):
+            for r in sorted(group, key=lambda x: (x["write"], x["name"])):
+                tag = "🔸 changes things" if r["write"] else "🔹 read only"
+                st.markdown(
+                    f"**{r['desc'] or r['name']}**  \n<span style='opacity:.7;font-size:.85em'>{tag}</span>",
+                    unsafe_allow_html=True,
+                )
+                if r["example"]:
+                    st.caption(f"Try: *{r['example']}*")
+    if shown == 0:
+        st.info("No operation matches that. Try a different word.")
+
+
+@st.dialog("What can I ask?", width="large")
+def _capabilities_dialog(registry: Dict[str, Any], mode_label: str) -> None:
+    _render_capabilities(registry, mode_label)
+
+
 def render_tool_result(tr: dict):
     if not tr or not isinstance(tr, dict):
         return
@@ -1194,6 +1295,17 @@ st.markdown(
        (painted position == layout position minus scrollTop, verified against
        a live window screenshot). Programmatic scrolls — and thus headless
        tests — go through the main thread and never reproduced it. */
+    /* Title row: the h1 and the capability button sit side by side, centred
+       against each other. Streamlit stacks a container's children vertically,
+       so the inner vertical block is flipped to a row here. */
+    .st-key-fes_title_row [data-testid="stVerticalBlock"] {
+        flex-direction: row;
+        align-items: center;
+        gap: 18px;
+        width: auto;
+    }
+    .st-key-fes_title_row .st-key-cap_btn_top { width: auto; flex: 0 0 auto; }
+    .st-key-fes_title_row .st-key-cap_btn_top button { width: auto; white-space: nowrap; }
     .st-key-app_header h1 {
         font-size: 2.75rem;
         padding-bottom: 0;
@@ -1317,7 +1429,18 @@ components_html(
 # further down). Not pinned — see the CSS note above for why.
 _header = st.container(key="app_header")
 with _header:
-    st.title("FES Assistant")
+    # Title + capability button as one FLEX ROW (see the CSS for
+    # .st-key-fes_title_row). st.columns was tried first and is wrong here:
+    # its widths are proportional, so the button drifted further from the
+    # wordmark the wider the window got. A flex row keeps it hugging the title
+    # at any viewport, and align-items centres it against the 2.75rem h1
+    # instead of floating above it.
+    _title_row = st.container(key="fes_title_row")
+    with _title_row:
+        st.title("FES Assistant")
+        # Filled after the registry loads. An OWNED st.empty() slot so a rerun
+        # replaces the button in place rather than leaving a ghost widget.
+        _capability_slot = st.empty()
     st.markdown(
         '<p class="fes-subtitle">Explore, manage and migrate your Sisense environment — just ask. '
         "Scoped to your API token's permissions, and every change asks before it runs.</p>",
@@ -1439,6 +1562,7 @@ with _header:
         "Mode",
         [MODE_CHAT, MODE_MIGRATION],
         horizontal=True,
+        key="mode_radio",
     )
 
 logger.debug("Current mode: %s", mode)
@@ -1457,6 +1581,13 @@ if "tools" not in st.session_state or "tool_registry" not in st.session_state:
         len(registry),
         list(registry.keys()),
     )
+
+with _capability_slot.container():
+    if st.button("What can I ask?", key="cap_btn_top", width="stretch"):
+        _capabilities_dialog(
+            st.session_state.tool_registry,
+            BACKEND_MODE_MIGRATION if mode == MODE_MIGRATION else BACKEND_MODE_CHAT,
+        )
 
     logger.debug(
         "Tools fetched from backend (for display/metadata): %d tools",

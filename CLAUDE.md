@@ -421,6 +421,16 @@ agent's judgement with our enumeration of what can go wrong. Errors normally
 restate what the user already typed, so they rarely add anything the model has not
 seen; when they don't, that residual exposure is documented in README.md
 ("Security & data handling") rather than hidden.
+
+**How much they can carry is the SDK's call, not ours.** The string comes from
+`utils._extract_error_message` — a recognised Sisense response yields that
+server's sentence plus its status; an unrecognised one falls back to the body
+itself (unknown JSON stringified, or raw text), capped at 300 chars, credentials
+redacted upstream. Don't trim or filter it here: a local cap would be behaviour
+the SDK does not document, the sibling MCP project would not inherit it, and the
+same SDK would then behave two ways. If the aperture ever needs narrowing, the
+place is the SDK — splitting the recognised sentence from the raw passthrough
+into separate fields, so each consumer decides — not a patch in this repo.
 `tests/unit/test_summarization_boundary.py` pins the scope — reason on failure,
 never a payload on success.
 
