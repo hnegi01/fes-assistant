@@ -65,6 +65,37 @@ def _discover_facade_classes() -> Dict[str, Any]:
 MODULES: Dict[str, Any] = _discover_facade_classes()
 
 # ---------------------------------------------------------------------------
+# Corrections to SDK class docstrings
+# ---------------------------------------------------------------------------
+# The Level 1 router chooses a package from these descriptions alone, so a
+# description that advertises a capability the package does not contain sends
+# every such request to the wrong place — and the router then settles for the
+# nearest tool it can find there.
+#
+# Each entry removes a phrase that is factually WRONG about the package. This
+# is not editorial polish: TestPackageDocCorrections fails the moment a phrase
+# stops appearing in the SDK docstring, so a correction cannot outlive the
+# upstream fix it is standing in for.
+#
+#   wellcheck — its docstring lists "unused columns" among the data-model
+#   checks it runs, but wellcheck has no such tool; get_unused_columns and
+#   get_unused_columns_bulk live in AccessManagement. Live 2026-08-29: "which
+#   columns are unused in <model>?" routed to wellcheck 6/6 and came back with
+#   check_datamodel_island_tables — a different concept entirely. Reported
+#   upstream; delete this entry once the SDK docstring drops the claim.
+_PACKAGE_DOC_CORRECTIONS: Dict[str, List[str]] = {
+    "wellcheck": [", unused columns"],
+}
+
+
+def _correct_package_description(pkg_name: str, description: str) -> str:
+    """Strip known-false capability claims from a package description."""
+    for phrase in _PACKAGE_DOC_CORRECTIONS.get(pkg_name, []):
+        description = description.replace(phrase, "")
+    return description
+
+
+# ---------------------------------------------------------------------------
 # Class docstring parser
 # ---------------------------------------------------------------------------
 
@@ -206,7 +237,7 @@ def build_registry_hierarchical(
         cls_doc = _parse_class_docstring(klass)
         pkg_info[pkg_name] = {
             "class": klass.__name__,
-            "description": cls_doc["description"],
+            "description": _correct_package_description(pkg_name, cls_doc["description"]),
             "modules": cls_doc["modules"],
         }
         tools_by_pkg_mod[pkg_name] = {}

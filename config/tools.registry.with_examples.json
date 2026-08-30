@@ -46,7 +46,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Transfer ownership of the 'Sales Reports' folder to jane.doe@example.com, running as admin@example.com, and transfer the dashboards inside it too \u2014 the previous owner should keep edit access.",
@@ -115,7 +115,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Change the password for user 'user123' to 'NewSecurePassword123!'.",
@@ -173,7 +173,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create multiple groups for the new project team: 'Data Analysts', 'Project Managers', and 'QA Engineers'.",
@@ -282,7 +282,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Schedule a full build for the 'SalesDataModel' data model every Monday at 3:00 UTC.",
@@ -388,7 +388,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a Viewer user for Jane Doe at jane.doe@example.com, add them to the Sales and Marketing groups, and set their language to English and timezone to America/New_York.",
@@ -478,7 +478,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create two users at once: john.doe@example.com with first name John and role admin, and jane.smith@example.com with first name Jane and role editor.",
@@ -568,7 +568,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete the group with ID 'group_12345'.",
@@ -621,7 +621,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Remove the user with the email john.doe@example.com from the system.",
@@ -666,7 +666,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me all the dashboards and who they are shared with.",
@@ -712,7 +712,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the columns available in the 'SalesAnalytics' DataModel.",
@@ -764,7 +764,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the details of the 'Data Analysts' group.",
@@ -809,7 +809,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve all groups from the Sisense server.",
@@ -848,7 +848,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show which user I am currently logged in as.",
@@ -886,7 +886,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all roles available in our Sisense instance.",
@@ -924,7 +924,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve all tenants from the Sisense server.",
@@ -969,7 +969,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the columns in the 'Sales_Analytics' DataModel that are not used in any dashboards.",
@@ -1021,7 +1021,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the unused columns in the 'Sales Data' and 'Marketing Analytics' data models.",
@@ -1083,7 +1083,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find details for the user with email john.doe@example.com.",
@@ -1129,7 +1129,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch all user emails and group names to resolve share entries.",
@@ -1177,7 +1177,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the user details for john.doe@example.com, including their roles and groups.",
@@ -1222,7 +1222,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me all the users in the system along with their roles and group memberships.",
@@ -1261,7 +1261,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve all users with their raw roles and groups for cross-environment role mapping.",
@@ -1301,7 +1301,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all users in the system along with their role names and group names.",
@@ -1385,7 +1385,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Change john.doe@example.com's email address to john.doe.new@example.com and set their role to designer.",
@@ -1450,7 +1450,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the members of the 'Data Analysts' group.",
@@ -1496,7 +1496,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show all groups with the users belonging to each.",
@@ -1541,7 +1541,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Remove the custom Blox action called 'export_to_csv' from my Sisense instance.",
@@ -1585,7 +1585,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the custom Blox actions available in my Sisense instance.",
@@ -1639,7 +1639,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve the style objects for the BloX widget with ID 'widget123' in dashboard 'dashboard456', using admin access.",
@@ -1695,7 +1695,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Save a custom Blox action named 'ExportDashboardAction' that exports dashboard dashboard_12345 to PDF.",
@@ -1793,7 +1793,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Update the style of the BloX widget with ID 'widget123' on dashboard 'dashboard456', replacing the current card style but leaving the config unchanged.",
@@ -1880,7 +1880,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a new Python notebook named 'Sales Analysis 2023'.",
@@ -1956,7 +1956,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete the notebook with ID 'abc123'.",
@@ -2007,7 +2007,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Export the notebook definition for notebook 123e4567-e89b-12d3-a456-426614174000.",
@@ -2060,7 +2060,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch all available notebooks in the system.",
@@ -2113,7 +2113,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the files in the 'data-analysis' notebook folder.",
@@ -2169,7 +2169,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Rename the notebook file at 'notebooks/custom_code_notebooks/12345/analysis.ipynb' to 'sales_analysis.ipynb'.",
@@ -2235,7 +2235,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Rename the 'DataScienceProjects' notebook folder to 'MLProjects'.",
@@ -2316,7 +2316,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Update notebook 123e4567-e89b-12d3-a456-426614174000 \u2014 set its title to 'Updated Sales Analysis' and its description to 'Notebook with updated insights for Q4 sales.'",
@@ -2396,7 +2396,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "As admin@sisense.com, add this raw script to dashboard dashboard_12345: function customBehavior() { console.log('Custom script executed'); }",
@@ -2473,7 +2473,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Give john.doe@example.com and the 'sales-team' group view access to dashboard 63f2c9e4b8a4e2001d3f9a23.",
@@ -2575,7 +2575,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "As admin@sisense.com, add the script console.log('Widget script executed'); to widget widget_67890 on dashboard dashboard_12345.",
@@ -2645,7 +2645,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Check whether I can take ownership of the dashboard with ID '12345abcde'.",
@@ -2710,7 +2710,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Transfer ownership of dashboard 'sales_dashboard_2023' to user 'new_owner_123', and set the original owner's access to 'view'.",
@@ -2768,7 +2768,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Export the definition of dashboard 5f7d3b2e4c8b9a0012345678.",
@@ -2834,7 +2834,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find all BloX widgets across all dashboards visible to the API token user.",
@@ -2885,7 +2885,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all dashboards available on the Sisense server.",
@@ -2931,7 +2931,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch the dashboard with ID '5f7d3a2e4b8c9a0012345678'.",
@@ -2983,7 +2983,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the dashboard named 'Sales Performance Overview'.",
@@ -3035,7 +3035,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the columns used in the 'Sales Performance' dashboard.",
@@ -3087,7 +3087,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Get the script for dashboard sales_dashboard_2023.",
@@ -3139,7 +3139,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show who has access to the 'Sales Overview' dashboard.",
@@ -3195,7 +3195,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show who has access to dashboard 5f7d3a2b8e4b0c0012345678, using admin access.",
@@ -3250,7 +3250,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the widgets in the dashboard titled 'Sales Overview'.",
@@ -3303,7 +3303,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me the dashboards I own with their titles and IDs.",
@@ -3369,7 +3369,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve the widget with ID 'widget123' from the dashboard 'dashboard456', ensuring admin access.",
@@ -3430,7 +3430,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Get the script for widget Sales_Overview in dashboard Q3_Performance.",
@@ -3492,7 +3492,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Import dashboards dashboard_123 'Sales Overview' and dashboard_456 'Marketing Performance', skipping any that already exist.",
@@ -3579,7 +3579,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Move dashboard dashboard_12345 into folder folder_67890.",
@@ -3642,7 +3642,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Publish the dashboard with ID 'dashboard_12345'.",
@@ -3703,7 +3703,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Rename dashboard 62f1a2b3c4d5e6f7890abc12 to 'Q3 Sales Performance'.",
@@ -3758,7 +3758,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Resolve 'Sales Overview' to its dashboard ID and title.",
@@ -3819,7 +3819,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Update widget widget123 on dashboard dashboard456: title it 'Updated Sales Chart', make it a bar chart in blue with font size 12, labelled Q1, Q2, Q3, Q4 with values 15000, 20000, 18000 and 22000.",
@@ -3955,7 +3955,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Give the 'Sales Team' group edit access and john.doe@example.com read access to the 'Revenue Analysis' data model.",
@@ -4068,7 +4068,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a PostgreSQL connection named 'SalesDB Connection' pointing at host sales-db.example.com on port 5432, database 'sales', with username analytics_user and password securepassword123, created by admin_user, enabled for live and elasticube models.",
@@ -4188,7 +4188,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a new extract (Elasticube) data model called 'Sales Analytics'.",
@@ -4263,7 +4263,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a dataset named 'SalesDataset' in the 'SalesDataModel' data model, using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema.",
@@ -4365,7 +4365,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a new table named 'sales_summary' in the 'ecommerce_data' data model.",
@@ -4433,7 +4433,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete the 'Sales Data' model from the 'LocalHost' server.",
@@ -4497,7 +4497,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete all datasecurity rules for the column 'customer_id' in the 'orders' table of the 'Sales_Model' datamodel.",
@@ -4596,7 +4596,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Run a full build of the 'Sales_Analytics' data model.",
@@ -4652,7 +4652,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Describe the structure of the 'Sales Analytics' data model.",
@@ -4703,7 +4703,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the detailed definition of the 'Sales Analytics' data model.",
@@ -4761,7 +4761,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Export the full schema for data model OID 'dm12345', including dependencies for 'dataContext' and 'formulaManagement'.",
@@ -4906,7 +4906,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Build an Athena connection payload named 'Athena_Connection_1' for region us-west-2 with S3 output location s3://athena-query-results/, schema 'default', workgroup 'primary', using access key AKIAEXAMPLE and secret SECRETEXAMPLE.",
@@ -4977,7 +4977,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all data models in the system with their metadata.",
@@ -5022,7 +5022,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the connection details for the 'Salesforce_Prod' data source.",
@@ -5066,7 +5066,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all the connections available in my Sisense environment.",
@@ -5120,7 +5120,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch all rows from the 'sales_data' table in the 'ecommerce_model'.",
@@ -5175,7 +5175,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch the data model titled 'Sales Dashboard'.",
@@ -5226,7 +5226,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve raw share entries for the 'Sales_Data_2023' EXTRACT data model.",
@@ -5277,7 +5277,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve all raw share entries for the LIVE data model with ID 'live-dm-12345'.",
@@ -5328,7 +5328,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show who has access to the 'Sales_Analytics' data model.",
@@ -5379,7 +5379,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the data security rules for the 'SalesAnalytics' data model.",
@@ -5430,7 +5430,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the detailed data security rules for the 'SalesAnalytics' data model, including share-level visibility.",
@@ -5485,7 +5485,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve the raw datasecurity rules for the 'Sales Data' extract model.",
@@ -5531,7 +5531,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me a list of all ElastiCubes available on the server.",
@@ -5576,7 +5576,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the schema of the 'Sales Analytics' data model, including its tables and columns.",
@@ -5627,7 +5627,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Count the rows in each table of the 'SalesData' model.",
@@ -5693,7 +5693,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the schema of the 'sales_data' table in the 'analytics_db' database, 'public' schema, on the 'primary_data_source' connection.",
@@ -5765,7 +5765,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Import a schema with a Sales table containing an integer OrderID column and a float Amount column, overwriting the existing model with ID '12345'.",
@@ -5872,7 +5872,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Look up the OID of the data model titled 'Sales Dashboard' on the 'LocalHost' server.",
@@ -5926,7 +5926,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Resolve 'Sales Analytics' to its data model ID and title.",
@@ -5985,7 +5985,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Add data security rules to the 'Sales_Live' datamodel: limit the Orders table's Region column to North and South, and exclude Premium in the Customers table's CustomerType column.",
@@ -6208,7 +6208,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Set up a live data model called 'Sales_Live_Model' with dataset 'Sales_Live_Dataset', using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema, including the customers and orders tables.",
@@ -6352,7 +6352,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Update connection conn_12345 \u2014 rename it to 'Updated Connection Name' and point it at host new-database-host.example.com on port 5432.",
@@ -6429,7 +6429,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Replace the shares on the 'Sales_Analytics_2023' EXTRACT data model: give user_12345 read and group_67890 write.",
@@ -6519,7 +6519,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Replace the shares on the LIVE data model 'live_model_123': give user_456 read and group_789 write.",
@@ -6614,7 +6614,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Replace the data security rules on the 'Sales_Elasticube' datamodel: allow North America and Europe in the Orders table's Region column, and exclude Enterprise in the Customers table's CustomerType column.",
@@ -6719,7 +6719,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Decrypt the value 'ENCRYPTED_PASSWORD_12345'.",
@@ -6776,7 +6776,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Encrypt the value 'my_secure_password_123' so it can be stored safely.",
@@ -6837,7 +6837,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a folder named 'Sales Reports' under parent folder 63f2b8c9e4b0a3d2f8e4a123.",
@@ -6890,7 +6890,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete the folder with ID '12345abcde'.",
@@ -6934,7 +6934,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me the entire folder structure for organizing dashboards.",
@@ -6979,7 +6979,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the ancestor folders for the 'SalesData' structure.",
@@ -7030,7 +7030,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch the details of the folder with ID '12345abcde'.",
@@ -7079,7 +7079,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show me all folders in a flat structure.",
@@ -7121,7 +7121,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Show the navigation tree for our Sisense folders.",
@@ -7178,7 +7178,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Rename the folder with ID '12345abcde' to 'Sales Reports'.",
@@ -7239,7 +7239,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all Blox actions, skipping any that already exist.",
@@ -7299,7 +7299,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7374,7 +7374,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7419,7 +7419,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all datasecurity rules for all data models, providing progress updates.",
@@ -7473,7 +7473,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all folders, skipping any that already exist.",
@@ -7529,7 +7529,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all groups, skipping any that already exist.",
@@ -7587,7 +7587,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all notebooks, skipping any that already exist.",
@@ -7642,7 +7642,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all saved filters for all data models, skipping any that already exist.",
@@ -7696,7 +7696,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all saved formulas, skipping any that already exist.",
@@ -7755,7 +7755,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all users, overwriting any conflicts and ignoring custom roles.",
@@ -7821,7 +7821,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7901,7 +7901,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7997,7 +7997,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8073,7 +8073,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate row-level security rules for data models with IDs 'dm_12345' and 'dm_67890'.",
@@ -8153,7 +8153,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8228,7 +8228,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all groups, skipping any that already exist.",
@@ -8308,7 +8308,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all notebooks by their IDs, skipping any that already exist.",
@@ -8389,7 +8389,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate saved filters for data models 'Sales_Data' and 'Marketing_Analytics', skipping any that already exist.",
@@ -8468,7 +8468,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all saved formulas for data models 'Sales Dashboard' and 'Marketing Dashboard', skipping any that already exist.",
@@ -8546,7 +8546,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all users, skipping any that already exist.",
@@ -8631,7 +8631,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Add a measure 'total_sales' on the 'sales_data' table of the 'sales_db' datasource that sums the sales_amount column (datasource fullname localhost/sales_db).",
@@ -8723,7 +8723,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the saved dimensions for the 'SalesData' datasource.",
@@ -8777,7 +8777,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the saved measures for the 'Sales' datasource.",
@@ -8822,7 +8822,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List the datasources I can access in my Sisense environment.",
@@ -8867,7 +8867,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve metadata for the 'sales_dashboard' object.",
@@ -8951,7 +8951,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards to the target environment, skipping any that already exist there.",
@@ -9040,7 +9040,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all data models with data security and formulas included, and overwrite any existing models in the target environment.",
@@ -9099,7 +9099,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all user groups from the source environment to the target environment.",
@@ -9133,7 +9133,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate all users from the source environment to the target environment.",
@@ -9189,7 +9189,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate shares from source dashboards dash123, dash456 and dash789 to target dashboards dashABC, dashDEF and dashGHI, without changing ownership.",
@@ -9296,7 +9296,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate the dashboards with IDs 'dash123' and 'dash456' to the target environment, skipping any that already exist.",
@@ -9407,7 +9407,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate the data models 'SalesData' and 'CustomerAnalytics' along with their shares to the target environment, and overwrite any existing models.",
@@ -9484,7 +9484,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate the 'Sales Team' and 'Marketing Team' groups to the target environment.",
@@ -9548,7 +9548,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Migrate the users john.doe@example.com and jane.smith@example.com to the target environment.",
@@ -9609,7 +9609,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Disable the 'plugin-advanced-analytics' plugin.",
@@ -9667,7 +9667,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Disable the 'plugin-advanced-viz' and 'plugin-data-export' plugins in one bulk operation.",
@@ -9729,7 +9729,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Enable the 'plugin-sample' plugin.",
@@ -9787,7 +9787,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Enable the 'plugin-advanced-charts' and 'plugin-data-export' plugins in one bulk operation.",
@@ -9842,7 +9842,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "List all plugins installed on my Sisense instance.",
@@ -9887,7 +9887,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find the plugin named 'plugin-custom-theme'.",
@@ -9956,7 +9956,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Restore the plugin snapshot containing data_connector_v2, custom_theme_manager and audit_logger, in one bulk operation.",
@@ -10018,7 +10018,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Save the current enabled and disabled state of all plugins as a snapshot so it can be restored later.",
@@ -10068,7 +10068,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Fetch total sales by region for 2023 from the 'SalesElasticube' datasource.",
@@ -10205,7 +10205,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Export Q3 2023 sales amounts from the 'sales_elasticube' datasource as CSV.",
@@ -10301,7 +10301,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Create a new report named 'Weekly Sales Report' with PDF and CSV formats enabled, and set it to overwrite existing files on the file share.",
@@ -10384,7 +10384,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Delete the report with ID 'report_12345'.",
@@ -10451,7 +10451,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve the report with ID 'report123' and include recipient data.",
@@ -10544,7 +10544,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Retrieve all enabled reports owned by user ID 'user123'.",
@@ -10602,7 +10602,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Run the report with ID 'sales_report_2023' immediately.",
@@ -10658,7 +10658,7 @@
       "write"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Update the report with ID 'report123' to enable it and set its priority to high.",
@@ -10734,7 +10734,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Analyze the structure of the dashboard titled 'Sales Overview'.",
@@ -10794,7 +10794,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Count the widgets on the 'Sales Overview' and 'Marketing Performance' dashboards.",
@@ -10855,7 +10855,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Check if any custom tables in the 'Sales Analytics' data model use UNION.",
@@ -10915,7 +10915,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Check if the tables in the 'Sales Analytics' data model have import queries configured.",
@@ -10975,7 +10975,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find all island tables in the 'Sales Analytics' data model.",
@@ -11035,7 +11035,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Check for many-to-many relationships in the 'Sales Data' data model.",
@@ -11095,7 +11095,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Check the datatypes of the columns used in RLS rules for the 'Sales Dashboard' data model.",
@@ -11158,7 +11158,7 @@
       "read"
     ],
     "sdk_version": "1.1.0",
-    "updated_at": "2026-08-29T23:50:22Z",
+    "updated_at": "2026-08-30T00:47:06Z",
     "examples": [
       {
         "user_query": "Find pivot widgets with more than 25 fields on the 'Sales Dashboard' and 'Marketing Dashboard' dashboards.",
