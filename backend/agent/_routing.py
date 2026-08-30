@@ -180,6 +180,9 @@ def _load_package_index(package: str) -> Dict[str, Any]:
 # data. The MCP server does the same to its advertised list (server.py).
 INTERNAL_PARAMS: frozenset = frozenset({"emit"})
 
+# Hard provider limit: OpenAI rejects a tools array longer than this.
+MAX_TOOLS_PER_CALL: int = 128
+
 
 def strip_internal_params(params: Dict[str, Any]) -> Dict[str, Any]:
     """Drop INTERNAL_PARAMS from a JSON Schema's properties and required list.
@@ -336,7 +339,20 @@ async def _navigate_to_tools(
         logger.warning("Registry index empty — cannot navigate")
         return [], "", "", 0
 
-    pkg_descs = {pkg: info.get("description", "") for pkg, info in packages.items()}
+    # Package blurb + the names of the modules inside it. The blurb alone is a
+    # prose summary that can omit whole capabilities — routing then never even
+    # offers the right package, and the tool cannot be reached at any later
+    # level. The names are generated data (~90 tokens across the catalog), not
+    # hand-written hints, so they stay true through every SDK refresh.
+    def _pkg_desc(info: Dict[str, Any]) -> str:
+        desc = info.get("description", "")
+        mods = info.get("modules") or {}
+        if not mods:
+            return desc
+        inner = "\n".join(f"  - {name}: {blurb}" for name, blurb in sorted(mods.items()))
+        return f"{desc}\nContains:\n{inner}"
+
+    pkg_descs = {pkg: _pkg_desc(info) for pkg, info in packages.items()}
     chosen_pkg, ms1 = await _route_to_module(latest_user_message, history, pkg_descs, trace_id)
     total_ms += ms1
 
@@ -479,6 +495,23 @@ async def call_llm_raw(
         kwargs["api_version"] = LLM_CONFIG.api_version
 
     if tools:
+        # OpenAI rejects a tools array longer than 128 outright (HTTP 400
+        # "array too long"), which turns the whole turn into a keyword-fallback
+        # answer. Exposing 146 tools put chat mode at 137, so any path that
+        # hands over the unrouted full list — routing returning nothing, a
+        # widened backtrack — failed hard (live 2026-08-29). Routing normally
+        # keeps this call at ~10 tools; the cap only ever bites on those
+        # fallback paths, and a truncated menu still beats no call at all.
+        # Logged at WARNING because a trimmed menu can hide the right tool.
+        if len(tools) > MAX_TOOLS_PER_CALL:
+            logger.warning(
+                "Tool list of %d exceeds the provider cap of %d — sending the first %d. "
+                "Routing failed to narrow this call; the right tool may have been trimmed.",
+                len(tools),
+                MAX_TOOLS_PER_CALL,
+                MAX_TOOLS_PER_CALL,
+            )
+            tools = tools[:MAX_TOOLS_PER_CALL]
         kwargs["tools"] = tools
         # "required" forces the tool-selection call to always emit a tool_call; "auto" lets it
         # decline (return plain text). litellm.drop_params=True silently drops this

@@ -181,3 +181,47 @@ class TestRouteToModule:
                 )
             )
         assert chosen == "access_management"
+
+
+class TestProviderToolCap:
+    """OpenAI rejects a tools array longer than 128 with HTTP 400, which turns
+    the whole turn into a keyword-fallback answer. Exposing 146 tools put chat
+    mode at 137, so every path that hands over the unrouted full list failed
+    hard (live 2026-08-29). Routing normally keeps calls near 10 tools; this
+    cap only bites on the fallback paths."""
+
+    def _call(self, monkeypatch, n_tools):
+        import asyncio
+
+        import backend.agent._routing as r
+
+        seen = {}
+
+        async def fake_acompletion(**kwargs):
+            seen["n"] = len(kwargs.get("tools") or [])
+
+            class _M:
+                def model_dump(self):
+                    return {"choices": [{"message": {"content": "x", "tool_calls": []}}]}
+
+            return _M()
+
+        monkeypatch.setattr(r.litellm, "acompletion", fake_acompletion)
+        tools = [{"type": "function", "function": {"name": f"t{i}", "parameters": {}}} for i in range(n_tools)]
+        asyncio.get_event_loop().run_until_complete(r.call_llm_raw([{"role": "user", "content": "hi"}], tools=tools))
+        return seen["n"]
+
+    def test_oversized_list_is_capped(self, monkeypatch):
+        assert self._call(monkeypatch, 137) == r_cap()
+
+    def test_normal_routed_list_is_untouched(self, monkeypatch):
+        assert self._call(monkeypatch, 10) == 10
+
+    def test_exactly_at_the_cap_is_untouched(self, monkeypatch):
+        assert self._call(monkeypatch, r_cap()) == r_cap()
+
+
+def r_cap():
+    from backend.agent._routing import MAX_TOOLS_PER_CALL
+
+    return MAX_TOOLS_PER_CALL

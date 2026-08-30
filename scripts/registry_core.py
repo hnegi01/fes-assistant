@@ -252,7 +252,20 @@ def build_registry_hierarchical(
             "sdk_version": sdk_version,
             "updated_at": now_iso,
             "packages": {
-                pkg: {"class": info["class"], "description": info["description"]} for pkg, info in pkg_info.items()
+                # `modules` rides along at Level 1 so the package router can see
+                # WHAT IS INSIDE each package, not just its prose blurb. A tool
+                # filed under a package whose description does not describe it is
+                # otherwise invisible: "which columns are unused" lost to
+                # wellcheck 6/6 because access_management advertises
+                # "column-level security restrictions" and never mentions unused
+                # columns — while its own `columns` module says exactly that.
+                # Routing decides how much of this to spend tokens on.
+                pkg: {
+                    "class": info["class"],
+                    "description": info["description"],
+                    "modules": info["modules"],
+                }
+                for pkg, info in pkg_info.items()
             },
         },
     )
