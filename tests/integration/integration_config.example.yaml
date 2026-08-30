@@ -41,6 +41,9 @@ eval_identities:
   user_a_role: "admin"
   user_b_email: "another.user@your-domain.com"
   user_b_role: "sysadmin"
+  # Any real data model on the tenant. Used by the unused-columns routing case;
+  # leave it out and that one case skips (the rest of the battery still runs).
+  datamodel_name: "Sample ECommerce"
 
 # Role-token matrix (permission testing): one API token per Sisense role, all
 # for the SAME deployment as tenant_config.domain. Drives the role/permission

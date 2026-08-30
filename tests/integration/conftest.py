@@ -107,11 +107,18 @@ def eval_identities(integration_config) -> Dict[str, str]:
     # tool that fetched it, so cases assert on either. Optional: falls back to
     # the primary when a deployment has no distinct internal name.
     optional = ("user_a_role_alt", "user_b_role_alt")
+    # Keys some cases need but most don't. Absent = those cases skip themselves
+    # (see needs_identities in test_evals_planner.py); adding one here never
+    # skips the whole battery on a config that predates it.
+    per_case = ("datamodel_name",)
     missing = [k for k in required if not ids.get(k)]
     if missing:
         pytest.skip(f"eval_identities missing keys: {missing}")
     resolved = {k: str(ids[k]) for k in required}
     for k in optional:
         resolved[k] = str(ids.get(k) or resolved[k.replace("_alt", "")])
+    for k in per_case:
+        if ids.get(k):
+            resolved[k] = str(ids[k])
     resolved["user_a_email_typo"] = resolved["user_a_email"].rsplit(".", 1)[0]
     return resolved

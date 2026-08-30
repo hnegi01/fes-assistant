@@ -20,6 +20,12 @@ Adding a case = appending one dict to EVAL_CASES (no new code):
                          differs (dependent chains complete on / block
                          honestly off). Discover off-checks by driving the
                          prompt live, never by assuming.
+  needs_identities     - optional tuple of eval_identities keys this case needs
+                         beyond the always-required user_a/user_b set. Missing
+                         key => THIS case skips; the rest of the battery still
+                         runs. Keeps a newly-added placeholder from silently
+                         skipping (or worse, literal-string-failing) every case
+                         on a machine whose config predates it.
   expect_tools_any     - at least one executed tool id must contain one of these
   expect_tools_all     - EVERY fragment here must match some executed tool id
   expect_min_steps     - at least this many tool executions (step_results)
@@ -288,6 +294,31 @@ EVAL_CASES = [
         "origin": "2026-08-27: history-triggered resolve-then-fetch plan blocked a one-step "
         "summ-off request; live EC2, reproduced 4/4 with this fixture, 5/5 fixed.",
     },
+    {
+        "id": "unused-columns-lands-in-access-management-not-wellcheck",
+        "prompt": "which columns are unused in the {datamodel_name} datamodel",
+        "needs_identities": ("datamodel_name",),
+        # Pure routing assertion — which tool ran, not what it returned — so one
+        # set of checks holds under both settings.
+        "allow_summarization": "both",
+        # Substring match, so this passes for get_unused_columns OR
+        # get_unused_columns_bulk: the allowlist is mid-audit and the single-model
+        # variant is a candidate for delisting (bulk resolves an ID *or* a name and
+        # takes 1..N models, so it is a superset). The regression this guards is
+        # the WRONG PACKAGE, not which of the pair wins.
+        "expect_tools_any": ["get_unused_columns"],
+        # The actual 2026-08-29 failure: WellCheck's class docstring advertises
+        # "unused columns" among its data-model checks, but no such tool lives
+        # there. The L1 router believed the docstring, and the L3 selector then
+        # settled for the nearest thing wellcheck does have — island tables, a
+        # different concept entirely — and answered confidently.
+        "forbid_tools": ["wellcheck.check_datamodel_island_tables"],
+        "expect_reply_any": [],
+        "forbid_reply": ["island"],
+        "origin": "2026-08-29: routed to wellcheck 6/6 on a false docstring claim and "
+        "answered with check_datamodel_island_tables; fixed by the package doc "
+        "correction + module contents in the L1 index (5/5 after).",
+    },
 ]
 
 
@@ -358,6 +389,12 @@ def _resolve_identities(case, identities):
 @pytest.mark.eval
 @pytest.mark.parametrize("case", [r[0] for r in _EVAL_RUNS], ids=[r[1] for r in _EVAL_RUNS])
 def test_planner_eval(backend_url, tenant_config, eval_identities, case):
+    # Unresolved placeholders pass through as literal "{name}" text (_SafeIds),
+    # which would reach the agent verbatim and fail as a confusing routing miss
+    # rather than a config gap. Skip just this case instead.
+    absent = [k for k in case.get("needs_identities", ()) if not eval_identities.get(k)]
+    if absent:
+        pytest.skip(f"eval_identities missing {absent} (see integration_config.example.yaml)")
     case = _resolve_identities(case, eval_identities)
     body = _turn(
         backend_url,
