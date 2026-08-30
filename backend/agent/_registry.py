@@ -150,12 +150,20 @@ def _effective_ok(result: Any) -> bool:
     `ok: false, status: failed`, and the run log printed "succeeded" because
     only the wrapper was consulted. When the payload explicitly carries a
     verdict, believe it; when it carries none, the wrapper's word stands.
+
+    `success` is the same verdict under a different name. The SDK's reference
+    resolvers (resolve_datamodel_reference, resolve_dashboard_reference — both
+    exposed tools) report a miss as
+    {"success": False, "status_code": 404, "datamodel_id": None, ..., "error": ...}.
+    That dict carries real payload keys, so the MCP boundary's error-envelope
+    matcher correctly declines it — which left it landing here as a success.
+    Found 2026-08-29 while checking the 1.1.0 error contract.
     """
     if not isinstance(result, dict) or not result.get("ok"):
         return False
     payload = result.get("result")
     if isinstance(payload, dict):
-        if payload.get("ok") is False:
+        if payload.get("ok") is False or payload.get("success") is False:
             return False
         status = payload.get("status")
         if isinstance(status, str) and status.strip().lower() == "failed":
@@ -168,6 +176,13 @@ def _payload_failure_reason(payload: Any) -> str:
     never our interpretation. Empty string when the payload offers none."""
     if not isinstance(payload, dict):
         return ""
+    # A payload that failed and says why, in one field — the resolver contract
+    # ({"success": False, ..., "error": "..."}). Checked first: it is the SDK's
+    # own sentence about this failure, which beats anything reconstructed from
+    # counts below.
+    own = payload.get("error")
+    if isinstance(own, str) and own.strip():
+        return own.strip()
     raw = payload.get("raw_error")
     if isinstance(raw, dict):
         err = raw.get("error")
