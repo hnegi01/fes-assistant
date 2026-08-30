@@ -117,12 +117,29 @@ labels) replaces the agent's judgement with our own list of what can go wrong.
 
 **The residual exposure, stated plainly.** An error usually restates what you
 already typed — "username/email already exists" for the address *you* supplied —
-so it rarely carries anything the model has not seen in your request. Not never:
-an error raised deeper in the stack can quote a value you did not supply, such as
-a row from a failing query or a name from a list the tool had fetched. If your
-threat model cannot accept that, run with summarization off **and** treat the
-error channel as in-scope for review; the behaviour is one function
-(`_metadata_record`) and `tests/unit/test_summarization_boundary.py` pins it.
+so it rarely carries anything the model has not seen in your request. Not never,
+and the size of "not never" is set by the SDK, not by us.
+
+The message is built by PySisense (`utils._extract_error_message`, the single
+place it constructs failure dicts). For a Sisense response it recognises, you get
+that server's own sentence plus the status — *"Access denied (HTTP 403)"*. For a
+response shape it does **not** recognise, it falls back to passing the body
+through: an unfamiliar JSON object stringified, or raw non-JSON text, truncated
+at 300 characters. That fallback is deliberate and correct — inventing a
+friendlier message would mean discarding the only account of a failure nobody
+anticipated — but it means the channel can carry whatever Sisense chose to put in
+an error body, including a value you never typed: a row from a failing query, a
+name from a list the tool had fetched.
+
+Two bounds apply. Credential-shaped values are redacted upstream by the SDK
+before the message is built, so tokens and passwords do not travel this path at
+all. And the passthrough is capped at 300 characters — the untruncated body goes
+only to `logs/pysisense.log` on your own disk.
+
+If your threat model cannot accept the remainder, run with summarization off
+**and** treat the error channel as in-scope for review; the behaviour is one
+function (`_metadata_record`) and `tests/unit/test_summarization_boundary.py`
+pins it.
 
 ### Summarization ON
 
