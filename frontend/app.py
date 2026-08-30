@@ -1295,6 +1295,17 @@ st.markdown(
        (painted position == layout position minus scrollTop, verified against
        a live window screenshot). Programmatic scrolls — and thus headless
        tests — go through the main thread and never reproduced it. */
+    /* Title row: the h1 and the capability button sit side by side, centred
+       against each other. Streamlit stacks a container's children vertically,
+       so the inner vertical block is flipped to a row here. */
+    .st-key-fes_title_row [data-testid="stVerticalBlock"] {
+        flex-direction: row;
+        align-items: center;
+        gap: 18px;
+        width: auto;
+    }
+    .st-key-fes_title_row .st-key-cap_btn_top { width: auto; flex: 0 0 auto; }
+    .st-key-fes_title_row .st-key-cap_btn_top button { width: auto; white-space: nowrap; }
     .st-key-app_header h1 {
         font-size: 2.75rem;
         padding-bottom: 0;
@@ -1418,7 +1429,18 @@ components_html(
 # further down). Not pinned — see the CSS note above for why.
 _header = st.container(key="app_header")
 with _header:
-    st.title("FES Assistant")
+    # Title + capability button as one FLEX ROW (see the CSS for
+    # .st-key-fes_title_row). st.columns was tried first and is wrong here:
+    # its widths are proportional, so the button drifted further from the
+    # wordmark the wider the window got. A flex row keeps it hugging the title
+    # at any viewport, and align-items centres it against the 2.75rem h1
+    # instead of floating above it.
+    _title_row = st.container(key="fes_title_row")
+    with _title_row:
+        st.title("FES Assistant")
+        # Filled after the registry loads. An OWNED st.empty() slot so a rerun
+        # replaces the button in place rather than leaving a ghost widget.
+        _capability_slot = st.empty()
     st.markdown(
         '<p class="fes-subtitle">Explore, manage and migrate your Sisense environment — just ask. '
         "Scoped to your API token's permissions, and every change asks before it runs.</p>",
@@ -1540,6 +1562,7 @@ with _header:
         "Mode",
         [MODE_CHAT, MODE_MIGRATION],
         horizontal=True,
+        key="mode_radio",
     )
 
 logger.debug("Current mode: %s", mode)
@@ -1558,6 +1581,13 @@ if "tools" not in st.session_state or "tool_registry" not in st.session_state:
         len(registry),
         list(registry.keys()),
     )
+
+with _capability_slot.container():
+    if st.button("What can I ask?", key="cap_btn_top", width="stretch"):
+        _capabilities_dialog(
+            st.session_state.tool_registry,
+            BACKEND_MODE_MIGRATION if mode == MODE_MIGRATION else BACKEND_MODE_CHAT,
+        )
 
     logger.debug(
         "Tools fetched from backend (for display/metadata): %d tools",
@@ -1696,9 +1726,6 @@ if mode == MODE_CHAT:
             if _dc2.button("Keep", key="chat_disconnect_no"):
                 st.session_state["_chat_disconnect_confirm"] = False
                 st.rerun()
-
-        if st.button("What can I ask?", key="cap_btn_chat", width="stretch"):
-            _capabilities_dialog(st.session_state.tool_registry, "chat")
 
         with st.expander("Examples", expanded=False):
             st.markdown(
@@ -2075,9 +2102,6 @@ if mode == MODE_MIGRATION:
             st.write("_Not connected_")
 
         if src_cfg and tgt_cfg:
-            if st.button("What can I ask?", key="cap_btn_migration", width="stretch"):
-                _capabilities_dialog(st.session_state.tool_registry, "migration")
-
             with st.expander("Examples", expanded=False):
                 st.markdown(
                     """
