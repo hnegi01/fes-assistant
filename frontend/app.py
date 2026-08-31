@@ -713,6 +713,132 @@ def _normalize_domain(raw: str) -> str:
     return d
 
 
+AUTH_TOKEN = "API token"
+AUTH_PASSWORD = "Username & password"
+
+
+def _sdk_base_url(domain: str, verify_ssl: bool) -> str:
+    """The URL the SDK will actually talk to, asked of the SDK rather than guessed.
+
+    Sisense's non-SSL listener is on a different port (30845 on Linux), and the
+    SDK rebuilds the base URL from `domain` + `is_ssl` rather than taking the
+    domain verbatim — with ssl off it appends that port itself, and it does so
+    even when the user typed a port of their own. So logging in against the
+    domain as typed can authenticate somewhere the agent will never call.
+
+    Rather than hardcode 30845 here — SDK knowledge that would silently drift
+    the day they change it — construct the client the same way the backend will
+    and read the URL it derived. If the SDK is unavailable (someone running the
+    UI standalone), fall back to the domain as given; the request either works
+    or reports honestly.
+    """
+    try:
+        from pysisense import SisenseClient  # local: keeps UI startup independent of the SDK
+
+        # The token is a placeholder: this client is only ever asked what URL it
+        # derived and never issues a request. It cannot be empty — the SDK
+        # rejects a domain without one.
+        client = SisenseClient(config_file=None, domain=domain, token="url-derivation-only", is_ssl=verify_ssl)
+        return str(client.base_url)
+    except Exception:  # noqa: BLE001 — any SDK problem falls back, never blocks sign-in
+        return domain
+
+
+def _login_for_token(domain: str, username: str, password: str, verify_ssl: bool) -> str:
+    """Exchange a Sisense username/password for an API token.
+
+    THE PASSWORD STOPS HERE. Streamlit runs server-side, so this call goes
+    straight from the UI process to Sisense; the backend, the MCP server, the
+    session pool and every log line downstream still only ever see the token,
+    exactly as when the user pastes one. Routing the password through those
+    three hops instead would turn each of them into a place a reusable
+    credential can leak, and buy nothing — the token is what every one of them
+    actually needs.
+
+    Nothing here is stored: the caller keeps the returned token and drops the
+    password, and the form widget holding it stops being rendered on the next
+    frame.
+    """
+    base = _sdk_base_url(domain, verify_ssl)
+    try:
+        resp = requests.post(
+            f"{base}/api/v1/authentication/login",
+            data={"username": username, "password": password},
+            timeout=30,
+            verify=verify_ssl,
+        )
+    except requests.exceptions.SSLError:
+        raise RuntimeError(
+            "TLS verification failed. If this deployment uses a self-signed certificate, untick 'Verify SSL'."
+        ) from None
+    except requests.exceptions.RequestException as exc:
+        # Name the URL actually attempted, not the domain as typed — they differ
+        # whenever the SDK rewrote it (non-SSL port), and the difference is
+        # usually the reason it failed.
+        raise RuntimeError(f"Could not reach {base}: {exc}") from None
+
+    # Sisense answers a bad password with 401 and a JSON body; relay ITS words
+    # rather than inventing a reason ("wrong password" may actually be a locked
+    # account, an SSO-only tenant, or a disabled user).
+    try:
+        body = resp.json()
+    except ValueError:
+        body = {}
+    if not resp.ok or not body.get("success", resp.ok):
+        # Sisense nests it: {"error": {"code": 5001, "message": "Invalid
+        # credentials.", ...}}. Reach the sentence rather than showing the
+        # user a dict — but still fall back to the raw body when the shape is
+        # one we do not recognise, so nothing is ever swallowed.
+        err = body.get("error")
+        detail = (
+            (err.get("message") if isinstance(err, dict) else None)
+            or body.get("message")
+            or (err if isinstance(err, str) else None)
+            or (resp.text or "").strip()[:200]
+        )
+        raise RuntimeError(f"Sign-in failed (HTTP {resp.status_code}){f': {detail}' if detail else ''}")
+
+    token = body.get("access_token") or body.get("token")
+    if not token:
+        raise RuntimeError("Sign-in succeeded but Sisense returned no access token.")
+    return str(token)
+
+
+def _auth_mode_radio(key: str) -> str:
+    """Rendered OUTSIDE the form on purpose: a radio inside a form does not
+    rerun until submit, so the fields below it could not follow the choice."""
+    return st.radio("Sign in with", [AUTH_TOKEN, AUTH_PASSWORD], key=key, horizontal=True)
+
+
+def _credential_inputs(mode: str, label_prefix: str = "", token_value: str = "") -> Dict[str, str]:
+    """The credential fields for the chosen mode. Call INSIDE a form."""
+    p = f"{label_prefix} " if label_prefix else ""
+    if mode == AUTH_TOKEN:
+        return {"token": st.text_input(f"{p}API token".strip(), type="password", value=token_value)}
+    return {
+        "username": st.text_input(f"{p}Username".strip()),
+        "password": st.text_input(f"{p}Password".strip(), type="password"),
+    }
+
+
+def _resolve_token(
+    domain: str, mode: str, creds: Dict[str, str], verify_ssl: bool
+) -> Tuple[Optional[str], Optional[str]]:
+    """(token, error). Password mode exchanges via Sisense; token mode passes through."""
+    if mode == AUTH_TOKEN:
+        token = (creds.get("token") or "").strip()
+        return (token, None) if token else (None, "API token is required.")
+
+    username = (creds.get("username") or "").strip()
+    password = creds.get("password") or ""
+    if not username or not password:
+        return None, "Username and password are required."
+    try:
+        return _login_for_token(domain, username, password, verify_ssl), None
+    except RuntimeError as exc:
+        return None, str(exc)
+
+
 def _approval_key(tool_id: str, args: Dict[str, Any]) -> Tuple[str, str]:
     return tool_id, json.dumps(args or {}, sort_keys=True, ensure_ascii=False)
 
@@ -1304,8 +1430,69 @@ st.markdown(
         gap: 18px;
         width: auto;
     }
+    /* The button sits inside a nudge/calm wrapper (see the animation note
+       below), so BOTH the wrapper and the button block must opt out of the
+       row's stretch — otherwise the flex child is the wrapper and the button
+       is pushed wide inside it. */
+    .st-key-fes_title_row .st-key-cap_slot_nudge,
+    .st-key-fes_title_row .st-key-cap_slot_calm,
     .st-key-fes_title_row .st-key-cap_btn_top { width: auto; flex: 0 0 auto; }
     .st-key-fes_title_row .st-key-cap_btn_top button { width: auto; white-space: nowrap; }
+    /* The capability button is the only affordance a first-time user has for
+       "what do I type?", and as a stock secondary button it read as a label
+       sitting next to the wordmark rather than something to press. Given an
+       accent of its own it becomes the one coloured thing on an otherwise
+       neutral header, which is what makes it findable.
+       Colour, border and shadow only — NO transform (see the chat-input note
+       above; this app has been bitten by compositor-layer side effects). */
+    .st-key-cap_btn_top button {
+        border-radius: 999px;
+        padding: 0.35rem 1.05rem;
+        font-weight: 600;
+        background: #eaf3fb;
+        color: #14507d;
+        border: 1px solid #b9d6ec;
+        box-shadow: none;
+        transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    }
+    .st-key-cap_btn_top button:hover {
+        background: #d8e9f7;
+        border-color: #8dbfe2;
+        color: #0e3c60;
+        box-shadow: 0 1px 6px rgba(20, 80, 125, 0.18);
+    }
+    .st-key-cap_btn_top button:focus-visible {
+        outline: 2px solid #14507d;
+        outline-offset: 2px;
+    }
+    @media (prefers-color-scheme: dark) {
+        .st-key-cap_btn_top button {
+            background: rgba(86, 156, 214, 0.16);
+            color: #a8d3f0;
+            border-color: rgba(86, 156, 214, 0.38);
+        }
+        .st-key-cap_btn_top button:hover {
+            background: rgba(86, 156, 214, 0.26);
+            border-color: rgba(86, 156, 214, 0.6);
+            color: #cbe6fa;
+            box-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+        }
+        .st-key-cap_btn_top button:focus-visible { outline-color: #a8d3f0; }
+    }
+    /* A few slow rings, then still. Only while the user has not asked anything
+       yet — the wrapper key changes to cap_slot_calm on their first message, so
+       this never fires again and cannot pulse on every rerun. */
+    @keyframes fesCapNudge {
+        0%   { box-shadow: 0 0 0 0 rgba(20, 80, 125, 0.35); }
+        70%  { box-shadow: 0 0 0 9px rgba(20, 80, 125, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(20, 80, 125, 0); }
+    }
+    .st-key-cap_slot_nudge .st-key-cap_btn_top button {
+        animation: fesCapNudge 2.4s ease-out 3;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .st-key-cap_slot_nudge .st-key-cap_btn_top button { animation: none; }
+    }
     .st-key-app_header h1 {
         font-size: 2.75rem;
         padding-bottom: 0;
@@ -1583,11 +1770,20 @@ if "tools" not in st.session_state or "tool_registry" not in st.session_state:
     )
 
 with _capability_slot.container():
-    if st.button("What can I ask?", key="cap_btn_top", width="stretch"):
-        _capabilities_dialog(
-            st.session_state.tool_registry,
-            BACKEND_MODE_MIGRATION if mode == MODE_MIGRATION else BACKEND_MODE_CHAT,
-        )
+    # Nudge only until the user has actually asked something. Keyed on a real
+    # user turn, not on "messages is empty": the greeting is seeded into the
+    # list up front, so an emptiness check would go quiet before anyone had
+    # typed anything. The key drives which CSS rule matches — a rerun with the
+    # same key restarts nothing, so sending a message simply stops the animation
+    # instead of re-triggering it on every frame.
+    _msgs = st.session_state.get("migration_messages" if mode == MODE_MIGRATION else "chat_messages") or []
+    _asked_something = any(isinstance(m, dict) and m.get("role") == "user" for m in _msgs)
+    with st.container(key="cap_slot_calm" if _asked_something else "cap_slot_nudge"):
+        if st.button("✨ What can I ask?", key="cap_btn_top", width="stretch"):
+            _capabilities_dialog(
+                st.session_state.tool_registry,
+                BACKEND_MODE_MIGRATION if mode == MODE_MIGRATION else BACKEND_MODE_CHAT,
+            )
 
     logger.debug(
         "Tools fetched from backend (for display/metadata): %d tools",
@@ -1641,20 +1837,33 @@ if mode == MODE_CHAT:
     def render_chat_tenant_form():
         st.subheader("Connect your Sisense deployment")
 
+        mode = _auth_mode_radio("chat_auth_mode")
+
         with st.form("chat_tenant_form"):
             domain = st.text_input("Sisense domain", placeholder="https://your-domain.sisense.com")
-            token = st.text_input("API token", type="password")
+            creds = _credential_inputs(mode)
             ssl = st.checkbox("Verify SSL", value=True)
             submitted = st.form_submit_button("Connect")
 
+        if mode == AUTH_PASSWORD:
+            st.caption(
+                "Your password is exchanged for an API token and then discarded — "
+                "it is never stored or sent anywhere else. Deployments using SSO "
+                "should use an API token instead."
+            )
+
         if submitted:
-            if not domain or not token:
-                st.error("Domain and token are required.")
+            if not domain:
+                st.error("Domain is required.")
+                return
+            token, err = _resolve_token(_normalize_domain(domain), mode, creds, ssl)
+            if err:
+                st.error(err)
                 return
 
             st.session_state[CHAT_TENANT_KEY] = {
                 "domain": _normalize_domain(domain),
-                "token": token.strip(),
+                "token": token,
                 "ssl": ssl,
             }
             logger.info("[CHAT] Tenant configured for domain=%s, ssl=%s", domain.strip(), ssl)
@@ -2018,21 +2227,25 @@ if mode == MODE_MIGRATION:
         with cols[0]:
             st.markdown("**Source environment**")
             src_cfg = st.session_state[MIG_SRC_KEY] or {}
+            src_mode = _auth_mode_radio("mig_src_auth_mode")
             with st.form("source_form"):
                 src_domain = st.text_input(
                     "Source domain", value=src_cfg.get("domain", ""), placeholder="https://source.sisense.com"
                 )
-                src_token = st.text_input("Source API token", type="password", value=src_cfg.get("token", ""))
+                src_creds = _credential_inputs(src_mode, "Source", src_cfg.get("token", ""))
                 src_ssl = st.checkbox("Verify SSL (source)", value=src_cfg.get("ssl", True))
                 src_submitted = st.form_submit_button("Connect source")
 
-            if src_submitted:
-                if not src_domain or not src_token:
-                    st.error("Source domain and token are required.")
+            if src_submitted and not src_domain:
+                st.error("Source domain is required.")
+            elif src_submitted:
+                src_token, src_err = _resolve_token(_normalize_domain(src_domain), src_mode, src_creds, src_ssl)
+                if src_err:
+                    st.error(src_err)
                 else:
                     st.session_state[MIG_SRC_KEY] = {
                         "domain": _normalize_domain(src_domain),
-                        "token": src_token.strip(),
+                        "token": src_token,
                         "ssl": src_ssl,
                     }
                     logger.info("[MIGRATION] Source configured for domain=%s ssl=%s", src_domain.strip(), src_ssl)
@@ -2047,21 +2260,25 @@ if mode == MODE_MIGRATION:
         with cols[1]:
             st.markdown("**Target environment**")
             tgt_cfg = st.session_state[MIG_TGT_KEY] or {}
+            tgt_mode = _auth_mode_radio("mig_tgt_auth_mode")
             with st.form("target_form"):
                 tgt_domain = st.text_input(
                     "Target domain", value=tgt_cfg.get("domain", ""), placeholder="https://target.sisense.com"
                 )
-                tgt_token = st.text_input("Target API token", type="password", value=tgt_cfg.get("token", ""))
+                tgt_creds = _credential_inputs(tgt_mode, "Target", tgt_cfg.get("token", ""))
                 tgt_ssl = st.checkbox("Verify SSL (target)", value=tgt_cfg.get("ssl", True))
                 tgt_submitted = st.form_submit_button("Connect target")
 
-            if tgt_submitted:
-                if not tgt_domain or not tgt_token:
-                    st.error("Target domain and token are required.")
+            if tgt_submitted and not tgt_domain:
+                st.error("Target domain is required.")
+            elif tgt_submitted:
+                tgt_token, tgt_err = _resolve_token(_normalize_domain(tgt_domain), tgt_mode, tgt_creds, tgt_ssl)
+                if tgt_err:
+                    st.error(tgt_err)
                 else:
                     st.session_state[MIG_TGT_KEY] = {
                         "domain": _normalize_domain(tgt_domain),
-                        "token": tgt_token.strip(),
+                        "token": tgt_token,
                         "ssl": tgt_ssl,
                     }
                     logger.info("[MIGRATION] Target configured for domain=%s ssl=%s", tgt_domain.strip(), tgt_ssl)
