@@ -39,7 +39,7 @@ services:
       - public
 
   fes-ui:
-    image: hnegi01/fes-ui:${FES_IMAGE_TAG:-2.3.0}
+    image: hnegi01/fes-ui:${FES_IMAGE_TAG:-2.4.0}
     container_name: fes-ui
     restart: unless-stopped
     <<: *bounded-logs
@@ -64,7 +64,7 @@ services:
       - private
 
   fes-backend:
-    image: hnegi01/fes-backend:${FES_IMAGE_TAG:-2.3.0}
+    image: hnegi01/fes-backend:${FES_IMAGE_TAG:-2.4.0}
     container_name: fes-backend
     restart: unless-stopped
     <<: *bounded-logs
@@ -89,7 +89,7 @@ services:
       - private
 
   fes-mcp:
-    image: hnegi01/fes-mcp:${FES_IMAGE_TAG:-2.3.0}
+    image: hnegi01/fes-mcp:${FES_IMAGE_TAG:-2.4.0}
     container_name: fes-mcp
     restart: unless-stopped
     <<: *bounded-logs
