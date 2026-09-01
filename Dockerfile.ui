@@ -36,6 +36,18 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 # 6) Copy only what the UI needs
 COPY frontend ./frontend
+# Streamlit reads .streamlit/config.toml relative to the working directory, so
+# without this the deployed app silently runs on Streamlit's DEFAULTS while
+# every local check passes against the real config. That is exactly what
+# happened: production kept the hamburger menu (Print / Record / version) and
+# ignored the pinned light theme, because toolbarMode and [theme] never left
+# the developer's machine. Found 2026-09-01, after the config had been in the
+# repo for weeks.
+#
+# Contains no secrets — only config.toml, which is tracked. Streamlit reads
+# secrets from .streamlit/secrets.toml, so if one is ever added it must be
+# supplied at runtime (env or a mount) and excluded here, never baked in.
+COPY .streamlit ./.streamlit
 
 # 7) Expose Streamlit port
 # Note: EXPOSE is metadata only. The UI is publicly accessible only if you publish it via docker-compose ports,
