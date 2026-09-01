@@ -1,5 +1,19 @@
 # Streamlit UI config for the FES Assistant.
 
+# THEME: deliberately unset — the app follows each viewer's OS preference.
+#
+# Tried pinning `[theme] base = "light"` on 2026-09-01 and reverted the same
+# day: Streamlit hides the Settings menu (and with it the theme picker) when
+# toolbarMode is "viewer", so a pinned theme is a LOCK — nobody can change it.
+# The bundle's own gate is `DEVELOPER ? show : (VIEWER || MINIMAL) ? hide : …`.
+# The only way to hand the picker back is developer mode, which also restores
+# the C/R shortcuts that hijack typing (see below). Following the OS gets a
+# light default for anyone on a light machine without trapping anyone else.
+#
+# frontend/app.py's stylesheet is theme-agnostic for the same reason —
+# translucent rgba() chrome and inherited text, never hardcoded hex — so it
+# reads correctly in both.
+
 [client]
 # "viewer" hides the developer toolbar AND its keyboard shortcuts (C = clear
 # cache, R = rerun) that otherwise hijack Ctrl+C / normal typing. Use "developer"
