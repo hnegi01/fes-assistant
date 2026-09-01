@@ -3,22 +3,34 @@
 # THEME: deliberately unset — the app follows each viewer's OS preference.
 #
 # Tried pinning `[theme] base = "light"` on 2026-09-01 and reverted the same
-# day: Streamlit hides the Settings menu (and with it the theme picker) when
-# toolbarMode is "viewer", so a pinned theme is a LOCK — nobody can change it.
-# The bundle's own gate is `DEVELOPER ? show : (VIEWER || MINIMAL) ? hide : …`.
-# The only way to hand the picker back is developer mode, which also restores
-# the C/R shortcuts that hijack typing (see below). Following the OS gets a
-# light default for anyone on a light machine without trapping anyone else.
+# day: there is no theme picker to change it with. Streamlit gates Settings as
+# `DEVELOPER ? show : (VIEWER || MINIMAL) ? hide : …`, so at any toolbarMode we
+# would actually ship, a pinned theme is a LOCK rather than a default. The only
+# way to hand the picker back is developer mode, which also restores the C/R
+# shortcuts that hijack typing (see below). Following the OS gets a light
+# default for anyone on a light machine without trapping anyone else.
 #
 # frontend/app.py's stylesheet is theme-agnostic for the same reason —
 # translucent rgba() chrome and inherited text, never hardcoded hex — so it
 # reads correctly in both.
 
 [client]
-# "viewer" hides the developer toolbar AND its keyboard shortcuts (C = clear
-# cache, R = rerun) that otherwise hijack Ctrl+C / normal typing. Use "developer"
-# locally if you want those shortcuts back.
-toolbarMode = "viewer"
+# "minimal" hides the whole toolbar: the hamburger menu (Print, Record a
+# screencast, About + Streamlit version) and the Deploy button, plus the
+# developer keyboard shortcuts (C = clear cache, R = rerun) that otherwise
+# hijack Ctrl+C and normal typing.
+#
+# "viewer" was the previous setting. It already suppressed the shortcuts and the
+# developer options, but still showed Print / Record / About — none of which
+# mean anything in an internal admin tool, and the version string least of all.
+#
+# Nothing is lost by hiding the menu: Settings (and with it the theme picker) is
+# ALREADY hidden at "viewer" — the bundle gates it as
+# `DEVELOPER ? show : (VIEWER || MINIMAL) ? hide : …` — so there was never a
+# user-facing control in there to keep. Theme follows the OS either way.
+#
+# Use "developer" locally if you want the shortcuts and Settings back.
+toolbarMode = "minimal"
 
 [browser]
 # This is an internal admin tool — don't phone home usage stats.
