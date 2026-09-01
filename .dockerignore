@@ -79,3 +79,7 @@ nginx/
 # file is ~200KB of dead weight in every image. The regeneration scripts that
 # need it are excluded from images too.
 config/tools.registry.json
+# Streamlit secrets must never be baked into an image — supply at runtime.
+# .streamlit/config.toml IS copied (see Dockerfile.ui); this excludes only the
+# secrets file, so adding one later cannot silently ship it.
+.streamlit/secrets.toml
