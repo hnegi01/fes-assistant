@@ -52,29 +52,37 @@ class TestFailureEnvelopesAreRecognised:
         out = _sdk_error_payload(TOOL, [{"error": "boom"}])
         assert out and out["ok"] is False and out["error"] == "boom"
 
-    def test_enriched_envelope_with_failed_references(self):
-        """The shape that exposed the sole-key bug.
+    def test_the_ok_marker_alone_is_enough(self):
+        """pysisense >= 2.0 stamps every failure dict with `ok: False`.
 
-        pysisense get_unused_columns_bulk, asked about a data model that does
-        not exist: Sisense answers 404 ElasticubeNotFound, the SDK resolver
-        packages it, and bulk returns the message PLUS the per-reference detail.
-        Two keys — which the old `list(keys) == ["error"]` test rejected, so the
-        call came back ok=true with zero rows and the agent reported the missing
-        data model as clean.
+        This is the forward-compatible test and the reason the SDK added the
+        marker: it holds whatever else the payload carries, so a future key
+        cannot defeat detection the way `status_code` did in 1.1.0. Note the
+        `results` key here — nowhere near the envelope key set, and irrelevant.
         """
         result = {
+            "ok": False,
             "error": "None of the given data model references could be processed — 'Slaes_Analytics': 404 not found",
-            "failed_references": [{"ref": "Slaes_Analytics", "error": "404 not found"}],
+            "results": [],
+            "errors": [{"ref": "Slaes_Analytics", "error": "404 not found"}],
         }
         out = _sdk_error_payload(TOOL, result)
-        assert out is not None, "enriched failure envelope must normalise to ok=False"
+        assert out is not None, "the ok:False marker must normalise to a failure"
         assert out["ok"] is False
         assert "Slaes_Analytics" in out["error"]
 
-    def test_enriched_envelope_wrapped_in_a_list(self):
-        result = [{"error": "nope", "failed_references": [{"ref": "X", "error": "404"}]}]
-        out = _sdk_error_payload(TOOL, result)
+    def test_enriched_envelope_without_a_marker_still_matches(self):
+        """The pre-2.0 fallback: no marker, but the key set stays inside the
+        envelope. Kept so an older SDK pin does not silently stop reporting
+        failures."""
+        out = _sdk_error_payload(TOOL, {"error": "nope", "errors": [{"ref": "X", "error": "404"}]})
         assert out and out["ok"] is False
+
+    def test_marked_failure_without_a_message_is_still_a_failure(self):
+        """`ok: False` is the verdict; a missing sentence must not resurrect it
+        as a success — say so plainly instead."""
+        out = _sdk_error_payload(TOOL, {"ok": False, "results": []})
+        assert out and out["ok"] is False and out["error"]
 
     def test_http_failure_contract_with_status_code(self):
         """The shape pysisense 1.1.0 returns for any HTTP error.

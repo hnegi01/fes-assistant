@@ -22,7 +22,7 @@ import json
 import os
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import litellm
 
@@ -41,7 +41,7 @@ from ._config import (
 from ._prompts import (
     ROUTING_SYSTEM_PROMPT,
 )
-from ._registry import allowed_tool_ids
+from ._registry import _load_registry_rows, allowed_tool_ids
 from ._tracing import log_llm_child
 from .mcp_client import McpClient
 
@@ -183,6 +183,12 @@ INTERNAL_PARAMS: frozenset = frozenset({"emit"})
 # Hard provider limit: OpenAI rejects a tools array longer than this.
 MAX_TOOLS_PER_CALL: int = 128
 
+# The one package that is mode-exclusive. Mirrors llm_agent._tool_matches_mode,
+# which reaches the same verdict from a tool's `module` — same rule, two levels:
+# that one keeps a mis-selected tool from executing, this one keeps the router
+# from being offered it in the first place.
+MIGRATION_PACKAGE: str = "migration"
+
 
 def strip_internal_params(params: Dict[str, Any]) -> Dict[str, Any]:
     """Drop INTERNAL_PARAMS from a JSON Schema's properties and required list.
@@ -298,6 +304,42 @@ def _load_mixin_tools(package: str, mixin: str) -> List[Dict[str, Any]]:
     return tools
 
 
+def _reachable_packages_and_mixins() -> Tuple[Set[str], Set[Tuple[str, str]]]:
+    """Which packages and mixins still contain a tool the agent may actually call.
+
+    The registry is GENERATED from the SDK and the allowlist is CURATED on top,
+    so a package can be emptied entirely by delisting — encryption, mergetool
+    and metadata all went to zero on 2026-09-01. Level 3 has always applied the
+    allowlist, but Levels 1 and 2 read the generated index directly, so the
+    router was still offered packages it could not reach: it picks one, walks
+    down, finds nothing, and the route is spent. Five of fourteen L1 options
+    were dead ends.
+
+    Derived at runtime rather than filtered into the generated index on
+    purpose: the allowlist is mtime-cached and re-read per turn precisely so a
+    hand-edit takes effect without a rebuild. Baking it into config/registry/
+    would silently reintroduce the rebuild requirement.
+
+    Mirrors both gates Level 3 applies — the allowlist (already applied by
+    _load_registry_rows) and the server-side mutation switch — so a package
+    holding only writes disappears when mutations are off.
+    """
+    packages: Set[str] = set()
+    mixins: Set[Tuple[str, str]] = set()
+    for row in _load_registry_rows():
+        if not ALLOW_MUTATING_TOOLS and row.get("mutates"):
+            continue
+        pkg = row.get("module") or ""
+        if not pkg:
+            continue
+        packages.add(pkg)
+        # Mirrors build_registry_hierarchical's stem rule: "access_management.users"
+        # -> "users"; a package-level tool with no sub-module -> "_base".
+        sub = row.get("sub_module") or pkg
+        mixins.add((pkg, sub.split(".", 1)[1] if "." in sub and sub != pkg else "_base"))
+    return packages, mixins
+
+
 def _load_all_package_tools(package: str) -> List[Dict[str, Any]]:
     """
     Load all tools for a package by combining every mixin file.
@@ -319,6 +361,7 @@ async def _navigate_to_tools(
     latest_user_message: Dict[str, Any],
     history: List[Dict[str, Any]],
     trace_id: Optional[str],
+    mode: str = "chat",
 ) -> Tuple[List[Dict[str, Any]], str, str, int]:
     """
     3-level navigation: package → mixin → tools.
@@ -326,6 +369,21 @@ async def _navigate_to_tools(
     Level 1: LLM picks a package from config/registry/index.json descriptions.
     Level 2: LLM picks a mixin from {package}/index.json (skipped if only 1 mixin).
     Level 3: tools loaded from {package}/{mixin}.json — returned for the planning call.
+
+    `mode` scopes the Level 1 menu. The turn's tool universe is already filtered
+    by mode once at entry (llm_agent.call_llm_with_tools), but navigation does
+    not read that list — it rebuilds a menu from config/registry/ on disk, so
+    the scoping never reached it. In chat mode that left `migration` as one of
+    the offered packages: the router could pick it, Level 3 would load migration
+    tools, and the execution choke point would then strip every one of them,
+    leaving the step with an empty menu. Never unsafe — `_tool_matches_mode`
+    holds — but a wasted route, and `migration` is precisely the package the
+    router reaches for when someone types "move" or "copy".
+
+    This is the mirror of the existing rule that migration mode does not walk
+    the tree at all (see _navigate_for_step). That direction is the dangerous
+    one, because a chat tool selected there gets no credentials; this one only
+    costs a turn.
 
     Returns (tools, chosen_package, chosen_mixin, total_routing_ms).
     Returns ([], "", "", ms) on any failure so the caller can fall back.
@@ -339,20 +397,38 @@ async def _navigate_to_tools(
         logger.warning("Registry index empty — cannot navigate")
         return [], "", "", 0
 
+    # Offer only packages that still hold a callable tool. Without this the
+    # router spends its one choice on a package the allowlist has emptied.
+    reachable_pkgs, reachable_mixins = _reachable_packages_and_mixins()
+    # …and only packages this MODE can execute. One shared filter for both
+    # reasons, so the router's menu always matches what the turn could run.
+    reachable_pkgs = {p for p in reachable_pkgs if (p == MIGRATION_PACKAGE) == (mode == "migration")}
+    dropped = [p for p in packages if p not in reachable_pkgs]
+    packages = {p: info for p, info in packages.items() if p in reachable_pkgs}
+    if dropped:
+        logger.debug(
+            "Level 1: hiding %d package(s) with no exposed tools: %s", len(dropped), ", ".join(sorted(dropped))
+        )
+    if not packages:
+        logger.warning("Every package is empty after the allowlist — cannot navigate")
+        return [], "", "", 0
+
     # Package blurb + the names of the modules inside it. The blurb alone is a
     # prose summary that can omit whole capabilities — routing then never even
     # offers the right package, and the tool cannot be reached at any later
     # level. The names are generated data (~90 tokens across the catalog), not
     # hand-written hints, so they stay true through every SDK refresh.
-    def _pkg_desc(info: Dict[str, Any]) -> str:
+    def _pkg_desc(pkg: str, info: Dict[str, Any]) -> str:
         desc = info.get("description", "")
-        mods = info.get("modules") or {}
+        # Emptied mixins are hidden here too: advertising a module the router
+        # cannot reach is the same dead end one level down.
+        mods = {n: b for n, b in (info.get("modules") or {}).items() if (pkg, n) in reachable_mixins}
         if not mods:
             return desc
         inner = "\n".join(f"  - {name}: {blurb}" for name, blurb in sorted(mods.items()))
         return f"{desc}\nContains:\n{inner}"
 
-    pkg_descs = {pkg: _pkg_desc(info) for pkg, info in packages.items()}
+    pkg_descs = {pkg: _pkg_desc(pkg, info) for pkg, info in packages.items()}
     chosen_pkg, ms1 = await _route_to_module(latest_user_message, history, pkg_descs, trace_id)
     total_ms += ms1
 
@@ -367,10 +443,14 @@ async def _navigate_to_tools(
 
     # Level 2 — pick mixin (skip if only 1)
     pkg_index = _load_package_index(chosen_pkg)
-    modules = pkg_index.get("modules", {})
+    # Same filter as Level 1: a mixin whose tools are all delisted must not be
+    # offered. Doing it here also means the single-mixin shortcut below fires
+    # when only ONE REACHABLE mixin remains, saving a routing call the router
+    # would otherwise spend choosing between live and dead options.
+    modules = {n: b for n, b in (pkg_index.get("modules") or {}).items() if (chosen_pkg, n) in reachable_mixins}
 
     if not modules:
-        logger.warning("Package %s has no modules in index", chosen_pkg)
+        logger.warning("Package %s has no modules with exposed tools", chosen_pkg)
         return [], chosen_pkg, "", total_ms
 
     if len(modules) == 1:

@@ -670,7 +670,7 @@ def _dispatch_mocks():
     step text (concurrent branches make sequence-based side_effect lists
     non-deterministic)."""
 
-    async def nav(step_message, history, trace_id):
+    async def nav(step_message, history, trace_id, mode="chat"):
         text = step_message.get("content", "").lower()
         if "dashboard" in text:
             return (DASHBOARD_TOOLS, "dashboard", "core", 0)
@@ -755,7 +755,7 @@ def test_fanout_defers_mutating_branch_to_sequential_gate(monkeypatch):
     client = _fake_client()
     messages = [{"role": "user", "content": "all dashboards and delete a@b.com"}]
 
-    async def nav(step_message, history, trace_id):
+    async def nav(step_message, history, trace_id, mode="chat"):
         text = step_message.get("content", "").lower()
         if "delete" in text:
             return (delete_tools, "access_management", "users", 0)

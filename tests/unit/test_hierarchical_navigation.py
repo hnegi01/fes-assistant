@@ -156,6 +156,40 @@ def fake_registry_dir(tmp_path, monkeypatch):
     # filter every one of them out. None = "no allowlist in force" — the
     # allowlist itself is covered by test_tool_allowlist.py.
     monkeypatch.setattr(routing_m, "allowed_tool_ids", lambda: None)
+    # Levels 1 and 2 now hide packages/mixins with no exposed tools, and that
+    # reachability check reads the FLAT registry rather than this tree. Without
+    # a matching stub it would consult the real config and declare every
+    # fabricated package unreachable, so navigation would stop at Level 1.
+    monkeypatch.setattr(
+        routing_m,
+        "_load_registry_rows",
+        lambda: [
+            {
+                "tool_id": "access_management.get_users_all",
+                "module": "access_management",
+                "sub_module": "access_management.users",
+                "mutates": False,
+            },
+            {
+                "tool_id": "access_management.create_user",
+                "module": "access_management",
+                "sub_module": "access_management.users",
+                "mutates": True,
+            },
+            {
+                "tool_id": "access_management.get_groups_all",
+                "module": "access_management",
+                "sub_module": "access_management.groups",
+                "mutates": False,
+            },
+            {
+                "tool_id": "encryption.get_encryption_status",
+                "module": "encryption",
+                "sub_module": "encryption.core",
+                "mutates": False,
+            },
+        ],
+    )
     return reg_dir
 
 
@@ -473,3 +507,127 @@ class TestNavigateToTools:
         for call_messages in captured_calls:
             contents = [m["content"] for m in call_messages]
             assert any("previous question" in c for c in contents)
+
+
+# ---------------------------------------------------------------------------
+# Emptied packages/mixins must not be offered to the router
+# ---------------------------------------------------------------------------
+# The registry is GENERATED from the SDK; the allowlist is CURATED on top. So a
+# package can be emptied entirely by delisting — encryption, mergetool, metadata,
+# blox and custom_code all went to zero on 2026-09-01, five of fourteen L1
+# options. Level 3 always applied the allowlist, but Levels 1 and 2 read the
+# generated index directly, so the router could spend its one choice walking
+# into a package with nothing in it.
+class TestEmptyPackagesAreHidden:
+    def _rows(self, *tool_ids):
+        return [
+            {"tool_id": t, "module": t.split(".", 1)[0], "sub_module": t.split(".", 1)[0] + ".core", "mutates": False}
+            for t in tool_ids
+        ]
+
+    def test_a_package_with_no_exposed_tools_is_not_reachable(self, monkeypatch):
+        monkeypatch.setattr(routing_m, "_load_registry_rows", lambda: self._rows("access_management.get_users_all"))
+        pkgs, _ = routing_m._reachable_packages_and_mixins()
+        assert "access_management" in pkgs
+        assert "encryption" not in pkgs, "a package the allowlist emptied is still being offered"
+
+    def test_mixins_are_filtered_too(self, monkeypatch):
+        """Same dead end, one level down."""
+        monkeypatch.setattr(routing_m, "_load_registry_rows", lambda: self._rows("access_management.get_users_all"))
+        _, mixins = routing_m._reachable_packages_and_mixins()
+        assert ("access_management", "core") in mixins
+        assert ("access_management", "tenants") not in mixins
+
+    def test_a_package_level_tool_maps_to_the_base_mixin(self, monkeypatch):
+        """Mirrors build_registry_hierarchical's stem rule — a tool whose
+        sub_module IS the package lands in '_base', not a mixin of its own."""
+        monkeypatch.setattr(
+            routing_m,
+            "_load_registry_rows",
+            lambda: [{"tool_id": "queries.run", "module": "queries", "sub_module": "queries", "mutates": False}],
+        )
+        _, mixins = routing_m._reachable_packages_and_mixins()
+        assert ("queries", "_base") in mixins
+
+    def test_the_mutation_switch_can_empty_a_package(self, monkeypatch):
+        """Mirrors the gate Level 3 applies: with writes disabled server-side, a
+        package holding only writes has nothing left to reach."""
+        monkeypatch.setattr(
+            routing_m,
+            "_load_registry_rows",
+            lambda: [{"tool_id": "folder.delete", "module": "folder", "sub_module": "folder.core", "mutates": True}],
+        )
+        monkeypatch.setattr(routing_m, "ALLOW_MUTATING_TOOLS", False)
+        pkgs, _ = routing_m._reachable_packages_and_mixins()
+        assert "folder" not in pkgs
+
+    def test_the_shipped_registry_has_no_dead_l1_options(self):
+        """End to end against the real config: every package the router is
+        offered must contain at least one tool it can actually call."""
+        pkgs, _ = routing_m._reachable_packages_and_mixins()
+        advertised = set(routing_m._load_registry_index().get("packages", {}))
+        assert pkgs, "no reachable packages at all — allowlist or registry is broken"
+        assert pkgs <= advertised, f"reachable packages missing from the L1 index: {sorted(pkgs - advertised)}"
+
+
+class TestLevel1IsModeScoped:
+    """The turn's tool universe is filtered by mode once at entry, but
+    navigation rebuilds its own menu from config/registry/ and never reads that
+    list — so the scoping did not reach Level 1. In chat mode the router was
+    offered `migration`: pick it, load its tools, and the execution choke point
+    strips every one of them, leaving an empty menu. Never unsafe
+    (_tool_matches_mode holds) but a wasted route, and `migration` is exactly
+    what the router reaches for when someone types "move" or "copy".
+    """
+
+    async def _offered(self, mode, monkeypatch):
+        rows = [
+            {"tool_id": "dashboard.get_all", "module": "dashboard", "sub_module": "dashboard.core", "mutates": False},
+            {
+                "tool_id": "migration.migrate_users",
+                "module": "migration",
+                "sub_module": "migration.users",
+                "mutates": True,
+            },
+        ]
+        monkeypatch.setattr(routing_m, "_load_registry_rows", lambda: rows)
+        monkeypatch.setattr(
+            routing_m,
+            "_load_registry_index",
+            lambda: {"packages": {"dashboard": {"description": "d"}, "migration": {"description": "m"}}},
+        )
+        seen = {}
+
+        async def fake_route(msg, hist, modules, tid):
+            seen["packages"] = sorted(modules)
+            return None, 1
+
+        monkeypatch.setattr(routing_m, "_route_to_module", fake_route)
+        await routing_m._navigate_to_tools({"role": "user", "content": "move things"}, [], None, mode)
+        return seen["packages"]
+
+    def test_chat_mode_is_never_offered_the_migration_package(self, monkeypatch):
+        assert run(self._offered("chat", monkeypatch)) == ["dashboard"]
+
+    def test_migration_mode_is_offered_only_migration(self, monkeypatch):
+        """Belt and braces — migration turns bypass navigation entirely
+        (_navigate_for_step), but if that ever changes the menu must still be
+        scoped, because a chat tool gets no credentials in migration mode."""
+        assert run(self._offered("migration", monkeypatch)) == ["migration"]
+
+    def test_the_default_is_chat(self, monkeypatch):
+        """Callers that omit the argument must get the safe, common case."""
+        rows = [
+            {
+                "tool_id": "migration.migrate_users",
+                "module": "migration",
+                "sub_module": "migration.users",
+                "mutates": True,
+            }
+        ]
+        monkeypatch.setattr(routing_m, "_load_registry_rows", lambda: rows)
+        monkeypatch.setattr(
+            routing_m, "_load_registry_index", lambda: {"packages": {"migration": {"description": "m"}}}
+        )
+        tools, pkg, mixin, _ = run(routing_m._navigate_to_tools({"role": "user", "content": "x"}, [], None))
+        assert tools == [] and pkg == ""
