@@ -77,15 +77,18 @@ MODULES: Dict[str, Any] = _discover_facade_classes()
 # stops appearing in the SDK docstring, so a correction cannot outlive the
 # upstream fix it is standing in for.
 #
-#   wellcheck — its docstring lists "unused columns" among the data-model
-#   checks it runs, but wellcheck has no such tool; get_unused_columns and
-#   get_unused_columns_bulk live in AccessManagement. Live 2026-08-29: "which
-#   columns are unused in <model>?" routed to wellcheck 6/6 and came back with
-#   check_datamodel_island_tables — a different concept entirely. Reported
-#   upstream; delete this entry once the SDK docstring drops the claim.
-_PACKAGE_DOC_CORRECTIONS: Dict[str, List[str]] = {
-    "wellcheck": [", unused columns"],
-}
+# Currently EMPTY, and that is the mechanism working rather than a gap.
+#
+#   wellcheck claimed "unused columns" among its data-model checks while having
+#   no such tool — get_unused_columns_bulk lives in AccessManagement. Live
+#   2026-08-29: "which columns are unused in <model>?" routed to wellcheck 6/6
+#   and answered with check_datamodel_island_tables, a different concept
+#   entirely. We carried a correction here and reported it upstream; pysisense
+#   2.0.0 dropped the claim and put the capability in AccessManagement's own
+#   description, so TestPackageDocCorrections failed the entry as stale and it
+#   was deleted (2026-08-31). A correction that outlives its upstream fix hides
+#   what the docstring now says.
+_PACKAGE_DOC_CORRECTIONS: Dict[str, List[str]] = {}
 
 
 def _correct_package_description(pkg_name: str, description: str) -> str:

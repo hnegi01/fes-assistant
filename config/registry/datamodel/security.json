@@ -193,10 +193,80 @@
         },
         "rules": {
           "type": "array",
+          "minItems": 1,
+          "description": "Datasecurity rules to add. LIVE models ONLY. `live` and `fullname` are filled in automatically when omitted.",
           "items": {
-            "type": "object"
-          },
-          "description": "Datasecurity rules to add in Sisense API format. Each rule requires ``table``, ``column``, ``datatype``, ``members`` (list of strings), ``exclusionary``, ``shares``, ``allMembers``, ``live``, and ``fullname`` (``\"live:{title}\"``). ``live`` and ``fullname`` are filled in automatically when omitted; server-managed fields (``_id``, ``created``, ``lastModified``, ``importedIdIdentifier``) are stripped automatically."
+            "type": "object",
+            "required": [
+              "table",
+              "column",
+              "datatype",
+              "shares"
+            ],
+            "properties": {
+              "table": {
+                "type": "string",
+                "description": "Table the rule applies to (case sensitive)."
+              },
+              "column": {
+                "type": "string",
+                "description": "Column/dimension the rule applies to (case sensitive)."
+              },
+              "datatype": {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "numeric"
+                ],
+                "description": "Column data type. Date dimensions cannot be secured."
+              },
+              "members": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Values the parties may see. Mutually exclusive with allMembers — supply one or the other."
+              },
+              "allMembers": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Apply to every value of the column. Must be null (not false) when not in use; when set, members is ignored."
+              },
+              "exclusionary": {
+                "type": "boolean",
+                "description": "true reverses the rule — the listed members are hidden instead of shown."
+              },
+              "shares": {
+                "type": "array",
+                "minItems": 1,
+                "description": "Who the rule applies to. Must not be empty: a rule with no shares applies to nobody, and the LIVE API accepts it and then discards it.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "partyId",
+                    "type"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "partyId": {
+                      "type": "string",
+                      "description": "OID of the user or group the rule applies to."
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "user",
+                        "group"
+                      ],
+                      "description": "Party type. Sisense also supports a 'default' catch-all rule for parties with no explicit rule; that is not created through this call — Sisense adds one automatically alongside the first rule on a column."
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "required": [
@@ -308,10 +378,80 @@
         },
         "datasecurity": {
           "type": "array",
+          "minItems": 1,
+          "description": "Datasecurity rules to add. EXTRACT (Elasticube) models ONLY — this call refuses LIVE models. Adding a rule for a table/column that already has one for the same party UPDATES that rule rather than duplicating it.",
           "items": {
-            "type": "object"
-          },
-          "description": "Datasecurity rule list in Sisense API format. Each rule includes ``table``, ``column``, ``datatype``, ``members`` (list of strings), ``exclusionary``, ``shares``, and ``allMembers``."
+            "type": "object",
+            "required": [
+              "table",
+              "column",
+              "datatype",
+              "shares"
+            ],
+            "properties": {
+              "table": {
+                "type": "string",
+                "description": "Table the rule applies to (case sensitive)."
+              },
+              "column": {
+                "type": "string",
+                "description": "Column/dimension the rule applies to (case sensitive)."
+              },
+              "datatype": {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "numeric"
+                ],
+                "description": "Column data type. Date dimensions cannot be secured."
+              },
+              "members": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Values the parties may see. Mutually exclusive with allMembers — supply one or the other."
+              },
+              "allMembers": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Apply to every value of the column. Must be null (not false) when not in use; when set, members is ignored."
+              },
+              "exclusionary": {
+                "type": "boolean",
+                "description": "true reverses the rule — the listed members are hidden instead of shown."
+              },
+              "shares": {
+                "type": "array",
+                "minItems": 1,
+                "description": "Who the rule applies to. Must not be empty: a rule with no shares applies to nobody, and the LIVE API accepts it and then discards it.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "party",
+                    "type"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "party": {
+                      "type": "string",
+                      "description": "OID of the user or group the rule applies to."
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "user",
+                        "group"
+                      ],
+                      "description": "Party type. Sisense also supports a 'default' catch-all rule for parties with no explicit rule; that is not created through this call — Sisense adds one automatically alongside the first rule on a column."
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "required": [

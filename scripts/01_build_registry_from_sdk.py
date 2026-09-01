@@ -607,6 +607,93 @@ def infer_tags(module: str, method: str, mutates: bool) -> list:
 # SCHEMA_RULES + apply_schema_rules (shared semantics) hardcoded patches
 # ---------------------------------------------------------------------------
 
+
+def _datasecurity_rules_schema(*, party_key: str, description: str) -> Dict[str, Any]:
+    """Schema for a datasecurity rule list, differing only in the share key.
+
+    EXTRACT and LIVE are separate Sisense APIs that disagree about one field
+    name — `party` (v0.9) vs `partyId` (v1.0) — so this is parameterised rather
+    than duplicated. Everything else is common to both.
+
+    `minItems: 1` on shares is the load-bearing constraint: an empty share list
+    is accepted by the LIVE endpoint with HTTP 201 and then silently discarded,
+    and it is what the shipped example used to demonstrate. `datatype` is a
+    closed set the API validates (date dimensions are unsupported), and
+    `allMembers` is nullable on purpose — the docs require null, not false, when
+    it is not in use.
+    """
+    return {
+        "type": "array",
+        "minItems": 1,
+        "description": description,
+        "items": {
+            "type": "object",
+            "required": ["table", "column", "datatype", "shares"],
+            "properties": {
+                "table": {"type": "string", "description": "Table the rule applies to (case sensitive)."},
+                "column": {"type": "string", "description": "Column/dimension the rule applies to (case sensitive)."},
+                "datatype": {
+                    "type": "string",
+                    "enum": ["text", "numeric"],
+                    "description": "Column data type. Date dimensions cannot be secured.",
+                },
+                "members": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": (
+                        "Values the parties may see. Mutually exclusive with allMembers — supply one or the other."
+                    ),
+                },
+                "allMembers": {
+                    "type": ["boolean", "null"],
+                    "description": (
+                        "Apply to every value of the column. Must be null (not false) when not in use; "
+                        "when set, members is ignored."
+                    ),
+                },
+                "exclusionary": {
+                    "type": "boolean",
+                    "description": "true reverses the rule — the listed members are hidden instead of shown.",
+                },
+                "shares": {
+                    "type": "array",
+                    "minItems": 1,
+                    "description": (
+                        "Who the rule applies to. Must not be empty: a rule with no shares applies to nobody, "
+                        "and the LIVE API accepts it and then discards it."
+                    ),
+                    "items": {
+                        "type": "object",
+                        "required": [party_key, "type"],
+                        # Closed on purpose. EXTRACT and LIVE use DIFFERENT key
+                        # names for the same field, and the wrong one is the
+                        # single most likely mistake here — the two tools sit
+                        # side by side and differ in nothing else. Left open,
+                        # `party` would validate against the LIVE schema and
+                        # then be discarded by Sisense behind an HTTP 201.
+                        "additionalProperties": False,
+                        "properties": {
+                            party_key: {
+                                "type": "string",
+                                "description": "OID of the user or group the rule applies to.",
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": ["user", "group"],
+                                "description": (
+                                    "Party type. Sisense also supports a 'default' catch-all rule for parties "
+                                    "with no explicit rule; that is not created through this call — Sisense adds "
+                                    "one automatically alongside the first rule on a column."
+                                ),
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
+
+
 SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
     # Generate connection payload → datasource_type is a documented closed set;
     # connection_params fields are documented PER TYPE (different required sets
@@ -695,6 +782,55 @@ SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
         }
     },
     # Setup DataModel – enums + rich tables schema
+    # ---------------------------------------------------------------------
+    # Datasecurity rule payloads — rich schemas so our validator can REJECT a
+    # malformed rule before Sisense sees it.
+    #
+    # The SDK types both params as a bare list-of-object, so the model gets no
+    # structure at all and must guess. That guess is dangerous in one specific
+    # direction, measured live 2026-08-31 on the sandbox:
+    #
+    #   EXTRACT (update_datasecurity)      bad payload -> HTTP 400, clear error
+    #   LIVE    (set_live_..._add_many)    bad payload -> HTTP 201, NOTHING SAVED
+    #
+    # So on LIVE a wrong share key or an empty `shares` is indistinguishable
+    # from success: the agent reports the rule was added and no rule exists.
+    # Argument validation runs before execution (jsonschema, llm_agent.py), so a
+    # schema that states the real contract turns that silent success into a loud
+    # local failure — which is why the LIVE tool can be exposed at all.
+    #
+    # The two endpoints genuinely disagree on the share key (Sisense REST docs:
+    # EXTRACT v0.9 uses `party`, LIVE v1.0 uses `partyId`), so the schemas differ
+    # by exactly that field. Verified both ways against the sandbox: the wrong
+    # key errors on EXTRACT and silently no-ops on LIVE.
+    #
+    # STOPGAP. The durable fix is a TypedDict on these params upstream, exactly
+    # as pysisense 1.1.0 did for the other dict payloads; delete these patches
+    # when it lands (TestSchemaRulesDrift will not catch that for you — the
+    # params will still exist, just with real schemas of their own).
+    "datamodel.update_datasecurity": {
+        "patch": {
+            "parameters.properties.datasecurity": _datasecurity_rules_schema(
+                party_key="party",
+                description=(
+                    "Datasecurity rules to add. EXTRACT (Elasticube) models ONLY — this call "
+                    "refuses LIVE models. Adding a rule for a table/column that already has one "
+                    "for the same party UPDATES that rule rather than duplicating it."
+                ),
+            ),
+        }
+    },
+    "datamodel.set_live_datasecurity_add_many": {
+        "patch": {
+            "parameters.properties.rules": _datasecurity_rules_schema(
+                party_key="partyId",
+                description=(
+                    "Datasecurity rules to add. LIVE models ONLY. `live` and `fullname` are "
+                    "filled in automatically when omitted."
+                ),
+            ),
+        }
+    },
     "datamodel.setup_datamodel": {
         "patch": {
             "parameters.properties.datamodel_type.x-aliases": {

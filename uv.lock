@@ -335,7 +335,7 @@ wheels = [
 
 [[package]]
 name = "fes-assistant"
-version = "2.1.5"
+version = "2.3.0"
 source = { virtual = "." }
 dependencies = [
     { name = "anyio" },
@@ -386,7 +386,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.13.4,<2.14" },
     { name = "pydantic-settings", specifier = ">=2.12,<2.13" },
     { name = "pyjwt", specifier = ">=2.10,<3" },
-    { name = "pysisense", specifier = "==1.1.0" },
+    { name = "pysisense", specifier = "==2.0.0" },
     { name = "python-dotenv", specifier = ">=1.0,<2" },
     { name = "python-multipart", specifier = ">=0.0.20,<0.0.21" },
     { name = "pyyaml", specifier = ">=6.0,<7" },
@@ -1223,7 +1223,7 @@ crypto = [
 
 [[package]]
 name = "pysisense"
-version = "1.1.0"
+version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jsbeautifier" },
@@ -1233,9 +1233,9 @@ dependencies = [
     { name = "requests" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/de/d6/a4bb0d6b28f8d7060a73792e2bf9dddc939c1670b6b0c334b753889e73d9/pysisense-1.1.0.tar.gz", hash = "sha256:4441326ca7712116ec8d134b7ae9b5f26f94aecdb655f2102b136dab8baf4e96", size = 167951, upload-time = "2026-08-29T01:56:35.244Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fe/d6/ef04fd73815f8dbb11aae85fd4af4ece593d44107273387ce9dfeb8a8d6b/pysisense-2.0.0.tar.gz", hash = "sha256:43473a7b043c27784922735734068d28385b91c15b02aeb5488bb6ea08050e41", size = 175584, upload-time = "2026-08-31T19:51:08.759Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/30/771ebb827386a7b30753298ce9e481ff382ceb297a43aed214969d130ea5/pysisense-1.1.0-py3-none-any.whl", hash = "sha256:96ee9fee33af017eb56b5a737490929d98ba504b8ad9d571c6ce3b865bc7f40a", size = 223727, upload-time = "2026-08-29T01:56:33.462Z" },
+    { url = "https://files.pythonhosted.org/packages/d3/a9/a04439a41a0446ed6f14375127761452070eb1d6217c0cd2b435d847fe0f/pysisense-2.0.0-py3-none-any.whl", hash = "sha256:e807228c8767f84840ea2cac8a9d17c9d6b79aef4f14013df18525c9ae8e91e7", size = 231925, upload-time = "2026-08-31T19:51:07.232Z" },
 ]
 
 [[package]]

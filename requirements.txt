@@ -244,7 +244,7 @@ pyjwt==2.13.0
     # via
     #   fes-assistant
     #   mcp
-pysisense==1.1.0
+pysisense==2.0.0
     # via fes-assistant
 python-dateutil==2.9.0.post0
     # via
