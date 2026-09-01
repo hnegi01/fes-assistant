@@ -224,7 +224,7 @@ async def node_branch(s: Dict[str, Any]) -> Dict[str, Any]:
     branch_step: int = s["branch_step"]
     step_message = {"role": "user", "content": op_text}
     try:
-        nav_tools, nav_pkg, _nm, _ms = await A._navigate_to_tools(step_message, [], s["turn_trace_id"])
+        nav_tools, nav_pkg, _nm, _ms = await A._navigate_to_tools(step_message, [], s["turn_trace_id"], s["mode"])
         if (not nav_tools) and nav_pkg and nav_pkg != "__unclear__":
             nav_tools = A._load_all_package_tools(nav_pkg)
         if not nav_tools:
@@ -373,7 +373,9 @@ async def node_first_select(s: GraphState) -> Dict[str, Any]:
         nav_tools = list(s["passed_tools"]) or A._load_all_package_tools("migration")
         nav_pkg, nav_mixin = "migration", "all"
     else:
-        nav_tools, nav_pkg, nav_mixin, _ms = await A._navigate_to_tools(step_message, s["history"], s["turn_trace_id"])
+        nav_tools, nav_pkg, nav_mixin, _ms = await A._navigate_to_tools(
+            step_message, s["history"], s["turn_trace_id"], s["mode"]
+        )
         if nav_pkg == "__unclear__":
             if s.get("resume_clarification"):
                 reply = await A._reask_clarification_or_giveup(

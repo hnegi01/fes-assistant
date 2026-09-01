@@ -1,6 +1,6 @@
 [project]
 name = "fes-assistant"
-version = "2.3.0"
+version = "2.4.0"
 description = "Agentic AI assistant for Sisense — token-scoped (planner -> orchestrator loop -> critic over MCP/PySisense)"
 requires-python = ">=3.11,<3.12"
 dependencies = [
@@ -17,7 +17,7 @@ dependencies = [
     # (Diagnosed by Jeremy Friedel — the flash vanished too fast to read; he
     # scripted the capture. See PR #20.)
     "streamlit>=1.60,<1.63",
-    "pysisense==1.1.0",
+    "pysisense==2.0.1",
     "mcp>=1.24,<1.25",
     "python-dotenv>=1.0,<2",
     "PyJWT>=2.10,<3",

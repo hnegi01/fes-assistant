@@ -330,6 +330,32 @@ def _is_live_progress(payload: Any) -> bool:
     return not (isinstance(payload, dict) and payload.get("step") in _LIVE_HIDDEN_STEPS)
 
 
+def _push_progress_line(lines: List[str], line: str) -> None:
+    """Append a live-progress line, or REPLACE the previous one from the same phase.
+
+    The live view is a progress indicator, not a record — the run log keeps
+    every event. So a phase should occupy one line that updates, rather than
+    scrolling a fixed 20-line window with its own history.
+
+    It matters because the SDK emits twice per page while paginating
+    (`"Fetching dashboards page…"` at the top of the loop and `"Fetched
+    dashboards page."` at the bottom), and the first of each pair reports the
+    counter BEFORE the increment — so the pair renders as the same sentence
+    with the same number, twice. Migrating 501 dashboards produced 22 fetch
+    lines and 51 batch lines; a reader watching it just wants "which phase, how
+    far".
+
+    Phase = the `[step]` prefix `_format_progress_line` puts on. Lines without
+    one (chat's agent_progress milestones) always append, since each is a
+    distinct event rather than a running counter.
+    """
+    prefix = line[: line.index("]") + 1] if line.startswith("[") and "]" in line else None
+    if prefix and lines and lines[-1].startswith(prefix):
+        lines[-1] = line
+        return
+    lines.append(line)
+
+
 def _format_progress_line(payload: Any) -> str:
     """
     Render one progress payload as a single human-readable line.
@@ -471,7 +497,12 @@ def _launch_migration_turn(
     st.session_state[_MIG_TURN_IN_PROGRESS_KEY] = True
 
     def _progress_cb(line: str) -> None:
-        ctx["progress_lines"].append(line)
+        # Same phase-collapsing as the inline placeholder. There are TWO lists:
+        # the SSE reader keeps a local one for the inline view, and this one
+        # crosses the worker-thread boundary to the migration panel. Collapsing
+        # only the first left the migration feed — the long-running case the
+        # collapsing is FOR — still showing every event.
+        _push_progress_line(ctx["progress_lines"], line)
 
     call_kwargs: Dict[str, Any] = {
         "messages": messages,
@@ -647,7 +678,7 @@ def call_backend_turn(
                     new_line = msg.strip()
                 else:
                     new_line = _format_progress_line(cleaned_payload)
-                progress_lines.append(new_line)
+                _push_progress_line(progress_lines, new_line)
                 if progress_callback is not None:
                     progress_callback(new_line)
 
@@ -1445,53 +1476,60 @@ st.markdown(
        neutral header, which is what makes it findable.
        Colour, border and shadow only — NO transform (see the chat-input note
        above; this app has been bitten by compositor-layer side effects). */
+    /* Theme-agnostic ON PURPOSE, matching the rest of this stylesheet: a
+       TRANSLUCENT accent over whatever ground the theme paints, a border of the
+       same hue, and `color: inherit` so the label takes the theme's own text
+       colour. No hex, no prefers-color-scheme block.
+
+       The first version hardcoded a light palette with a dark override behind
+       @media (prefers-color-scheme: dark) — which breaks the case that actually
+       matters here: Streamlit has its own light/dark switch, so a viewer on a
+       dark OS who picks LIGHT in Streamlit gets the dark rules painted onto a
+       light page and the button disappears. Reported live 2026-09-01. Media
+       queries read the OS; they cannot see an in-app choice. */
     .st-key-cap_btn_top button {
         border-radius: 999px;
         padding: 0.35rem 1.05rem;
         font-weight: 600;
-        background: #eaf3fb;
-        color: #14507d;
-        border: 1px solid #b9d6ec;
+        color: inherit;
+        background: rgba(56, 132, 199, 0.16);
+        border: 1px solid rgba(56, 132, 199, 0.55);
         box-shadow: none;
         transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
     }
     .st-key-cap_btn_top button:hover {
-        background: #d8e9f7;
-        border-color: #8dbfe2;
-        color: #0e3c60;
-        box-shadow: 0 1px 6px rgba(20, 80, 125, 0.18);
+        background: rgba(56, 132, 199, 0.30);
+        border-color: rgba(56, 132, 199, 0.85);
+        box-shadow: 0 1px 6px rgba(56, 132, 199, 0.30);
     }
     .st-key-cap_btn_top button:focus-visible {
-        outline: 2px solid #14507d;
+        outline: 2px solid rgba(56, 132, 199, 0.9);
         outline-offset: 2px;
-    }
-    @media (prefers-color-scheme: dark) {
-        .st-key-cap_btn_top button {
-            background: rgba(86, 156, 214, 0.16);
-            color: #a8d3f0;
-            border-color: rgba(86, 156, 214, 0.38);
-        }
-        .st-key-cap_btn_top button:hover {
-            background: rgba(86, 156, 214, 0.26);
-            border-color: rgba(86, 156, 214, 0.6);
-            color: #cbe6fa;
-            box-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
-        }
-        .st-key-cap_btn_top button:focus-visible { outline-color: #a8d3f0; }
     }
     /* A few slow rings, then still. Only while the user has not asked anything
        yet — the wrapper key changes to cap_slot_calm on their first message, so
        this never fires again and cannot pulse on every rerun. */
     @keyframes fesCapNudge {
-        0%   { box-shadow: 0 0 0 0 rgba(20, 80, 125, 0.35); }
-        70%  { box-shadow: 0 0 0 9px rgba(20, 80, 125, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(20, 80, 125, 0); }
+        0%   { box-shadow: 0 0 0 0 rgba(56, 132, 199, 0.45); }
+        70%  { box-shadow: 0 0 0 9px rgba(56, 132, 199, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(56, 132, 199, 0); }
     }
     .st-key-cap_slot_nudge .st-key-cap_btn_top button {
         animation: fesCapNudge 2.4s ease-out 3;
     }
     @media (prefers-reduced-motion: reduce) {
         .st-key-cap_slot_nudge .st-key-cap_btn_top button { animation: none; }
+    }
+    /* Sidebar captions carry real content here — the privacy mode explainer,
+       the connection readout, the examples — not decorative asides. Streamlit
+       dims every caption to roughly 60% opacity, which is legible on a dark
+       ground and washes out on a white one. Raise it in the sidebar only, so
+       ordinary captions elsewhere keep their intended de-emphasis.
+       Opacity, not a colour: the text keeps whatever the theme chose, so this
+       works in light and dark without knowing which is active. */
+    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"],
+    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+        opacity: 0.95;
     }
     .st-key-app_header h1 {
         font-size: 2.75rem;

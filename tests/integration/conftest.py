@@ -82,12 +82,40 @@ def tenant_config(integration_config) -> Dict[str, Any]:
     }
 
 
+def _side(raw: Dict[str, Any], prefix: str) -> Dict[str, Any]:
+    """One side of a migration pair, in the shape the backend actually reads."""
+    domain = str(raw.get(f"{prefix}_url", "")).strip().rstrip("/")
+    if domain and "://" not in domain:
+        domain = f"https://{domain}"  # bare domains default to https, like the UI
+    return {"domain": domain, "token": raw.get(f"{prefix}_token"), "ssl": raw.get(f"{prefix}_verify_ssl", True)}
+
+
 @pytest.fixture(scope="session")
 def migration_config(integration_config) -> Dict[str, Any]:
+    """Normalized to the shape /agent/turn expects: {"source": {...}, "target": {...}}.
+
+    The yaml documents flat, human-facing keys (source_url, source_verify_ssl),
+    but McpClient._with_migration reads a NESTED pair and maps domain/token/ssl
+    onto source_*/target_* arguments — the same shape frontend/app.py builds.
+    Passing the yaml section verbatim meant the SDK received no credentials at
+    all: "Migration tools require source_domain and source_token to be
+    provided."
+
+    This is the migration twin of the tenant_config bug fixed 2026-08-27, and it
+    hid for the same reason — the migration battery deliberately sends no
+    approved_keys, so every case stops at the approval gate and nothing ever
+    executes. Planning never touches credentials, so 11 cases passed against a
+    config that could not have run. Found 2026-09-01 on the first real
+    source→target migration.
+    """
     cfg = integration_config.get("migration_config")
     if not cfg:
         pytest.skip("migration_config not set in integration_config.yaml")
-    return cfg
+    normalized = {"source": _side(cfg, "source"), "target": _side(cfg, "target")}
+    for side in ("source", "target"):
+        if not normalized[side]["domain"] or not normalized[side]["token"]:
+            pytest.skip(f"migration_config {side} is missing a url or token")
+    return normalized
 
 
 @pytest.fixture(scope="session")

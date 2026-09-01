@@ -665,12 +665,16 @@ def _resolve_sdk_callable(
     return func, meta, coerced
 
 
-# Keys an SDK failure envelope may carry alongside "error". Deliberately a
-# CLOSED set rather than a bare `"error" in candidate`: a legitimate data row
-# can carry an incidental error field (a per-item build status, a wellcheck
-# finding), and reading one of those as a failed call would turn a good result
-# into a false failure — the opposite of the bug this guards.
-_ERROR_ENVELOPE_KEYS = {"error", "failed_references", "error_type", "status_code"}
+# Fallback only, for SDKs older than pysisense 2.0. From 2.0 every failure dict
+# carries an explicit `"ok": False` marker (we asked for it after key-shape
+# inference broke twice), so the marker is the primary test below and this set
+# is what recognises a pre-2.0 envelope that has no marker.
+#
+# Deliberately a CLOSED set rather than a bare `"error" in candidate`: a
+# legitimate data row can carry an incidental error field (a per-item build
+# status, a wellcheck finding), and reading one of those as a failed call would
+# turn a good result into a false failure — the opposite of the bug this guards.
+_ERROR_ENVELOPE_KEYS = {"error", "errors", "error_type", "status_code", "raw_body"}
 
 
 def _sdk_error_payload(tool_id: str, result: Any) -> Optional[Dict[str, Any]]:
@@ -678,29 +682,41 @@ def _sdk_error_payload(tool_id: str, result: Any) -> Optional[Dict[str, Any]]:
     SDK methods that fail return {"error": "..."} instead of raising — sometimes
     wrapped in a single-item list ([{"error": "..."}]) by list-returning methods,
     and sometimes with extra detail beside the message
-    ({"error": ..., "failed_references": [...]}). Detect all of these and
+    ({"error": ..., "errors": [...], "raw_body": ...}). Detect all of these and
     normalise to ok=False so callers don't have to inspect the result themselves.
 
-    The match was once `list(keys) == ["error"]` — an exact SOLE-key test, which
-    silently stopped recognising failures the moment the SDK enriched the
-    envelope. get_unused_columns_bulk (pysisense, 2026-08-29) is the case that
-    found it: asked about a data model that does not exist, it returns
-    {"error": "None of the given data model references could be processed …",
-    "failed_references": [...]} — two keys, so the old test returned None and the
-    call was reported as `ok: true`.
+    TWO tests, in order of trustworthiness:
 
-    That is worst with summarization OFF, which is the production default: the
-    payload never reaches the LLM, so it sees `ok: true` with no count and
-    reports a successful lookup of a data model that isn't there. The whole
-    point of the envelope is to announce the failure; matching it loosely enough
-    to actually catch it is what makes `ok` trustworthy downstream.
+    1. `ok is False` — the explicit marker every pysisense >= 2.0 failure dict
+       carries. Shape-independent, so a future key cannot defeat it. This exists
+       because our old test was `list(keys) == ["error"]`, an exact SOLE-key
+       match that silently stopped recognising failures the moment the SDK
+       enriched the envelope: 1.1.0 added `status_code`, and every 401/403/500
+       on a path using its error helper arrived as `ok: true`.
+    2. A non-empty `error` whose key set stays inside the known envelope — the
+       fallback for pre-2.0 SDKs, which have no marker.
+
+    Neither fires on a data row that merely happens to carry an `error` field,
+    which is the mirror-image bug: turning a good result into a false failure.
+
+    Getting this right matters most with summarization OFF, the production
+    default: the payload never reaches the LLM, so `ok` plus a reason is the
+    model's entire account of what happened. A missed failure there is not a
+    degraded answer, it is a confident wrong one.
     """
     candidate = result
     if isinstance(result, list) and len(result) == 1:
         candidate = result[0]
-    if isinstance(candidate, dict) and candidate.get("error") and set(candidate) <= _ERROR_ENVELOPE_KEYS:
-        return {"tool_id": tool_id, "ok": False, "error": candidate["error"], "error_type": "SDKError"}
-    return None
+    if not isinstance(candidate, dict):
+        return None
+
+    marked = candidate.get("ok") is False
+    enveloped = bool(candidate.get("error")) and set(candidate) <= _ERROR_ENVELOPE_KEYS
+    if not (marked or enveloped):
+        return None
+
+    reason = candidate.get("error") or "The SDK reported a failure without a message."
+    return {"tool_id": tool_id, "ok": False, "error": reason, "error_type": "SDKError"}
 
 
 def _add_unused_columns_summary(payload: Dict[str, Any]) -> Dict[str, Any]:

@@ -895,7 +895,7 @@ async def _navigate_for_step(
     """
     if mode == "migration":
         return list(mode_tools or _load_all_package_tools("migration")), "migration", "all", 0
-    return await _navigate_to_tools(step_message, [], trace_id)
+    return await _navigate_to_tools(step_message, [], trace_id, mode)
 
 
 def _capability_catalog(mode: str) -> str:
@@ -1095,6 +1095,23 @@ def _metadata_record(tool_id: str, result: Any) -> Dict[str, Any]:
         payload = result.get("result")
         if isinstance(payload, list):
             rec["count"] = len(payload)
+        elif isinstance(payload, dict):
+            # pysisense 2.0 shapes that carry their rows under a key instead of
+            # being a bare list (get_unused_columns_bulk -> {results, errors}).
+            # Without this the count silently disappears: summ-off would send
+            # `{tool, ok: true}` and nothing else for a call that returned rows.
+            if isinstance(payload.get("results"), list):
+                rec["count"] = len(payload["results"])
+            # A call can now SUCCEED while part of it did not happen — a typo'd
+            # model among valid ones, a share Sisense dropped for an inactive
+            # user. The SDK reports those in-band precisely so they are not
+            # invisible; dropping them here would recreate, on our side, the bug
+            # we spent three rounds getting fixed upstream. Counts only, which is
+            # the same metadata class as `count` — the names stay out.
+            for key in ("errors", "skipped"):
+                items = payload.get(key)
+                if isinstance(items, list) and items:
+                    rec[f"{key}_count"] = len(items)
         if not ok:
             # Wrapper error when the call itself failed; the SDK's own report
             # when the call ran but its payload says failed. Same narrow
@@ -1556,7 +1573,7 @@ async def _reactive_loop(
         DEFERRED back to the sequential loop."""
         step_message = {"role": "user", "content": op_text}
         try:
-            nav_tools, nav_pkg, _nm, _ms = await _navigate_to_tools(step_message, [], turn_trace_id)
+            nav_tools, nav_pkg, _nm, _ms = await _navigate_to_tools(step_message, [], turn_trace_id, mode)
             if (not nav_tools) and nav_pkg and nav_pkg != "__unclear__":
                 nav_tools = _load_all_package_tools(nav_pkg)
             if not nav_tools:
@@ -1753,7 +1770,7 @@ async def _reactive_loop(
                 )
             else:
                 nav_tools, nav_pkg, nav_mixin, _routing_ms = await _navigate_to_tools(
-                    step_message, history, turn_trace_id
+                    step_message, history, turn_trace_id, mode
                 )
                 if nav_pkg == "__unclear__":
                     if resume_clarification:
@@ -2376,7 +2393,7 @@ async def call_llm_with_tools(
                 # makes anything routable, so this test gets none: a real topic
                 # change stands on its own words; a non-answer does not.
                 logger.info("Resume: tool selection declined %s — testing for fresh intent.", _pc_tool_id)
-                _, _fresh_pkg, _, _ = await _navigate_to_tools(latest_user_message, [], turn_trace_id)
+                _, _fresh_pkg, _, _ = await _navigate_to_tools(latest_user_message, [], turn_trace_id, mode)
                 if _fresh_pkg == "__unclear__":
                     return await _reask_clarification_or_giveup(pending_clarification, turn_trace_id, _trace, user_text)
                 resume_clarification = pending_clarification

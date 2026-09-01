@@ -1,10 +1,49 @@
 # Streamlit UI config for the FES Assistant.
 
+# THEME: pinned to light, deliberately — Sisense's own product is light, and
+# this tool sits beside it. Matching the host product beats following each
+# viewer's OS, which is what it did before 2026-09-01.
+#
+# Understand what pinning means here: it is a LOCK, not a default. Streamlit
+# 1.62 has no Settings entry in its main menu at all — the full key list is
+# about / autoRerun / clearCache / community / print / recordScreencast /
+# report / rerun — so there is no theme picker at any toolbarMode, and a viewer
+# cannot override this. Accepted on purpose; revisit if a Streamlit upgrade
+# brings the picker back.
+#
+# It also STICKS per browser: Streamlit writes the active choice to
+# localStorage under `stActiveTheme-${pathname}` (so `stActiveTheme-/` here).
+# Changing this setting later will NOT move anyone who has already loaded the
+# app — they keep the stored value until it is cleared with
+# `localStorage.removeItem('stActiveTheme-/')`. Worth knowing before assuming a
+# config change took effect.
+#
+# Only `base` is set. The stylesheet in frontend/app.py stays theme-agnostic —
+# translucent rgba() chrome and inherited text, never hardcoded hex — so it
+# still reads correctly if this is ever unpinned, and so we are not maintaining
+# a palette. (A hardcoded palette behind @media (prefers-color-scheme) is what
+# made the capability button invisible earlier today: a media query reads the
+# OS and cannot see an in-app or config choice.)
+[theme]
+base = "light"
+
 [client]
-# "viewer" hides the developer toolbar AND its keyboard shortcuts (C = clear
-# cache, R = rerun) that otherwise hijack Ctrl+C / normal typing. Use "developer"
-# locally if you want those shortcuts back.
-toolbarMode = "viewer"
+# "minimal" hides the whole toolbar: the hamburger menu (Print, Record a
+# screencast, About + Streamlit version) and the Deploy button, plus the
+# developer keyboard shortcuts (C = clear cache, R = rerun) that otherwise
+# hijack Ctrl+C and normal typing.
+#
+# "viewer" was the previous setting. It already suppressed the shortcuts and the
+# developer options, but still showed Print / Record / About — none of which
+# mean anything in an internal admin tool, and the version string least of all.
+#
+# Nothing is lost by hiding the menu: Settings (and with it the theme picker) is
+# ALREADY hidden at "viewer" — the bundle gates it as
+# `DEVELOPER ? show : (VIEWER || MINIMAL) ? hide : …` — so there was never a
+# user-facing control in there to keep. Theme follows the OS either way.
+#
+# Use "developer" locally if you want the shortcuts and Settings back.
+toolbarMode = "minimal"
 
 [browser]
 # This is an internal admin tool — don't phone home usage stats.

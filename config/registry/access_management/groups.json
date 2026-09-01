@@ -110,51 +110,16 @@
     ]
   },
   {
-    "tool_id": "access_management.get_group",
-    "description": "Retrieve group details by name.",
+    "tool_id": "access_management.get_groups",
+    "description": "Retrieve groups — one named group, or all of them.",
     "parameters": {
       "type": "object",
       "properties": {
         "name": {
           "type": "string",
-          "description": "The name of the group to be retrieved."
+          "description": "Group name to filter by. Omit for all groups."
         }
       },
-      "required": [
-        "name"
-      ]
-    },
-    "mutates": false,
-    "examples": [
-      {
-        "user_query": "Show the details of the 'Data Analysts' group.",
-        "arguments": {
-          "name": "Data Analysts"
-        },
-        "notes": "This retrieves the details of the 'Data Analysts' group, including its ID, name, and default role. Use this to verify group configurations or permissions."
-      },
-      {
-        "user_query": "Can you fetch information about the 'Admin Team' group?",
-        "arguments": {
-          "name": "Admin Team"
-        },
-        "notes": "This call retrieves the details of the 'Admin Team' group. Useful for checking the group's default role and ensuring it is set up correctly."
-      },
-      {
-        "user_query": "I need to look up the 'Marketing Users' group to confirm its default role.",
-        "arguments": {
-          "name": "Marketing Users"
-        },
-        "notes": "This retrieves the 'Marketing Users' group details, which can help confirm its default role or troubleshoot access issues."
-      }
-    ]
-  },
-  {
-    "tool_id": "access_management.get_groups",
-    "description": "Retrieve all groups.",
-    "parameters": {
-      "type": "object",
-      "properties": {},
       "required": []
     },
     "mutates": false,
@@ -178,18 +143,16 @@
   },
   {
     "tool_id": "access_management.users_per_group",
-    "description": "Retrieve all users within a specific group by name.",
+    "description": "Retrieve group memberships — one group's members, or every membership.",
     "parameters": {
       "type": "object",
       "properties": {
         "group_name": {
           "type": "string",
-          "description": "The name of the group whose members to list."
+          "description": "The name of the group whose members to list. Omit for all memberships. A name that matches no group returns ``{\"error\": \"...\"}`` naming it — never a silent empty list. Naming ``Everyone`` or ``All users in system`` returns their members — an explicit request is always honored, even though the all-groups view omits them."
         }
       },
-      "required": [
-        "group_name"
-      ]
+      "required": []
     },
     "mutates": false,
     "examples": [
@@ -213,33 +176,6 @@
           "group_name": "Marketing Specialists"
         },
         "notes": "This call is helpful for identifying members of the 'Marketing Specialists' group, enabling targeted communication or permissions management."
-      }
-    ]
-  },
-  {
-    "tool_id": "access_management.users_per_group_all",
-    "description": "Retrieve all groups mapped to the users belonging to them.",
-    "parameters": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    },
-    "mutates": false,
-    "examples": [
-      {
-        "user_query": "Show all groups with the users belonging to each.",
-        "arguments": {},
-        "notes": "This call retrieves all groups and their associated users, excluding system-wide groups like 'Everyone' and 'All users in system'. Useful for auditing user-group mappings."
-      },
-      {
-        "user_query": "Can I get a list of all groups and the users assigned to them?",
-        "arguments": {},
-        "notes": "This call returns a detailed mapping of groups to users, including empty groups and special roles like 'Admins'. Ideal for understanding group membership across the system."
-      },
-      {
-        "user_query": "Show me all groups and their members, but exclude system-wide groups.",
-        "arguments": {},
-        "notes": "This call provides a filtered list of groups and their members, excluding predefined system-wide groups. Use this for focused group membership analysis."
       }
     ]
   }

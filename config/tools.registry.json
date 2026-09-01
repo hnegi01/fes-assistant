@@ -45,8 +45,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -80,8 +80,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -113,8 +113,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -173,8 +173,8 @@
       "access_management",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -184,7 +184,7 @@
     "class": "AccessManagement",
     "method": "create_user",
     "description": "Create a new user in Sisense.",
-    "full_doc": "Create a new user in Sisense.\n\nValidates that the required fields are present, then resolves the role\nname and group names to their corresponding IDs and sends a POST\nrequest to create the user. The ``role`` field is matched\ncase-insensitively (with ``\"VIEWER\"`` mapped to ``\"CONSUMER\"`` and\n``\"DESIGNER\"`` to ``\"CONTRIBUTOR\"``) and replaced with the resolved\n``roleId``; group names in ``groups`` are resolved to group IDs.\n\nParameters\n----------\nuser_data : CreateUserPayload\n    User details, using canonical Sisense payload field names:\n\n    - ``email`` : str — the user's email address. **Required.**\n    - ``role`` : str — role name to assign (resolved to ``roleId``).\n      **Required.**\n    - ``userName`` : str — the user's login name (optional).\n    - ``firstName`` : str — the user's first name (optional).\n    - ``lastName`` : str — the user's last name (optional).\n    - ``groups`` : list[str] — group names to assign, resolved to IDs\n      (optional).\n    - ``password`` : str — initial password; if omitted, the user\n      receives an email to set one (optional).\n    - ``preferences`` : dict — user preference settings (optional).\n\nReturns\n-------\ndict[str, Any]\n    The created user object returned by the API if successful, or a\n    dictionary with an ``error`` key if the operation fails. Missing\n    required fields are rejected up front, before any API call.",
+    "full_doc": "Create a new user in Sisense.\n\nValidates that the required fields are present, then resolves the role\nname and group names to their corresponding IDs and sends a POST\nrequest to create the user. Group names in ``groups`` are resolved to\ngroup IDs.\n\nThe ``role`` field accepts either vocabulary — the raw Sisense name\n(``\"consumer\"``, ``\"super\"``, ``\"contributor\"``) or the name the UI\nshows (``\"viewer\"``, ``\"sysAdmin\"``, ``\"dashboardDesigner\"``) — and is\nmatched ignoring case, spaces and punctuation, so ``\"sys admin\"`` and\n``\"sysAdmin\"`` are equivalent. Roles the instance defines beyond these\n(for example ``dataDesigner``, ``dataAdmin``, ``admin`` or custom\nroles) are matched by their own name and are never treated as synonyms\nfor a similar-sounding role. An unmatched name returns a failure dict\nlisting the roles the instance actually has.\n\nParameters\n----------\nuser_data : CreateUserPayload\n    User details, using canonical Sisense payload field names:\n\n    - ``email`` : str — the user's email address. **Required.**\n    - ``role`` : str — role name to assign, in either vocabulary\n      (``\"viewer\"`` or ``\"consumer\"``, ``\"sysAdmin\"`` or ``\"super\"``,\n      ``\"dashboardDesigner\"``/``\"designer\"`` or ``\"contributor\"``, or\n      any other role the instance defines); resolved to ``roleId``.\n      **Required.**\n    - ``userName`` : str — the user's login name (optional).\n    - ``firstName`` : str — the user's first name (optional).\n    - ``lastName`` : str — the user's last name (optional).\n    - ``groups`` : list[str] — group names to assign, resolved to IDs\n      (optional).\n    - ``password`` : str — initial password; if omitted, the user\n      receives an email to set one (optional).\n    - ``preferences`` : dict — user preference settings (optional).\n\nReturns\n-------\ndict[str, Any]\n    The created user object returned by the API if successful, or a\n    dictionary with an ``error`` key if the operation fails. Missing\n    required fields are rejected up front, before any API call.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -229,7 +229,7 @@
             "email",
             "role"
           ],
-          "description": "User details, using canonical Sisense payload field names: - ``email`` : str — the user's email address. **Required.** - ``role`` : str — role name to assign (resolved to ``roleId``). **Required.** - ``userName`` : str — the user's login name (optional). - ``firstName`` : str — the user's first name (optional). - ``lastName`` : str — the user's last name (optional). - ``groups`` : list[str] — group names to assign, resolved to IDs (optional). - ``password`` : str — initial password; if omitted, the user receives an email to set one (optional). - ``preferences`` : dict — user preference settings (optional)."
+          "description": "User details, using canonical Sisense payload field names: - ``email`` : str — the user's email address. **Required.** - ``role`` : str — role name to assign, in either vocabulary (``\"viewer\"`` or ``\"consumer\"``, ``\"sysAdmin\"`` or ``\"super\"``, ``\"dashboardDesigner\"``/``\"designer\"`` or ``\"contributor\"``, or any other role the instance defines); resolved to ``roleId``. **Required.** - ``userName`` : str — the user's login name (optional). - ``firstName`` : str — the user's first name (optional). - ``lastName`` : str — the user's last name (optional). - ``groups`` : list[str] — group names to assign, resolved to IDs (optional). - ``password`` : str — initial password; if omitted, the user receives an email to set one (optional). - ``preferences`` : dict — user preference settings (optional)."
         }
       },
       "required": [
@@ -242,8 +242,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -275,8 +275,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -305,8 +305,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -336,8 +336,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -347,7 +347,7 @@
     "class": "AccessManagement",
     "method": "get_all_dashboard_shares",
     "description": "Retrieve all dashboard shares, including user and group details for each shared dashboard.",
-    "full_doc": "Retrieve all dashboard shares, including user and group details for each shared dashboard.\n\nUses pagination to retrieve all dashboards and their share information,\nand collects the corresponding user and group details for each share.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of dictionaries containing the dashboard title, share type\n    (``user`` or ``group``), and share name (email or group name). An\n    empty list is returned if users or groups cannot be fetched.",
+    "full_doc": "Retrieve all dashboard shares, including user and group details for each shared dashboard.\n\nUses pagination to retrieve all dashboards and their share information,\nand collects the corresponding user and group details for each share.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of dictionaries containing the dashboard title, share type\n    (``user`` or ``group``), and share name (email or group name) — one\n    row per share, so the row count equals the number of shares.\n    Dashboards with no shares contribute no rows. An empty list is\n    returned if users or groups cannot be fetched.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -359,8 +359,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -389,38 +389,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
-    "examples": []
-  },
-  {
-    "tool_id": "access_management.get_group",
-    "module": "access_management",
-    "sub_module": "access_management.groups",
-    "class": "AccessManagement",
-    "method": "get_group",
-    "description": "Retrieve group details by name.",
-    "full_doc": "Retrieve group details by name.\n\nLooks up a group by its name and returns its ID, name, and default\nrole.\n\nParameters\n----------\nname : str\n    The name of the group to be retrieved.\n\nReturns\n-------\ndict[str, Any]\n    A dictionary with ``GROUP_ID``, ``GROUP_NAME``, and ``defaultRole``,\n    or ``{\"error\": \"...\"}`` if retrieval fails or the group is not found.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name of the group to be retrieved."
-        }
-      },
-      "required": [
-        "name"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "access_management",
-      "groups",
-      "read"
-    ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -429,11 +399,16 @@
     "sub_module": "access_management.groups",
     "class": "AccessManagement",
     "method": "get_groups",
-    "description": "Retrieve all groups.",
-    "full_doc": "Retrieve all groups.\n\nFetches the full list of groups defined on the Sisense server.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of raw group objects, or ``{\"error\": \"...\"}`` if\n    retrieval fails.",
+    "description": "Retrieve groups — one named group, or all of them.",
+    "full_doc": "Retrieve groups — one named group, or all of them.\n\nFetches the groups defined on the Sisense server. With ``name`` the\nAPI filters server-side to that group; without it, every group is\nreturned. One row per group.\n\nParameters\n----------\nname : str or None, optional\n    Group name to filter by. Omit for all groups.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of raw group objects as returned by the API (each with\n    ``_id``, ``name``, ``defaultRole``, and related fields). Without\n    ``name``, an empty list means the server genuinely has no groups.\n    With ``name``, the filter is an exact-match lookup — an unknown\n    name returns ``{\"ok\": False, \"error\": \"...\"}`` naming it, never\n    an empty list. Returns the standard error dict on failure.",
     "parameters": {
       "type": "object",
-      "properties": {},
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Group name to filter by. Omit for all groups."
+        }
+      },
       "required": []
     },
     "mutates": false,
@@ -442,8 +417,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -465,8 +440,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -487,8 +462,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -509,37 +484,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
-    "examples": []
-  },
-  {
-    "tool_id": "access_management.get_unused_columns",
-    "module": "access_management",
-    "sub_module": "access_management.columns",
-    "class": "AccessManagement",
-    "method": "get_unused_columns",
-    "description": "Identify unused columns in a DataModel by comparing all columns against dashboard usage.",
-    "full_doc": "Identify unused columns in a DataModel by comparing all columns against dashboard usage.\n\nCompares every available column against the columns referenced in the\ndashboards associated with the DataModel. Coverage includes dashboard\nfilters (dashboard-level, widget, and dependent filters) and widget\npanels (row, values, column panels, and measured filters).\n\nParameters\n----------\ndatamodel_name : str\n    The name of the DataModel to analyze.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of column dictionaries, each with a ``used`` field set to\n    ``True`` or ``False``. An empty list is returned if dashboards\n    cannot be fetched.\n\nRaises\n------\nValueError\n    If no columns are found for the given DataModel (for example, if it\n    does not exist or is not accessible).",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "datamodel_name": {
-          "type": "string",
-          "description": "The name of the DataModel to analyze."
-        }
-      },
-      "required": [
-        "datamodel_name"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "access_management",
-      "read"
-    ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -549,7 +495,7 @@
     "class": "AccessManagement",
     "method": "get_unused_columns_bulk",
     "description": "Run unused-column analysis for one or more data models and return a",
-    "full_doc": "Run unused-column analysis for one or more data models and return a\ncombined result set.\n\nParameters\n----------\ndatamodels : str or list of str, optional\n    One or more data model references to analyze. Each reference can be:\n      - a data model ID, or\n      - a data model title (name).\n    At least one data model reference is required. At runtime this\n    parameter is tolerant of a single string and will normalize it to a\n    one-element list.\n\nReturns\n-------\nlist of dict\n    A flat list of rows across all processed data models. Each row has\n    the same structure as returned by get_unused_columns().\n    If no data models are successfully processed, an empty list is\n    returned and details are available in the logs.",
+    "full_doc": "Run unused-column analysis for one or more data models and return a\ncombined per-model outcome.\n\nParameters\n----------\ndatamodels : str or list of str\n    One or more data model references to analyze. **Required.** Each\n    reference can be:\n      - a data model ID, or\n      - a data model title (name).\n    At runtime this parameter is tolerant of a single string and will\n    normalize it to a one-element list.\n\nReturns\n-------\ndict[str, Any]\n    Always a dict with ``\"results\"`` and ``\"errors\"``:\n      - ``\"results\"``: flat list of column rows across all processed\n        data models, each row shaped as ``get_datamodel_columns`` rows\n        plus a ``\"used\"`` boolean. A model that resolves and genuinely\n        has no columns in use contributes rows with ``used: False``.\n      - ``\"errors\"``: list of ``{\"ref\": ..., \"error\": ...}`` entries,\n        one per reference that could not be resolved or processed —\n        empty when every reference succeeded.\n    When **none** of the given references can be processed (or the\n    input is invalid), the dict additionally carries ``\"ok\": False``\n    and a top-level ``\"error\"`` summary, so standard failure detection\n    (``payload.get(\"ok\") is False``) still fires.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -558,18 +504,20 @@
           "items": {
             "type": "string"
           },
-          "description": "One or more data model references to analyze. Each reference can be: - a data model ID, or - a data model title (name). At least one data model reference is required. At runtime this parameter is tolerant of a single string and will normalize it to a one-element list."
+          "description": "One or more data model references to analyze. **Required.** Each reference can be: - a data model ID, or - a data model title (name). At runtime this parameter is tolerant of a single string and will normalize it to a one-element list."
         }
       },
-      "required": []
+      "required": [
+        "datamodels"
+      ]
     },
     "mutates": false,
     "tags": [
       "access_management",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -578,14 +526,14 @@
     "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_user",
-    "description": "Retrieve a user's details by email address, expanding group and role information.",
-    "full_doc": "Retrieve a user's details by email address, expanding group and role information.\n\nThis method fetches users with expanded ``groups`` and ``role`` data and then\nreturns the record matching the provided email address.\n\nParameters\n----------\nuser_email : str\n    Email address of the user to retrieve. (format: email)\n\nReturns\n-------\ndict[str, Any]\n    User details on success. If the operation fails, returns a dictionary with an\n    ``error`` key.",
+    "description": "Retrieve one named user by email address, in the canonical user row shape.",
+    "full_doc": "Retrieve one named user by email address, in the canonical user row shape.\n\nFetches users with expanded ``groups`` and ``role`` data and returns the\nrecord matching the provided email address.\n\nChanged in 2.0: ``ROLE_NAME`` held the display name in 1.x (that value\nis now ``ROLE_DISPLAY_NAME``); ``GROUPS`` still holds the group names\nand is joined by the new ``GROUP_IDS``. See ``docs/upgrading.md``.\n\nParameters\n----------\nuser_email : str\n    Email address of the user to retrieve. **Required** — this method\n    always answers \"one named user\"; use ``get_users_all`` for every\n    user. (format: email)\n\nReturns\n-------\ndict[str, Any]\n    The canonical user row: ``USER_ID``, ``USER_NAME``, ``EMAIL``,\n    ``FIRST_NAME``, ``LAST_NAME``, ``IS_ACTIVE``, ``ROLE_ID``,\n    ``ROLE_NAME`` (the raw Sisense value, e.g. ``\"consumer\"``),\n    ``ROLE_DISPLAY_NAME`` (the name the Sisense UI shows, e.g.\n    ``\"viewer\"``), ``GROUP_IDS``, and ``GROUPS`` (unfiltered —\n    includes ``Everyone``). Returns ``{\"error\": \"...\"}`` when the user\n    is not found or the API call fails.",
     "parameters": {
       "type": "object",
       "properties": {
         "user_email": {
           "type": "string",
-          "description": "Email address of the user to retrieve.",
+          "description": "Email address of the user to retrieve. **Required** — this method always answers \"one named user\"; use ``get_users_all`` for every user.",
           "format": "email"
         }
       },
@@ -599,64 +547,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
-    "examples": []
-  },
-  {
-    "tool_id": "access_management.get_user_email_and_group_name_maps",
-    "module": "access_management",
-    "sub_module": "access_management.admin",
-    "class": "AccessManagement",
-    "method": "get_user_email_and_group_name_maps",
-    "description": "Fetch all users and groups and build ID-to-name lookup maps.",
-    "full_doc": "Fetch all users and groups and build ID-to-name lookup maps.\n\nUsed for resolving share entries (dashboard or data model), which\nreference users and groups only by ID, into readable emails and\ngroup names. Shared by ``get_all_dashboard_shares`` here and by\n``Dashboard.get_dashboard_share`` (via ``self.access_mgmt``).\n\nReturns\n-------\ndict[str, Any]\n    ``{\"users_by_id\": {user_id: email, ...}, \"groups_by_id\": {group_id: name, ...}}``\n    on success, or ``{\"error\": \"...\"}`` if either API call fails.",
-    "parameters": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    },
-    "mutates": false,
-    "tags": [
-      "access_management",
-      "users",
-      "groups",
-      "read"
-    ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
-    "examples": []
-  },
-  {
-    "tool_id": "access_management.get_user_with_role_and_group_names",
-    "module": "access_management",
-    "sub_module": "access_management.users",
-    "class": "AccessManagement",
-    "method": "get_user_with_role_and_group_names",
-    "description": "Retrieve a single user by email/username with role and group details.",
-    "full_doc": "Retrieve a single user by email/username with role and group details.\n\nFetches the expanded users list and returns the matching user enriched\nwith both the role and group IDs and their resolved names.\n\nParameters\n----------\nuser_name : str\n    The email or username of the user to be retrieved. (format: email)\n\nReturns\n-------\ndict[str, Any]\n    User details including ``USER_ID``, ``USER_NAME``, ``FIRST_NAME``,\n    ``LAST_NAME``, ``EMAIL``, ``IS_ACTIVE``, ``ROLE_ID``, ``ROLE_NAME``,\n    ``GROUP_IDS`` (list of group IDs), and ``GROUP_NAMES`` (list of group\n    names), or ``{\"error\": \"...\"}`` on failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "user_name": {
-          "type": "string",
-          "description": "The email or username of the user to be retrieved.",
-          "format": "email"
-        }
-      },
-      "required": [
-        "user_name"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "access_management",
-      "users",
-      "groups",
-      "read"
-    ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -665,8 +557,8 @@
     "sub_module": "access_management.users",
     "class": "AccessManagement",
     "method": "get_users_all",
-    "description": "Retrieve all users with group and role information.",
-    "full_doc": "Retrieve all users with group and role information.\n\nRetrieves user details along with group and role information. Removes\nthe \"Everyone\" group from users if they belong to other groups, but\nkeeps the \"Everyone\" group if it is the only group the user belongs to.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of user details dicts, or ``[{\"error\": \"...\"}]`` if retrieval\n    fails.",
+    "description": "Retrieve every user, one canonical user row each.",
+    "full_doc": "Retrieve every user, one canonical user row each.\n\nReports exactly what Sisense stores: group memberships are unfiltered\n(``Everyone`` is included — consumers that want to hide a universal\ngroup can drop it; a consumer that never received it cannot put it\nback), and ``ROLE_NAME`` carries the raw Sisense value with the\nUI-facing name in ``ROLE_DISPLAY_NAME``.\n\nChanged in 2.0: ``ROLE_NAME`` held the display name in 1.x (that value\nis now ``ROLE_DISPLAY_NAME``), ``GROUPS`` is joined by the new\n``GROUP_IDS``, and ``Everyone`` is no longer filtered out of\n``GROUPS``. See ``docs/upgrading.md``.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    One row per user, each with ``USER_ID``, ``USER_NAME``, ``EMAIL``,\n    ``FIRST_NAME``, ``LAST_NAME``, ``IS_ACTIVE``, ``ROLE_ID``,\n    ``ROLE_NAME`` (raw, e.g. ``\"consumer\"``), ``ROLE_DISPLAY_NAME``\n    (UI name, e.g. ``\"viewer\"``), ``GROUP_IDS``, and ``GROUPS``\n    (unfiltered). Returns ``{\"error\": \"...\"}`` on failure.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -678,55 +570,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
-    "examples": []
-  },
-  {
-    "tool_id": "access_management.get_users_expanded",
-    "module": "access_management",
-    "sub_module": "access_management.users",
-    "class": "AccessManagement",
-    "method": "get_users_expanded",
-    "description": "Retrieve all users with raw, unmodified role and group objects.",
-    "full_doc": "Retrieve all users with raw, unmodified role and group objects.\n\nFetches ``GET /api/v1/users`` with ``groups`` and ``role`` expanded.\nUnlike ``get_users_all`` and ``get_user_with_role_and_group_names``,\nrole and group names are returned exactly as stored (no display-name\naliasing), which is required when resolving role/group mappings\nacross two separate Sisense environments.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    The raw list of user objects, or ``{\"error\": \"...\"}`` if\n    retrieval fails.",
-    "parameters": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    },
-    "mutates": false,
-    "tags": [
-      "access_management",
-      "users",
-      "read"
-    ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
-    "examples": []
-  },
-  {
-    "tool_id": "access_management.get_users_with_role_names_and_group_names",
-    "module": "access_management",
-    "sub_module": "access_management.users",
-    "class": "AccessManagement",
-    "method": "get_users_with_role_names_and_group_names",
-    "description": "Retrieve all users enriched with role names and group names.",
-    "full_doc": "Retrieve all users enriched with role names and group names.\n\nFetches users with ``groups`` and ``role`` expanded in a single call\nand resolves each user's role/group IDs and names from the expanded\nobjects. Role names are returned exactly as stored by Sisense (e.g.\n``\"consumer\"``), not the public alias — use\n``get_user_with_role_and_group_names`` for a single user if the\naliased name (``\"viewer\"``) is needed instead.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list where each entry contains ``USER_ID``, ``USER_NAME``,\n    ``FIRST_NAME``, ``LAST_NAME``, ``EMAIL``, ``IS_ACTIVE``, ``ROLE_ID``,\n    ``ROLE_NAME``, ``GROUP_IDS``, and ``GROUP_NAMES``. If any API call\n    fails, a single-item list with an ``error`` key is returned.",
-    "parameters": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    },
-    "mutates": false,
-    "tags": [
-      "access_management",
-      "users",
-      "groups",
-      "read"
-    ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -736,7 +581,7 @@
     "class": "AccessManagement",
     "method": "update_user",
     "description": "Update an existing Sisense user identified by their email address.",
-    "full_doc": "Update an existing Sisense user identified by their email address.\n\nThis method finds the user by email and performs a partial update (PATCH).\nAll update fields MUST be provided inside the ``user_data`` dictionary. Do not\npass update fields at the top level.\n\nParameters\n----------\nuser_email : str\n    Email address of the user to update (used to locate the user). (format: email)\nuser_data : UpdateUserPayload\n    Dictionary of fields to update. Only include fields you want to change.\n\n    Supported fields\n    ----------------\n    - email : str\n        Update the user's email address.\n    - userName : str\n        Update the user's username/login name.\n    - firstName : str\n        Update the user's first name.\n    - lastName : str\n        Update the user's last name.\n    - role : str\n        Role name (e.g., \"viewer\", \"designer\"). This is resolved to ``roleId`` before\n        sending the API request.\n    - groups : list[str]\n        List of group names to apply. Group names are resolved to group IDs before\n        sending the API request. If ``groups`` is explicitly provided as an empty\n        list (``[]``), group memberships are cleared (tenant defaults may still apply).\n\nReturns\n-------\ndict[str, Any]\n    The updated user payload when successful. If the operation fails, returns a\n    dictionary with an ``error`` key.",
+    "full_doc": "Update an existing Sisense user identified by their email address.\n\nThis method finds the user by email and performs a partial update (PATCH).\nAll update fields MUST be provided inside the ``user_data`` dictionary. Do not\npass update fields at the top level.\n\nParameters\n----------\nuser_email : str\n    Email address of the user to update (used to locate the user). (format: email)\nuser_data : UpdateUserPayload\n    Dictionary of fields to update. Only include fields you want to change.\n\n    Supported fields\n    ----------------\n    - email : str\n        Update the user's email address.\n    - userName : str\n        Update the user's username/login name.\n    - firstName : str\n        Update the user's first name.\n    - lastName : str\n        Update the user's last name.\n    - role : str\n        Role name in either vocabulary — raw (``\"consumer\"``, ``\"super\"``,\n        ``\"contributor\"``), the UI name (``\"viewer\"``, ``\"sysAdmin\"``,\n        ``\"dashboardDesigner\"``), or any other role the instance defines\n        (``dataDesigner``, ``dataAdmin``, custom roles). Matched ignoring\n        case, spaces and punctuation. This is resolved to ``roleId`` before\n        sending the API request.\n    - groups : list[str]\n        List of group names to apply. Group names are resolved to group IDs before\n        sending the API request. If ``groups`` is explicitly provided as an empty\n        list (``[]``), group memberships are cleared (tenant defaults may still apply).\n\nReturns\n-------\ndict[str, Any]\n    The updated user payload when successful. If the operation fails, returns a\n    dictionary with an ``error`` key.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -779,7 +624,7 @@
               "type": "object"
             }
           },
-          "description": "Dictionary of fields to update. Only include fields you want to change. Supported fields ---------------- - email : str Update the user's email address. - userName : str Update the user's username/login name. - firstName : str Update the user's first name. - lastName : str Update the user's last name. - role : str Role name (e.g., \"viewer\", \"designer\"). This is resolved to ``roleId`` before sending the API request. - groups : list[str] List of group names to apply. Group names are resolved to group IDs before sending the API request. If ``groups`` is explicitly provided as an empty list (``[]``), group memberships are cleared (tenant defaults may still apply)."
+          "description": "Dictionary of fields to update. Only include fields you want to change. Supported fields ---------------- - email : str Update the user's email address. - userName : str Update the user's username/login name. - firstName : str Update the user's first name. - lastName : str Update the user's last name. - role : str Role name in either vocabulary — raw (``\"consumer\"``, ``\"super\"``, ``\"contributor\"``), the UI name (``\"viewer\"``, ``\"sysAdmin\"``, ``\"dashboardDesigner\"``), or any other role the instance defines (``dataDesigner``, ``dataAdmin``, custom roles). Matched ignoring case, spaces and punctuation. This is resolved to ``roleId`` before sending the API request. - groups : list[str] List of group names to apply. Group names are resolved to group IDs before sending the API request. If ``groups`` is explicitly provided as an empty list (``[]``), group memberships are cleared (tenant defaults may still apply)."
         }
       },
       "required": [
@@ -793,8 +638,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -803,42 +648,16 @@
     "sub_module": "access_management.groups",
     "class": "AccessManagement",
     "method": "users_per_group",
-    "description": "Retrieve all users within a specific group by name.",
-    "full_doc": "Retrieve all users within a specific group by name.\n\nResolves the group by name and then fetches the user objects that\nbelong to it.\n\nParameters\n----------\ngroup_name : str\n    The name of the group whose members to list.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of user objects in the group, or ``{\"error\": \"...\"}`` if\n    the operation fails.",
+    "description": "Retrieve group memberships — one group's members, or every membership.",
+    "full_doc": "Retrieve group memberships — one group's members, or every membership.\n\nReturns one flat row per (group, user) membership. With ``group_name``\nthe rows are that group's members; without it, every membership on the\ninstance is returned (ask ``get_groups`` for the per-group view).\n``Everyone`` and ``All users in system`` are omitted from the\nall-groups view: Sisense fills both with every user, so they restate\n``get_users_all`` rather than describing group structure. Naming\neither one still returns its members.\n\nThe rule across the SDK: **targeted questions give complete answers;\nonly the all-groups view filters.** So ``users_per_group(\"Everyone\")``\nand ``get_user(email)[\"GROUPS\"]`` both report every group a user is\nin, while ``users_per_group()`` omits the two universal ones. Do not\nderive one person's groups from the all-groups view — it will be\nmissing those two. Use :meth:`get_user` for that.\n\nMembership is read from the **group** side\n(``GET /api/v1/groups?expand=users``), which is the same source the\nSisense UI shows. Sisense resolves the auto-generated groups\n(``Admins``, ``All users in system``) on the group side only — their\nmembers do not appear in any user's own ``groups`` field — so reading\nfrom the user side would report them as empty while the UI shows\nmembers.\n\nParameters\n----------\ngroup_name : str or None, optional\n    The name of the group whose members to list. Omit for all\n    memberships. A name that matches no group returns\n    ``{\"error\": \"...\"}`` naming it — never a silent empty list.\n    Naming ``Everyone`` or ``All users in system`` returns their\n    members — an explicit request is always honored, even though the\n    all-groups view omits them.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    One row per (group, user) membership, each with ``GROUP_ID``,\n    ``GROUP_NAME``, ``USER_ID``, ``USER_NAME``, ``EMAIL``,\n    ``FIRST_NAME``, ``LAST_NAME``, ``IS_ACTIVE``, ``ROLE_ID``,\n    ``ROLE_NAME`` and ``ROLE_DISPLAY_NAME`` (both the name the Sisense\n    UI shows), and ``ROLE_RAW_NAME`` (the raw Sisense value). A group\n    with no members contributes no rows, so the row count always equals\n    the real membership count.\n    Returns ``{\"error\": \"...\"}`` on failure or unknown ``group_name``.",
     "parameters": {
       "type": "object",
       "properties": {
         "group_name": {
           "type": "string",
-          "description": "The name of the group whose members to list."
+          "description": "The name of the group whose members to list. Omit for all memberships. A name that matches no group returns ``{\"error\": \"...\"}`` naming it — never a silent empty list. Naming ``Everyone`` or ``All users in system`` returns their members — an explicit request is always honored, even though the all-groups view omits them."
         }
       },
-      "required": [
-        "group_name"
-      ]
-    },
-    "mutates": false,
-    "tags": [
-      "access_management",
-      "users",
-      "groups",
-      "read"
-    ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
-    "examples": []
-  },
-  {
-    "tool_id": "access_management.users_per_group_all",
-    "module": "access_management",
-    "sub_module": "access_management.groups",
-    "class": "AccessManagement",
-    "method": "users_per_group_all",
-    "description": "Retrieve all groups mapped to the users belonging to them.",
-    "full_doc": "Retrieve all groups mapped to the users belonging to them.\n\nGroups like ``Everyone`` and ``All users in system`` are excluded.\nUsers with roles like ``admin``, ``dataAdmin``, and ``sysAdmin`` are\nmapped to the existing ``Admins`` group. Groups with no users are also\nincluded in the final result.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of dictionaries, where each dictionary contains a group name\n    and the list of usernames in that group. An empty list is returned\n    on failure.",
-    "parameters": {
-      "type": "object",
-      "properties": {},
       "required": []
     },
     "mutates": false,
@@ -848,8 +667,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -877,8 +696,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -899,8 +718,8 @@
       "blox",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -937,8 +756,8 @@
       "blox",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -966,8 +785,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1012,8 +831,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1060,8 +879,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1089,8 +908,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1118,8 +937,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1149,8 +968,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1178,8 +997,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1212,8 +1031,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1246,8 +1065,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1296,8 +1115,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1307,7 +1126,7 @@
     "class": "Dashboard",
     "method": "add_dashboard_script",
     "description": "Add or overwrite a script on a dashboard.",
-    "full_doc": "Add or overwrite a script on a dashboard.\n\nAdds or overwrites a script on a dashboard, temporarily changing\nownership to the executing user and restoring it (along with the\noriginal shares) afterwards when required, as only the dashboard owner\ncan modify scripts.\n\nParameters\n----------\ndashboard_id : str\n    The ID of the dashboard where the script will be added.\nscript : str | dict[str, Any]\n    The JavaScript script to add, provided as either a properly\n    formatted JSON string, a raw multi-line script string, or a\n    pre-built payload dictionary.\nexecuting_user : str | None, optional\n    The username of the API user, used to temporarily change the owner\n    of the dashboard, as only the owner can add scripts. If not\n    provided, assumes the dashboard owner is the same as the API user.\n    (format: email)\n\nReturns\n-------\nstr\n    A success message on success, or an error message string describing\n    the failure.",
+    "full_doc": "Add or overwrite a script on a dashboard.\n\nAdds or overwrites a script on a dashboard, temporarily changing\nownership to the executing user and restoring it (along with the\noriginal shares) afterwards when required, as only the dashboard owner\ncan modify scripts.\n\nParameters\n----------\ndashboard_id : str\n    The ID of the dashboard where the script will be added.\nscript : str | dict[str, Any]\n    The JavaScript script to add, provided as either a properly\n    formatted JSON string, a raw multi-line script string, or a\n    pre-built payload dictionary.\nexecuting_user : str | None, optional\n    The username of the API user, used to temporarily change the owner\n    of the dashboard, as only the owner can add scripts. If not\n    provided, assumes the dashboard owner is the same as the API user.\n    (format: email)\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True, \"message\": \"...\"}`` on success, or the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -1336,8 +1155,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1347,7 +1166,7 @@
     "class": "Dashboard",
     "method": "add_dashboard_shares",
     "description": "Add or update shares for a dashboard for the given users and groups.",
-    "full_doc": "Add or update shares for a dashboard for the given users and groups.\n\nResolves each share's ``name`` to its user or group ``shareId``, compares\nagainst the dashboard's existing shares, and posts only new shares and\nshares whose ``rule`` changed. Existing shares that are unaffected are\npreserved in the payload.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard to which the shares will be applied.\nshares : list[dict[str, Any]]\n    A list of share entries. Each entry must contain:\n\n    - ``name`` (str): The username (email) or group name.\n    - ``type`` (str): Either ``\"user\"`` or ``\"group\"``.\n    - ``rule`` (str): The access level (for example ``\"view\"`` or\n      ``\"edit\"``).\n\n    The ``name`` is resolved to ``shareId`` internally; entries that\n    cannot be resolved are skipped.\n\nReturns\n-------\nstr\n    A success message summarizing the new and updated shares, a message\n    indicating no changes were needed, or an error description on\n    failure.",
+    "full_doc": "Add or update shares for a dashboard for the given users and groups.\n\nResolves each share's ``name`` to its user or group ``shareId``, compares\nagainst the dashboard's existing shares, and posts only new shares and\nshares whose ``rule`` changed. Existing shares that are unaffected are\npreserved in the payload.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard to which the shares will be applied.\nshares : list[dict[str, Any]]\n    A list of share entries. Each entry must contain:\n\n    - ``name`` (str): The username (email) or group name.\n    - ``type`` (str): Either ``\"user\"`` or ``\"group\"``.\n    - ``rule`` (str): The access level (for example ``\"view\"`` or\n      ``\"edit\"``).\n\n    The ``name`` is resolved to ``shareId`` internally; entries that\n    cannot be resolved are skipped.\n\nReturns\n-------\ndict[str, Any]\n    On success: ``{\"success\": True, \"message\": ..., \"new_shares\": <n>,\n    \"updated_shares\": <n>}`` (``new_shares``/``updated_shares`` are the\n    counts actually written; both 0 when every requested share already\n    existed with the same rule). On failure: the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -1374,8 +1193,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1385,7 +1204,7 @@
     "class": "Dashboard",
     "method": "add_widget_script",
     "description": "Add or overwrite a script for a specific widget within a dashboard.",
-    "full_doc": "Add or overwrite a script for a specific widget within a dashboard.\n\nAdds or overwrites a script for a specific widget, republishing the\ndashboard to apply the changes. If required, it temporarily changes the\ndashboard ownership to the executing user and restores it (along with\nthe original shares) afterwards, as only the owner can modify widget\nscripts.\n\nParameters\n----------\ndashboard_id : str\n    The ID of the dashboard containing the widget.\nwidget_id : str\n    The ID of the widget where the script will be added.\nscript : str | dict[str, Any]\n    The JavaScript script to add, provided as either a properly\n    formatted JSON string, a raw multi-line script string, or a\n    pre-built payload dictionary.\nexecuting_user : str | None, optional\n    The username of the API user, used to temporarily change the owner\n    of the dashboard, as only the owner can add scripts. If not\n    provided, assumes the dashboard owner is the same as the API user.\n    (format: email)\n\nReturns\n-------\nstr\n    A success message on success, or an error message string describing\n    the failure.",
+    "full_doc": "Add or overwrite a script for a specific widget within a dashboard.\n\nAdds or overwrites a script for a specific widget, republishing the\ndashboard to apply the changes. If required, it temporarily changes the\ndashboard ownership to the executing user and restores it (along with\nthe original shares) afterwards, as only the owner can modify widget\nscripts.\n\nParameters\n----------\ndashboard_id : str\n    The ID of the dashboard containing the widget.\nwidget_id : str\n    The ID of the widget where the script will be added.\nscript : str | dict[str, Any]\n    The JavaScript script to add, provided as either a properly\n    formatted JSON string, a raw multi-line script string, or a\n    pre-built payload dictionary.\nexecuting_user : str | None, optional\n    The username of the API user, used to temporarily change the owner\n    of the dashboard, as only the owner can add scripts. If not\n    provided, assumes the dashboard owner is the same as the API user.\n    (format: email)\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True, \"message\": \"...\"}`` on success, or the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict on failure (including\n    when the script was added but republishing the dashboard failed).",
     "parameters": {
       "type": "object",
       "properties": {
@@ -1418,8 +1237,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1447,8 +1266,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1490,8 +1309,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1520,8 +1339,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1564,8 +1383,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1587,8 +1406,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1617,8 +1436,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1647,8 +1466,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1658,7 +1477,7 @@
     "class": "Dashboard",
     "method": "get_dashboard_columns",
     "description": "Retrieve columns referenced by a dashboard, including widget and filter columns.",
-    "full_doc": "Retrieve columns referenced by a dashboard, including widget and filter columns.\n\nResolves the dashboard by title with ``get_dashboard_by_name``, exports\nits full metadata, then extracts column references from both filters and\nwidgets. The final list is deduplicated by ``table`` and ``column``.\n\nParameters\n----------\ndashboard_name : str\n    Title of the dashboard to retrieve columns from.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of distinct column entries. Each entry contains\n    ``dashboard_name``, ``source`` (``\"filter\"`` or ``\"widget\"``),\n    ``widget_id``, ``table``, and ``column``. Returns an empty list when\n    the dashboard is not found or its metadata cannot be retrieved.",
+    "full_doc": "Retrieve columns referenced by a dashboard, including widget and filter columns.\n\nResolves the dashboard by title with ``get_dashboard_by_name``, exports\nits full metadata, then extracts column references from both filters and\nwidgets. The final list is deduplicated by ``table`` and ``column``.\n\nParameters\n----------\ndashboard_name : str\n    Title of the dashboard to retrieve columns from.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of distinct column entries. Each entry contains\n    ``dashboard_name``, ``source`` (``\"filter\"`` or ``\"widget\"``),\n    ``widget_id``, ``table``, and ``column`` — an empty list means the\n    dashboard genuinely references no columns. On failure (dashboard\n    not found, or its metadata cannot be retrieved or parsed), returns\n    the standard ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -1677,8 +1496,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1707,8 +1526,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1718,7 +1537,7 @@
     "class": "Dashboard",
     "method": "get_dashboard_share",
     "description": "Retrieve share details (users and groups) for a dashboard by title.",
-    "full_doc": "Retrieve share details (users and groups) for a dashboard by title.\n\nResolves the dashboard by title, then maps each share's ``shareId`` to a\nreadable name using the users and groups lists: user shares resolve to\nthe user's ``email`` and group shares to the group ``name``.\n\nParameters\n----------\ndashboard_name : str\n    Title of the dashboard to retrieve share information for.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of share entries, each containing ``type`` (``\"user\"`` or\n    ``\"group\"``) and ``name`` (email or group name). Returns an empty\n    list when the dashboard is not found, has no shares, or the users or\n    groups lookup fails.",
+    "full_doc": "Retrieve share details (users and groups) for a dashboard by title.\n\nResolves the dashboard by title, then maps each share's ``shareId`` to a\nreadable name using the users and groups lists: user shares resolve to\nthe user's ``email`` and group shares to the group ``name``.\n\nParameters\n----------\ndashboard_name : str\n    Title of the dashboard to retrieve share information for.\n\nReturns\n-------\nlist[dict[str, Any]]\n    A list of share entries, each containing ``type`` (``\"user\"`` or\n    ``\"group\"``) and ``name`` (email or group name). An empty list means\n    the dashboard genuinely has no shares. On failure (dashboard not\n    found, users/groups lookup failed), returns the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -1737,8 +1556,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1771,8 +1590,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1801,8 +1620,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1832,8 +1651,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1870,8 +1689,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1904,8 +1723,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1941,8 +1760,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -1976,8 +1795,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2014,8 +1833,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2049,8 +1868,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2079,8 +1898,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2118,8 +1937,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2129,7 +1948,7 @@
     "class": "DataModel",
     "method": "add_datamodel_shares",
     "description": "Add share entries (users and groups) to a data model.",
-    "full_doc": "Add share entries (users and groups) to a data model.\n\nResolves each share's user email or group name to its identifier, merges\nthe new shares with the existing ones, and submits the combined share list.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to add shares to.\nshares : list[dict[str, Any]]\n    List of share definitions to add. Each dictionary should include:\n    ``name`` (user email or group name), ``type`` (``\"user\"`` or\n    ``\"group\"``), and ``permission`` (one of ``\"EDIT\"``, ``\"READ\"``,\n    ``\"USE\"``).\n\nReturns\n-------\ndict[str, Any]\n    API response on success, or ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Add share entries (users and groups) to a data model.\n\nResolves each share's user email or group name to its identifier, merges\nthe new shares with the existing ones, and submits the combined share list.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to add shares to.\nshares : list[dict[str, Any]]\n    List of share definitions to add. Each dictionary should include:\n    ``name`` (user email or group name), ``type`` (``\"user\"`` or\n    ``\"group\"``), and ``permission`` (one of ``\"EDIT\"``, ``\"READ\"``,\n    ``\"USE\"``).\n\nReturns\n-------\ndict[str, Any]\n    On success: ``{\"success\": True, \"message\": \"...\", \"new_shares\":\n    <n>, \"updated_shares\": <n>, \"skipped\": [...]}``. ``skipped``\n    lists every requested share that was not submitted, as\n    ``{\"name\", \"type\", \"reason\"}`` entries (unknown user/group,\n    inactive user, invalid share type) — an empty list means every\n    requested share was submitted. On failure: the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict; when none of the\n    given shares can be resolved, no changes are written and the\n    failure dict carries the same ``\"skipped\"`` list.\n\nNotes\n-----\nBoth model types key share entries by ``partyId``, but use different\nendpoints and verbs: EXTRACT permissions are written via\n``PUT /api/elasticubes/localhost/{title}/permissions`` (by title),\nLIVE via ``PATCH /api/v1/elasticubes/live/{oid}/permissions`` (by\noid). A share for a party that already has one updates that party's\npermission instead of duplicating the entry (EXTRACT path). Shares\nfor inactive users are skipped and reported in ``skipped`` — Sisense\naccepts the write but silently drops such entries, so submitting\nthem would report success for a share that never lands.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2155,8 +1974,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2166,7 +1985,7 @@
     "class": "DataModel",
     "method": "create_connections",
     "description": "Create a new connection using the provided payload.",
-    "full_doc": "Create a new connection using the provided payload.\n\nSends ``POST /api/v2/connections`` with the given payload, which is\ntypically produced by ``generate_connections_payload``.\n\nParameters\n----------\nconnection_payload : ConnectionPayload\n    The configuration payload for the connection. ``provider``,\n    ``name``, and ``parameters`` are required; optional fields include\n    ``description``, ``enabled``, ``createdByUser``, and\n    ``supportedModelTypes``.\n\nReturns\n-------\ndict[str, Any] | None\n    JSON response with the created connection details on success\n    (HTTP 201), otherwise ``None``.",
+    "full_doc": "Create a new connection using the provided payload.\n\nSends ``POST /api/v2/connections`` with the given payload, which is\ntypically produced by ``generate_connections_payload``.\n\nParameters\n----------\nconnection_payload : ConnectionPayload\n    The configuration payload for the connection. ``provider``,\n    ``name``, and ``parameters`` are required; optional fields include\n    ``description``, ``enabled``, ``createdByUser``, and\n    ``supportedModelTypes``.\n\nReturns\n-------\ndict[str, Any] | None\n    JSON response with the created connection details on success\n    (HTTP 201), or the standard ``{\"ok\": False, \"error\": \"...\", ...}``\n    dict on failure.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2215,8 +2034,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2267,8 +2086,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2317,8 +2136,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": [],
     "x-followup": {
       "note": "The change isn't queryable until the model is built or published.",
@@ -2386,8 +2205,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": [],
     "x-followup": {
       "note": "The change isn't queryable until the model is built or published.",
@@ -2424,8 +2243,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2463,8 +2282,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2534,8 +2353,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2563,8 +2382,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2592,8 +2411,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2628,8 +2447,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2739,8 +2558,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2761,8 +2580,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2790,8 +2609,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2812,8 +2631,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2823,7 +2642,7 @@
     "class": "DataModel",
     "method": "get_data",
     "description": "Retrieve data from a specific table in a data model.",
-    "full_doc": "Retrieve data from a specific table in a data model.\n\nRuns a SQL query against the data model and returns the rows in a\nrow-based format (a list of dicts) compatible with ``to_dataframe``.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model.\ntable_name : str\n    Name of the table to retrieve data from.\nquery : str | None, optional\n    Optional SQL query to filter the data. When omitted, all rows of the\n    table are selected.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of dictionaries where each dict represents a row. Returns an empty\n    list on failure or when no data is available.",
+    "full_doc": "Retrieve data from a specific table in a data model.\n\nRuns a SQL query against the data model and returns the rows in a\nrow-based format (a list of dicts) compatible with ``to_dataframe``.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model.\ntable_name : str\n    Name of the table to retrieve data from.\nquery : str | None, optional\n    Optional SQL query to filter the data. When omitted, all rows of the\n    table are selected.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dictionaries where each dict represents a row — an empty\n    list means the query genuinely returned no data. On failure,\n    returns the standard ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2850,8 +2669,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2879,8 +2698,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2908,8 +2727,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2937,8 +2756,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2948,7 +2767,7 @@
     "class": "DataModel",
     "method": "get_datamodel_shares",
     "description": "Retrieve all share entries (users and groups) for a given data model.",
-    "full_doc": "Retrieve all share entries (users and groups) for a given data model.\n\nResolves user and group identifiers to names/emails and returns the shares\nin a flat row format. Permission codes are mapped to ``\"EDIT\"``, ``\"READ\"``,\nor ``\"USE\"``.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to retrieve shares for.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of dicts, each with ``\"datamodel_name\"``, ``\"datamodel_id\"``,\n    ``\"party_name\"``, ``\"party_type\"``, and ``\"permission\"``. Returns an\n    empty list on failure.",
+    "full_doc": "Retrieve all share entries (users and groups) for a given data model.\n\nResolves user and group identifiers to names/emails and returns the shares\nin a flat row format. Permission codes are mapped to ``\"EDIT\"``, ``\"READ\"``,\nor ``\"USE\"``.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to retrieve shares for.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of dicts, each with ``\"datamodel_name\"``, ``\"datamodel_id\"``,\n    ``\"party_name\"``, ``\"party_type\"``, and ``\"permission\"`` — an empty\n    list means the model genuinely has no shares. On failure, returns\n    the standard ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2966,8 +2785,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -2977,7 +2796,7 @@
     "class": "DataModel",
     "method": "get_datasecurity",
     "description": "Retrieve datasecurity table and column entries for a given data model.",
-    "full_doc": "Retrieve datasecurity table and column entries for a given data model.\n\nResolves the data model, fetches its datasecurity rules, and returns the\nunique table/column entries in a flat row format.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to retrieve datasecurity for.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of dicts, each with ``\"datamodel_name\"``, ``\"table_name\"``,\n    ``\"column_name\"``, and ``\"data_type\"``. If no rules exist, a single row\n    is returned with empty values and the data model name.",
+    "full_doc": "Retrieve datasecurity table and column entries for a given data model.\n\nResolves the data model, fetches its datasecurity rules, and returns the\nunique table/column entries in a flat row format.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to retrieve datasecurity for.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dicts, each with ``\"datamodel_name\"``, ``\"table_name\"``,\n    ``\"column_name\"``, and ``\"data_type\"`` — an empty list means the\n    model genuinely has no rules, so the row count always equals the\n    number of secured columns. On failure (model cannot be resolved,\n    or the rules cannot be fetched), returns the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2995,8 +2814,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3006,7 +2825,7 @@
     "class": "DataModel",
     "method": "get_datasecurity_detail",
     "description": "Retrieve detailed datasecurity rules for a data model, including share-level visibility.",
-    "full_doc": "Retrieve detailed datasecurity rules for a data model, including share-level visibility.\n\nEach row represents a unique column-level rule and is repeated per share for\nclarity. Special handling is applied to interpret member values:\n\n- If ``members`` is an empty list and ``exclusionary`` is missing/null, it is\n  interpreted as \"Nothing\".\n- If ``members`` is empty and ``exclusionary`` is ``False``, it is interpreted\n  as \"Everything\".\n- If values exist and ``exclusionary`` is ``True``, it is treated as a\n  restricted subset.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to retrieve datasecurity rules for.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of dicts representing datasecurity rules in flat, share-resolved\n    format, each with ``\"datamodel_name\"``, ``\"table_name\"``,\n    ``\"column_name\"``, ``\"data_type\"``, ``\"value\"``, ``\"exclusionary\"``,\n    ``\"share_type\"``, ``\"share_name\"``, and ``\"rule_description\"``. Returns a\n    single default row when no rules exist or on failure.",
+    "full_doc": "Retrieve detailed datasecurity rules for a data model, including share-level visibility.\n\nEach row represents a unique column-level rule and is repeated per share for\nclarity. Special handling is applied to interpret member values:\n\n- If ``members`` is an empty list and ``exclusionary`` is missing/null, it is\n  interpreted as \"Nothing\".\n- If ``members`` is empty and ``exclusionary`` is ``False``, it is interpreted\n  as \"Everything\".\n- If values exist and ``exclusionary`` is ``True``, it is treated as a\n  restricted subset.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to retrieve datasecurity rules for.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dicts representing datasecurity rules in flat, share-resolved\n    format, each with ``\"datamodel_name\"``, ``\"table_name\"``,\n    ``\"column_name\"``, ``\"data_type\"``, ``\"value\"``, ``\"exclusionary\"``,\n    ``\"share_type\"``, ``\"share_name\"``, and ``\"rule_description\"`` — an\n    empty list means the model genuinely has no rules, so the row count\n    always equals the number of rule/share combinations. On failure\n    (model cannot be resolved, or the rules cannot be fetched), returns\n    the standard ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3024,8 +2843,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3057,8 +2876,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3079,8 +2898,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3108,8 +2927,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3119,7 +2938,7 @@
     "class": "DataModel",
     "method": "get_row_count",
     "description": "Retrieve the row count for each table in a specific data model.",
-    "full_doc": "Retrieve the row count for each table in a specific data model.\n\nResolves the data model's tables, counts rows per table, and returns the\nresults in a flat row-based structure suitable for tabular representation.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model.\n\nReturns\n-------\nlist[dict[str, Any]]\n    List of dictionaries, each with ``\"table_name\"`` and ``\"row_count\"``,\n    plus a final entry with the total row count. Returns an empty list on\n    failure.",
+    "full_doc": "Retrieve the row count for each table in a specific data model.\n\nResolves the data model's tables, counts rows per table, and returns the\nresults in a flat row-based structure suitable for tabular representation.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    List of dictionaries, each with ``\"table_name\"`` and ``\"row_count\"``,\n    plus a final entry with the total row count. On failure, returns the\n    standard ``{\"ok\": False, \"error\": \"...\", ...}`` dict; tables whose\n    count query fails are skipped with a logged warning.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3137,8 +2956,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3181,8 +3000,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3222,8 +3041,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3255,8 +3074,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3284,8 +3103,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3305,10 +3124,80 @@
         },
         "rules": {
           "type": "array",
+          "minItems": 1,
+          "description": "Datasecurity rules to add. LIVE models ONLY. `live` and `fullname` are filled in automatically when omitted.",
           "items": {
-            "type": "object"
-          },
-          "description": "Datasecurity rules to add in Sisense API format. Each rule requires ``table``, ``column``, ``datatype``, ``members`` (list of strings), ``exclusionary``, ``shares``, ``allMembers``, ``live``, and ``fullname`` (``\"live:{title}\"``). ``live`` and ``fullname`` are filled in automatically when omitted; server-managed fields (``_id``, ``created``, ``lastModified``, ``importedIdIdentifier``) are stripped automatically."
+            "type": "object",
+            "required": [
+              "table",
+              "column",
+              "datatype",
+              "shares"
+            ],
+            "properties": {
+              "table": {
+                "type": "string",
+                "description": "Table the rule applies to (case sensitive)."
+              },
+              "column": {
+                "type": "string",
+                "description": "Column/dimension the rule applies to (case sensitive)."
+              },
+              "datatype": {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "numeric"
+                ],
+                "description": "Column data type. Date dimensions cannot be secured."
+              },
+              "members": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Values the parties may see. Mutually exclusive with allMembers — supply one or the other."
+              },
+              "allMembers": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Apply to every value of the column. Must be null (not false) when not in use; when set, members is ignored."
+              },
+              "exclusionary": {
+                "type": "boolean",
+                "description": "true reverses the rule — the listed members are hidden instead of shown."
+              },
+              "shares": {
+                "type": "array",
+                "minItems": 1,
+                "description": "Who the rule applies to. Must not be empty: a rule with no shares applies to nobody, and the LIVE API accepts it and then discards it.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "partyId",
+                    "type"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "partyId": {
+                      "type": "string",
+                      "description": "OID of the user or group the rule applies to."
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "user",
+                        "group"
+                      ],
+                      "description": "Party type. Sisense also supports a 'default' catch-all rule for parties with no explicit rule; that is not created through this call — Sisense adds one automatically alongside the first rule on a column."
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "required": [
@@ -3321,8 +3210,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3455,8 +3344,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": [],
     "x-followup": {
       "note": "The model isn't queryable until it's built or published.",
@@ -3510,8 +3399,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3547,8 +3436,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3584,8 +3473,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3605,10 +3494,80 @@
         },
         "datasecurity": {
           "type": "array",
+          "minItems": 1,
+          "description": "Datasecurity rules to add. EXTRACT (Elasticube) models ONLY — this call refuses LIVE models. Adding a rule for a table/column that already has one for the same party UPDATES that rule rather than duplicating it.",
           "items": {
-            "type": "object"
-          },
-          "description": "Datasecurity rule list in Sisense API format. Each rule includes ``table``, ``column``, ``datatype``, ``members`` (list of strings), ``exclusionary``, ``shares``, and ``allMembers``."
+            "type": "object",
+            "required": [
+              "table",
+              "column",
+              "datatype",
+              "shares"
+            ],
+            "properties": {
+              "table": {
+                "type": "string",
+                "description": "Table the rule applies to (case sensitive)."
+              },
+              "column": {
+                "type": "string",
+                "description": "Column/dimension the rule applies to (case sensitive)."
+              },
+              "datatype": {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "numeric"
+                ],
+                "description": "Column data type. Date dimensions cannot be secured."
+              },
+              "members": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Values the parties may see. Mutually exclusive with allMembers — supply one or the other."
+              },
+              "allMembers": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Apply to every value of the column. Must be null (not false) when not in use; when set, members is ignored."
+              },
+              "exclusionary": {
+                "type": "boolean",
+                "description": "true reverses the rule — the listed members are hidden instead of shown."
+              },
+              "shares": {
+                "type": "array",
+                "minItems": 1,
+                "description": "Who the rule applies to. Must not be empty: a rule with no shares applies to nobody, and the LIVE API accepts it and then discards it.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "party",
+                    "type"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "party": {
+                      "type": "string",
+                      "description": "OID of the user or group the rule applies to."
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "user",
+                        "group"
+                      ],
+                      "description": "Party type. Sisense also supports a 'default' catch-all rule for parties with no explicit rule; that is not created through this call — Sisense adds one automatically alongside the first rule on a column."
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "required": [
@@ -3621,8 +3580,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3650,8 +3609,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3679,8 +3638,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3712,8 +3671,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3741,8 +3700,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3763,8 +3722,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3792,8 +3751,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3821,8 +3780,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3848,8 +3807,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3870,8 +3829,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3911,8 +3870,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3947,8 +3906,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -3984,8 +3943,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4036,8 +3995,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4058,8 +4017,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4094,8 +4053,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4127,8 +4086,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4163,8 +4122,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4195,8 +4154,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4227,8 +4186,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4264,8 +4223,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4307,8 +4266,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4358,8 +4317,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4424,8 +4383,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4461,8 +4420,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4511,8 +4470,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4551,8 +4510,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4601,8 +4560,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4647,8 +4606,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4693,8 +4652,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4738,8 +4697,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4791,8 +4750,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4822,8 +4781,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4853,8 +4812,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4875,8 +4834,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4904,8 +4863,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -4957,8 +4916,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5014,8 +4973,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5037,8 +4996,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5060,8 +5019,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5105,8 +5064,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5164,8 +5123,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5235,8 +5194,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5268,8 +5227,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5302,8 +5261,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5331,8 +5290,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5367,8 +5326,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5396,8 +5355,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5432,8 +5391,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5454,8 +5413,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5483,8 +5442,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5530,8 +5489,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5552,8 +5511,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5586,8 +5545,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5620,8 +5579,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5649,8 +5608,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5678,8 +5637,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5723,8 +5682,8 @@
       "report_manager",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5791,8 +5750,8 @@
       "report_manager",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5820,8 +5779,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5854,8 +5813,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5885,8 +5844,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5916,8 +5875,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5947,8 +5906,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -5978,8 +5937,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -6009,8 +5968,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -6040,8 +5999,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -6071,8 +6030,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   },
   {
@@ -6105,8 +6064,8 @@
       "wellcheck",
       "read"
     ],
-    "sdk_version": "1.1.0",
-    "updated_at": "2026-08-30T00:47:06Z",
+    "sdk_version": "2.0.1",
+    "updated_at": "2026-09-01T16:03:26Z",
     "examples": []
   }
 ]

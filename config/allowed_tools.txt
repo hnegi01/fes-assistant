@@ -28,17 +28,12 @@
 # ===== access_management (13 read / 6 write) =====
 access_management.get_all_dashboard_shares                   # Retrieve all dashboard shares, including user and group details for...
 access_management.get_datamodel_columns                      # Retrieve columns from a DataModel by collecting them from its datas...
-access_management.get_group                                  # Retrieve group details by name.
 access_management.get_my_user                                # Retrieve the currently logged-in user for the API token.
 access_management.get_roles                                  # Retrieve all Sisense roles.
-access_management.get_unused_columns                         # Identify unused columns in a DataModel by comparing all columns aga...
 access_management.get_unused_columns_bulk                    # Run unused-column analysis for one or more data models and return a
 access_management.get_user                                   # Retrieve a user's details by email address, expanding group and rol...
-access_management.get_user_with_role_and_group_names         # Retrieve a single user by email/username with role and group details.
 access_management.get_users_all                              # Retrieve all users with group and role information.
-access_management.get_users_with_role_names_and_group_names  # Retrieve all users enriched with role names and group names.
 access_management.users_per_group                            # Retrieve all users within a specific group by name.
-access_management.users_per_group_all                        # Retrieve all groups mapped to the users belonging to them.
 access_management.change_folder_and_dashboard_ownership      # [write] Change the ownership of folders and optionally dashboards.
 access_management.change_user_password                       # [write] Change a user's password.
 access_management.create_schedule_build                      # [write] Create a schedule build for a DataModel.
@@ -47,34 +42,34 @@ access_management.delete_user                                # [write] Delete a 
 access_management.update_user                                # [write] Update an existing Sisense user identified by their email address.
 
 # ===== blox (1 read / 2 write) =====
-blox.get_blox_actions    # Retrieve all custom Blox actions from the Sisense instance.
-blox.delete_blox_action  # [write] Delete a custom Blox action from the Sisense instance.
-blox.save_blox_action    # [write] Save a custom Blox action on the Sisense instance.
+# blox.get_blox_actions    # Retrieve all custom Blox actions from the Sisense instance.
+# blox.delete_blox_action  # [write] Delete a custom Blox action from the Sisense instance.
+# blox.save_blox_action    # [write] Save a custom Blox action on the Sisense instance.
 
 # ===== custom_code (3 read / 5 write) =====
-custom_code.export_notebook                # Export a notebook definition.
-custom_code.get_notebooks                  # Retrieve notebooks from Sisense.
-custom_code.list_notebook_folder_contents  # List contents of a custom-code notebook folder.
-custom_code.create_notebook                # [write] Create a new notebook.
-custom_code.delete_notebook                # [write] Delete a notebook by ID.
-custom_code.rename_notebook_file           # [write] Rename or update a notebook resource file.
-custom_code.rename_notebook_folder         # [write] Rename a custom-code notebook folder.
-custom_code.update_notebook                # [write] Update an existing notebook.
+# custom_code.export_notebook                # Export a notebook definition.
+# custom_code.get_notebooks                  # Retrieve notebooks from Sisense.
+# custom_code.list_notebook_folder_contents  # List contents of a custom-code notebook folder.
+# custom_code.create_notebook                # [write] Create a new notebook.
+# custom_code.delete_notebook                # [write] Delete a notebook by ID.
+# custom_code.rename_notebook_file           # [write] Rename or update a notebook resource file.
+# custom_code.rename_notebook_folder         # [write] Rename a custom-code notebook folder.
+# custom_code.update_notebook                # [write] Update an existing notebook.
 
 # ===== dashboard (13 read / 6 write) =====
 dashboard.can_be_owned                 # Check whether a dashboard can be owned by the current user.
-dashboard.export_dashboard             # Export a dashboard definition using the Sisense admin export endpoint.
+# dashboard.export_dashboard             # Export a dashboard definition using the Sisense admin export endpoint.   << delisted 2026-08-31: migration primitive; readable content tools cover the questions
 dashboard.get_all_dashboards           # Retrieve all dashboards from the Sisense server.
 dashboard.get_dashboard_by_id          # Retrieve a specific dashboard by its ID.
 dashboard.get_dashboard_by_name        # Retrieve a specific dashboard by its name.
 dashboard.get_dashboard_columns        # Retrieve columns referenced by a dashboard, including widget and fi...
 dashboard.get_dashboard_script         # Build a formatted dashboard script helper object.
 dashboard.get_dashboard_share          # Retrieve share details (users and groups) for a dashboard by title.
-dashboard.get_dashboard_shares_v1      # Retrieve share details for a dashboard using the v1 shares endpoint.
+# dashboard.get_dashboard_shares_v1      # Retrieve share details for a dashboard using the v1 shares endpoint.   << delisted 2026-08-31: raw payload by OID; use get_dashboard_share
 dashboard.get_dashboard_widgets        # Retrieve widget definitions from an admin export of the dashboard.
 dashboard.get_dashboards               # Retrieve dashboards visible to the authenticated user.
 dashboard.get_widget_script            # Build a formatted widget script helper object.
-dashboard.resolve_dashboard_reference  # Resolve a dashboard reference (ID or name) to a concrete dashboard...
+# dashboard.resolve_dashboard_reference  # Resolve a dashboard reference (ID or name) to a concrete dashboard...   << delisted 2026-08-31: plumbing, never selected
 dashboard.add_dashboard_script         # [write] Add or overwrite a script on a dashboard.
 dashboard.add_dashboard_shares         # [write] Add or update shares for a dashboard for the given users and groups.
 dashboard.add_widget_script            # [write] Add or overwrite a script for a specific widget within a dashboard.
@@ -84,19 +79,19 @@ dashboard.rename_dashboard             # [write] Rename a dashboard.
 
 # ===== datamodel (15 read / 13 write) =====
 datamodel.describe_datamodel              # Retrieve data model structure in a flat, row-based format.
-datamodel.describe_datamodel_raw          # Retrieve detailed information about a specific data model.
+# datamodel.describe_datamodel_raw          # Retrieve detailed information about a specific data model.   << delisted 2026-08-31: raw twin of describe_datamodel
 datamodel.get_all_datamodel               # Retrieve metadata for all data models using an internal API.
 datamodel.get_connection                  # Retrieve connections matching a name.
 datamodel.get_data                        # Retrieve data from a specific table in a data model.
 datamodel.get_datamodel                   # Retrieve a data model by its title.
 datamodel.get_datamodel_shares            # Retrieve all share entries (users and groups) for a given data model.
-datamodel.get_datasecurity                # Retrieve datasecurity table and column entries for a given data model.
+# datamodel.get_datasecurity                # Retrieve datasecurity table and column entries for a given data model.   << delisted 2026-08-31: get_datasecurity_detail is a strict superset (keeps rows with no shares) and adds rule_description
 datamodel.get_datasecurity_detail         # Retrieve detailed datasecurity rules for a data model, including sh...
 datamodel.get_elasticubes                 # List all ElastiCubes using the legacy v1 endpoint.
 datamodel.get_model_schema                # Retrieve the schema of a data model, including tables and columns.
 datamodel.get_row_count                   # Retrieve the row count for each table in a specific data model.
 datamodel.get_table_schema                # Retrieve the schema of a table within a connection's data source.
-datamodel.resolve_datamodel_reference     # Resolve a data model reference (ID or title) to a concrete data mod...
+# datamodel.resolve_datamodel_reference     # Resolve a data model reference (ID or title) to a concrete data mod...
 datamodel.add_datamodel_shares            # [write] Add share entries (users and groups) to a data model.
 datamodel.create_connections              # [write] Create a new connection using the provided payload.
 # datamodel.create_datamodel — delisted 2026-08-20: creates an unrescuable skeleton
@@ -108,15 +103,15 @@ datamodel.create_table                    # [write] Create a new table in the sp
 datamodel.delete_datamodel                # [write] Delete a data model by title and server using the GraphQL ECM endpo...
 datamodel.deploy_datamodel                # [write] Deploy (build or publish) the specified data model based on its type.
 datamodel.generate_connections_payload    # [write] Generate a connection payload for a given data source type.
-datamodel.load_datamodel                  # [write] Look up a data model's OID by title using the GraphQL ECM endpoint.
+#datamodel.load_datamodel                  # [write] Look up a data model's OID by title using the GraphQL ECM endpoint.
 datamodel.set_live_datasecurity_add_many  # [write] Add multiple datasecurity rules to a LIVE datamodel.
 datamodel.setup_datamodel                 # [write] Set up a data model end to end using an existing connection.
 datamodel.update_connection               # [write] Update an existing connection.
 datamodel.update_datasecurity             # [write] Replace datasecurity rules on an EXTRACT (Elasticube) datamodel.
 
 # ===== encryption (0 read / 2 write) =====
-encryption.decrypt  # [write] Decrypt a value using the Sisense encryption service.
-encryption.encrypt  # [write] Encrypt a value using the Sisense encryption service.
+# encryption.decrypt  # [write] Decrypt a value using the Sisense encryption service.
+# encryption.encrypt  # [write] Encrypt a value using the Sisense encryption service.
 
 # ===== folder (5 read / 3 write) =====
 folder.get_all_folders       # Retrieve the full folder tree.
@@ -129,11 +124,11 @@ folder.delete_folder         # [write] Delete a folder by OID.
 folder.update_folder         # [write] Update an existing folder.
 
 # ===== metadata (3 read / 2 write) =====
-metadata.get_datasource_dimensions  # Retrieve saved filter dimensions for a datasource.
-metadata.get_datasource_measures    # Retrieve saved formula measures for a datasource.
-metadata.get_datasources            # Retrieve all datasources visible to the authenticated user.
-metadata.add_datasource_measure     # [write] Create a saved formula measure in Sisense metadata.
-metadata.post_metadata_query        # [write] Execute a metadata query against Sisense.
+# metadata.get_datasource_dimensions  # Retrieve saved filter dimensions for a datasource.
+# metadata.get_datasource_measures    # Retrieve saved formula measures for a datasource.
+# metadata.get_datasources            # Retrieve all datasources visible to the authenticated user.
+# metadata.add_datasource_measure     # [write] Create a saved formula measure in Sisense metadata.
+# metadata.post_metadata_query        # [write] Execute a metadata query against Sisense.
 
 # ===== migration (0 read / 9 write) =====
 migration.migrate_all_dashboards    # [write] Migrates all dashboards from the source to the target environment i...
@@ -173,6 +168,14 @@ wellcheck.check_pivot_widget_fields          # Analyze pivot widgets on one or m
 # ===== DEPRECATED: removed from the SDK — history only, never uncomment =====
 # --- removed in pysisense 1.1.0 ---
 # datamodel.get_connections                 # Retrieve all connections.
+# --- removed in pysisense 2.0.0 ---
+# access_management.get_group                                  # Retrieve group details by name.
+# access_management.get_unused_columns                         # Identify unused columns in a DataModel by comparing all columns aga...
+# access_management.get_user_with_role_and_group_names         # Retrieve a single user by email/username with role and group details.
+# access_management.get_users_with_role_names_and_group_names  # Retrieve all users enriched with role names and group names.
+# access_management.users_per_group_all                        # Retrieve all groups mapped to the users belonging to them.
+# access_management.get_user_email_and_group_name_maps  # Fetch all users and groups and build ID-to-name lookup maps.
+# access_management.get_users_expanded                  # Retrieve all users with raw, unmodified role and group objects.
 
 # ===== STAGED: new in the registry — uncomment a line to expose the tool =====
 # --- new in pysisense 1.1.0 ---
@@ -180,25 +183,23 @@ access_management.create_groups_bulk                  # [write] Create multiple 
 access_management.create_users_bulk                   # [write] Create multiple users in a single bulk request.
 access_management.delete_group                        # [write] Delete a group by ID.
 access_management.get_groups                          # Retrieve all groups.
-access_management.get_tenants                         # Retrieve all tenants.
-access_management.get_user_email_and_group_name_maps  # Fetch all users and groups and build ID-to-name lookup maps.
-access_management.get_users_expanded                  # Retrieve all users with raw, unmodified role and group objects.
-blox.get_blox_widget_style                            # Retrieve the style objects of a BloX widget.
-blox.update_blox_widget_style                         # [write] Update the style objects of a BloX widget.
+# access_management.get_tenants                         # Retrieve all tenants.
+# blox.get_blox_widget_style                            # Retrieve the style objects of a BloX widget.
+# blox.update_blox_widget_style                         # [write] Update the style objects of a BloX widget.
 dashboard.change_dashboard_owner                      # [write] Transfer ownership of a dashboard to a different user.
 dashboard.find_widgets_by_type                        # Find all widgets matching a given type across one or more dashboards.
 dashboard.get_widget_by_id                            # Retrieve a single widget by its dashboard and widget IDs.
-dashboard.import_dashboards_bulk                      # [write] Import one or more dashboards via the bulk import endpoint.
+# dashboard.import_dashboards_bulk                      # [write] Import one or more dashboards via the bulk import endpoint.   << delisted 2026-08-31: migration primitive; cross-environment is Migration mode's job
 dashboard.update_widget                               # [write] Write updated widget data back to Sisense.
 datamodel.delete_datasecurity                         # [write] Delete all datasecurity rules for one table/column of a datamodel.
-datamodel.export_datamodel_schema                     # Export a data model's full schema definition for re-import elsewhere.
+# datamodel.export_datamodel_schema                     # Export a data model's full schema definition for re-import elsewhere.
 datamodel.get_connections_all                         # Retrieve all connections.
-datamodel.get_datamodel_permissions_extract           # Retrieve raw share entries for an EXTRACT (Elasticube) data model.
-datamodel.get_datamodel_permissions_live              # Retrieve raw share entries for a LIVE data model.
-datamodel.get_datasecurity_raw                        # Retrieve the raw, unprocessed datasecurity rules for a data model.
-datamodel.import_datamodel_schema                     # [write] Import a data model schema (as produced by ``export_datamodel_schem...
-datamodel.update_datamodel_permissions_extract        # [write] Replace share entries for an EXTRACT (Elasticube) data model.
-datamodel.update_datamodel_permissions_live           # [write] Replace share entries for a LIVE data model.
+# datamodel.get_datamodel_permissions_extract           # Retrieve raw share entries for an EXTRACT (Elasticube) data model.   << delisted 2026-08-31: raw partyIds; use get_datamodel_shares
+# datamodel.get_datamodel_permissions_live              # Retrieve raw share entries for a LIVE data model.   << delisted 2026-08-31: raw partyIds; use get_datamodel_shares
+# datamodel.get_datasecurity_raw                        # Retrieve the raw, unprocessed datasecurity rules for a data model.   << delisted 2026-08-31: raw twin of get_datasecurity
+# datamodel.import_datamodel_schema                     # [write] Import a data model schema (as produced by ``export_datamodel_schem...
+# datamodel.update_datamodel_permissions_extract        # [write] Replace share entries for an EXTRACT (Elasticube) data model.   << delisted 2026-08-31: wholesale replace; use add_datamodel_shares
+# datamodel.update_datamodel_permissions_live           # [write] Replace share entries for a LIVE data model.   << delisted 2026-08-31: wholesale replace; use add_datamodel_shares
 # mergetool.migrate_all_blox_actions                    # [write] Migrate all Blox actions from source to target.
 # mergetool.migrate_all_dashboards                      # [write] Migrate all dashboards from source to target.
 # mergetool.migrate_all_datamodels                      # [write] Migrate all data models from source to target.

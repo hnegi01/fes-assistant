@@ -40,46 +40,6 @@
     ]
   },
   {
-    "tool_id": "access_management.get_unused_columns",
-    "description": "Identify unused columns in a DataModel by comparing all columns against dashboard usage.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "datamodel_name": {
-          "type": "string",
-          "description": "The name of the DataModel to analyze."
-        }
-      },
-      "required": [
-        "datamodel_name"
-      ]
-    },
-    "mutates": false,
-    "examples": [
-      {
-        "user_query": "Find the columns in the 'Sales_Analytics' DataModel that are not used in any dashboards.",
-        "arguments": {
-          "datamodel_name": "Sales_Analytics"
-        },
-        "notes": "This call checks the 'Sales_Analytics' DataModel and identifies columns that are not referenced in any associated dashboards. Useful for cleaning up unused fields."
-      },
-      {
-        "user_query": "Can you find unused columns in the 'Customer_Insights' DataModel?",
-        "arguments": {
-          "datamodel_name": "Customer_Insights"
-        },
-        "notes": "This call analyzes the 'Customer_Insights' DataModel to determine which columns are not utilized in any dashboards. Ideal for optimizing the DataModel structure."
-      },
-      {
-        "user_query": "I want to know if there are any unused columns in the 'Marketing_Performance' DataModel.",
-        "arguments": {
-          "datamodel_name": "Marketing_Performance"
-        },
-        "notes": "This call identifies unused columns in the 'Marketing_Performance' DataModel by comparing them against dashboard usage. Helps in maintaining a lean and efficient DataModel."
-      }
-    ]
-  },
-  {
     "tool_id": "access_management.get_unused_columns_bulk",
     "description": "Run unused-column analysis for one or more data models and return a",
     "parameters": {
@@ -90,10 +50,12 @@
           "items": {
             "type": "string"
           },
-          "description": "One or more data model references to analyze. Each reference can be: - a data model ID, or - a data model title (name). At least one data model reference is required. At runtime this parameter is tolerant of a single string and will normalize it to a one-element list."
+          "description": "One or more data model references to analyze. **Required.** Each reference can be: - a data model ID, or - a data model title (name). At runtime this parameter is tolerant of a single string and will normalize it to a one-element list."
         }
       },
-      "required": []
+      "required": [
+        "datamodels"
+      ]
     },
     "mutates": false,
     "examples": [
