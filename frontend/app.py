@@ -330,6 +330,32 @@ def _is_live_progress(payload: Any) -> bool:
     return not (isinstance(payload, dict) and payload.get("step") in _LIVE_HIDDEN_STEPS)
 
 
+def _push_progress_line(lines: List[str], line: str) -> None:
+    """Append a live-progress line, or REPLACE the previous one from the same phase.
+
+    The live view is a progress indicator, not a record — the run log keeps
+    every event. So a phase should occupy one line that updates, rather than
+    scrolling a fixed 20-line window with its own history.
+
+    It matters because the SDK emits twice per page while paginating
+    (`"Fetching dashboards page…"` at the top of the loop and `"Fetched
+    dashboards page."` at the bottom), and the first of each pair reports the
+    counter BEFORE the increment — so the pair renders as the same sentence
+    with the same number, twice. Migrating 501 dashboards produced 22 fetch
+    lines and 51 batch lines; a reader watching it just wants "which phase, how
+    far".
+
+    Phase = the `[step]` prefix `_format_progress_line` puts on. Lines without
+    one (chat's agent_progress milestones) always append, since each is a
+    distinct event rather than a running counter.
+    """
+    prefix = line[: line.index("]") + 1] if line.startswith("[") and "]" in line else None
+    if prefix and lines and lines[-1].startswith(prefix):
+        lines[-1] = line
+        return
+    lines.append(line)
+
+
 def _format_progress_line(payload: Any) -> str:
     """
     Render one progress payload as a single human-readable line.
@@ -471,7 +497,12 @@ def _launch_migration_turn(
     st.session_state[_MIG_TURN_IN_PROGRESS_KEY] = True
 
     def _progress_cb(line: str) -> None:
-        ctx["progress_lines"].append(line)
+        # Same phase-collapsing as the inline placeholder. There are TWO lists:
+        # the SSE reader keeps a local one for the inline view, and this one
+        # crosses the worker-thread boundary to the migration panel. Collapsing
+        # only the first left the migration feed — the long-running case the
+        # collapsing is FOR — still showing every event.
+        _push_progress_line(ctx["progress_lines"], line)
 
     call_kwargs: Dict[str, Any] = {
         "messages": messages,
@@ -647,7 +678,7 @@ def call_backend_turn(
                     new_line = msg.strip()
                 else:
                     new_line = _format_progress_line(cleaned_payload)
-                progress_lines.append(new_line)
+                _push_progress_line(progress_lines, new_line)
                 if progress_callback is not None:
                     progress_callback(new_line)
 
