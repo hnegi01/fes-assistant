@@ -3,15 +3,20 @@
 # 1) Base image
 FROM python:3.11-slim
 
-# 2) Basic Python runtime settings + Streamlit config
+# 2) Basic Python runtime settings
+#
+# NO STREAMLIT_* VARIABLES HERE, deliberately. Streamlit's precedence is
+# CLI flag > environment variable > config.toml, so anything set here SILENTLY
+# OVERRIDES .streamlit/config.toml — and this image used to set
+# STREAMLIT_CLIENT_TOOLBAR_MODE=viewer alongside a config that said "minimal".
+# The config lost, production kept its hamburger menu, and the old comment here
+# described the pair as equivalent. They are not.
+#
+# server.port and server.address are passed as CLI flags in the CMD below;
+# toolbar mode and usage stats live in .streamlit/config.toml, which ships in
+# the image (see the COPY further down). One source per setting.
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    STREAMLIT_SERVER_PORT=8501 \
-    STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
-    # "viewer" hides the developer toolbar + its C/R keyboard shortcuts that
-    # otherwise hijack Ctrl+C (the .streamlit/config.toml equivalent for local runs).
-    STREAMLIT_CLIENT_TOOLBAR_MODE=viewer \
-    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    PYTHONDONTWRITEBYTECODE=1
 
 # 3) Workdir inside container
 WORKDIR /app
