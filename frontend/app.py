@@ -1296,6 +1296,14 @@ components_html(
                 left: 1rem;
                 top: 50%;
                 transform: translateY(-50%);
+                /* Streamlit makes the header non-interactive so page content
+                   can scroll under it, and lets specific children switch clicks
+                   back on -- the TOOLBAR being one of them. toolbarMode
+                   "minimal" removes the toolbar, so nothing re-enabled it and
+                   this nav inherited pointer-events:none: visible, styled,
+                   hover-less and completely dead. Opt back in explicitly rather
+                   than depending on a sibling we deliberately deleted. */
+                pointer-events: auto;
                 /* Streamlit's own header content wrapper is a plain static
                    sibling, but it still won the paint/click order without
                    this — verified empirically (elementFromPoint returned the
