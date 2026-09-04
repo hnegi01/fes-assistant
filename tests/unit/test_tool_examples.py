@@ -216,6 +216,81 @@ class TestShippedExampleQuality:
                 offenders[row["tool_id"]] = invented
         assert offenders == {}, f"example[0] invents values absent from its query: {offenders}"
 
+    # Values the query never states are FINE when they are plainly a flag or
+    # enum the tool's own schema offers — "user", "text", "oid", "sum". A
+    # reader derives those from the request. They are NOT fine when they name
+    # part of a customer's schema: "[Region]", "sales.date", "2023-Q3". Those
+    # cannot be derived from anything, so an example carrying one demonstrates
+    # inventing a field name — the exact move the planner prompt forbids.
+    # A declared enum is the precise version of that test — the schema itself
+    # says the value is one the tool offers, so no derivation is needed. Falls
+    # back to the shape heuristic for the nested payloads whose inner fields
+    # carry no enum (a share's `type`, a datasecurity rule's `datatype`).
+    ENUMISH = re.compile(r"[a-z][a-z_]{0,11}\Z")
+
+    @staticmethod
+    def _declared_enum_values(schema):
+        found = set()
+
+        def walk(node):
+            if isinstance(node, dict):
+                for value in node.get("enum") or []:
+                    if isinstance(value, str):
+                        found.add(value.lower())
+                for child in node.values():
+                    walk(child)
+            elif isinstance(node, list):
+                for child in node:
+                    walk(child)
+
+        walk(schema)
+        return found
+
+    def _invented_references(self, example, schema=None):
+        query = (example.get("user_query") or "").lower()
+        enums = self._declared_enum_values(schema or {})
+        found = []
+
+        def walk(path, value):
+            if isinstance(value, dict):
+                for k, v in value.items():
+                    walk(f"{path}.{k}" if path else str(k), v)
+            elif isinstance(value, list):
+                for i, v in enumerate(value):
+                    walk(f"{path}[{i}]", v)
+            elif isinstance(value, str) and value.strip():
+                if value.lower() in enums or self.ENUMISH.match(value):
+                    return
+                if value.lower() not in query:
+                    found.append(f"{path}={value!r}")
+
+        for k, v in (example.get("arguments") or {}).items():
+            walk(str(k), v)
+        return found
+
+    def test_first_example_never_invents_a_schema_reference(self):
+        """The identity guard above is keyed on the PARAMETER NAME, so it only
+        sees values under name/user/owner/email/title/id. That let a whole
+        class through: queries.elasticube_run_jaql_query shipped a
+        `jaql_payload` naming [Region], [Sales] and [Year] for the query
+        "Fetch total sales by region for 2023", under keys called `field` and
+        `dimension` (found 2026-09-03; both queries tools are now withheld in
+        allowed_tools.txt). Nested values need checking on their own merits,
+        whatever the key is called."""
+        rows = json.loads(registry_m.REGISTRY_PATH.read_text(encoding="utf-8"))
+        allowed = registry_m.allowed_tool_ids()
+        offenders = {}
+        for row in rows:
+            if allowed is not None and row["tool_id"] not in allowed:
+                continue
+            examples = row.get("examples") or []
+            if not examples:
+                continue
+            invented = self._invented_references(examples[0], row.get("parameters"))
+            if invented:
+                offenders[row["tool_id"]] = invented
+        assert offenders == {}, f"example[0] references schema its query never names: {offenders}"
+
     def test_every_tool_has_at_least_one_usable_example(self):
         rows = json.loads(registry_m.REGISTRY_PATH.read_text(encoding="utf-8"))
         missing = [r["tool_id"] for r in rows if not routing_m._format_tool_examples(r, 1)]
