@@ -1,7 +1,7 @@
 [
   {
     "tool_id": "access_management.get_datamodel_columns",
-    "description": "Retrieve columns from a DataModel by collecting them from its datasets and tables.",
+    "description": "Retrieve every column of a DataModel as flat ``table`` / ``column`` rows.",
     "parameters": {
       "type": "object",
       "properties": {

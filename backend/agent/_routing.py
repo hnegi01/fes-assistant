@@ -340,6 +340,44 @@ def _reachable_packages_and_mixins() -> Tuple[Set[str], Set[Tuple[str, str]]]:
     return packages, mixins
 
 
+def _reachable_mixin_tool_names() -> Dict[Tuple[str, str], List[str]]:
+    """(package, mixin) -> the short names of the tools it exposes.
+
+    Same pass and same gates as _reachable_packages_and_mixins, so a delisted or
+    mutation-blocked tool is never advertised at Level 1.
+
+    Level 1 used to show a package blurb plus its module names and blurbs. That
+    is prose, and prose competes badly: pysisense 2.1.0 added a `perspectives`
+    module to `datamodel` whose description accurately says it keeps "a subset
+    of its tables and columns", which made `datamodel` the best PROSE match for
+    "show me the columns of a datamodel" — while the tool that answers it,
+    get_datamodel_columns, lives in `access_management`. The router picked
+    datamodel, found no columns tool, and settled for get_all_datamodel: 318
+    data models returned for a question about columns (live 2026-09-04, three
+    integration tests).
+
+    Names end the argument. "columns" appears in one module's PROSE and in two
+    modules' TOOL NAMES, and the tool names are what the caller actually gets.
+    Generated from the registry, so they stay true through every SDK refresh —
+    the same reason the module names are here rather than a hand-written hint,
+    and unlike a doc correction they do not need to be removed when upstream
+    moves the method (see pysisense_fix.md #9: these three tools are in a class
+    that does not describe them, which is why the prose was ambiguous at all).
+    """
+    names: Dict[Tuple[str, str], List[str]] = {}
+    for row in _load_registry_rows():
+        if not ALLOW_MUTATING_TOOLS and row.get("mutates"):
+            continue
+        pkg = row.get("module") or ""
+        tool_id = row.get("tool_id") or ""
+        if not pkg or not tool_id:
+            continue
+        sub = row.get("sub_module") or pkg
+        mixin = sub.split(".", 1)[1] if "." in sub and sub != pkg else "_base"
+        names.setdefault((pkg, mixin), []).append(tool_id.split(".", 1)[-1])
+    return {k: sorted(v) for k, v in names.items()}
+
+
 def _load_all_package_tools(package: str) -> List[Dict[str, Any]]:
     """
     Load all tools for a package by combining every mixin file.
@@ -413,11 +451,15 @@ async def _navigate_to_tools(
         logger.warning("Every package is empty after the allowlist — cannot navigate")
         return [], "", "", 0
 
-    # Package blurb + the names of the modules inside it. The blurb alone is a
-    # prose summary that can omit whole capabilities — routing then never even
-    # offers the right package, and the tool cannot be reached at any later
-    # level. The names are generated data (~90 tokens across the catalog), not
-    # hand-written hints, so they stay true through every SDK refresh.
+    # Package blurb + the names of the modules inside it + the tools each one
+    # exposes. The blurb alone is a prose summary that can omit whole
+    # capabilities — routing then never even offers the right package, and the
+    # tool cannot be reached at any later level. Prose also COMPETES badly: two
+    # packages can both describe "columns" honestly while only one holds a
+    # columns tool (see _reachable_mixin_tool_names). All of it is generated
+    # data, not hand-written hints, so it stays true through every SDK refresh.
+    mixin_tools = _reachable_mixin_tool_names()
+
     def _pkg_desc(pkg: str, info: Dict[str, Any]) -> str:
         desc = info.get("description", "")
         # Emptied mixins are hidden here too: advertising a module the router
@@ -425,8 +467,16 @@ async def _navigate_to_tools(
         mods = {n: b for n, b in (info.get("modules") or {}).items() if (pkg, n) in reachable_mixins}
         if not mods:
             return desc
-        inner = "\n".join(f"  - {name}: {blurb}" for name, blurb in sorted(mods.items()))
-        return f"{desc}\nContains:\n{inner}"
+        lines = []
+        for name, blurb in sorted(mods.items()):
+            tools = mixin_tools.get((pkg, name)) or []
+            # Names BEFORE the blurb, deliberately. Some blurbs run past 150
+            # characters, and a tool list tacked on the end sits behind all of
+            # that prose — the thing meant to settle the ambiguity ends up
+            # weighed least. Name, then contents, then description.
+            head = f"  - {name}" + (f" ({', '.join(tools)})" if tools else "")
+            lines.append(f"{head}: {blurb}")
+        return f"{desc}\nContains:\n" + "\n".join(lines)
 
     pkg_descs = {pkg: _pkg_desc(pkg, info) for pkg, info in packages.items()}
     chosen_pkg, ms1 = await _route_to_module(latest_user_message, history, pkg_descs, trace_id)

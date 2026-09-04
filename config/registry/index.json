@@ -1,6 +1,6 @@
 {
-  "sdk_version": "2.0.1",
-  "updated_at": "2026-09-01T16:03:27Z",
+  "sdk_version": "2.1.0",
+  "updated_at": "2026-09-04T17:37:56Z",
   "packages": {
     "access_management": {
       "class": "AccessManagement",
@@ -8,7 +8,7 @@
       "modules": {
         "users": "User CRUD — get, create, update, and deactivate users; resolve by email or ID; map role and group names to internal IDs.",
         "groups": "Group CRUD — get, list, create (bulk), and delete groups; list members per group.",
-        "columns": "Column-level data model security — list all columns in a data model, identify unused columns across one or more data models.",
+        "columns": "Column usage analysis — list all columns in a data model; identify unused columns across one or more data models by reading every dashboard that uses the model, including dashboards that reach it only through a widget.",
         "ownership": "Transfer folder and dashboard ownership — reassign an entire folder tree (including subfolders and dashboards) to a new owner.",
         "admin": "Administrative reporting — retrieve share entries for every dashboard on the instance; schedule elasticube builds.",
         "tenants": "Tenant lookup — list tenants on multi-tenant deployments."
@@ -33,9 +33,9 @@
       "class": "Dashboard",
       "description": "Manage Sisense dashboards, their shares, columns, scripts, and widgets.\n\nCovers dashboard CRUD (get, export, rename, move, publish), share\nmanagement for users and groups, inspection of all table/column\nreferences used within a dashboard, reading or writing JavaScript\nscripts attached to dashboards and individual widgets, and direct\nwidget read/write operations.",
       "modules": {
-        "core": "Dashboard CRUD — get all dashboards, find by ID or title, export, rename, move to folder, publish; resolve dashboard references.",
+        "core": "Dashboard CRUD and lifecycle — get all dashboards, find by ID or title, export, import, rename, move to folder, publish, delete (id and exact title must both match); resolve dashboard references; find every dashboard that uses a data model, including through a single widget; duplicate a dashboard with a marker in the copy's title; change the datasource a dashboard queries, e.g. from a data model to a perspective built over it; run every widget's query to check the dashboard still answers, optionally against another datasource.",
         "shares": "Dashboard share management — add or update share entries for users and groups; retrieve current shares; change dashboard owner.",
-        "columns": "Column inspection — extract every distinct table/column reference used across widgets and filters in a dashboard.",
+        "columns": "Column inspection — extract every distinct table/column reference a dashboard uses: dashboard and default filters, drill hierarchies, widget panels (including nested formulas, conditional formatting and drill chains), drill history, widget query metadata and table headers.",
         "scripts": "Dashboard and widget scripts — read and write JavaScript attached to a dashboard or to a specific widget within it.",
         "widgets": "Widget operations — fetch a single widget by ID, write widget data back to Sisense, and search for widgets by type across dashboards."
       }
@@ -49,7 +49,8 @@
         "build": "Schema provisioning — create data models, datasets, and tables; deploy a data model with configurable build behavior.",
         "security": "Row-level security — get, update, and bulk-add datasecurity rules that restrict data access per user or group; retrieve raw, unprocessed rules for round-tripping between environments.",
         "shares": "Data model access — get and add share entries (users and groups) with READ, USE, or EDIT permission levels; get/replace raw (partyId-keyed) permissions for cross-environment migration.",
-        "data": "Data retrieval — query table contents via SQL; get row counts per table across an entire data model (``get_data``, ``get_row_count``)."
+        "data": "Data retrieval — query table contents via SQL; get row counts per table across an entire data model (``get_data``, ``get_row_count``).",
+        "perspectives": "Perspectives — metadata-only views over a root model that keep a subset of its tables and columns; list them, create one from table and column names, delete one, and analyze what a model's dashboards use (plus join, custom-column and custom-table dependencies) to know what a perspective must keep."
       }
     },
     "encryption": {
@@ -68,7 +69,7 @@
     },
     "mergetool": {
       "class": "MergeTool",
-      "description": "Copy Sisense content between two separate Sisense environments.\n\nConnects to a source and a target Sisense instance (via YAML config files\nor injected clients) and merges custom-code notebooks, folders, Blox\nactions, groups, users, data models, data security rules, saved\nformulas, saved filters, and dashboards from one to the other. Does not\noperate on a single instance — use CustomCode, Folder, Blox,\nAccessManagement, DataModel, or Metadata for single-environment changes.",
+      "description": "Copy Sisense content between two separate Sisense environments.\n\nConnects to a source and a target Sisense instance (via config files,\nconfig dicts, or injected clients) and merges custom-code notebooks, folders, Blox\nactions, groups, users, data models, data security rules, saved\nformulas, saved filters, and dashboards from one to the other. Does not\noperate on a single instance — use CustomCode, Folder, Blox,\nAccessManagement, DataModel, or Metadata for single-environment changes.",
       "modules": {
         "custom_code": "Notebook migration — copy custom-code notebooks from source to target with skip, overwrite, or duplicate conflict handling.",
         "folder": "Folder migration — recreate the folder hierarchy from source on the target with skip, overwrite, or duplicate conflict handling.",
@@ -91,7 +92,7 @@
     },
     "migration": {
       "class": "Migration",
-      "description": "Copy Sisense content between two separate Sisense environments.\n\nConnects to a source and a target Sisense instance (via YAML config files\nor injected clients) and migrates groups, users, dashboards, and data\nmodels from one to the other. Does not operate on a single instance —\nuse AccessManagement or Dashboard for single-environment changes.",
+      "description": "Copy Sisense content between two separate Sisense environments.\n\nConnects to a source and a target Sisense instance (via config files,\nconfig dicts, or injected clients) and migrates groups, users, dashboards, and data\nmodels from one to the other. Does not operate on a single instance —\nuse AccessManagement or Dashboard for single-environment changes.",
       "modules": {
         "base": "Progress emission — internal helper for reporting migration events to a caller-provided callback.",
         "groups": "Group migration — copy specific groups or all groups from source to target using the bulk group endpoint.",

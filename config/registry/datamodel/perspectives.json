@@ -1,0 +1,266 @@
+[
+  {
+    "tool_id": "datamodel.analyze_perspective_requirements",
+    "description": "Work out which tables and columns of a data model its dashboards need, ready to build a perspective from.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel": {
+          "type": "string",
+          "description": "The data model, as an ID or title."
+        },
+        "detailed": {
+          "type": "boolean",
+          "description": "Include the per-dashboard, per-column, per-dependency and per-issue detail. Default ``False`` returns the summary view only."
+        }
+      },
+      "required": [
+        "datamodel"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Analyze all dashboards for the 'Sales Data Model' and include detailed results for dependencies and issues.",
+        "arguments": {
+          "datamodel": "Sales Data Model",
+          "detailed": true
+        },
+        "notes": "This call analyzes the 'Sales Data Model' to determine which tables and columns are required for its dashboards, providing detailed insights into dependencies and issues. Use this when you need a comprehensive breakdown of dashboard requirements."
+      },
+      {
+        "user_query": "Which tables and columns are needed for the 'Marketing Analytics' data model?",
+        "arguments": {
+          "datamodel": "Marketing Analytics",
+          "detailed": false
+        },
+        "notes": "This call provides a summary of the tables and columns required for dashboards using the 'Marketing Analytics' data model. Use this for a high-level overview without detailed dependency information."
+      },
+      {
+        "user_query": "Show me the perspective requirements for the data model 'Customer Insights' with detailed analysis.",
+        "arguments": {
+          "datamodel": "Customer Insights",
+          "detailed": true
+        },
+        "notes": "This call analyzes the 'Customer Insights' data model and provides detailed perspective requirements, including per-dashboard and per-column details. Use this when building or refining perspectives for dashboards tied to this model."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.create_perspective",
+    "description": "Create a perspective over a data model, keeping only the named tables and columns.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel": {
+          "type": "string",
+          "description": "The root data model, as an ID or title."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name for the new perspective. Must not already exist on that model."
+        },
+        "tables": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "table": {
+                    "type": "string"
+                  },
+                  "columns": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "all"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "table"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "description": "Tables to keep. Each entry is ``{\"table\": name, \"columns\": [names] | \"all\"}``, or a bare table name meaning all of its columns. Tables not listed are excluded."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description shown in Sisense. Default empty."
+        },
+        "ai_context": {
+          "type": "string",
+          "description": "Free-text context for the AI assistant, stored on the perspective as ``aiContext``."
+        }
+      },
+      "required": [
+        "datamodel",
+        "name",
+        "tables"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create a perspective named 'Sales Overview' on the 'Global Sales' data model, keeping only the 'Orders' table with all columns and the 'Customers' table with the 'Name' and 'Region' columns.",
+        "arguments": {
+          "datamodel": "Global Sales",
+          "name": "Sales Overview",
+          "tables": [
+            "Orders",
+            {
+              "table": "Customers",
+              "columns": [
+                "Name",
+                "Region"
+              ]
+            }
+          ]
+        },
+        "notes": "This creates a perspective named 'Sales Overview' that includes all columns from the 'Orders' table and only the 'Name' and 'Region' columns from the 'Customers' table. Use this to create a focused view of the data model."
+      },
+      {
+        "user_query": "Can you create a perspective called 'Marketing Insights' for the 'Campaign Analytics' model, keeping only the 'Campaigns' table with all columns?",
+        "arguments": {
+          "datamodel": "Campaign Analytics",
+          "name": "Marketing Insights",
+          "tables": [
+            "Campaigns"
+          ]
+        },
+        "notes": "This creates a perspective named 'Marketing Insights' that includes all columns from the 'Campaigns' table. Useful for isolating campaign-related data."
+      },
+      {
+        "user_query": "I need a perspective named 'Finance Summary' on the 'Corporate Finance' model, keeping the 'Transactions' table with all columns and the 'Accounts' table with only the 'Account Name' column. Add a description saying 'Summary of financial data for reporting.'",
+        "arguments": {
+          "datamodel": "Corporate Finance",
+          "name": "Finance Summary",
+          "tables": [
+            "Transactions",
+            {
+              "table": "Accounts",
+              "columns": [
+                "Account Name"
+              ]
+            }
+          ],
+          "description": "Summary of financial data for reporting."
+        },
+        "notes": "This creates a perspective named 'Finance Summary' with a description. It includes all columns from the 'Transactions' table and only the 'Account Name' column from the 'Accounts' table. Ideal for financial reporting purposes."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.delete_perspective",
+    "description": "Delete a perspective by name or ID.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "perspective": {
+          "type": "string",
+          "description": "The perspective's name (case-insensitive) or ``oid``."
+        },
+        "datamodel": {
+          "type": "string",
+          "description": "Root data model (ID or title) to disambiguate a name that exists on several models."
+        }
+      },
+      "required": [
+        "perspective"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Delete the perspective named 'Sales Overview' from the data model titled 'Global Sales'.",
+        "arguments": {
+          "perspective": "Sales Overview",
+          "datamodel": "Global Sales"
+        },
+        "notes": "This call deletes the 'Sales Overview' perspective from the 'Global Sales' data model. Use this when you need to remove a specific perspective and the data model title is required to disambiguate."
+      },
+      {
+        "user_query": "How can I remove the perspective with ID 'persp_12345'?",
+        "arguments": {
+          "perspective": "persp_12345"
+        },
+        "notes": "This call deletes the perspective with the specified ID. Use this when the perspective ID is known and there is no ambiguity about the associated data model."
+      },
+      {
+        "user_query": "Delete the perspective named 'Regional Insights' from the data model with ID 'model_67890'.",
+        "arguments": {
+          "perspective": "Regional Insights",
+          "datamodel": "model_67890"
+        },
+        "notes": "This call deletes the 'Regional Insights' perspective from the data model identified by 'model_67890'. Use this when the perspective name exists on multiple models and the data model ID is needed for clarification."
+      }
+    ]
+  },
+  {
+    "tool_id": "datamodel.get_perspectives",
+    "description": "Retrieve perspectives — all of them, those of one data model, or specific ones by name or ID.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "perspectives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One perspective reference or a list of them, each a name (case-insensitive) or an ``oid``. ``None`` returns all."
+        },
+        "datamodel": {
+          "type": "string",
+          "description": "Root data model to restrict to, as an ID or title."
+        },
+        "include_default": {
+          "type": "boolean",
+          "description": "Include the auto-generated ``Default`` perspectives when listing. Default ``False``."
+        }
+      },
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve all perspectives for the 'Sales Data' data model, including the default ones.",
+        "arguments": {
+          "datamodel": "Sales Data",
+          "include_default": true
+        },
+        "notes": "This call retrieves all perspectives associated with the 'Sales Data' data model, including the auto-generated 'Default' perspective."
+      },
+      {
+        "user_query": "What perspectives exist for the 'Marketing Analytics' data model?",
+        "arguments": {
+          "datamodel": "Marketing Analytics"
+        },
+        "notes": "This call lists all perspectives for the 'Marketing Analytics' data model, excluding the default perspective unless explicitly requested."
+      },
+      {
+        "user_query": "Find the perspectives named 'Executive View' and 'Regional Breakdown'.",
+        "arguments": {
+          "perspectives": [
+            "Executive View",
+            "Regional Breakdown"
+          ]
+        },
+        "notes": "This call retrieves the perspectives named 'Executive View' and 'Regional Breakdown' across all data models."
+      }
+    ]
+  }
+]

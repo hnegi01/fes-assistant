@@ -10,7 +10,14 @@
           "description": "The ID of the dashboard where the script will be added."
         },
         "script": {
-          "type": "object",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ],
           "description": "The JavaScript script to add, provided as either a properly formatted JSON string, a raw multi-line script string, or a pre-built payload dictionary."
         },
         "executing_user": {
@@ -81,7 +88,14 @@
           "description": "The ID of the widget where the script will be added."
         },
         "script": {
-          "type": "object",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ],
           "description": "The JavaScript script to add, provided as either a properly formatted JSON string, a raw multi-line script string, or a pre-built payload dictionary."
         },
         "executing_user": {
