@@ -7,6 +7,7 @@
     "build": "Schema provisioning — create data models, datasets, and tables; deploy a data model with configurable build behavior.",
     "security": "Row-level security — get, update, and bulk-add datasecurity rules that restrict data access per user or group; retrieve raw, unprocessed rules for round-tripping between environments.",
     "shares": "Data model access — get and add share entries (users and groups) with READ, USE, or EDIT permission levels; get/replace raw (partyId-keyed) permissions for cross-environment migration.",
-    "data": "Data retrieval — query table contents via SQL; get row counts per table across an entire data model (``get_data``, ``get_row_count``)."
+    "data": "Data retrieval — query table contents via SQL; get row counts per table across an entire data model (``get_data``, ``get_row_count``).",
+    "perspectives": "Perspectives — metadata-only views over a root model that keep a subset of its tables and columns; list them, create one from table and column names, delete one, and analyze what a model's dashboards use (plus join, custom-column and custom-table dependencies) to know what a perspective must keep."
   }
 }

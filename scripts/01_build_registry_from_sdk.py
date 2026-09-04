@@ -353,7 +353,7 @@ def _split_format_marker(description: str) -> tuple:
 _INTERNAL_PARAMS = {"self", "emit"}
 
 
-def _schema_from_annotation(ann: Any) -> Optional[Dict[str, Any]]:
+def _schema_from_annotation(ann: Any, *, in_payload: bool = False) -> Optional[Dict[str, Any]]:
     """JSON Schema fragment from a resolved type annotation, or None when the
     annotation carries no usable information (Any, missing, exotic unions) —
     None sends the caller down the older default/docstring/heuristic chain.
@@ -385,7 +385,7 @@ def _schema_from_annotation(ann: Any) -> Optional[Dict[str, Any]]:
             hints = typing_extensions.get_type_hints(ann)
         except Exception:  # noqa: BLE001 — unresolvable forward refs → no info
             return {"type": "object"}
-        props = {k: (_schema_from_annotation(sub) or {"type": "string"}) for k, sub in hints.items()}
+        props = {k: (_schema_from_annotation(sub, in_payload=True) or {"type": "string"}) for k, sub in hints.items()}
         req = sorted(getattr(ann, "__required_keys__", frozenset()))
         schema: Dict[str, Any] = {"type": "object", "properties": props}
         if req:
@@ -402,7 +402,7 @@ def _schema_from_annotation(ann: Any) -> Optional[Dict[str, Any]]:
     if origin is typing.Union or origin is types.UnionType:
         non_none = [a for a in typing.get_args(ann) if a is not type(None)]
         if len(non_none) == 1:
-            return _schema_from_annotation(non_none[0])
+            return _schema_from_annotation(non_none[0], in_payload=in_payload)
         # A union of alternative payload shapes — pysisense models per-provider
         # connection params this way (Athena | RedShift | BigQuery | DataBricks).
         # Merge them into one object whose properties are the union of the
@@ -410,7 +410,7 @@ def _schema_from_annotation(ann: Any) -> Optional[Dict[str, Any]]:
         # (only those are safe to demand without knowing the branch). Without
         # this the union fell through to "string", which is worse than the
         # plain "object" the old docstring path produced.
-        branches = [_schema_from_annotation(a) for a in non_none]
+        branches = [_schema_from_annotation(a, in_payload=in_payload) for a in non_none]
         if branches and all(isinstance(b, dict) and b.get("type") == "object" for b in branches):
             props: Dict[str, Any] = {}
             for b in branches:
@@ -420,10 +420,47 @@ def _schema_from_annotation(ann: Any) -> Optional[Dict[str, Any]]:
             if common:
                 merged["required"] = sorted(common)
             return merged
+        # A union MIXING a payload shape with a scalar — pysisense 2.1.0's
+        # create_perspective(tables: list[PerspectiveTableSpec | str]), where an
+        # entry is either {"table": …, "columns": […]} or a bare table name.
+        # The merge above needs every branch to be an object, so this fell to
+        # None, and the list branch below then filled in items={"type":"string"}
+        # — silently discarding the TypedDict. Because these schemas are
+        # ENFORCED before dispatch, that made the object form UNCALLABLE: the
+        # only shape that can select columns failed validation before reaching
+        # the SDK, so a perspective could never be narrower than whole tables.
+        #
+        # anyOf keeps every shape callable and is what JSON Schema is for — but
+        # ONLY where returning None would lose more than it gains. Returning
+        # None is not a failure here: it hands the parameter to the
+        # default/docstring/heuristic chain, which reads the prose and can be
+        # RICHER than the annotation. `dependencies: list[str] | str | None`
+        # resolves from its docstring to
+        # items.enum = [dataSecurity, formulas, hierarchies, perspectives];
+        # emitting anyOf for it threw that enum away (caught by diffing the
+        # committed registry, NOT by the drift guard — SCHEMA_RULES never
+        # patched it, so nothing pinned it).
+        #
+        # So anyOf applies in exactly the two places the prose chain cannot help:
+        #
+        #   - a union with an OBJECT branch — create_perspective's
+        #     `list[PerspectiveTableSpec | str]`, where the chain produced
+        #     items={"type":"string"} and silently dropped the TypedDict. These
+        #     schemas are ENFORCED before dispatch, so the object form was
+        #     UNCALLABLE and a perspective could never be narrower than whole
+        #     tables.
+        #   - anything nested inside a payload (`in_payload`), where there is no
+        #     docstring for a *field* to fall back to. PerspectiveTableSpec's
+        #     `columns: list[str] | Literal["all"]` has no object branch, and the
+        #     TypedDict field default turned it into a plain string.
+        has_object = any(isinstance(b, dict) and b.get("type") == "object" for b in branches)
+        if (has_object or in_payload) and branches and all(isinstance(b, dict) and b for b in branches):
+            unique = [b for i, b in enumerate(branches) if b not in branches[:i]]
+            return unique[0] if len(unique) == 1 else {"anyOf": unique}
         return None
     if origin in (list, tuple, set) or ann in (list, tuple, set):
         args = typing.get_args(ann)
-        items = _schema_from_annotation(args[0]) if args else None
+        items = _schema_from_annotation(args[0], in_payload=in_payload) if args else None
         return {"type": "array", "items": items or {"type": "string"}}
     if origin is dict or ann is dict:
         return {"type": "object"}
@@ -532,6 +569,22 @@ _READ_PREFIXES = (
     "show_",
     "check_",
     "describe_",
+    # Added for pysisense 2.1.0. Both examine state and report on it; neither
+    # writes. Without a prefix match they fell through to the docstring regex
+    # below, and analyze_perspective_requirements' own summary — "ready to
+    # BUILD a perspective" — tripped the mutate pattern, so a read-only
+    # analysis shipped as mutates=True and gated behind an approval dialog.
+    #
+    # A gate that fires on reads is worse than no gate: it teaches people to
+    # approve without reading, which is exactly the habit the 49 genuinely
+    # mutating tools depend on them not having. It also forces the two out of
+    # fan-out, since mutations never run concurrently.
+    #
+    # Narrow by inspection, not by hope: these are the ONLY two methods in the
+    # whole SDK whose names start analyze_/validate_ (checked 2026-09-04
+    # against 2.1.0, all facades and mixins), so nothing else reclassifies.
+    "analyze_",
+    "validate_",
 )
 
 _MUTATE_PREFIXES = (

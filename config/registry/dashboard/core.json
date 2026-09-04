@@ -40,6 +40,94 @@
     ]
   },
   {
+    "tool_id": "dashboard.delete_dashboard",
+    "description": "Delete a dashboard, but only if both its ID and its title match.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string",
+          "description": "The dashboard's 24-character ``oid``."
+        },
+        "title": {
+          "type": "string",
+          "description": "The dashboard's exact current title."
+        }
+      },
+      "required": [
+        "dashboard_id",
+        "title"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Delete the dashboard with ID '63a9f0ea8b1d4c0012345678' and title 'Sales Overview'.",
+        "arguments": {
+          "dashboard_id": "63a9f0ea8b1d4c0012345678",
+          "title": "Sales Overview"
+        },
+        "notes": "This call deletes the dashboard with the specified ID and title, ensuring both match exactly to prevent accidental deletions."
+      },
+      {
+        "user_query": "Can you remove the dashboard titled 'Marketing Performance' with ID '64b8e1fa9c2d5d0098765432'?",
+        "arguments": {
+          "dashboard_id": "64b8e1fa9c2d5d0098765432",
+          "title": "Marketing Performance"
+        },
+        "notes": "This call attempts to delete the 'Marketing Performance' dashboard, provided the ID and title match exactly."
+      },
+      {
+        "user_query": "I need to delete the dashboard named 'Q1 Financial Report' with the ID '62c7d2fb7a3e6e0054321987'.",
+        "arguments": {
+          "dashboard_id": "62c7d2fb7a3e6e0054321987",
+          "title": "Q1 Financial Report"
+        },
+        "notes": "This call deletes the 'Q1 Financial Report' dashboard if the provided ID and title match the stored values."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.duplicate_dashboard",
+    "description": "Create a copy of a dashboard, titled with a marker so copies are easy to find.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard": {
+          "type": "string",
+          "description": "The dashboard to copy, as an ID or title."
+        }
+      },
+      "required": [
+        "dashboard"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Duplicate the dashboard with ID 'sales_dashboard_2023'.",
+        "arguments": {
+          "dashboard": "sales_dashboard_2023"
+        },
+        "notes": "Creates a copy of the dashboard with ID 'sales_dashboard_2023', appending a marker to the title to indicate it is a duplicate."
+      },
+      {
+        "user_query": "Can you create a duplicate of the dashboard titled 'Marketing Overview'?",
+        "arguments": {
+          "dashboard": "Marketing Overview"
+        },
+        "notes": "Duplicates the dashboard titled 'Marketing Overview', creating a new dashboard with a modified title to indicate it is a copy."
+      },
+      {
+        "user_query": "I need a copy of the dashboard named 'Q4_Performance'.",
+        "arguments": {
+          "dashboard": "Q4_Performance"
+        },
+        "notes": "Generates a duplicate of the dashboard named 'Q4_Performance', with the new copy placed in the root folder."
+      }
+    ]
+  },
+  {
     "tool_id": "dashboard.export_dashboard",
     "description": "Export a dashboard definition using the Sisense admin export endpoint.",
     "parameters": {
@@ -274,6 +362,52 @@
     ]
   },
   {
+    "tool_id": "dashboard.get_dashboards_by_datasource",
+    "description": "Find every dashboard that uses a data model, including dashboards linked only through a widget.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "datamodel": {
+          "type": "string",
+          "description": "The data model, as an ID or title."
+        },
+        "deep": {
+          "type": "boolean",
+          "description": "Also export dashboards with an empty widget-datasource summary and inspect their widgets. Slower (one export call per 20 such dashboards). Default ``False``."
+        }
+      },
+      "required": [
+        "datamodel"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Find all dashboards using the data model 'Sales Data' and include dashboards with empty widget-datasource summaries.",
+        "arguments": {
+          "datamodel": "Sales Data",
+          "deep": true
+        },
+        "notes": "This call retrieves all dashboards that use the 'Sales Data' data model, including those linked through widgets and those with empty widget-datasource summaries."
+      },
+      {
+        "user_query": "Which dashboards are using the 'Customer Analytics' data model?",
+        "arguments": {
+          "datamodel": "Customer Analytics"
+        },
+        "notes": "This call retrieves all dashboards that use the 'Customer Analytics' data model, either directly or through widgets. It does not perform a deep inspection of dashboards with empty widget-datasource summaries."
+      },
+      {
+        "user_query": "List all dashboards linked to the data model 'Inventory Management', inspecting widgets for dashboards with empty summaries.",
+        "arguments": {
+          "datamodel": "Inventory Management",
+          "deep": true
+        },
+        "notes": "This call retrieves all dashboards that use the 'Inventory Management' data model, including those linked through widgets and those requiring deep inspection due to empty widget-datasource summaries."
+      }
+    ]
+  },
+  {
     "tool_id": "dashboard.import_dashboards_bulk",
     "description": "Import one or more dashboards via the bulk import endpoint.",
     "parameters": {
@@ -410,7 +544,7 @@
         },
         "admin_access": {
           "type": "boolean",
-          "description": "When ``True`` (default), request with ``adminAccess=true``."
+          "description": "Retry with ``adminAccess=true`` when the plain call is refused. Default ``True``."
         },
         "force": {
           "type": "boolean",
@@ -499,6 +633,65 @@
     ]
   },
   {
+    "tool_id": "dashboard.replace_datasource",
+    "description": "Change the datasource a dashboard queries — for example from a data model to a perspective built over it.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard": {
+          "type": "string",
+          "description": "The dashboard, as an ID or title."
+        },
+        "datasource": {
+          "type": "string",
+          "description": "Title of the new datasource: a data model or a perspective."
+        },
+        "from_datasource": {
+          "type": "string",
+          "description": "Title of the datasource being replaced. Default: the dashboard's own datasource."
+        },
+        "publish": {
+          "type": "boolean",
+          "description": "Republish the dashboard after the change so shared viewers see it. Default ``True``."
+        }
+      },
+      "required": [
+        "dashboard",
+        "datasource"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Replace the datasource for the 'Sales Overview' dashboard to use the 'Regional Sales Perspective' and republish it.",
+        "arguments": {
+          "dashboard": "Sales Overview",
+          "datasource": "Regional Sales Perspective",
+          "publish": true
+        },
+        "notes": "This call updates the 'Sales Overview' dashboard to use the 'Regional Sales Perspective' as its datasource and republishes the dashboard so that shared viewers see the updated version."
+      },
+      {
+        "user_query": "Can you update the 'Marketing Performance' dashboard to use the 'Q3 Marketing Data' datasource instead of 'Q2 Marketing Data'?",
+        "arguments": {
+          "dashboard": "Marketing Performance",
+          "datasource": "Q3 Marketing Data",
+          "from_datasource": "Q2 Marketing Data"
+        },
+        "notes": "This call replaces the 'Q2 Marketing Data' datasource with 'Q3 Marketing Data' for the 'Marketing Performance' dashboard. It does not explicitly republish the dashboard, so the changes may not be visible to shared viewers until manually published."
+      },
+      {
+        "user_query": "Switch the datasource for dashboard ID '12345' to 'Customer Insights Model' without republishing it.",
+        "arguments": {
+          "dashboard": "12345",
+          "datasource": "Customer Insights Model",
+          "publish": false
+        },
+        "notes": "This call updates the datasource for the dashboard with ID '12345' to 'Customer Insights Model' but does not republish the dashboard, leaving it unpublished for further review or manual publishing."
+      }
+    ]
+  },
+  {
     "tool_id": "dashboard.resolve_dashboard_reference",
     "description": "Resolve a dashboard reference (ID or name) to a concrete dashboard ID and title.",
     "parameters": {
@@ -535,6 +728,52 @@
           "dashboard_ref": "Marketing Performance"
         },
         "notes": "This resolves the dashboard name 'Marketing Performance' to its ID and title. Use this when you know the dashboard name but need its metadata."
+      }
+    ]
+  },
+  {
+    "tool_id": "dashboard.validate_dashboard_queries",
+    "description": "Run every widget's query and report which widgets answer, fail, or cannot be queried.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard": {
+          "type": "string",
+          "description": "The dashboard, as an ID or title."
+        },
+        "datasource": {
+          "type": "string",
+          "description": "Title of a data model or perspective to run the queries against in place of the dashboard's own datasource. Default: each widget runs against its own datasource."
+        }
+      },
+      "required": [
+        "dashboard"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Validate all widget queries for the dashboard 'Sales Performance' against the 'Global Sales Model' datasource.",
+        "arguments": {
+          "dashboard": "Sales Performance",
+          "datasource": "Global Sales Model"
+        },
+        "notes": "This call checks if all widgets on the 'Sales Performance' dashboard can run their queries successfully against the 'Global Sales Model' datasource, instead of the dashboard's own datasource."
+      },
+      {
+        "user_query": "Can you check if the widgets on the dashboard 'Marketing Overview' are working correctly?",
+        "arguments": {
+          "dashboard": "Marketing Overview"
+        },
+        "notes": "This call validates all widget queries on the 'Marketing Overview' dashboard using their default datasources and reports any issues."
+      },
+      {
+        "user_query": "Test the dashboard 'Customer Insights' with the 'Regional Analytics Perspective' to see if it would work on that datasource.",
+        "arguments": {
+          "dashboard": "Customer Insights",
+          "datasource": "Regional Analytics Perspective"
+        },
+        "notes": "This call evaluates whether the 'Customer Insights' dashboard can function correctly if its widgets were run against the 'Regional Analytics Perspective' datasource."
       }
     ]
   }
