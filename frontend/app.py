@@ -1032,6 +1032,166 @@ def _capabilities_dialog(registry: Dict[str, Any], mode_label: str) -> None:
     _render_capabilities(registry, mode_label)
 
 
+_SCALAR_TYPES = (str, int, float, bool, type(None))
+# How deep to expand nested dicts into dotted columns (owner.email). Past this
+# the value is stringified — a column named a.b.c.d.e helps nobody.
+MAX_FLATTEN_DEPTH = 3
+# If expanding produces a grid this wide, the expansion has stopped helping;
+# keep the unexpanded rows instead (nested cells still stringify).
+MAX_FLAT_COLUMNS = 80
+FLATTEN_SAMPLE_ROWS = 50
+# Label for the leftover scalar fields beside a wrapper's lists.
+_DETAILS_LABEL = "details"
+
+
+def _is_row_list(v: Any) -> bool:
+    """A non-empty list of dicts — the one shape pandas tables directly."""
+    return isinstance(v, list) and bool(v) and isinstance(v[0], dict)
+
+
+def _flatten_record(obj: dict, prefix: str = "", depth: int = 0, out: Optional[dict] = None) -> dict:
+    """Expand one record into flat `a.b.c` columns.
+
+    Nesting is the only reason a result is unreadable as a table, so unfold it
+    rather than giving up on the table. A dict becomes dotted columns; a list
+    of scalars becomes a comma-joined cell (['a','b'] reads as "a, b", not as
+    JSON); anything still nested at the depth limit is stringified, which is
+    what `_cell_safe` would have done anyway. Empty containers render blank
+    instead of `{}` / `[]` — a blank cell reads as "nothing here" at a glance.
+    """
+    out = {} if out is None else out
+    for k, v in obj.items():
+        key = f"{prefix}{k}"
+        if isinstance(v, dict) and v and depth < MAX_FLATTEN_DEPTH:
+            _flatten_record(v, f"{key}.", depth + 1, out)
+        elif isinstance(v, (dict, list, tuple, set)) and not v:
+            out[key] = ""
+        elif isinstance(v, (list, tuple, set)) and all(isinstance(x, _SCALAR_TYPES) for x in v):
+            out[key] = ", ".join("" if x is None else str(x) for x in v)
+        elif isinstance(v, (dict, list, tuple, set)):
+            try:
+                out[key] = json.dumps(v, ensure_ascii=False, default=str)
+            except Exception:
+                out[key] = str(v)
+        else:
+            out[key] = v
+    return out
+
+
+def _flatten_rows(rows: List[Any]) -> List[dict]:
+    """Flatten every row, unless doing so makes the grid unusably wide."""
+    flat = [_flatten_record(r) if isinstance(r, dict) else {"value": r} for r in rows]
+    columns = {k for r in flat[:FLATTEN_SAMPLE_ROWS] for k in r}
+    if len(columns) > MAX_FLAT_COLUMNS:
+        return rows
+    return flat
+
+
+def _tabular_sections(data: Any) -> List[Tuple[str, List[dict]]]:
+    """Find the table(s) in a tool result: [(label, rows), ...], empty if none.
+
+    Bias is strongly toward a table. Nobody reads JSON by choice, so every
+    shape that can become a grid does, and raw JSON is the last resort rather
+    than the default for anything non-obvious:
+
+      list of dicts     -> one table, rows flattened
+      list of scalars   -> one single-column table
+      dict with lists   -> one table PER list, each labeled by its key
+      dict, no lists    -> a two-column Field / Value table (one record reads
+                           far better down the page than across 11 columns)
+
+    A wrapper's lists and its own scalar fields both render: the lists as
+    tables, the leftovers as a `details` record. Showing one list and dropping
+    another would hide a non-empty `errors` behind a clean-looking `results`
+    table — the silent-success failure class this project reports upstream, not
+    one to build in here.
+    """
+    if _is_row_list(data):
+        return [("", _flatten_rows(data))]
+
+    if isinstance(data, list) and data and all(isinstance(x, _SCALAR_TYPES) for x in data):
+        return [("", [{"value": x} for x in data])]
+
+    if isinstance(data, dict) and data:
+        sections = [(k, _flatten_rows(v)) for k, v in data.items() if _is_row_list(v)]
+        # An empty container is a section with no rows — `errors: []` on a
+        # clean run. Saying so in a one-row table with a blank cell is noise,
+        # and the absence of an `errors` table already says it.
+        leftovers = _flatten_record(
+            {
+                k: v
+                for k, v in data.items()
+                if not _is_row_list(v) and not (isinstance(v, (dict, list, tuple, set)) and not v)
+            }
+        )
+        if leftovers:
+            # Unlabeled when it IS the whole result; named when it sits beside
+            # tables, so the reader knows which part they are looking at.
+            label = _DETAILS_LABEL if sections else ""
+            sections.append((label, [{"Field": k, "Value": v} for k, v in leftovers.items()]))
+        return sections
+
+    return []
+
+
+def _render_table(rows: List[dict], fname: str) -> None:
+    """Render one list-of-dicts as a dataframe plus CSV/JSON/TXT downloads."""
+    df = pd.DataFrame(rows)
+
+    # Make columns safe for Arrow / Streamlit. Mixed-type columns AND
+    # columns of nested containers: a column where EVERY cell is a dict
+    # is uniformly typed (the old nunique guard passed it), but nested
+    # dicts/lists of varying inner shape crash pyarrow's conversion —
+    # a native segfault, not an exception, so no try/except downstream
+    # can save the process (fes-ui exit=139, live 2026-08-27, EC2).
+    # Nested values render as compact JSON strings instead.
+    def _cell_safe(v):
+        if isinstance(v, (dict, list, tuple, set)):
+            try:
+                return json.dumps(v, ensure_ascii=False, default=str)
+            except Exception:
+                return str(v)
+        return v
+
+    for col in df.columns:
+        try:
+            has_nested = df[col].map(lambda v: isinstance(v, (dict, list, tuple, set, bytes))).any()
+            if has_nested or df[col].map(type).nunique() > 1:
+                df[col] = df[col].map(_cell_safe).astype(str)
+        except Exception:
+            df[col] = df[col].astype(str)
+
+    # Interactive dataframe restored (canvas was EXONERATED for the
+    # ghost-bar bug — it reproduced with plain HTML tables too; the
+    # structural fix is the nested inline chat input, see the
+    # conversation-box notes). Its grid also hands trackpad scrolling
+    # back to the page properly, unlike a plain overflow div.
+    st.dataframe(df, width="stretch")
+    # Export without copy-paste, in whichever format the user wants.
+    _c1, _c2, _c3, _ = st.columns([1, 1, 1, 4])
+    _c1.download_button(
+        "CSV",
+        df.to_csv(index=False).encode("utf-8"),
+        file_name=f"{fname}.csv",
+        mime="text/csv",
+        key=f"dl_{next(_DL_SEQ)}",
+    )
+    _c2.download_button(
+        "JSON",
+        json.dumps(rows, indent=2, ensure_ascii=False),
+        file_name=f"{fname}.json",
+        mime="application/json",
+        key=f"dl_{next(_DL_SEQ)}",
+    )
+    _c3.download_button(
+        "TXT",
+        df.to_string(index=False),
+        file_name=f"{fname}.txt",
+        mime="text/plain",
+        key=f"dl_{next(_DL_SEQ)}",
+    )
+
+
 def render_tool_result(tr: dict):
     if not tr or not isinstance(tr, dict):
         return
@@ -1044,62 +1204,21 @@ def render_tool_result(tr: dict):
 
     if tr.get("ok", True):
         data = tr.get("result")
-        if isinstance(data, list) and data and isinstance(data[0], dict):
-            df = pd.DataFrame(data)
-
-            # Make columns safe for Arrow / Streamlit. Mixed-type columns AND
-            # columns of nested containers: a column where EVERY cell is a dict
-            # is uniformly typed (the old nunique guard passed it), but nested
-            # dicts/lists of varying inner shape crash pyarrow's conversion —
-            # a native segfault, not an exception, so no try/except downstream
-            # can save the process (fes-ui exit=139, live 2026-08-27, EC2).
-            # Nested values render as compact JSON strings instead.
-            def _cell_safe(v):
-                if isinstance(v, (dict, list, tuple, set)):
-                    try:
-                        return json.dumps(v, ensure_ascii=False, default=str)
-                    except Exception:
-                        return str(v)
-                return v
-
-            for col in df.columns:
-                try:
-                    has_nested = df[col].map(lambda v: isinstance(v, (dict, list, tuple, set, bytes))).any()
-                    if has_nested or df[col].map(type).nunique() > 1:
-                        df[col] = df[col].map(_cell_safe).astype(str)
-                except Exception:
-                    df[col] = df[col].astype(str)
-
-            st.markdown("**Result**")
-            # Interactive dataframe restored (canvas was EXONERATED for the
-            # ghost-bar bug — it reproduced with plain HTML tables too; the
-            # structural fix is the nested inline chat input, see the
-            # conversation-box notes). Its grid also hands trackpad scrolling
-            # back to the page properly, unlike a plain overflow div.
-            st.dataframe(df, width="stretch")
-            # Export without copy-paste, in whichever format the user wants.
-            _c1, _c2, _c3, _ = st.columns([1, 1, 1, 4])
-            _c1.download_button(
-                "CSV",
-                df.to_csv(index=False).encode("utf-8"),
-                file_name=f"{_fname}.csv",
-                mime="text/csv",
-                key=f"dl_{next(_DL_SEQ)}",
-            )
-            _c2.download_button(
-                "JSON",
-                json.dumps(data, indent=2, ensure_ascii=False),
-                file_name=f"{_fname}.json",
-                mime="application/json",
-                key=f"dl_{next(_DL_SEQ)}",
-            )
-            _c3.download_button(
-                "TXT",
-                df.to_string(index=False),
-                file_name=f"{_fname}.txt",
-                mime="text/plain",
-                key=f"dl_{next(_DL_SEQ)}",
-            )
+        sections = _tabular_sections(data)
+        if sections:
+            # `_flatten_rows` hands back the SAME list object when it changes
+            # nothing, so identity tells us whether what is on screen is a
+            # faithful copy of the payload or a view we built from it.
+            verbatim = len(sections) == 1 and sections[0][0] == "" and sections[0][1] is data
+            for label, rows in sections:
+                st.markdown(f"**{label}** · {len(rows)} rows" if label else "**Result**")
+                _render_table(rows, f"{_fname}_{label}" if label else _fname)
+            if not verbatim:
+                # We built a view rather than showing the payload whole, so the
+                # untouched original stays one click away — pre-flatten nesting,
+                # and anything a grid could not carry.
+                with st.expander("Raw JSON"):
+                    st.code(json.dumps(data, indent=2, ensure_ascii=False), language="json")
         else:
             st.markdown("**Result (JSON)**")
             st.code(json.dumps(data, indent=2), language="json")

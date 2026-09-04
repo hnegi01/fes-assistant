@@ -152,8 +152,31 @@ plugins.restore_snapshot  # [write] Restore plugin states to exactly match a pre
 plugins.save_snapshot     # [write] Capture the current plugin enable/disable state as a snapshot.
 
 # ===== queries (0 read / 2 write) =====
-queries.elasticube_run_jaql_query  # [write] Run a JAQL query against a datasource (elasticube).
-queries.elasticubes_run_jaql_csv   # [write] Run a JAQL query and return CSV output.
+# WITHHELD 2026-09-03 — both require a `jaql_payload`, and nothing in this app
+# can supply one honestly.
+#
+# JAQL is the query language Sisense's dashboard layer GENERATES from the UI;
+# it is not a payload a person composes, so it will never arrive in a chat
+# message. Building one instead needs a cube's internal table and column names,
+# and no metadata.* tool is exposed here (all 5 exist in the registry, none
+# allowlisted) — so the agent has no route to discover them. The SDK's own
+# package description says as much: "Requires the caller to already know the
+# internal table and column names — not for discovering schema."
+#
+# Left armed, the required argument can only be FABRICATED. The shipped
+# example[0] demonstrated exactly that — "Fetch total sales by region for 2023"
+# with a hand-built payload naming [Region], [Sales] and [Year], none of which
+# the query states — and that example is user-facing (the approval dialog and
+# the "What can I ask?" panel render it), so it advertised a data-Q&A product
+# this is not. mutates=True does not save it: the gate would show the user a
+# JAQL payload they cannot validate either.
+#
+# Data Q&A is a real feature, not a line to uncomment: expose the metadata
+# readers, resolve fields from the cube, and build the payload from what was
+# found. Re-running the JAQL a widget already carries is the other honest
+# route. Until one of those exists, keep these off.
+# queries.elasticube_run_jaql_query  # [write] Run a JAQL query against a datasource (elasticube).
+# queries.elasticubes_run_jaql_csv   # [write] Run a JAQL query and return CSV output.
 
 # ===== wellcheck (8 read / 0 write) =====
 wellcheck.check_dashboard_structure          # Analyze the structure of one or more dashboards.
