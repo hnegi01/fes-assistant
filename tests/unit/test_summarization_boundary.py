@@ -10,7 +10,7 @@ to guard. Without it the loop is blind exactly when it needs to think: a failed
 create left the decide call with `ok: false` alone and it invented a cause. An
 error normally restates what the user already typed, so it rarely adds anything
 the model has not seen — but not never, and that residual exposure is documented
-in README.md rather than hidden.
+in docs/security.md rather than hidden.
 
 A second, narrower widening arrived with pysisense 2.0 (2026-08-31): a call can
 now SUCCEED while part of what was asked for did not happen — a typo'd model

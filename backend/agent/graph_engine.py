@@ -10,7 +10,7 @@ decide/replan, critic, finalize — accessed here via module attributes
 to both engines. The unit suite therefore doubles as the parity harness: run
 it with the env flag flipped.
 
-Graph shape (mirrors AGENT_ARCHITECTURE.md → "Mapping to LangGraph"):
+Graph shape (mirrors docs/architecture.md → "Mapping to LangGraph"):
 
     entry ─┬─ seed (clarify-resolved pinned call) ──────────────┐
            └─ planner ──┬─ Send fan-out → branch* → join ──┐    │

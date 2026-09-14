@@ -58,7 +58,7 @@ def test_list_dashboards_prompt(backend_url, tenant_config):
 ## How to run
 
 ```bash
-# 1. Start all three services (see repo README for full instructions)
+# 1. Start all three services (see docs/development.md for full instructions)
 docker compose up --build
 
 # 2. Configure credentials once (see "Credentials" above)

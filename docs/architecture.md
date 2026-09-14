@@ -2,10 +2,13 @@
 
 > Living document describing how the agent actually works: the agentic loop —
 > plan → parallel fan-out → dependent chains → recovery ladder → human-gated
-> mutations → critic — plus migration mode's single-shot path and the MCP
-> transport underneath. Both engines described here are exercised by CI: the
-> unit suite runs twice, once under `FES_AGENT_ENGINE=langgraph` and once under
-> `custom`.
+> mutations → critic — plus migration mode's single-shot path, the tool
+> registry and its curated surface, and the MCP transport underneath. Both
+> engines described here are exercised by CI: the unit suite runs twice, once
+> under `FES_AGENT_ENGINE=langgraph` and once under `custom`.
+>
+> This is the *why*. The operating rules are `CLAUDE.md`; configuration and
+> deployment are `docs/operations.md`; the security model is `docs/security.md`.
 
 ---
 
@@ -52,7 +55,9 @@ Browser (Streamlit :8501)
 The agent logic lives entirely in the backend. The MCP server is a generic
 tool-executor over the PySisense SDK; it has no notion of the loop. Both sides
 of that hop are the **official MCP Python SDK** — see "The MCP transport"
-below for progress, cancellation, and session correlation.
+below for progress, cancellation, and session correlation. The deployed shape —
+EC2, containers, the one published port, external systems — is the Mermaid
+diagram in the README; this is just the hop order.
 
 **LLM access — gateway-as-a-library.** Every LLM call goes through one choke
 point (`call_llm_raw` in `_routing.py`) using the **LiteLLM SDK** in-process:
@@ -61,6 +66,61 @@ dropping. There is deliberately **no standalone LLM gateway service** — keys
 live with the backend. If centralized governance were ever needed (shared keys,
 budgets, org-wide rate limits), the LiteLLM Proxy speaks the same interface, so
 the migration is pointing `api_base` at it — a config change at one choke point.
+
+---
+
+## Sessions and modes
+
+### Session management
+
+Each browser tab gets a UUID (`session_id`) generated once and stored in
+`st.session_state`. It is sent with every `/agent/turn` request.
+
+The backend maintains `SESSION_POOL: Dict[str, SessionEntry]` — a long-lived
+`McpClient` per session. Clients are reused across turns and replaced only when:
+- idle > 9 hours (`SESSION_IDLE_TIMEOUT`)
+- Sisense connection config changed (domain/token)
+
+A single user with two tabs gets two separate MCP clients and two separate
+conversation histories. Per-turn results are snapshotted **inside** the turn
+task (no `await` between the loop returning and the snapshot), so concurrent
+sessions cannot swap each other's results; the `LAST_*` module globals remain
+only as unit-test/debug aids.
+
+### Mode selection
+
+Two logical modes, selected in the UI sidebar:
+- **Chat**: single Sisense deployment — non-migration tools only
+- **Migration**: source + target deployments — migration tools only
+
+Mode is determined by `_select_tools_for_mode(mode)` in `api_server.py`, which
+filters the tool registry by `meta.module == "migration"`.
+
+**The turn's tool universe is scoped once, at entry.** `call_llm_with_tools`
+re-filters the incoming `tools` by mode (`_tool_matches_mode`) and that list is
+what the loop uses — `_select_tools_for_mode` falls back to returning *all*
+tools when its filter comes up empty (a broken-registry safety valve), which
+would otherwise put chat tools into a migration turn. Historically mode was a
+rule each code path had to remember while the loop rebuilt its own menu from the
+full registry; two paths forgot (later-step routing, and the keyword fallback's
+hardcoded tool IDs). Scope it once, then enforce at the execution choke point —
+don't re-derive it per call site.
+
+**How migration mode differs inside the loop** (all four enforced in code, both
+engines):
+
+| | Chat | Migration |
+|---|---|---|
+| Routing | two-stage L1→L2 navigation | **bypassed** — `_navigate_for_step` hands over the turn's scoped tool list directly, on *every* step. Routing exists to keep ~110 tools off the selection call; 9 already is a menu. The L1 index is not mode-aware, so walking it here can pick a chat tool, and chat tools get no credentials in migration mode (`_inject_credentials` sends non-migration tools down `_with_tenant`, and `tenant_config` is empty) |
+| Fan-out | independent steps run concurrently | **off** — every migration tool mutates, and the gate is one-at-a-time |
+| Planner catalog | non-migration tools | migration tools only (`_capability_catalog`) |
+| Context prompt | `CHAT_PLANNING_CONTEXT_PROMPT` | `MIGRATION_PLAN_SYSTEM_PROMPT` carries the **dependency order**: groups → users → datamodels → dashboards. A Sisense invariant (a user cannot join a group that does not exist; a dashboard cannot resolve against an unmigrated datamodel), not a scenario patch — which is why it is allowed in a prompt at all |
+
+Migration mode has **no read tools**, so it cannot resolve a name to an ID
+mid-plan. `migrate_dashboard_shares` needs concrete ID lists, so a request that
+only names a dashboard dead-ends or clarifies. Adding read tools means also
+deciding which environment they read from and plumbing credentials for it. The
+full single-shot path is described under "Migration mode" below.
 
 ---
 
@@ -180,6 +240,12 @@ Stop conditions (every one returns something readable — never a silent stop):
 - a continued step needs info the user never gave → *overreach*, stop and
   answer from what was gathered (`_finalize_from_transcript`)
 - a mutating tool → pause for approval, resume next turn (see below)
+
+**Multi-turn context:** the planner receives the last
+`LLM_PLANNING_HISTORY_TURNS` turns via `_build_planning_history()`, so
+follow-ups ("xyz datamodel" after a clarifying question) resolve with prior
+context. History is fully client-supplied — the backend keeps no conversation
+of its own.
 
 ### Worked example — a compound request
 
@@ -383,6 +449,32 @@ look.** Never trust the model to enforce a privacy boundary.
    needs a value from an earlier step I can't see with summarization off"_ and
    renders what it got, locally.
 
+**Failure reasons are the one exception** (decided 2026-08-08). A failed step
+contributes `error` on top of `{tool, ok, count}`; a successful one never does.
+Without it the loop is blind exactly when it needs to think — a failed create
+left the decide call with `ok: false` alone and it invented a cause. A recovery
+reasoned from a guess is worse than one reasoned from the truth, and the
+alternative (a code table mapping failures to approved labels) replaces the
+agent's judgement with our enumeration of what can go wrong. Errors normally
+restate what the user already typed, so they rarely add anything the model has
+not seen; when they don't, that residual exposure is documented in
+`docs/security.md` rather than hidden.
+
+**How much they can carry is the SDK's call, not ours.** The string comes from
+`utils._extract_error_message` — a recognised Sisense response yields that
+server's sentence plus its status; an unrecognised one falls back to the body
+itself, capped at 300 chars, credentials redacted upstream. Don't trim or
+filter it here: a local cap would be behaviour the SDK does not document, the
+sibling MCP project would not inherit it, and the same SDK would then behave
+two ways. If the aperture ever needs narrowing, the place is the SDK.
+`tests/unit/test_summarization_boundary.py` pins the scope — reason on failure,
+never a payload on success.
+
+**Result data on screen is always allowed.** The switch governs what reaches
+the *LLM*, not the *user*: tables render in both modes, and `display_hints` is
+the screen-only channel for option names in clarifications. Anything the UI
+shows from `tool_result` / `step_results` never re-enters a prompt.
+
 **Irreducible floor:** tasks that branch on result *content* (unknown iteration
 count driven by the data — "restart every failed datamodel") are only possible
 with summ on. Not a design choice — reacting to data requires seeing data.
@@ -521,6 +613,69 @@ A mutating tool never executes without explicit approval, **even mid-loop**.
 (Migration mode gathers ONE approval for the whole ordered plan instead — see
 "Migration mode" below.)
 
+### The two-phase flow, end to end
+
+1. A mutating tool is selected → returns a `pending_confirmation` dict inside
+   the turn's result (with a plain-English `reason`)
+2. UI stores this and renders an approval dialog
+3. User approves → UI re-calls `/agent/turn` with `approved_keys` containing the
+   ONE `(tool_id, args_json)` just approved
+4. Backend **consumes** the approval (`_consume_approval`) → executes the tool
+
+Every gate — sequential, fan-out branch, pending-loop resume, both engines —
+goes through `_consume_approval()`, which discards the key as it authorises.
+Asking for the identical operation again gates again, whether that repeat comes
+later in the same turn (a decide `CONTINUE`, a critic push) or in a later turn.
+A dialog that silently stops appearing is worse than no dialog: the user has
+learned to expect it. Check-and-discard happens with no `await` between, so
+concurrent fan-out branches cannot both claim one approval.
+
+### What the dialog says — and deliberately doesn't
+
+**The dialog discloses in code, not via the LLM** (`_approval_disclosure`), and
+discloses only what the tool definition states: which optional settings the
+schema declares, which this call left unset, and their enum values (`action`
+(skip / overwrite / duplicate)) — the model picks those silently otherwise.
+Appended on **every** path including the LLM-failure fallback template, because
+a model free to write prose is free to omit the overwrite choice.
+
+It says **nothing about scope or blast radius**. A tool definition does not
+record whether an empty target list means "everything", "nothing", or a hard
+error; that lives in SDK code the registry never sees, and it differs per tool.
+An earlier attempt inferred it from a naming convention and produced a warning
+that was confidently wrong ("this will run without a target list" for a call
+that raises). When the definition cannot confirm it, say nothing: let the call
+run and report the SDK's own error verbatim (`_describe_tool_result`).
+
+Optional params surface in exactly two places, both modes: a clarification
+question (inline) and this dialog (as a block). One selection function
+(`_optional_specs`) feeds two renderers so the two cannot drift.
+
+### Known gap — preconditions the registry does not carry
+
+Several SDK methods `raise ValueError` on argument combinations that JSON Schema
+`required` cannot describe: `migrate_dashboards` needs exactly one of
+`dashboard_names` / `dashboard_ids` (given neither it raises — it does **not**
+migrate everything), `change_ownership` only works with `migrate_share=True`,
+and `migrate_dashboard_shares` rejects id lists of unequal length. Every
+selector is optional in the generated schema, so such a call passes validation
+and fails inside the SDK with the SDK's own error rather than a clarifying
+question.
+
+Do **not** paper over this by hand-writing the rules into the registry or a code
+table. The registry is generated from the SDK; invented entries are data no
+rebuild reproduces and no reader can trace back to a source. If these should be
+enforced, the constraints have to come from the SDK itself — a machine-readable
+declaration on the methods, or generator logic that derives them — so a rebuild
+keeps them true. Until then the agent must not assert what a call will do when
+it cannot know.
+
+In fan-out, mutating branches never execute concurrently — they **defer to the
+sequential loop** so the gate is handled one at a time. Two mutations in one
+plan produce two sequential dialogs, never one combined. Mutations are logged to
+`logs/mutations.log` (backend) and `logs/server_mutations.log` (MCP dispatch) —
+both layers on purpose; the MCP one also catches non-backend callers.
+
 ---
 
 ## Clarification
@@ -602,6 +757,22 @@ from the request. What that buys, and the rules that keep it safe:
 - **Deterministic summaries.** The final reply is built in code from the SDK's
   own counters ("232 succeeded, 63 failed"), in **both** summarization modes —
   no LLM finalize on this path.
+- **Why a principle and not a rank table.** A ranked list — in the prompt or in
+  code — needs editing for every new migration tool and silently mis-ranks
+  anything it doesn't recognise; a principle places a tool nobody has written
+  yet. The prompt gives the reference directions to reason from (a user is
+  assigned to groups; a dashboard queries a datamodel; shares are granted to
+  both) and tells the model to judge each operation **by what it moves, not by
+  its name**.
+- **The approval key is the ordered step list** (`PLAN_TOOL_ID` +
+  `plan_arguments`), single use — editing or reordering a step re-gates. A
+  per-step pause left over from the reactive loop (kill switch flipped
+  mid-session) is dropped rather than resumed. Cost: a three-asset migration is
+  **one** planning call instead of one plan + three selects + two decides.
+- **Both engines share it.** `FES_AGENT_ENGINE` models the chat loop's
+  branching; a linear sequence has none. `FES_MIGRATION_SINGLE_SHOT=false`
+  routes migration back through the reactive loop — a kill switch, not a mode.
+  `MIGRATION_PLANNING_CONTEXT_PROMPT` is two sentences used only on that path.
 
 Inside the flow, routing is bypassed (9 tools is already a small menu, and the
 routing index is not mode-aware), fan-out is off (every migration tool
@@ -662,6 +833,40 @@ long-running migration tools additionally stream per-asset progress from the
 MCP server (see "The MCP transport" below). The loop runs in both
 summarization modes, so multi-step progress shows either way.
 
+**Two sources, one hop.** `agent_progress` events are published by the loop
+itself (`runtime.publish_progress`) — the agent narrating its own phases; MCP
+`notifications/message` frames are published by tools that `emit()` and are
+re-published by the client. Both land in the same per-turn queue and ride the
+same SSE response to the UI. SSE is the backend→UI transport, not "from MCP";
+MCP's own server→backend transport also happens to use SSE underneath, which is
+why the word appears twice for two different hops.
+
+### How a progress event reaches the browser
+
+```
+UI sends Accept: text/event-stream
+  ↓
+api_server SSE generator creates an asyncio.Queue
+  ↓
+runtime._progress_context() registers the turn's callback in the session-keyed
+registry (_SESSION_PROGRESS_CBS) and binds a ContextVar fallback
+  ↓
+the loop publishes agent_progress directly · the MCP client receives
+notifications mid-response and calls runtime.publish_progress_for(session_id, event)
+  ↓
+publish_progress_for() looks up the session's callback (falls back to the
+ContextVar path, publish_progress(), when the session has none) → queued
+  ↓
+SSE generator yields frames to the UI (10s keepalive; detects disconnect)
+  ↓
+UI renders the plan, the step checklist, the status line — and, for migrations,
+the sidebar progress
+```
+
+The session-keyed registry is the primary path — it delivers regardless of which
+task the publisher runs in; the ContextVar path is the fallback, and both keep
+concurrent sessions from mixing progress events.
+
 ### SSE event shapes (backend → UI)
 
 `POST /agent/turn` with `Accept: text/event-stream` streams these events:
@@ -673,6 +878,153 @@ summarization modes, so multi-step progress shows either way.
 | `result` | `{"reply": ..., "tool_result": ..., "step_results": [...]}` |
 | `error` | `{"ok": false, "error": ..., "error_type": ...}` |
 | `keepalive` | `{"keepalive": true}` every ~10s of silence |
+
+---
+
+## The tool registry and the curated surface
+
+`config/tools.registry.with_examples.json` is a JSON array. Each entry:
+
+```json
+{
+  "tool_id": "datamodel.get_all_datamodel",
+  "module": "datamodel",          // "migration" | "datamodel" | "access_management" | ...
+  "mutates": false,               // true = requires UI approval
+  "description": "...",
+  "parameters": { /* JSON Schema */ },
+  "examples": [ { "user_query": "...", "arguments": { } } ]
+}
+```
+
+The backend uses mtime caching to avoid re-reading this file on every request.
+
+**The registry is generated, the surface is curated.**
+`scripts/01_build_registry_from_sdk.py` introspects the PySisense SDK, so a
+refresh can add methods that should never reach a user. `config/allowed_tools.txt`
+is the hand-edited gate: **only tool_ids listed there are exposed**, so new SDK
+methods stay invisible until someone adds a line. Enforced in three places
+reading the same file — the agent registry + planner catalog
+(`_registry.py::allowed_tool_ids`), the tool menu the selection LLM sees
+(`_routing.py::_load_mixin_tools`), and `TOOLS_BY_ID` in `mcp_server/tools_core.py`
+(the dispatch boundary — enforced independently so a delisted tool is
+unreachable even from a non-backend MCP client). A **missing** file means
+allow-all with a warning, never deny-all. The backend re-reads on mtime change;
+the MCP server reads once at import. Audit drift after a rebuild with
+`scripts/04_generate_tool_allowlist.py`; `--apply` stages new tools commented
+out and retires removed ones, so exposing a tool is always a human uncommenting
+a line.
+
+### Where curated knowledge lives — one home per kind
+
+Hand-maintained knowledge is placed by **who consumes it**, and each fact has
+exactly one home:
+
+- **`SCHEMA_RULES`** (`scripts/01_build_registry_from_sdk.py`) — per-tool facts
+  **code** applies deterministically at registry generation: enums
+  (`datamodel_type: extract|live`), x-aliases mapping user vocabulary
+  ("elasticube" → `extract`), rich schemas (`setup_datamodel.tables`),
+  **option lookups** (`x-options-tool`/`x-options-note` on a param: which READ
+  tool lists its valid values — the clarification path runs it; the question
+  text carries the count only, and the example names travel in the
+  `display_hints` screen-only response field, both summarization modes, because
+  question text enters LLM-visible history and names in it are result data
+  while a count is metadata), and **follow-up nudges** (`x-followup` on a tool:
+  after a successful run the reply suggests the consequence step — "Run a full
+  build of 'X'" — never auto-runs it). The `x-options-*` keys are stripped from
+  every model-facing schema (`strip_internal_params`, like `emit`); `x-aliases`
+  stays model-visible on purpose. It lives in the generator, so every rebuild
+  reproduces it — unlike hand-edits to the generated JSON, which the "Known gap"
+  note above forbids. Guarded twice: `TestSchemaRulesDrift`
+  (`tests/unit/test_registry_builder.py`) — every patched method and parameter
+  must exist in the SDK signature (`apply_schema_rules` creates missing paths
+  blindly, so a stale patch would otherwise become a ghost property) and the
+  shipped registry must carry the patch values; and
+  `tests/unit/test_option_enrichment.py` — every `x-options-tool` must be a
+  real, allowlisted, non-mutating, chat-reachable tool, and every `x-followup`
+  template may reference only the tool's required params.
+- **Scoped planning prompts** (`_prompts.py`) — principles the **model**
+  reasons from. Invariants only (e.g. `MIGRATION_PLAN_SYSTEM_PROMPT`'s
+  migrate-what-is-referenced-first rule), never per-tool rank tables — a table
+  silently mis-ranks tools it doesn't recognise — and never scenario patches
+  (failures become eval cases).
+- **`allowed_tools.txt`** — whether a tool is exposed at all. A security gate
+  with its own enforcement (above); don't overload it with semantics.
+- **Skills** (`skills/<name>/SKILL.md`, in design) — a *procedure* the planner
+  reads: what to achieve, in what order, why, what never to do. Versioned
+  product content, per-intent, tested — which is what makes writing a domain
+  procedure down legitimate where a prompt patch would not be.
+
+Litmus for a new fact: code can execute it deterministically → `SCHEMA_RULES`;
+the model must reason from it → scoped prompt (invariants only); it's about a
+tool existing at all → allowlist; it's a multi-step procedure → a skill. SDK
+truths (enums, argument preconditions) should migrate into PySisense itself over
+time — e.g. `Literal` type hints the generator derives automatically — so a
+rebuild keeps them true without a patch.
+
+### What the generator can lose, and how it is caught
+
+The annotation→schema path reads type hints first, because they cannot drift
+from the code. It has lost information twice, in the same way:
+
+- A union with an object branch (`list[PerspectiveTableSpec | str]`) fell
+  through to `items: {"type": "string"}`, discarding the TypedDict. Because
+  schemas are validated **before dispatch**, the object form was rejected by our
+  own validator — the tool was uncallable in the only shape that mattered.
+- Returning `None` from that path is *not* a failure: it hands the param to the
+  docstring/heuristic chain, which can be **richer** than the annotation
+  (`dependencies: list[str] | str` resolves from prose to a four-value enum).
+  Emitting `anyOf` for every union threw that enum away, and nothing pinned it.
+
+So `anyOf` applies only where prose cannot help — unions with an object branch,
+and anything nested inside a payload. And after every SDK bump, **diff every
+pre-existing tool's schema against the committed registry**; drift guards catch
+what `SCHEMA_RULES` patched, not what a docstring quietly supplied.
+
+### Few-shot examples — `example[0]` is dual-purpose
+
+Every tool carries `user_query → arguments` examples. `example[0]` serves two
+consumers: it is shown to **users** (approval dialogs and clarification questions
+render it via `_example_hint` as *"For example, you could ask: …"* — always, no
+flag), and to the **model** when `FES_TOOL_EXAMPLES` ≥ 1 appends examples to
+tool descriptions on the **tool-selection call only** — the planner writes prose
+steps and never emits arguments. `example[0]` is therefore curated to a double
+bar: an **imperative command**, never a question (it models what the user should
+type next), and every value its arguments set — identities AND numbers — is
+spoken in its query, which makes it teach *extraction* rather than *invention*,
+reinforcing the planner's no-placeholder rule. `examples[1..2]` are uncurated
+and question-phrased; they reach only the model at flag 2–3 — don't raise past 1
+without curating them the same way.
+
+`tests/unit/test_tool_examples.py` fails if any property regresses. The guard
+checks two things: identity-looking values under name/email/id keys, and — after
+a shipped example invented `[Region]` and `[Sales]` under a `jaql_payload` key
+the first check never looked at — **any nested value the query does not name**,
+whatever the key is called, exempting values the schema *declares* as an enum.
+Script 02 preserves existing examples on rebuild. A/B any flag change against
+the eval battery — more examples is not automatically better.
+
+### Internal params never reach the model
+
+`INTERNAL_PARAMS` (`_routing.py`) is the set of signature params no caller can
+supply — currently `emit`, the SDK's progress callback, which the MCP server
+injects itself and drops if a client sends one. Because the registry is
+generated by introspecting the SDK, these leak in on every rebuild, so they are
+removed at three levels: the generator skips them (`scripts/01`), the shipped
+data carries none, and `planner_schema()`/`_format_tool_examples()` strip them
+at the boundary anyway. Showing the model a slot it cannot fill just invites it
+to invent a value — and an example that demonstrates filling it beats any rule
+forbidding it. Guarded by `tests/unit/test_internal_params.py`.
+
+### Level 1 routing reads tool names, not only prose
+
+The L1 index gives the router each package's blurb plus its module names *and
+the tool names each module exposes* — generated through the same allowlist and
+mutation gates as the rest of navigation. Prose alone competes badly: when
+pysisense 2.1.0 added a `perspectives` module whose description honestly said it
+keeps "a subset of its tables and columns", `datamodel` became the best prose
+match for "show me the columns of a datamodel" while the tool that answers it
+lives in `access_management`. Names settle that; a doc correction would have had
+to be unwound when upstream fixes the placement.
 
 ---
 
@@ -689,10 +1041,12 @@ with two deliberate extensions.
 (correlated by `progressToken`), and human-readable narration rides alongside
 as `notifications/message` log frames tied to the request (sent with
 `related_request_id`, so they land on the request's stream). The client's
-notification callbacks republish these through a session-keyed registry
-(`runtime.publish_progress_for(session_id, event)`) — session-keyed rather
-than a ContextVar because the SDK dispatches notifications from a long-lived
-receive-loop task whose context was snapshotted at connect time.
+`logging_callback` republishes the **narration** frames through a
+session-keyed registry (`runtime.publish_progress_for(session_id, event)`) —
+session-keyed rather than a ContextVar because the SDK dispatches notifications
+from a long-lived receive-loop task whose context was snapshotted at connect
+time. The spec `notifications/progress` frames are **logged only**: the display
+feed is the message channel, so the UI never shows the same asset twice.
 
 **Cancellation.** Two paths, both wired to per-session cancel flags that the
 tool's `emit()` callback checks between assets (SDK calls run in threads,
@@ -716,6 +1070,32 @@ credentials into every call (chat `domain`/`token`, migration
 required. There is deliberately no env fallback — missing credentials fail
 loudly rather than silently running against whatever environment the server's
 env last pointed at.
+
+**A curated allowlist enforced at dispatch** (`config/allowed_tools.txt`) is
+the other deliberate extension beyond the spec, independent of what any client
+asks for — see "The tool registry and the curated surface" above. Both
+extensions exist because this server's client is our own agent rather than an
+end user with an OAuth identity. Think of this repo as the **proving ground**:
+what a production Sisense MCP actually needs — tool curation, approval gating,
+honest failure reporting, long-running progress, cancellation — was discovered
+and battle-tested here. The productized, spec-faithful server (standard MCP,
+OAuth, any client) is the separate `sisense-admin-mcp` project. The MCP server
+is an internal component of this application, not a public endpoint; see
+[`mcp_server/README.md`](../mcp_server/README.md).
+
+### Cancellation, end to end
+
+Multi-layer, best-effort:
+
+1. UI detects disconnect / Stop → backend's `_event_generator()` detects
+   `request.is_disconnected()`
+2. Backend calls `runtime.cancel_active_turn(session_id)`
+3. Runtime calls `McpClient.cancel_session()` — spec `notifications/cancelled`
+   for every in-flight request, then `POST /mcp/cancel` with the session header
+   (shielded from parent cancellation)
+4. MCP server sets a cancel flag per session — the tool's `emit()` callback
+   checks the flag at each step → raises `CancelledError`
+5. Back in the backend: `asyncio.Task.cancel()` on the active turn task
 
 ---
 
@@ -917,6 +1297,66 @@ Who owns what, from the browser down:
 | MCP server | `mcp_server/server.py` | official SDK transport at `/mcp/`; allowlisted `tools/list`; spec progress + narration; cancel handling; `/mcp/cancel`; `/health` |
 | Tool executor | `mcp_server/tools_core.py` | registry loading, allowlist at dispatch, SDK client construction, `invoke_tool` dispatch, `emit()` progress + cancel-flag checks, concurrency caps |
 | SDK | PySisense | the actual Sisense REST calls |
+
+---
+
+## Folder structure
+
+```text
+Root/
+  backend/
+    agent/
+      llm_agent.py        # Agentic loop orchestration: planner (plan/replan), executors + fan-out, critic, approvals
+      graph_engine.py     # Default turn engine: the same loop as a LangGraph StateGraph (FES_AGENT_ENGINE)
+      migration_flow.py   # Migration mode's single-shot path: one plan, one approval dialog, sequential execution
+      _config.py / _prompts.py / _registry.py / _routing.py / _tracing.py  # loop sub-modules
+      mcp_client.py       # MCP client on the official SDK (ClientSession over Streamable HTTP)
+    runtime.py            # Session pool, long-lived McpClient per UI session, progress bridging, cancellation
+    api_server.py         # FastAPI backend (JSON + SSE on /agent/turn; /health, /tools, /agent/cancel)
+
+  config/
+    tools.registry.json                 # Base tool registry generated from the SDK
+    tools.registry.with_examples.json   # Registry enriched with curated examples (the one loaded at runtime)
+    registry/                           # Same tools as a 3-level tree (index → package → mixin) for routing
+    allowed_tools.txt                   # Hand-edited allowlist: unlisted tool_ids are never exposed
+
+  skills/
+    <name>/SKILL.md      # Sisense-authored procedures the agent plans from (in design — docs/design/skills.md)
+
+  frontend/
+    app.py               # Streamlit UI (SSE client for backend /agent/turn)
+    assets/sisense.png   # App favicon
+
+  mcp_server/
+    server.py            # MCP server on the official SDK (StreamableHTTPSessionManager at /mcp/; /health; /mcp/cancel)
+    tools_core.py        # Registry loading, allowlist at dispatch, SDK client construction, tool dispatch, emit/progress
+
+  scripts/
+    registry_core.py                    # Shared registry-building helpers
+    01_build_registry_from_sdk.py       # Introspects PySisense and builds tools.registry.json (flat); SCHEMA_RULES live here
+    02_add_llm_examples_to_registry.py  # Adds LLM examples; writes with_examples.json + the config/registry/ tree
+    03_sync_examples_to_registry_tree.py # Copies curated examples into the config/registry/ tree
+    04_generate_tool_allowlist.py       # Audits / stages config/allowed_tools.txt after a rebuild
+
+  docs/
+    architecture.md · security.md · operations.md · development.md · usage.md
+    design/              # Proposals for features not yet built
+
+  tests/
+    conftest.py          # Seeds dummy env vars so unit-test imports succeed
+    unit/                # Fast, mocked — run on every CI push, under both engines
+    integration/         # Live stack + real creds — local only (includes the eval batteries)
+
+  nginx/default.conf     # Production reverse proxy (mounted into the fes-nginx container)
+  .streamlit/config.toml # Streamlit theme + toolbar (ships in the UI image)
+  .github/workflows/     # CI (lint, unit, image builds) and CD (publish, tag, release)
+
+  Dockerfile.backend · Dockerfile.ui · Dockerfile.mcp
+  docker-compose.yml        # Local/dev (uses .env)
+  docker-compose.prod.yml   # Production: Nginx + single-worker services (uses real env vars)
+  config_prod.sh            # Example script to export prod env vars (no secrets)
+  .env.example              # Every environment variable, annotated — the authoritative list
+```
 
 ---
 

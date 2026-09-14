@@ -1084,7 +1084,7 @@ def _metadata_record(tool_id: str, result: Any) -> Dict[str, Any]:
     so it rarely carries anything the model has not already seen in the request.
     Not never, though: an error raised deeper down can quote a value the user
     never supplied — a row in a failing query, a name from a list the tool
-    fetched. That residual exposure is accepted and documented in README.md
+    fetched. That residual exposure is accepted and documented in docs/security.md
     ("Security & data handling"), not hidden.
 
     Successful results are unaffected: no payload, no rows, no field values.
