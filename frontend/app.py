@@ -250,7 +250,13 @@ def _render_agent_progress(
     lines: List[str] = []
     for s in completed_steps:
         mark = "✅" if s.get("ok") else "⚠️"
-        lines.append(f"- {mark} Step {s.get('step')}: `{s.get('tool_id', '?')}`")
+        pos = _loop_position(s)
+        line = f"- {mark} Step {s.get('step')}{pos}: `{s.get('tool_id', '?')}`"
+        # Skill runs attach a code-built outcome ("Dashboards by datasource — 4
+        # rows"); metadata only, so it is safe to show in both summarization modes.
+        if s.get("outcome"):
+            line += f" — {s['outcome']}"
+        lines.append(line)
     if lines:
         md += "\n".join(lines) + "\n\n"
     if status_line:
@@ -259,11 +265,19 @@ def _render_agent_progress(
         placeholder.markdown(md)
 
 
+def _loop_position(data: Dict[str, Any]) -> str:
+    """' (2/4)' when a skill step runs inside a for_each loop, else ''."""
+    idx, total = data.get("loop_index"), data.get("loop_total")
+    return f" ({idx}/{total})" if isinstance(idx, int) and isinstance(total, int) else ""
+
+
 def _agent_progress_status_line(data: Dict[str, Any]) -> Optional[str]:
     """Map an agent_progress event to a human status line (None for 'completed')."""
     phase = data.get("phase")
     step = data.get("step")
     tool_id = data.get("tool_id")
+    if phase == "planned" and data.get("skill"):
+        return f"📘 Following the procedure `{data['skill']}` — plan above…"
     if phase == "deciding":
         return "🤔 Checking progress against your request…"
     if phase == "replanning":
@@ -275,7 +289,7 @@ def _agent_progress_status_line(data: Dict[str, Any]) -> Optional[str]:
     if phase == "planning":
         return f"🧭 Planning step {step}…"
     if phase == "executing":
-        return f"⏳ Step {step}: running `{tool_id}`…"
+        return f"⏳ Step {step}{_loop_position(data)}: running `{tool_id}`…"
     return None
 
 
@@ -520,7 +534,7 @@ def _launch_migration_turn(
 
     def _run() -> None:
         try:
-            reply, tool_result, step_results, trace_id, usage, _display_hints = call_backend_turn(**call_kwargs)
+            reply, tool_result, step_results, trace_id, usage, _display_hints, _skill = call_backend_turn(**call_kwargs)
             ctx["reply"] = reply
             ctx["tool_result"] = tool_result
             ctx["step_results"] = step_results
@@ -605,6 +619,7 @@ def call_backend_turn(
         final_trace_id: Optional[str] = None
         final_usage: Optional[Dict[str, Any]] = None
         final_display_hints: Optional[List[str]] = None
+        final_skill: Optional[Dict[str, Any]] = None
 
         run_log: Dict[str, Any] = {
             "started_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
@@ -635,7 +650,13 @@ def call_backend_turn(
                 if data.get("plan"):
                     agent_plan = data["plan"]
                 if data.get("phase") == "completed":
-                    agent_steps.append({"step": data.get("step"), "tool_id": data.get("tool_id"), "ok": data.get("ok")})
+                    agent_steps.append(
+                        {
+                            k: data.get(k)
+                            for k in ("step", "tool_id", "ok", "outcome", "loop_index", "loop_total")
+                            if k in data
+                        }
+                    )
                     _render_agent_progress(progress_placeholder, agent_steps, None, agent_plan)
                 else:
                     _render_agent_progress(
@@ -689,6 +710,7 @@ def call_backend_turn(
                 final_trace_id = data.get("trace_id")
                 final_usage = data.get("usage")
                 final_display_hints = data.get("display_hints")
+                final_skill = data.get("skill")
 
             elif event == "error":
                 err = data.get("error") or "Unknown error"
@@ -718,6 +740,7 @@ def call_backend_turn(
             final_trace_id,
             final_usage,
             final_display_hints,
+            final_skill,
         )
 
     # Fallback: backend returned JSON even though we asked for SSE
@@ -726,7 +749,15 @@ def call_backend_turn(
     reply = data.get("reply", "")
     tool_result = data.get("tool_result")
     step_results = data.get("step_results")
-    return reply, tool_result, step_results, data.get("trace_id"), data.get("usage"), data.get("display_hints")
+    return (
+        reply,
+        tool_result,
+        step_results,
+        data.get("trace_id"),
+        data.get("usage"),
+        data.get("display_hints"),
+        data.get("skill"),
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -2165,6 +2196,10 @@ if mode == MODE_CHAT:
                     for _hint in msg["display_hints"]:
                         st.info(_hint)
 
+                # Which Sisense-authored procedure planned this turn, if any (chat only).
+                if msg["role"] == "assistant" and isinstance(msg.get("skill"), dict) and msg["skill"].get("name"):
+                    st.caption(f"📘 Procedure: `{msg['skill']['name']}` v{msg['skill'].get('version', '?')}")
+
                 # Usage line + thumbs on real turns (a trace_id means a backend turn ran)
                 if msg["role"] == "assistant" and msg.get("trace_id"):
                     _uc = _usage_caption(msg.get("usage"))
@@ -2203,7 +2238,7 @@ if mode == MODE_CHAT:
                     _approve_failed = False
                     with st.spinner("Running approved action..."):
                         try:
-                            reply, tr, sr, tid, usage, hints = call_backend_turn(
+                            reply, tr, sr, tid, usage, hints, skill_meta = call_backend_turn(
                                 messages=st.session_state[CHAT_MESSAGES_KEY],
                                 user_input="",
                                 tenant_config=chat_tenant_config,
@@ -2219,8 +2254,9 @@ if mode == MODE_CHAT:
                             # Put the failure in history BEFORE rerunning — st.error
                             # followed by st.rerun() is a frame the user never sees.
                             _approve_failed = True
-                            reply, tr, sr, tid, usage, hints = (
+                            reply, tr, sr, tid, usage, hints, skill_meta = (
                                 f"The approved action failed: {e}",
+                                None,
                                 None,
                                 None,
                                 None,
@@ -2242,6 +2278,7 @@ if mode == MODE_CHAT:
                             "trace_id": tid,
                             "usage": usage,
                             "display_hints": hints,
+                            "skill": skill_meta,
                         }
                     )
 
@@ -2291,7 +2328,7 @@ if mode == MODE_CHAT:
             _call_failed = False
             with st.spinner("Thinking..."):
                 try:
-                    reply, tr, sr, tid, usage, hints = call_backend_turn(
+                    reply, tr, sr, tid, usage, hints, skill_meta = call_backend_turn(
                         messages=st.session_state[CHAT_MESSAGES_KEY],
                         user_input=user_input,
                         tenant_config=chat_tenant_config,
@@ -2312,6 +2349,7 @@ if mode == MODE_CHAT:
                     tid = None
                     usage = None
                     hints = None
+                    skill_meta = None
             _agent_ph.empty()
 
             # Ensure run log is not shown/stored for chat
@@ -2340,6 +2378,7 @@ if mode == MODE_CHAT:
                         # Screen-only: rendered under the reply, never part of
                         # `content`, so it can't re-enter LLM prompts via history.
                         "display_hints": hints,
+                        "skill": skill_meta,
                     }
                 )
                 if not _call_failed:

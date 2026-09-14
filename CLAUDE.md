@@ -169,12 +169,40 @@ under the section named.
   Stripped at the generator, the shipped data, and the boundary.
   → *The tool registry and the curated surface*
 
-### Skills *(in design — `docs/design/skills.md`)*
-- A skill is a Sisense-authored procedure under `skills/<name>/SKILL.md`. The
-  planner reads it and emits a **typed plan**; code validates, gathers **one**
-  approval, executes with checkpoints and compensation. Data flows between steps
-  by *reference*, never through the model. Frontmatter `tools` is an allowlist
-  within the allowlist. Nothing reads skills yet.
+### Skills *(design: `docs/design/skills.md` — built through §13 step 3)*
+- A skill is a Sisense-authored procedure under `skills/<name>/SKILL.md`.
+  `_skills.py` loads them (mtime-cached, chat mode only; a file that fails to
+  parse or names a tool outside the registry/allowlist is **excluded and logged
+  at ERROR**). The planner always sees a one-line index; replying
+  `SKILL: <name>` triggers ONE second pass with the body and the skill's tool
+  schemas (`SKILL_PLAN_SYSTEM_PROMPT`) that returns a **typed plan** — JSON with
+  tool ids, literal `args`, `args_from` references into earlier results,
+  `for_each` loops and `when` conditions. With no skills on disk the planner
+  prompt is byte-identical to before — `tests/unit/test_skills.py` pins that.
+- **The hand-off rides the per-turn output slot** (`_take_skill_handoff`), not
+  `_make_plan`'s return value, so the many tests that patch `_make_plan` keep
+  working and both engines pick it up at the same point. `skill_flow.run`
+  then owns the turn.
+- **`skill_flow.py`** validates the plan before showing it (tools ⊆ the skill's
+  `tools`, refs point backwards, literal args schema-valid, declared guardrails
+  hold structurally), gates ONCE on `skill.plan` keyed to the canonical plan,
+  and executes in code: references resolved at run time, loops expanded from
+  live results, `when` evaluated, guardrails re-checked with values, every
+  result checkpointed, and on the first failure the skill's declared
+  **compensations** run in reverse (a copy-swap is skipped when the copy is
+  deleted; a failed compensation stops the unwind loudly). Data never passes
+  through the model, so a skill run is identical with summarization ON or OFF.
+- Frontmatter `tools` is an allowlist within the allowlist — how "never change
+  ownership" becomes impossible rather than discouraged. `requires_role` is a
+  courtesy pre-check via `get_my_user`: a user below it gets the read steps and
+  a handoff message, never a plan whose first write would fail. Skills are
+  product content: never customer config, never a prompt patch.
+- Resume runs exactly the approved plan and refuses if the skill's version
+  changed underneath it. The response's `skill` field names the procedure
+  ({name, version}) — set by `skill_flow`, never by the planner, so a skill
+  that was named and then abandoned is not claimed. The UI renders the
+  code-built outcome line and loop position per step. Still to build (design
+  §13): live step expanders, a Stop button, durable approval.
 
 ### Transport and streaming
 - **MCP server: 1 worker, always.** Session/cancel state is in-process.

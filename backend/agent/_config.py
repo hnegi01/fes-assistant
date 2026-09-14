@@ -254,6 +254,10 @@ CLARIFY_MAX_ATTEMPTS: int = int(os.getenv("FES_CLARIFY_MAX_ATTEMPTS", "2"))
 # Step 8: hard ceiling on tool-executing iterations per agent turn. Reaching it
 # returns partial progress with an "incomplete" note — never a silent stop.
 MAX_AGENT_STEPS: int = int(os.getenv("FES_MAX_AGENT_STEPS", "8"))
+# Skill runs (docs/design/skills.md §7) expand loops at runtime — one step per
+# dashboard — so they get their own ceiling, not the 8 of a conversational turn.
+# A loop over 400 dashboards is a job, not a turn, and should say so.
+SKILL_MAX_STEPS: int = int(os.getenv("FES_SKILL_MAX_STEPS", "60"))
 
 
 def _cfg_flag(name: str, default: str = "true") -> bool:
@@ -680,6 +684,9 @@ _EMPTY_TURN_OUTPUT: Dict[str, Any] = {
     # message's content — so they cannot re-enter LLM prompts via history.
     # Used for clarification option names in every summarization mode.
     "display_hints": [],
+    # {name, version} of the skill whose plan this turn followed (skill_flow
+    # sets it — fresh and resume), else None. Screen/metadata only.
+    "skill": None,
 }
 
 

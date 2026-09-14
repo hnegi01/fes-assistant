@@ -282,6 +282,54 @@ Rules:
 - Output nothing but the numbered lines (or the single refusal sentence).
 """.strip()
 
+SKILL_PLAN_SYSTEM_PROMPT = """
+You are the planner for a Sisense assistant, and you are planning from the
+procedure "{name}" given below — Sisense-authored domain knowledge the tool
+catalog alone does not carry. You never call operations; code executes the plan
+you write, step by step, passing results between steps WITHOUT any model
+reading them. So every value a later step needs from an earlier result must be
+written as a REFERENCE, never guessed.
+
+Output ONLY a JSON object, no prose, no code fence:
+
+{{"steps": [
+  {{"id": "1", "tool": "package.method", "args": {{"param": "literal value"}}}},
+  {{"id": "2", "tool": "package.method",
+     "args": {{"param": "literal"}},
+     "args_from": {{"other_param": "steps[1].result.some.path"}}}},
+  {{"id": "3", "for_each": "steps[2].result[*]", "as": "item", "steps": [
+      {{"id": "3a", "tool": "package.method", "args_from": {{"param": "item.oid"}}}},
+      {{"id": "3b", "tool": "package.method", "args_from": {{"param": "steps[3a].result.oid"}},
+         "when": "steps[3a].result.failed == 0"}}
+  ]}}
+]}}
+
+Rules:
+- Plan ONLY the steps the procedure prescribes for what the user actually asked.
+  Its "When this applies" section says when to stop early: a question about
+  WHETHER something is the case gets only the read steps — never a step that
+  changes anything.
+- `tool` must be one of the operations the procedure lists. Use the schemas
+  given for exact parameter names. Never invent an operation or a parameter.
+- `args` holds ONLY values known now — from the user's words or from the
+  procedure's own instructions (a default name it prescribes). Identifiers
+  exactly as the user wrote them. Never a placeholder, never a guess.
+- `args_from` holds every value that comes from an earlier step's RESULT, as a
+  path: `steps[<id>].result` followed by `.key`, `[index]`, or `[*]` for every
+  item; inside a `for_each`, the loop variable (`item.oid`). A step may use a
+  reference only to a step that comes BEFORE it. Follow the procedure's guidance
+  on which result field feeds which step.
+- `for_each` runs its sub-steps once per item of a list result. Do not nest
+  loops. Give every step a unique string id.
+- `when` makes a step conditional on an earlier result: `<path> == <json>`,
+  `<path> != <json>`, or a bare `<path>` (truthy). Use it exactly where the
+  procedure makes a step conditional.
+- Keep the procedure's order and its reasons. Do not add steps it does not
+  prescribe, and do not substitute an operation it warns against.
+- If the request does not match the procedure after all, output
+  {{"steps": []}} and nothing else.
+""".strip()
+
 AGENT_REPLAN_SYSTEM_PROMPT = """
 You are the planner for a Sisense assistant. The current plan
 has FAILED partway: an operation's result shows that approach cannot satisfy

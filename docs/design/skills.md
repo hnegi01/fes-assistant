@@ -1,6 +1,6 @@
 # Skills — design
 
-**Status:** draft for review · **Branch:** `design/skills` · **Author:** FES · **Date:** 2026-09-13
+**Status:** §13 steps 1–3 built 2026-09-13 (loader, typed plan, validation, one approval, runtime with compensation — `_skills.py`, `skill_flow.py`); step 4 partly built 2026-09-14 (outcome lines + loop sub-progress in the UI, `skill` named in the API response; live expanders and Stop still open); step 5 open · **Branch:** `design/skills` · **Author:** FES · **Date:** 2026-09-13
 
 ---
 

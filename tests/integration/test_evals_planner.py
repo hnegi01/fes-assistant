@@ -319,6 +319,25 @@ EVAL_CASES = [
         "answered with check_datamodel_island_tables; fixed by the package doc "
         "correction + module contents in the L1 index (5/5 after).",
     },
+    {
+        "id": "skill-read-branch-ai-assistant-readiness",
+        "prompt": "is the datamodel {datamodel_name} ready for Sisense AI Assistant?",
+        "needs_identities": ("datamodel_name",),
+        # A skill's contract is request -> plan. This pins the READ branch of
+        # optimize-datamodel-for-ai-assistant: the planner must recognise the
+        # phrase (nothing in the tool catalog says "AI Assistant" — only the
+        # skill does), run BOTH reads the procedure prescribes, and run NONE of
+        # the write steps, because the user asked WHETHER, not to do it. Both
+        # reads take only the model name, so this holds in both summ modes.
+        "allow_summarization": "both",
+        "expect_tools_all": ["analyze_perspective_requirements", "get_dashboards_by_datasource"],
+        "forbid_tools": ["create_perspective", "duplicate_dashboard", "replace_datasource", "delete_dashboard"],
+        "expect_reply_any": [],
+        "forbid_reply": [],
+        "origin": "2026-09-13: first skill shipped (docs/design/skills.md). Before the loader, "
+        "this prompt had no route to either tool — 'AI Assistant' appears nowhere in the "
+        "catalog, so the planner could only guess.",
+    },
 ]
 
 

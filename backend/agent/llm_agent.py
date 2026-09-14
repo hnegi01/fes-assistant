@@ -75,6 +75,7 @@ from ._prompts import (
     MIGRATION_PLANNING_CONTEXT_PROMPT,
     MUTATION_EXPLAIN_SYSTEM_PROMPT,
     PLANNING_SYSTEM_PROMPT,
+    SKILL_PLAN_SYSTEM_PROMPT,
     VERIFY_GOAL_SYSTEM_PROMPT,
 )
 
@@ -85,7 +86,9 @@ from ._registry import (
     _load_registry_rows,
     _payload_failure_reason,
     _safe_json_loads,  # re-exported: test_smoke.py imports from llm_agent
-    _shrink_for_llm,  # re-exported: test_smoke.py imports from llm_agent
+    _shrink_for_llm,  # re-exported: test_smoke.py imports from llm_agent,
+    all_registry_tool_ids,
+    exposed_tool_ids,
 )
 
 # --- _routing ---
@@ -97,10 +100,12 @@ from ._routing import (
     _navigate_to_tools,
     _pick_tool_calls_from_llm_response,
     call_llm_raw,
+    planner_schema,
 )
 from ._routing import (
     planner_schema as _planner_schema,
 )
+from ._skills import load_skills, parse_skill_directive, skills_index_text, strip_skill_directive
 from ._tracing import log_tool_child, mark_tainted
 from .mcp_client import McpClient
 
@@ -998,16 +1003,61 @@ def _split_dependent_tail(plan_steps: List[str]) -> Tuple[List[str], List[str]]:
     return runnable, skipped
 
 
-async def _make_plan(user_text: str, mode: str, history: List[Dict[str, Any]], trace_id: str) -> List[str]:
-    """The upfront planner call: request + capability catalog → ordered plan
-    (a list of one-operation instructions). Falls back to [user_text] on any
-    failure — planning must never block a turn. Privacy-safe in both summ modes:
-    it reads only the request text and the catalog, never tool results."""
+def _load_skills_for_planner(mode: str) -> Dict[str, Any]:
+    """Skills the planner may be offered this turn — chat mode only.
+
+    Migration has its own single-shot planner over a nine-tool menu and no read
+    tools; a procedure would have nothing to reason from. Validated against the
+    registry (pre-allowlist) and the exposed surface (post-allowlist) — both
+    from _registry's mtime cache, NOT the TOOL_REGISTRY global, which is empty
+    until a turn populates it — so a skill naming a renamed tool is excluded
+    with 'not in the registry' and one naming a delisted tool with 'not
+    allowlisted', and neither is ever offered to the planner.
+    """
+    if mode != "chat":
+        return {}
+    return load_skills(registry_ids=all_registry_tool_ids(), allowed=exposed_tool_ids())
+
+
+_SKILLS_INDEX_INSTRUCTION = (
+    "\n\nProcedures available (multi-step, Sisense-authored). If the request is one "
+    "of these, reply with exactly `SKILL: <name>` on the first line and NOTHING "
+    "else — you will then be given the procedure and asked to plan from it. "
+    "Otherwise ignore this list:\n"
+)
+
+
+async def _make_plan_detailed(
+    user_text: str, mode: str, history: List[Dict[str, Any]], trace_id: str
+) -> Dict[str, Any]:
+    """The upfront planner call, with the skill hand-off.
+
+    Returns {"steps": [...prose steps...], "skill": Skill | None, "skill_plan": dict | None}.
+    `steps` is always populated (falls back to [user_text]) so callers that only
+    want the reactive loop's plan can ignore the rest; `_make_plan` is exactly
+    that wrapper. Privacy-safe in both summ modes: it reads only the request,
+    the catalog, and (for a skill) the procedure text — never tool results.
+
+    Skills ride the same call as progressive disclosure (docs/design/skills.md
+    §5). When any skill is loaded, the catalog message gains a one-line index
+    and an instruction to answer `SKILL: <name>` if one fits. That opt-in costs
+    nothing when no skill matches, and when one does, ONE extra call plans from
+    the skill body — as a TYPED plan (tool ids, literal args, `args_from`
+    references) that skill_flow validates, gates once and executes in code.
+    With no skills on disk the prompt is byte-identical to before this existed.
+    """
+    empty = {"steps": [user_text], "skill": None, "skill_plan": None}
     try:
+        catalog = _capability_catalog(mode)
+        skills = _load_skills_for_planner(mode)
+        catalog_msg = f"Operation catalog:\n{catalog}"
+        if skills:
+            catalog_msg += _SKILLS_INDEX_INSTRUCTION + skills_index_text(skills)
+
         data = await call_llm_raw(
             [
                 {"role": "system", "content": AGENT_PLAN_SYSTEM_PROMPT},
-                {"role": "system", "content": f"Operation catalog:\n{_capability_catalog(mode)}"},
+                {"role": "system", "content": catalog_msg},
                 *history,
                 {"role": "user", "content": user_text},
             ],
@@ -1016,15 +1066,120 @@ async def _make_plan(user_text: str, mode: str, history: List[Dict[str, Any]], t
             label="planner",
         )
         text, _ = _pick_tool_calls_from_llm_response(data)
+
+        chosen = parse_skill_directive(text) if skills else None
+        if chosen and chosen in skills:
+            skill = skills[chosen]
+            logger.info("Planner selected skill %r (v%d) for: %s", skill.name, skill.version, user_text[:120])
+            # Second pass: the procedure body, the exact schemas of ITS tools
+            # (a handful, so affordable where the full catalog's would not be),
+            # and the typed-plan format. No index — the body is what to plan
+            # from now, not another menu.
+            schemas = {
+                tid: planner_schema((TOOL_REGISTRY.get(tid) or {}).get("parameters") or {})
+                for tid in skill.tools
+                if tid in TOOL_REGISTRY
+            }
+            data = await call_llm_raw(
+                [
+                    {"role": "system", "content": SKILL_PLAN_SYSTEM_PROMPT.format(name=skill.name)},
+                    {"role": "system", "content": f"Operation catalog (for context):\n{catalog}"},
+                    {
+                        "role": "system",
+                        "content": "Schemas of the procedure's operations:\n"
+                        + json.dumps(schemas, ensure_ascii=False, default=str),
+                    },
+                    {"role": "system", "content": f'Procedure "{skill.name}":\n\n{skill.body}'},
+                    *history,
+                    {"role": "user", "content": user_text},
+                ],
+                tools=None,
+                trace_id=trace_id,
+                label="planner_skill",
+            )
+            text, _ = _pick_tool_calls_from_llm_response(data)
+            skill_plan = _parse_skill_plan_json(text)
+            if skill_plan is None:
+                # Not JSON — degrade to the ordinary loop with whatever prose
+                # came back, and say so in the log. Never block the turn on it.
+                logger.warning("Skill %r planner did not return a JSON plan; falling back to the loop.", skill.name)
+                steps = _parse_plan_lines(text or "") or [user_text]
+                return {"steps": steps, "skill": None, "skill_plan": None}
+            from . import skill_flow  # lazy: circular import
+
+            try:
+                prose = skill_flow.render_plan_lines(skill_flow.parse_plan(skill_plan))
+            except Exception:  # noqa: BLE001 — rendering is cosmetic; skill_flow validates for real
+                prose = [user_text]
+            # The engines call `_make_plan` (steps only) and then ask
+            # `_take_skill_handoff()` — so the many tests that patch `_make_plan`
+            # keep working, and a skill hand-off cannot happen behind a patch.
+            # JSON-safe on purpose: the slot is what the API layer pops at turn
+            # end, so it carries the skill NAME, never the object.
+            _out = turn_output()
+            if _out is not None:
+                _out["skill_handoff"] = {"skill_name": skill.name, "skill_plan": skill_plan}
+            return {"steps": prose or [user_text], "skill": skill, "skill_plan": skill_plan}
+        elif chosen:
+            # A name the loader did not offer — a hallucinated or stale skill.
+            # Not an error the user should see: drop the line, plan from the rest.
+            logger.warning("Planner named unknown skill %r; ignoring the directive.", chosen)
+            text = strip_skill_directive(text)
+
         steps = _parse_plan_lines(text or "")
         if steps:
-            return steps
+            return {"steps": steps, "skill": None, "skill_plan": None}
         # A bare unnumbered one-liner still counts as a single-step plan.
         text = (text or "").strip()
-        return [text] if text else [user_text]
+        return {"steps": [text] if text else [user_text], "skill": None, "skill_plan": None}
     except Exception as exc:  # noqa: BLE001
         logger.warning("Plan call failed (%s); using the raw message as a single step.", exc)
-        return [user_text]
+        return empty
+
+
+def _parse_skill_plan_json(text: Optional[str]) -> Optional[Dict[str, Any]]:
+    """The first JSON object in the planner's reply, or None. Tolerates a code fence."""
+    if not text:
+        return None
+    raw = text.strip()
+    if raw.startswith("```"):
+        raw = raw.strip("`")
+        raw = raw[raw.find("{") :] if "{" in raw else raw
+    start, end = raw.find("{"), raw.rfind("}")
+    if start < 0 or end <= start:
+        return None
+    try:
+        obj = json.loads(raw[start : end + 1])
+    except json.JSONDecodeError:
+        return None
+    return obj if isinstance(obj, dict) and "steps" in obj else None
+
+
+async def _make_plan(user_text: str, mode: str, history: List[Dict[str, Any]], trace_id: str) -> List[str]:
+    """The planner's prose steps only — see `_make_plan_detailed` for the skill hand-off."""
+    return (await _make_plan_detailed(user_text, mode, history, trace_id))["steps"]
+
+
+def _take_skill_handoff(mode: str) -> Optional[Tuple[Any, Dict[str, Any]]]:
+    """(Skill, typed plan) if this turn's planner matched a procedure — consumed once.
+
+    Lives in the per-turn output slot so it survives the `_make_plan` boundary
+    without changing that function's return type. None outside a turn, when no
+    skill matched, or when the named skill is no longer loaded.
+    """
+    _out = turn_output()
+    if _out is None:
+        return None
+    handoff = _out.pop("skill_handoff", None)
+    if not handoff:
+        return None
+    skill = _load_skills_for_planner(mode).get(str(handoff.get("skill_name") or ""))
+    if skill is None:
+        logger.warning(
+            "Skill hand-off names %r, which is no longer loaded; planning normally.", handoff.get("skill_name")
+        )
+        return None
+    return skill, handoff["skill_plan"]
 
 
 async def _replan(
@@ -1445,6 +1600,14 @@ async def _run_loop_engine(**kwargs: Any) -> str:
     # Only migration_flow understands a whole-plan pause; the loop re-derives.
     pending_plan = kwargs.pop("pending_plan", None)
 
+    # An approved SKILL plan from a previous turn — skill_flow matches the
+    # approval and runs exactly what was shown. Checked before the migration
+    # branch because the pause is mode-independent (skills run in chat mode).
+    if pending_plan and str(pending_plan.get("tool_id") or "") == "skill.plan":
+        from . import skill_flow  # lazy: avoids circular import at module load
+
+        return await skill_flow.run(pending_plan=pending_plan, **kwargs)
+
     if kwargs.get("mode") == "migration" and MIGRATION_SINGLE_SHOT:
         from . import migration_flow  # lazy: avoids circular import at module load
 
@@ -1677,6 +1840,30 @@ async def _reactive_loop(
             # to the UI for transparency.
             await _emit_agent_progress({"phase": "planning", "step": 1, "max_steps": MAX_AGENT_STEPS})
             _raw_plan = await _make_plan(user_text, mode, history, turn_trace_id)
+            _handoff = _take_skill_handoff(mode)
+            if _handoff is not None:
+                # The planner recognised a procedure and produced a typed plan:
+                # validate, gate once, execute in code — skill_flow owns the turn.
+                from . import skill_flow  # lazy: circular import at module load
+
+                return await skill_flow.run(
+                    skill=_handoff[0],
+                    plan=_handoff[1],
+                    latest_user_message=latest_user_message,
+                    history=history,
+                    planning_context=planning_context,
+                    mode=mode,
+                    passed_tools=passed_tools,
+                    user_text=user_text,
+                    mcp_client=mcp_client,
+                    approved_mutations=approved_mutations,
+                    summ_on=summ_on,
+                    turn_trace_id=turn_trace_id,
+                    trace=trace,
+                    transcript=transcript,
+                    raw_results=raw_results,
+                    steps_executed=steps_executed,
+                )
             independent_steps, dependent_steps = _split_dependent_tail(_raw_plan)
             if len(independent_steps) + len(dependent_steps) == 1 and not history:
                 # Faithfulness guard (code, not prompt): for a fresh single-step

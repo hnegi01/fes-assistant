@@ -949,7 +949,7 @@ exactly one home:
   (failures become eval cases).
 - **`allowed_tools.txt`** — whether a tool is exposed at all. A security gate
   with its own enforcement (above); don't overload it with semantics.
-- **Skills** (`skills/<name>/SKILL.md`, in design) — a *procedure* the planner
+- **Skills** (`skills/<name>/SKILL.md`, loaded by `_skills.py`) — a *procedure* the planner
   reads: what to achieve, in what order, why, what never to do. Versioned
   product content, per-intent, tested — which is what makes writing a domain
   procedure down legitimate where a prompt patch would not be.
@@ -1309,6 +1309,8 @@ Root/
       llm_agent.py        # Agentic loop orchestration: planner (plan/replan), executors + fan-out, critic, approvals
       graph_engine.py     # Default turn engine: the same loop as a LangGraph StateGraph (FES_AGENT_ENGINE)
       migration_flow.py   # Migration mode's single-shot path: one plan, one approval dialog, sequential execution
+      skill_flow.py       # Skill runs: typed plan → validate → one approval → runtime with compensation
+      _skills.py          # Skill loader (skills/*/SKILL.md), index, SKILL: directive
       _config.py / _prompts.py / _registry.py / _routing.py / _tracing.py  # loop sub-modules
       mcp_client.py       # MCP client on the official SDK (ClientSession over Streamable HTTP)
     runtime.py            # Session pool, long-lived McpClient per UI session, progress bridging, cancellation
@@ -1321,7 +1323,7 @@ Root/
     allowed_tools.txt                   # Hand-edited allowlist: unlisted tool_ids are never exposed
 
   skills/
-    <name>/SKILL.md      # Sisense-authored procedures the agent plans from (in design — docs/design/skills.md)
+    <name>/SKILL.md      # Sisense-authored procedures the planner reads (_skills.py; docs/design/skills.md)
 
   frontend/
     app.py               # Streamlit UI (SSE client for backend /agent/turn)

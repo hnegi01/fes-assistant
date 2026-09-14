@@ -15,6 +15,17 @@ tools:
   - dashboard.replace_datasource
   - dashboard.validate_dashboard_queries
   - dashboard.delete_dashboard
+  - datamodel.delete_perspective
+compensations:
+  datamodel.create_perspective:
+    tool: datamodel.delete_perspective
+    args: {perspective: "{args.name}", datamodel: "{args.datamodel}"}
+  dashboard.duplicate_dashboard:
+    tool: dashboard.delete_dashboard
+    args: {dashboard_id: "{result.oid}", title: "{result.title}"}
+  dashboard.replace_datasource:
+    tool: dashboard.replace_datasource
+    args: {dashboard: "{args.dashboard}", datasource: "{result.previous_datasource}"}
 guardrails:
   - id: validate-before-swap
     rule: replace_datasource on a dashboard NOT created by this run requires a
@@ -71,7 +82,8 @@ dashboards are affected and who owns them, and anything that would block it.
 - Delete every stage copy this run created.
 - Swap back every ORIGINAL this run swapped, to its `previous_datasource`.
 - Leave the perspective in place if it built — it is harmless and the next
-  run adopts it. Delete it only if step 2 or 3 is what failed.
+  run adopts it. Delete it (`datamodel.delete_perspective`) only if step 2 or 3
+  is what failed.
 - Report ran / failed (with the SDK's error verbatim) / not attempted.
 
 ## Report

@@ -186,6 +186,32 @@ async def node_planner(s: GraphState) -> Dict[str, Any]:
     """The PLANNER: drafts the dependency-ordered plan (catalog, no schemas)."""
     await A._emit_agent_progress({"phase": "planning", "step": 1, "max_steps": A.MAX_AGENT_STEPS})
     raw_plan = await A._make_plan(s["user_text"], s["mode"], s["history"], s["turn_trace_id"])
+    handoff = A._take_skill_handoff(s["mode"])
+    if handoff is not None:
+        # A procedure matched: skill_flow validates, gates once and executes in
+        # code. Its reply (or approval pause) ends the graph — see
+        # route_after_planner.
+        from . import skill_flow  # lazy: circular import at module load
+
+        reply = await skill_flow.run(
+            skill=handoff[0],
+            plan=handoff[1],
+            latest_user_message=s["latest_user_message"],
+            history=s["history"],
+            planning_context=s["planning_context"],
+            mode=s["mode"],
+            passed_tools=s["passed_tools"],
+            user_text=s["user_text"],
+            mcp_client=s["mcp_client"],
+            approved_mutations=s["approved_mutations"],
+            summ_on=s["summ_on"],
+            turn_trace_id=s["turn_trace_id"],
+            trace=s["trace"],
+            transcript=s["transcript"],
+            raw_results=s["raw_results"],
+            steps_executed=s["steps_executed"],
+        )
+        return {"reply": reply, "disposition": "end"}
     independent_steps, dependent_steps = A._split_dependent_tail(raw_plan)
     if len(independent_steps) + len(dependent_steps) == 1 and not s["history"]:
         # Faithfulness guard: fresh single-step request → the user's words ARE the step.
@@ -206,7 +232,12 @@ async def node_planner(s: GraphState) -> Dict[str, Any]:
 
 
 def route_after_planner(s: GraphState):
-    """Fan out independent steps via Send, or go sequential."""
+    """Fan out independent steps via Send, or go sequential.
+
+    A planner that handed the turn to a skill flow has already produced the
+    reply (or the approval pause) — nothing left for the graph to do."""
+    if s.get("reply") is not None:
+        return END
     fan = s["independent_steps"][: A.MAX_PARALLEL_STEPS] if A.MAX_PARALLEL_STEPS > 1 else []
     if s["mode"] != "migration" and len(fan) >= 2:
         logger.info("Fan-out: running %d independent steps concurrently.", len(fan))
@@ -746,7 +777,7 @@ def _build_graph():
 
     g.add_conditional_edges(START, route_entry, ["seed", "planner", "decide"])
     g.add_edge("seed", "validator")
-    g.add_conditional_edges("planner", route_after_planner, ["branch", "first_select"])
+    g.add_conditional_edges("planner", route_after_planner, ["branch", "first_select", END])
     g.add_edge("branch", "join")
     g.add_conditional_edges("join", route_after_join, ["decide", "first_select", END])
     g.add_conditional_edges(

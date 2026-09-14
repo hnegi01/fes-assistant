@@ -32,6 +32,10 @@ ENV PATH="/app/.venv/bin:$PATH"
 # 6) Only copy what the backend needs
 COPY backend ./backend
 COPY config ./config
+# Skills are product content the planner reads (docs/design/skills.md);
+# without this line the deployed backend runs with zero skills while every
+# local check passes — the same trap .streamlit/ fell into in 2.4.1.
+COPY skills ./skills
 
 # 7) Expose backend HTTP port (FastAPI / uvicorn)
 # Note: EXPOSE is metadata only. The backend is NOT publicly accessible unless you publish it via docker-compose ports.
