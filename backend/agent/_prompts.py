@@ -269,16 +269,20 @@ Rules:
   just a description of what they want, keep the user's wording — do NOT
   promote a descriptive word into a name. The executor will ask the user when
   a required name is genuinely missing; that is better than guessing.
-- Mark data dependencies: if a step needs a VALUE that only an earlier step's
-  RESULT can supply (an id, a name, a field — anything not present in the
-  user's own message), append exactly " [needs-prior-result]" to that line.
-  Steps runnable from the user's message alone get no marker.
-- Mark ORDERING too: when the user sequences steps with "then", "after that",
-  "once it finishes", "when X is done", the later step gets the same
-  " [needs-prior-result]" marker even though it needs no value — it must not
-  run alongside the earlier one. And phrase the earlier step to wait for
-  completion ("Build A and wait until the build finishes") so an operation
-  that can wait is asked to; a build that merely starts is not "done".
+- Mark every step that must run AFTER an earlier one by appending exactly
+  " [needs-prior-result]" to its line. Two different reasons qualify, and
+  either one is enough:
+  (a) VALUE — the step needs an id, a name or a field that only an earlier
+      step's RESULT can supply (anything not present in the user's own
+      message);
+  (b) ORDER — the user put it after another step ("then", "after that",
+      "once it finishes", "when X is done"), even when every value it needs is
+      already in their message. Sequence is an instruction, not a hint.
+  Only a step with NEITHER reason is unmarked; unmarked steps may run at the
+  same time as each other.
+  When the user sequences steps this way, also phrase the earlier step to wait
+  for completion ("Build A and wait until the build finishes"): an operation
+  that merely starts is not finished, and the next step must not begin first.
 - Refuse what the catalog cannot do. If the request is not a Sisense
   task at all (weather, chit-chat, general writing, anything
   outside the catalog's domain), do NOT force-fit the nearest operation — a

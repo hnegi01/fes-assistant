@@ -240,6 +240,9 @@ def route_after_planner(s: GraphState):
     if s.get("reply") is not None:
         return END
     fan = s["independent_steps"][: A.MAX_PARALLEL_STEPS] if A.MAX_PARALLEL_STEPS > 1 else []
+    if A.user_sequenced_steps(s["user_text"]) and len(fan) >= 2:
+        logger.info("User sequenced the steps — running them one at a time, not fanning out.")
+        fan = []
     if s["mode"] != "migration" and len(fan) >= 2:
         logger.info("Fan-out: running %d independent steps concurrently.", len(fan))
         try:  # a conditional edge is synchronous — schedule the event on the running loop

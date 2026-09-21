@@ -982,6 +982,31 @@ def _planner_text_worth_surfacing(op_text: str, user_text: str) -> bool:
 _DEP_MARKER = "[needs-prior-result]"
 
 
+# Ordering the USER asked for, in their own words. The planner is told to tag
+# such a step [needs-prior-result] (see AGENT_PLAN_SYSTEM_PROMPT) and usually
+# does — but not reliably on short phrasings ("build A, then build B" tagged
+# 2 of 3 live runs, 2026-09-21), and an untagged step fans out. Fan-out is an
+# optimisation, so suppressing it is always safe: the worst a false positive
+# costs is a slower turn. The planner keeps the half only it can do — phrasing
+# the earlier step to WAIT for completion.
+_ORDERING_CUE_RE = re.compile(
+    r"\b(?:and\s+then|then|after\s+(?:that|this|it|which)|afterwards?|"
+    r"once\s+(?:it|that|they|the\s+\w+)|when\s+(?:it|that|they|the\s+\w+)\s+(?:is|are|has|have)\b|"
+    r"followed\s+by|wait\s+(?:for|until)|one\s+(?:at\s+a\s+time|by\s+one)|in\s+(?:order|sequence)|"
+    r"sequentially|before\s+(?:you|doing|the\s+next))\b",
+    re.I,
+)
+
+
+def user_sequenced_steps(user_text: str) -> bool:
+    """Did the user ask for these steps IN ORDER, in their own words?
+
+    True suppresses fan-out for the turn. Deliberately generous: running
+    sequentially when it was not required is slower, running in parallel when
+    it was required is wrong."""
+    return bool(_ORDERING_CUE_RE.search(user_text or ""))
+
+
 def _split_dependent_tail(plan_steps: List[str]) -> Tuple[List[str], List[str]]:
     """For summarization-OFF turns: PARTITION the plan into runnable vs skipped.
 
@@ -1958,6 +1983,9 @@ async def _reactive_loop(
             # to the sequential loop below. Downstream concurrency is bounded by
             # the MCP server's read-tool semaphore.
             _fan = independent_steps[:MAX_PARALLEL_STEPS] if MAX_PARALLEL_STEPS > 1 else []
+            if user_sequenced_steps(user_text) and len(_fan) >= 2:
+                logger.info("User sequenced the steps — running them one at a time, not fanning out.")
+                _fan = []
             if mode != "migration" and len(_fan) >= 2:
                 logger.info("Fan-out: running %d independent steps concurrently.", len(_fan))
                 await _emit_agent_progress({"phase": "fanout", "count": len(_fan)})
