@@ -46,6 +46,23 @@ PROBE = "probe.eval.donotcreate@sisense-test.com"
 
 EVAL_CASES = [
     {
+        "id": "sequenced-builds-wait-then-run-in-order",
+        "prompt": (
+            "Build the Governance_Optimized datamodel with schema changes and once it finishes build Sample Retail"
+        ),
+        # "then / once it finishes" is an ORDERING constraint, not a data
+        # dependency. Before the ordering rule the planner left both steps
+        # untagged, fan-out started both builds at once, and deploy_datamodel
+        # returned "accepted" in under a second — the critic saw two successes
+        # and called it done while the cubes were still building. The first
+        # gated call must be A's build asking to WAIT; B is planned after it.
+        "expect_gated": "datamodel.deploy_datamodel",
+        "expect_args": [["datamodel_name", "Governance_Optimized"], ["wait", True]],
+        "forbid_arg_paths": [],
+        "forbid_reply": [],
+        "origin": "2026-09-21: sequencing words did not sequence; builds fanned out and did not wait.",
+    },
+    {
         "id": "create-user-with-role-keeps-the-role",
         "prompt": f"create a user {PROBE} with the viewer role",
         # 2026-08-07, live: the planner split this into "1. Create a user with

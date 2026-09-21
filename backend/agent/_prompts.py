@@ -273,6 +273,12 @@ Rules:
   RESULT can supply (an id, a name, a field — anything not present in the
   user's own message), append exactly " [needs-prior-result]" to that line.
   Steps runnable from the user's message alone get no marker.
+- Mark ORDERING too: when the user sequences steps with "then", "after that",
+  "once it finishes", "when X is done", the later step gets the same
+  " [needs-prior-result]" marker even though it needs no value — it must not
+  run alongside the earlier one. And phrase the earlier step to wait for
+  completion ("Build A and wait until the build finishes") so an operation
+  that can wait is asked to; a build that merely starts is not "done".
 - Refuse what the catalog cannot do. If the request is not a Sisense
   task at all (weather, chit-chat, general writing, anything
   outside the catalog's domain), do NOT force-fit the nearest operation — a
