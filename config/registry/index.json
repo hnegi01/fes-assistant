@@ -1,6 +1,6 @@
 {
-  "sdk_version": "2.1.0",
-  "updated_at": "2026-09-20T21:35:06Z",
+  "sdk_version": "2.2.0",
+  "updated_at": "2026-09-21T21:06:32Z",
   "packages": {
     "access_management": {
       "class": "AccessManagement",
