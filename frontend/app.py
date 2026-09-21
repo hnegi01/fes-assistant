@@ -928,6 +928,30 @@ def _login_for_token(domain: str, username: str, password: str, verify_ssl: bool
     return str(token)
 
 
+def _whoami(domain: str, token: str, verify_ssl: bool) -> Optional[str]:
+    """The user the token belongs to (email, else username), or None.
+
+    GET /api/users/loggedin — the endpoint PySisense's get_my_user uses. Best
+    effort: any failure just leaves the sidebar without a name. The result is
+    kept in its own session key, never inside the tenant config dict, because
+    that dict's keys are injected into every tool call as credentials."""
+    try:
+        r = requests.get(
+            f"{domain.rstrip('/')}/api/users/loggedin",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+            verify=verify_ssl,
+        )
+        if r.status_code != 200:
+            return None
+        body = r.json() if r.content else {}
+        if isinstance(body, dict):
+            return (body.get("email") or body.get("userName") or body.get("username") or "").strip() or None
+    except Exception as exc:  # noqa: BLE001 — cosmetic lookup
+        logger.debug("whoami lookup failed: %s", exc)
+    return None
+
+
 def _auth_mode_radio(key: str) -> str:
     """Rendered OUTSIDE the form on purpose: a radio inside a form does not
     rerun until submit, so the fields below it could not follow the choice."""
@@ -2128,6 +2152,7 @@ migration_tools = st.session_state.migration_tools
 # =============================================================================
 if mode == MODE_CHAT:
     CHAT_TENANT_KEY = "chat_tenant_config"
+    CHAT_TENANT_USER_KEY = "chat_tenant_user"  # who the token belongs to — sidebar only, never sent
     CHAT_MESSAGES_KEY = "chat_messages"
     CHAT_PENDING_KEY = "chat_pending_confirmation"
     CHAT_AWAITING_KEY = "chat_awaiting_answer"  # the last reply was a question the agent is waiting on
@@ -2169,6 +2194,9 @@ if mode == MODE_CHAT:
                 "token": token,
                 "ssl": ssl,
             }
+            st.session_state[CHAT_TENANT_USER_KEY] = (
+                _whoami(_normalize_domain(domain), token, ssl) or (creds.get("username") or "").strip() or None
+            )
             logger.info("[CHAT] Tenant configured for domain=%s, ssl=%s", domain.strip(), ssl)
             # st.toast survives the rerun; st.success here would be erased by it
             st.toast("Connected. You can now chat with your Sisense deployment.", icon="✅")
@@ -2212,8 +2240,9 @@ if mode == MODE_CHAT:
         )
         st.markdown("**Mode:** Chat with deployment")
 
-        st.markdown("**Connected tenant**")
+        st.markdown("**Connected Tenant**")
         st.write(f"Domain: `{chat_tenant_config.get('domain', '')}`")
+        st.write(f"User: `{st.session_state.get(CHAT_TENANT_USER_KEY) or 'unknown'}`")
         st.write(f"SSL verification: `{chat_tenant_config.get('ssl', True)}`")
 
         # Two-click disconnect: it also deletes the chat transcript, which is
@@ -2230,6 +2259,7 @@ if mode == MODE_CHAT:
                     CHAT_MESSAGES_KEY,
                     CHAT_PENDING_KEY,
                     CHAT_APPROVED_KEY,
+                    CHAT_TENANT_USER_KEY,
                     "_chat_disconnect_confirm",
                 ]:
                     if key in st.session_state:
@@ -2547,6 +2577,8 @@ if mode == MODE_CHAT:
 if mode == MODE_MIGRATION:
     MIG_SRC_KEY = "migration_source_config"
     MIG_TGT_KEY = "migration_target_config"
+    MIG_SRC_USER_KEY = "migration_source_user"
+    MIG_TGT_USER_KEY = "migration_target_user"
     MIG_MESSAGES_KEY = "migration_messages"
     MIG_PENDING_KEY = "migration_pending_confirmation"
     MIG_APPROVED_KEY = "migration_approved_mutations"
@@ -2562,6 +2594,7 @@ if mode == MODE_MIGRATION:
         wrong environment (chat mode's disconnect does the same). The turn
         threading keys must go too — a surviving _mig_turn_in_progress=True
         keeps the chat input disabled with no turn left to finish it."""
+        st.session_state.pop({MIG_SRC_KEY: MIG_SRC_USER_KEY, MIG_TGT_KEY: MIG_TGT_USER_KEY}.get(which_key, ""), None)
         st.session_state[which_key] = None
         for key in [
             MIG_MESSAGES_KEY,
@@ -2608,6 +2641,11 @@ if mode == MODE_MIGRATION:
                         "token": src_token,
                         "ssl": src_ssl,
                     }
+                    st.session_state[MIG_SRC_USER_KEY] = (
+                        _whoami(_normalize_domain(src_domain), src_token, src_ssl)
+                        or (src_creds.get("username") or "").strip()
+                        or None
+                    )
                     logger.info("[MIGRATION] Source configured for domain=%s ssl=%s", src_domain.strip(), src_ssl)
                     st.toast("Source environment connected.", icon="✅")
                     st.rerun()
@@ -2641,6 +2679,11 @@ if mode == MODE_MIGRATION:
                         "token": tgt_token,
                         "ssl": tgt_ssl,
                     }
+                    st.session_state[MIG_TGT_USER_KEY] = (
+                        _whoami(_normalize_domain(tgt_domain), tgt_token, tgt_ssl)
+                        or (tgt_creds.get("username") or "").strip()
+                        or None
+                    )
                     logger.info("[MIGRATION] Target configured for domain=%s ssl=%s", tgt_domain.strip(), tgt_ssl)
                     st.toast("Target environment connected.", icon="✅")
                     st.rerun()
@@ -2661,6 +2704,7 @@ if mode == MODE_MIGRATION:
         st.markdown("**Source**")
         if src_cfg:
             st.write(f"Domain: `{src_cfg.get('domain', '')}`")
+            st.write(f"User: `{st.session_state.get(MIG_SRC_USER_KEY) or 'unknown'}`")
             st.write(f"SSL verification: `{src_cfg.get('ssl', True)}`")
             if st.button("Disconnect source", key="mig_disconnect_src"):
                 logger.info("[MIGRATION] Disconnecting source.")
@@ -2671,6 +2715,7 @@ if mode == MODE_MIGRATION:
         st.markdown("**Target**")
         if tgt_cfg:
             st.write(f"Domain: `{tgt_cfg.get('domain', '')}`")
+            st.write(f"User: `{st.session_state.get(MIG_TGT_USER_KEY) or 'unknown'}`")
             st.write(f"SSL verification: `{tgt_cfg.get('ssl', True)}`")
             if st.button("Disconnect target", key="mig_disconnect_tgt"):
                 logger.info("[MIGRATION] Disconnecting target.")
