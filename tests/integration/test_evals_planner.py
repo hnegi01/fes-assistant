@@ -330,6 +330,7 @@ EVAL_CASES = [
         # the write steps, because the user asked WHETHER, not to do it. Both
         # reads take only the model name, so this holds in both summ modes.
         "allow_summarization": "both",
+        "expect_tools_any": [],
         "expect_tools_all": ["analyze_perspective_requirements", "get_dashboards_by_datasource"],
         "forbid_tools": ["create_perspective", "duplicate_dashboard", "replace_datasource", "delete_dashboard"],
         "expect_reply_any": [],

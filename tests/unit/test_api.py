@@ -130,6 +130,7 @@ def test_agent_turn_response_names_the_skill_when_one_ran(monkeypatch):
         headers={"Accept": "application/json"},
     ).json()
     assert body["skill"] == {"name": "optimize-datamodel-for-ai-assistant", "version": 1}
+    assert body["awaiting_input"] is False
 
     async def _plain_turn(**kwargs):
         return {
@@ -155,3 +156,33 @@ def test_agent_turn_response_names_the_skill_when_one_ran(monkeypatch):
         headers={"Accept": "application/json"},
     ).json()
     assert body["skill"] is None
+
+
+def test_agent_turn_flags_when_a_question_is_pending(monkeypatch):
+    """`awaiting_input` tells the UI the reply is a question the agent waits on."""
+    import backend.api_server as api
+
+    async def _asking(**kwargs):
+        return {
+            "reply": "I need a bit more information to run this:\n\n- the name",
+            "tool_result": None,
+            "step_results": [],
+            "trace_id": "t3",
+            "pending_clarification": {"tool_id": "skill.plan"},
+            "pending_loop": None,
+        }
+
+    monkeypatch.setattr(api, "run_turn_once", _asking)
+    body = client.post(
+        "/agent/turn",
+        json={
+            "session_id": "test-awaiting",
+            "messages": [{"role": "user", "content": "hi"}],
+            "user_input": "hi",
+            "mode": "chat",
+            "tenant_config": {"domain": "https://x", "token": "t", "ssl": True},
+            "allow_summarization": False,
+        },
+        headers={"Accept": "application/json"},
+    ).json()
+    assert body["awaiting_input"] is True

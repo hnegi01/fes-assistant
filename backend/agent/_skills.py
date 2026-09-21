@@ -50,7 +50,7 @@ SKILL_FILE = "SKILL.md"
 # ("guardrail:") would otherwise silently disable the thing it was meant to
 # enforce.
 FRONTMATTER_KEYS = frozenset(
-    {"name", "description", "version", "requires_role", "tools", "guardrails", "compensations"}
+    {"name", "description", "version", "requires_role", "tools", "guardrails", "compensations", "step_labels"}
 )
 REQUIRED_KEYS = frozenset({"name", "description", "version", "tools"})
 # Guardrails the runtime knows how to enforce. A skill declaring any other id
@@ -80,14 +80,37 @@ class Skill:
     # Declared in the skill, enforced by the runtime (design §9): what to run,
     # in reverse, for each completed step of that kind when a later step fails.
     compensations: Dict[str, Dict[str, Any]] = None  # type: ignore[assignment]
+    # The `## Approval` section of the body: what the user is asked to approve,
+    # in their words, with `{method.args.param}` / `{method.result.path}` /
+    # `{method.count}` placeholders code fills from the plan and the read
+    # results gathered before the gate (design §8/§11). Empty = generic dialog.
+    approval: str = ""
+    # tool_id -> what the progress line says while that tool runs, in the
+    # user's words ("Building the model"). Falls back to the tool description.
+    step_labels: Dict[str, str] = None  # type: ignore[assignment]
+    # The `## Ask` section: how to ask the user for a value only they can give,
+    # once the reads have run — same placeholders as `approval`. Empty = the
+    # plan's own question text.
+    ask: str = ""
+    # The `## Report` section: the summary shown when the run ends, same
+    # placeholders plus per-item ones (`{method.result|items_ran}` …).
+    report: str = ""
 
     def __post_init__(self) -> None:
         if self.compensations is None:
             object.__setattr__(self, "compensations", {})
+        if self.step_labels is None:
+            object.__setattr__(self, "step_labels", {})
 
     def body_tool_ids(self) -> Set[str]:
         """Every ``package.method`` the procedure names in backticks."""
         return set(_TOOL_ID_RE.findall(self.body))
+
+    @property
+    def planner_body(self) -> str:
+        """The body the PLANNER sees: without `## Ask` and `## Approval`, which
+        are rendered by code with placeholders the model must never copy."""
+        return _without_sections(self.body, ("Ask", "Approval"))
 
 
 def parse_skill_file(path: Path) -> Skill:
@@ -166,9 +189,21 @@ def parse_skill_file(path: Path) -> Skill:
             raise SkillError(f"compensation {step_tool} -> {spec['tool']}: both tools must be declared in `tools`")
         compensations[step_tool] = {"tool": spec["tool"], "args": dict(args)}
 
+    labels_raw = fm.get("step_labels") or {}
+    if not isinstance(labels_raw, dict) or not all(
+        isinstance(k, str) and isinstance(v, str) for k, v in labels_raw.items()
+    ):
+        raise SkillError("step_labels must map tool ids to short label strings")
+    unknown_labels = sorted(set(labels_raw) - set(tools))
+    if unknown_labels:
+        raise SkillError(f"step_labels names tools not declared in `tools`: {unknown_labels}")
+
     body = m.group(2).strip()
     if not body:
         raise SkillError("body is empty — a skill with no procedure teaches nothing")
+    approval = _section(body, "Approval")
+    ask = _section(body, "Ask")
+    report_text = _section(body, "Report")
 
     return Skill(
         name=name,
@@ -180,7 +215,24 @@ def parse_skill_file(path: Path) -> Skill:
         requires_role=role.strip() if isinstance(role, str) else None,
         guardrails=tuple(guardrails),
         compensations=compensations,
+        approval=approval,
+        ask=ask,
+        report=report_text,
+        step_labels={k: " ".join(v.split()) for k, v in labels_raw.items()},
     )
+
+
+def _without_sections(body: str, headings: Tuple[str, ...]) -> str:
+    out = body
+    for h in headings:
+        out = re.sub(rf"^##\s+{re.escape(h)}\s*$\n.*?(?=^##\s|\Z)", "", out, flags=re.M | re.S)
+    return out.strip()
+
+
+def _section(body: str, heading: str) -> str:
+    """The text under `## <heading>` up to the next `## `, or ''."""
+    m = re.search(rf"^##\s+{re.escape(heading)}\s*$\n(.*?)(?=^##\s|\Z)", body, re.M | re.S)
+    return m.group(1).strip() if m else ""
 
 
 def validate_against_surface(

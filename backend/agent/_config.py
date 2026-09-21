@@ -258,6 +258,9 @@ MAX_AGENT_STEPS: int = int(os.getenv("FES_MAX_AGENT_STEPS", "8"))
 # dashboard — so they get their own ceiling, not the 8 of a conversational turn.
 # A loop over 400 dashboards is a job, not a turn, and should say so.
 SKILL_MAX_STEPS: int = int(os.getenv("FES_SKILL_MAX_STEPS", "60"))
+# Seconds between "still running" progress events while one tool call is in
+# flight (a 60s build shows signs of life). 0 disables the heartbeat.
+PROGRESS_HEARTBEAT_SECONDS: float = float(os.getenv("FES_PROGRESS_HEARTBEAT_SECONDS", "10"))
 
 
 def _cfg_flag(name: str, default: str = "true") -> bool:

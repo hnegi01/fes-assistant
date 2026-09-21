@@ -561,6 +561,7 @@ _MUTATE_PAT = re.compile(
 
 _READ_PREFIXES = (
     "get_",
+    "compare_",  # compare_dashboard_values: runs queries on two datasources, changes nothing
     "list_",
     "fetch_",
     "find_",

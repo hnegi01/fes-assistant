@@ -185,33 +185,80 @@ under the section named.
   then owns the turn.
 - **`skill_flow.py`** validates the plan before showing it (tools ⊆ the skill's
   `tools`, refs point backwards, literal args schema-valid, declared guardrails
-  hold structurally), gates ONCE on `skill.plan` keyed to the canonical plan,
-  and executes in code: references resolved at run time, loops expanded from
-  live results, `when` evaluated, guardrails re-checked with values, every
-  result checkpointed, and on the first failure the skill's declared
-  **compensations** run in reverse (a copy-swap is skipped when the copy is
-  deleted; a failed compensation stops the unwind loudly). Data never passes
-  through the model, so a skill run is identical with summarization ON or OFF.
+  hold structurally), then **looks first**: the read steps before the first
+  write run, so the dialog states what WILL change (which dashboards, how many
+  tables) and a blocking finding is reported instead of gated. It gates ONCE on
+  `skill.plan` keyed to the canonical plan; the paused scope (read results +
+  args) rides `pending_loop` and the resume continues from the first write,
+  never re-running the reads. Execution is code: references resolved at run
+  time (`steps[<id>].result…`, `steps[<id>].args…`, and `<when> ? <path> : <path>` to
+  choose between two result paths in code; the `validate-before-swap` guardrail accepts a
+  `compare_dashboard_values` result as proof, so no stage copy is needed once
+  that SDK method ships — the shipped skill is v2), loops expanded from
+  live results, `when` on steps AND `for_each` blocks, guardrails re-checked
+  with values, every result checkpointed, and on the first failure the skill's
+  declared **compensations** run in reverse (a copy-swap is skipped when the
+  copy is deleted; a failed compensation stops the unwind loudly). **Skipped
+  semantics:** a step whose `when` is false leaves a SKIPPED marker; a later
+  `when` reading it is false, a later `args_from` needing it stops the run.
+  Data never passes through the model, so a skill run is identical with
+  summarization ON or OFF.
+- **What the user sees is the skill's words, not the machine's.** Three
+  code-rendered templates in the skill file — `## Ask` (the question after the
+  reads), `## Approval` (the gate) and `## Report` (the end-of-run summary) —
+  with `{method.args.param}` / `{method.result.path}` / `{method.count}`
+  placeholders, filters (`|s`, `|count`, `|unique`, `|head:N`, `|pairs`,
+  `|or:text`, and per-loop-item `|items_ran|items_skipped|items_failed|
+  items_on_behalf`), and nestable conditional blocks `{?spec}…{/}` /
+  `{!spec}…{/}` so a zero reads as one short line and details appear only when
+  there is something to detail. A clean run ends with the summary alone; the
+  per-step list is added when something was skipped or failed. The exact
+  operation list plus the per-item roster ride `pending_confirmation.details`. A value only the user can
+  give (a perspective name — it cannot be renamed) is marked `args_ask` in the
+  plan and asked **after the look-first reads**, with the skill's `## Ask`
+  text filled from what was found (why a perspective, what it keeps, then the
+  question); the paused plan + scope ride `pending_clarification` tagged
+  `skill.plan`, and the answer turn goes to `skill_flow.answer`: one small
+  model call extracts the value verbatim (`SKILL_ANSWER_SYSTEM_PROMPT`), the
+  plan is filled and validated, then the approval follows — no re-plan, no
+  re-run of reads. A non-answer re-asks up to `FES_CLARIFY_MAX_ATTEMPTS`; a
+  new request drops the question and plans fresh. (A top-level `{"ask": …}`
+  remains for the case where nothing can be planned without the value.) The
+  response's `awaiting_input` flag renders the question as a pause in the UI:
+  info box, no usage/skill caption, tokens carried to the completing reply.
+  User-facing copy says **skill**, never "procedure", and never a version.
 - Frontmatter `tools` is an allowlist within the allowlist — how "never change
   ownership" becomes impossible rather than discouraged. `requires_role` is a
   courtesy pre-check via `get_my_user`: a user below it gets the read steps and
   a handoff message, never a plan whose first write would fail. Skills are
   product content: never customer config, never a prompt patch.
 - Resume runs exactly the approved plan and refuses if the skill's version
-  changed underneath it. The response's `skill` field names the procedure
+  changed underneath it. The response's `skill` field names the skill
   ({name, version}) — set by `skill_flow`, never by the planner, so a skill
   that was named and then abandoned is not claimed. The UI renders the
-  code-built outcome line and loop position per step. Still to build (design
-  §13): live step expanders, a Stop button, durable approval.
+  code-built outcome line and loop position per step and a "Skill: <name>"
+  caption. Still to build (design §13): live step expanders, a Stop button;
+  durable approval is deferred by decision (no persistent state yet).
 
 ### Transport and streaming
 - **MCP server: 1 worker, always.** Session/cancel state is in-process.
 - Both sides of the backend↔MCP hop are the **official MCP SDK**. Credentials
   are injected per call — never from env; missing = loud error.
 - **Two kinds of progress event ride one SSE hop (backend → UI):**
-  `agent_progress` published by the loop (planning / executing / deciding /
-  verifying …), and MCP `notifications/message` re-published from tools that
-  `emit()` (migration). The UI renders both from the same runtime queue.
+  `agent_progress` published by the loop, and MCP `notifications/message`
+  re-published from tools that `emit()` (migration). The UI renders both from
+  the same runtime queue. **Every `agent_progress` phase is a real stage,
+  emitted by the code performing it, never inferred from timing:**
+  `understanding` (planner call) · `skill_loading` / `skill_planning` ·
+  `planned` · `fanout` (count) · `planning` (per-step routing) · `executing`
+  (with `label` from the skill's `step_labels` or the tool description, and
+  `loop_index/loop_total/loop_var`) · `running` (heartbeat every
+  `FES_PROGRESS_HEARTBEAT_SECONDS`, from `_invoke_tool_traced`, with `elapsed`)
+  · `completed` (with `outcome`) · `deciding` · `replanning` / `replanned` ·
+  `verifying` · `verify_pushed` · `awaiting_answer` · `awaiting_approval` ·
+  `compensating` · `done` (with `outcome`). The UI keeps the stages as a short
+  timeline above the checklist; the heartbeat appends elapsed seconds to the
+  current line rather than adding one.
 - **Cancellation** is best-effort and layered: UI disconnect → backend
   `cancel_active_turn` → spec `notifications/cancelled` + `POST /mcp/cancel`
   fallback → per-session flag the tool's `emit()` checks → task cancel.

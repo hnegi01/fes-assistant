@@ -35,6 +35,7 @@ are mutated in place — same objects the resume paths persist.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import operator
 from typing import Annotated, Any, Dict, List, Optional, Tuple
@@ -183,8 +184,8 @@ async def node_seed(s: GraphState) -> Dict[str, Any]:
 
 
 async def node_planner(s: GraphState) -> Dict[str, Any]:
-    """The PLANNER: drafts the dependency-ordered plan (catalog, no schemas)."""
-    await A._emit_agent_progress({"phase": "planning", "step": 1, "max_steps": A.MAX_AGENT_STEPS})
+    """The PLANNER: drafts the dependency-ordered plan (catalog, no schemas).
+    `_make_plan_detailed` announces the `understanding` stage itself."""
     raw_plan = await A._make_plan(s["user_text"], s["mode"], s["history"], s["turn_trace_id"])
     handoff = A._take_skill_handoff(s["mode"])
     if handoff is not None:
@@ -241,6 +242,10 @@ def route_after_planner(s: GraphState):
     fan = s["independent_steps"][: A.MAX_PARALLEL_STEPS] if A.MAX_PARALLEL_STEPS > 1 else []
     if s["mode"] != "migration" and len(fan) >= 2:
         logger.info("Fan-out: running %d independent steps concurrently.", len(fan))
+        try:  # a conditional edge is synchronous — schedule the event on the running loop
+            asyncio.get_running_loop().create_task(A._emit_agent_progress({"phase": "fanout", "count": len(fan)}))
+        except RuntimeError:
+            pass
         return [
             Send("branch", {**s, "branch_op": op, "branch_step": i + 1, "branch_results": []})
             for i, op in enumerate(fan)
@@ -525,6 +530,7 @@ async def node_decide(s: GraphState) -> Dict[str, Any]:
             overrides = s["checker_overrides"] + 1
             s["trace"]["goal_rechecks"] = overrides
             logger.info("Goal checker: INCOMPLETE → continuing with: %s", missing[:160])
+            await A._emit_agent_progress({"phase": "verify_pushed"})
             return {"remains": missing, "disposition": "continue", "checker_overrides": overrides}
     return {"reply": _done_reply(s, answer), "disposition": "end"}
 

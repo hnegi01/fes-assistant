@@ -47,6 +47,7 @@ from ._config import (
     MAX_REPLANS,
     MIGRATION_COMPLETENESS_CHECK,  # noqa: F401 — late-bound as A.MIGRATION_COMPLETENESS_CHECK (migration_flow); tests monkeypatch it here
     MIGRATION_SINGLE_SHOT,
+    PROGRESS_HEARTBEAT_SECONDS,
     REQUIRE_MUTATION_CONFIRM,
     VERIFY_GOAL,
     VERIFY_MAX_RECHECKS,
@@ -162,8 +163,10 @@ def _record_tool_result(result: Optional[Dict[str, Any]]) -> None:
         _out["tool_result"] = result
 
 
-def _record_step(step: Any, tool_id: str, result: Dict[str, Any]) -> None:
-    entry = {"step": step, "tool_id": tool_id, "result": result}
+def _record_step(step: Any, tool_id: str, result: Dict[str, Any], label: Optional[str] = None) -> None:
+    entry: Dict[str, Any] = {"step": step, "tool_id": tool_id, "result": result}
+    if label:
+        entry["label"] = label  # the skill's words for this step; the UI prefers it to the tool id
     LAST_STEP_RESULTS.append(entry)
     _out = turn_output()
     if _out is not None:
@@ -1020,10 +1023,12 @@ def _load_skills_for_planner(mode: str) -> Dict[str, Any]:
 
 
 _SKILLS_INDEX_INSTRUCTION = (
-    "\n\nProcedures available (multi-step, Sisense-authored). If the request is one "
-    "of these, reply with exactly `SKILL: <name>` on the first line and NOTHING "
-    "else — you will then be given the procedure and asked to plan from it. "
-    "Otherwise ignore this list:\n"
+    "\n\nSkills available (multi-step, Sisense-authored). Check these FIRST: if the "
+    "request matches a skill's description, the skill takes precedence over any "
+    "plan you could assemble from the catalog — it carries the procedure and the "
+    "checks the individual operations do not. Reply with exactly `SKILL: <name>` "
+    "on the first line and NOTHING else; you will then be given the skill and asked "
+    "to plan from it. Only when no skill matches, plan from the catalog:\n"
 )
 
 
@@ -1054,6 +1059,7 @@ async def _make_plan_detailed(
         if skills:
             catalog_msg += _SKILLS_INDEX_INSTRUCTION + skills_index_text(skills)
 
+        await _emit_agent_progress({"phase": "understanding"})
         data = await call_llm_raw(
             [
                 {"role": "system", "content": AGENT_PLAN_SYSTEM_PROMPT},
@@ -1071,6 +1077,7 @@ async def _make_plan_detailed(
         if chosen and chosen in skills:
             skill = skills[chosen]
             logger.info("Planner selected skill %r (v%d) for: %s", skill.name, skill.version, user_text[:120])
+            await _emit_agent_progress({"phase": "skill_loading", "skill": skill.name})
             # Second pass: the procedure body, the exact schemas of ITS tools
             # (a handful, so affordable where the full catalog's would not be),
             # and the typed-plan format. No index — the body is what to plan
@@ -1080,16 +1087,17 @@ async def _make_plan_detailed(
                 for tid in skill.tools
                 if tid in TOOL_REGISTRY
             }
+            await _emit_agent_progress({"phase": "skill_planning", "skill": skill.name})
             data = await call_llm_raw(
                 [
                     {"role": "system", "content": SKILL_PLAN_SYSTEM_PROMPT.format(name=skill.name)},
                     {"role": "system", "content": f"Operation catalog (for context):\n{catalog}"},
                     {
                         "role": "system",
-                        "content": "Schemas of the procedure's operations:\n"
+                        "content": "Schemas of the skill's operations:\n"
                         + json.dumps(schemas, ensure_ascii=False, default=str),
                     },
-                    {"role": "system", "content": f'Procedure "{skill.name}":\n\n{skill.body}'},
+                    {"role": "system", "content": f'Skill "{skill.name}":\n\n{skill.planner_body}'},
                     *history,
                     {"role": "user", "content": user_text},
                 ],
@@ -1099,13 +1107,32 @@ async def _make_plan_detailed(
             )
             text, _ = _pick_tool_calls_from_llm_response(data)
             skill_plan = _parse_skill_plan_json(text)
-            if skill_plan is None:
-                # Not JSON — degrade to the ordinary loop with whatever prose
-                # came back, and say so in the log. Never block the turn on it.
-                logger.warning("Skill %r planner did not return a JSON plan; falling back to the loop.", skill.name)
-                steps = _parse_plan_lines(text or "") or [user_text]
-                return {"steps": steps, "skill": None, "skill_plan": None}
             from . import skill_flow  # lazy: circular import
+
+            _out = turn_output()
+            if skill_plan is None:
+                # Not a plan. The request matched a skill, so the ordinary loop
+                # is the WRONG fallback — it once turned this into an unrelated
+                # mutation gate (live 2026-09-14). Hand the failure to skill_flow,
+                # which answers honestly and runs nothing.
+                logger.warning("Skill %r planner did not return a JSON plan; reporting, not falling back.", skill.name)
+                if _out is not None:
+                    _out.pop("skill_clarify_attempts", None)
+                    _out["skill_handoff"] = {"skill_name": skill.name, "skill_plan": {"error": (text or "")[:300]}}
+                return {"steps": [user_text], "skill": skill, "skill_plan": {"error": (text or "")[:300]}}
+            # Attempts so far at THIS question, carried over by the resume path
+            # in `call_llm_with_tools` (a skill clarification pins no tool).
+            _asked_before = int(_out.pop("skill_clarify_attempts", 0) or 0) if _out is not None else 0
+            if isinstance(skill_plan.get("ask"), str) and skill_plan["ask"].strip():
+                # The procedure needs a value only the user can give (a name
+                # that cannot be changed later). skill_flow turns this into a
+                # clarifying question through the ordinary pending channel.
+                question = skill_plan["ask"].strip()
+                logger.info("Skill %r needs the user's input before planning: %s", skill.name, question[:120])
+                handoff_plan = {"ask": question, "attempts": _asked_before + 1}
+                if _out is not None:
+                    _out["skill_handoff"] = {"skill_name": skill.name, "skill_plan": handoff_plan}
+                return {"steps": [user_text], "skill": skill, "skill_plan": handoff_plan}
 
             try:
                 prose = skill_flow.render_plan_lines(skill_flow.parse_plan(skill_plan))
@@ -1116,7 +1143,6 @@ async def _make_plan_detailed(
             # keep working, and a skill hand-off cannot happen behind a patch.
             # JSON-safe on purpose: the slot is what the API layer pops at turn
             # end, so it carries the skill NAME, never the object.
-            _out = turn_output()
             if _out is not None:
                 _out["skill_handoff"] = {"skill_name": skill.name, "skill_plan": skill_plan}
             return {"steps": prose or [user_text], "skill": skill, "skill_plan": skill_plan}
@@ -1148,11 +1174,24 @@ def _parse_skill_plan_json(text: Optional[str]) -> Optional[Dict[str, Any]]:
     start, end = raw.find("{"), raw.rfind("}")
     if start < 0 or end <= start:
         return None
+    body = raw[start : end + 1]
     try:
-        obj = json.loads(raw[start : end + 1])
+        # strict=False: a model that writes a real newline inside a question
+        # string should not cost the whole plan.
+        obj = json.loads(body, strict=False)
     except json.JSONDecodeError:
-        return None
-    return obj if isinstance(obj, dict) and "steps" in obj else None
+        # Python literals (True/False/None) in place of JSON ones — a recurring
+        # slip that should not cost the plan either. Word-bounded, so a value
+        # like "Truett" is untouched; a string value "True" would flip, which
+        # is acceptable for a plan argument no user typed in that case.
+        fixed = re.sub(r"\bTrue\b", "true", body)
+        fixed = re.sub(r"\bFalse\b", "false", fixed)
+        fixed = re.sub(r"\bNone\b", "null", fixed)
+        try:
+            obj = json.loads(fixed, strict=False)
+        except json.JSONDecodeError:
+            return None
+    return obj if isinstance(obj, dict) and ("steps" in obj or "ask" in obj) else None
 
 
 async def _make_plan(user_text: str, mode: str, history: List[Dict[str, Any]], trace_id: str) -> List[str]:
@@ -1289,6 +1328,19 @@ def _tool_matches_mode(tool_id: str, mode: str) -> bool:
     return is_migration_tool == (mode == "migration")
 
 
+async def _heartbeat(tool_id: str, t0: float) -> None:
+    """While one tool call is in flight, say so every few seconds — a 60s build
+    should not look like a hang. Cancelled by the caller when the call returns."""
+    try:
+        while True:
+            await asyncio.sleep(PROGRESS_HEARTBEAT_SECONDS)
+            await _emit_agent_progress(
+                {"phase": "running", "tool_id": tool_id, "elapsed": int(time.perf_counter() - t0)}
+            )
+    except asyncio.CancelledError:
+        return
+
+
 async def _invoke_tool_traced(
     mcp_client: McpClient, tool_id: str, args: Dict[str, Any], mode: str = "chat"
 ) -> Dict[str, Any]:
@@ -1317,15 +1369,20 @@ async def _invoke_tool_traced(
         }
     meta = TOOL_REGISTRY.get(tool_id) or {}
     t0 = time.perf_counter()
+    heartbeat = asyncio.create_task(_heartbeat(tool_id, t0)) if PROGRESS_HEARTBEAT_SECONDS > 0 else None
     try:
         result = await mcp_client.invoke_tool(tool_id, args)
     except Exception as exc:
+        if heartbeat:
+            heartbeat.cancel()
         ms = int((time.perf_counter() - t0) * 1000)
         write_tool_call(
             tool_id=tool_id, ok=False, count=None, latency_ms=ms, mutates=bool(meta.get("mutates")), error=str(exc)
         )
         log_tool_child(tool_id, args, ok=False, count=None, duration_ms=ms, error=str(exc))
         raise
+    if heartbeat:
+        heartbeat.cancel()
     ms = int((time.perf_counter() - t0) * 1000)
     rec = _metadata_record(tool_id, result)
     write_tool_call(
@@ -1837,8 +1894,9 @@ async def _reactive_loop(
             # Fresh turn: the planner drafts the full plan (request + capability
             # catalog, no schemas), the loop executes its first operation. The plan
             # is stashed in the transcript so decide/verify follow it, and emitted
-            # to the UI for transparency.
-            await _emit_agent_progress({"phase": "planning", "step": 1, "max_steps": MAX_AGENT_STEPS})
+            # to the UI for transparency. (`_make_plan_detailed` announces the
+            # `understanding` stage itself; the per-step `planning` events below
+            # mark routing, so none is emitted here.)
             _raw_plan = await _make_plan(user_text, mode, history, turn_trace_id)
             _handoff = _take_skill_handoff(mode)
             if _handoff is not None:
@@ -1902,6 +1960,7 @@ async def _reactive_loop(
             _fan = independent_steps[:MAX_PARALLEL_STEPS] if MAX_PARALLEL_STEPS > 1 else []
             if mode != "migration" and len(_fan) >= 2:
                 logger.info("Fan-out: running %d independent steps concurrently.", len(_fan))
+                await _emit_agent_progress({"phase": "fanout", "count": len(_fan)})
                 _branches = await asyncio.gather(*[_execute_branch(op, i + 1) for i, op in enumerate(_fan)])
                 _clarify_branch = None
                 for _br in _branches:
@@ -2096,6 +2155,7 @@ async def _reactive_loop(
                         checker_overrides += 1
                         trace["goal_rechecks"] = checker_overrides
                         logger.info("Goal checker: INCOMPLETE → continuing with: %s", missing[:160])
+                        await _emit_agent_progress({"phase": "verify_pushed"})
                         remains = missing
                     else:
                         return _done(answer)
@@ -2535,7 +2595,47 @@ async def call_llm_with_tools(
     if pending_clarification:
         _pc_tool_id = pending_clarification.get("tool_id")
         _pc_def = _tool_def_for(_pc_tool_id) if _pc_tool_id else None
-        if _pc_def is None:
+        if _pc_tool_id == "skill.plan" and pending_clarification.get("ask"):
+            # A skill asked for a value AFTER its reads ran: the paused plan and
+            # scope ride the clarification. Fill the value from the reply and
+            # continue — next question or the approval — with no re-planning
+            # and no re-running of reads. None = the reply is a new request.
+            from . import skill_flow  # lazy: circular import
+
+            _answer = await skill_flow.answer(
+                pending_clarification,
+                latest_user_message=latest_user_message,
+                user_text=user_text,
+                mode=mode,
+                mcp_client=mcp_client,
+                approved_mutations=approved_mutations,
+                summ_on=allow_summarization_flag,
+                turn_trace_id=turn_trace_id,
+                trace=_trace,
+            )
+            if _answer is not None:
+                return _answer
+            logger.info("Resume: skill question dropped — the message reads as a new request; planning fresh.")
+        elif _pc_tool_id == "skill.plan":
+            # A skill asked BEFORE planning (nothing could be planned without the
+            # value). There is no single tool to pin: the planner runs again with
+            # the question and the answer in history, picks the skill again and
+            # plans with the value — or asks once more, counted against the same
+            # cap. An unrelated message simply plans as itself.
+            _pc_question = pending_clarification.get("question") or ""
+            if _pc_question and not any(
+                m.get("role") == "assistant" and m.get("content") == _pc_question for m in _history
+            ):
+                _history = [*_history, {"role": "assistant", "content": _pc_question}]
+            _out_slot = turn_output()
+            if _out_slot is not None:
+                _out_slot["skill_clarify_attempts"] = int(pending_clarification.get("attempts", 1))
+            logger.info(
+                "Resume: skill %s asked a question (attempt %s); re-planning with the answer in history.",
+                (pending_clarification.get("skill") or {}).get("name"),
+                pending_clarification.get("attempts", 1),
+            )
+        elif _pc_def is None:
             logger.warning("Resume: pending tool %s not in registry — dropping clarification.", _pc_tool_id)
         else:
             clarify_attempts_base = int(pending_clarification.get("attempts", 1))

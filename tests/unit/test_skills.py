@@ -340,7 +340,7 @@ class TestPlannerHook:
         monkeypatch.setattr(A, "call_llm_raw", llm)
         _run(A._make_plan("do x", "chat", [], "t"))
         catalog_msg = llm.await_args.args[0][1]["content"]
-        assert "Procedures available" in catalog_msg
+        assert "Skills available" in catalog_msg
         assert "- one: Do the one thing." in catalog_msg
         assert "SKILL: <name>" in catalog_msg
 
@@ -359,16 +359,37 @@ class TestPlannerHook:
         assert second.kwargs["label"] == "planner_skill"
         system_texts = [m["content"] for m in second.args[0] if m["role"] == "system"]
         assert any(one_skill.body in t for t in system_texts), "second pass must carry the skill body"
-        assert any('procedure "one"' in t for t in system_texts)
-        assert any("Schemas of the procedure" in t for t in system_texts), "and its tools' schemas"
-        assert not any("Procedures available" in t for t in system_texts), "second pass must NOT re-offer the index"
+        assert any('Skill "one"' in t for t in system_texts)
+        assert any("Schemas of the skill" in t for t in system_texts), "and its tools' schemas"
+        assert not any("Skills available" in t for t in system_texts), "second pass must NOT re-offer the index"
 
-    def test_non_json_second_pass_degrades_to_the_loop(self, one_skill, monkeypatch):
+    def test_non_json_second_pass_is_reported_not_routed(self, one_skill, monkeypatch):
+        """The request matched a skill; prose from the second pass must NOT be
+        handed to the ordinary loop (it once became an unrelated mutation gate).
+        skill_flow gets an `error` hand-off and answers honestly."""
         llm = AsyncMock(side_effect=[_llm_reply("SKILL: one"), _llm_reply("1. list models\n2. done")])
         monkeypatch.setattr(A, "call_llm_raw", llm)
         detailed = _run(A._make_plan_detailed("do the one thing", "chat", [], "t"))
-        assert detailed["skill"] is None and detailed["skill_plan"] is None
-        assert detailed["steps"] == ["list models", "done"], "the prose still becomes an ordinary plan"
+        assert detailed["skill"] is one_skill
+        assert detailed["skill_plan"] == {"error": "1. list models\n2. done"}
+
+    def test_parser_tolerates_a_raw_newline_inside_a_string(self):
+        plan = A._parse_skill_plan_json(
+            '{"steps": [{"id": "1", "tool": "a.b", "args_ask": {"name": "line one\nline two"}}]}'
+        )
+        assert plan["steps"][0]["args_ask"]["name"] == "line one\nline two"
+
+    def test_planner_body_hides_the_code_facing_sections(self):
+        sk = skills_m.Skill(
+            name="x",
+            description="d",
+            version=1,
+            tools=("a.b",),
+            path=Path("/x/x/SKILL.md"),
+            body="## Procedure\n1. a\n\n## Ask\nlong {a.count}\n\n## Approval\nlong {a.count}\n\n## Report\n- r",
+        )
+        assert sk.planner_body == "## Procedure\n1. a\n\n## Report\n- r"
+        assert "## Ask" in sk.body
 
     def test_make_plan_wrapper_returns_steps_only(self, one_skill, monkeypatch):
         llm = AsyncMock(return_value=_llm_reply("1. do x"))
@@ -394,7 +415,7 @@ class TestPlannerHook:
         llm = AsyncMock(return_value=_llm_reply("1. migrate"))
         monkeypatch.setattr(A, "call_llm_raw", llm)
         _run(A._make_plan("migrate", "migration", [], "t"))
-        assert "Procedures available" not in llm.await_args.args[0][1]["content"]
+        assert "Skills available" not in llm.await_args.args[0][1]["content"]
 
     def test_real_loader_hides_skills_from_migration(self):
         assert A._load_skills_for_planner("migration") == {}
@@ -412,3 +433,121 @@ def test_skill_plan_prompt_states_the_contract():
     assert "args_from" in text and "for_each" in text and "when" in text
     assert re.search(r"never a guess", text, re.I)
     assert '{"steps": []}' in text, "the no-match escape hatch"
+
+
+class TestSkillAsksForUserInput:
+    """A procedure can refuse to plan until the user supplies a value only they
+    can give (a name that cannot be changed later). The planner's `ask` becomes
+    a hand-off the runtime turns into a clarifying question."""
+
+    @pytest.fixture
+    def one_skill(self, monkeypatch):
+        skill = skills_m.Skill(
+            name="one",
+            description="Do the one thing.",
+            version=3,
+            tools=("datamodel.get_all_datamodel",),
+            body="## Procedure\n1. List models (`datamodel.get_all_datamodel`).",
+            path=Path("/fixture/one/SKILL.md"),
+        )
+        monkeypatch.setattr(A, "_load_skills_for_planner", lambda mode: {"one": skill} if mode == "chat" else {})
+        monkeypatch.setattr(A, "_capability_catalog", lambda mode: "- datamodel.get_all_datamodel: List models")
+        monkeypatch.setattr(A, "TOOL_REGISTRY", {"datamodel.get_all_datamodel": {"parameters": {"type": "object"}}})
+        return skill
+
+    def _turn(self, tid):
+        from backend.agent._config import begin_turn_output, set_current_turn
+
+        set_current_turn(tid, "q")
+        begin_turn_output(tid)
+
+    def test_ask_becomes_a_handoff_with_attempt_one(self, one_skill, monkeypatch):
+        from backend.agent._config import pop_turn_output
+
+        self._turn("t-ask-1")
+        llm = AsyncMock(
+            side_effect=[_llm_reply("SKILL: one"), _llm_reply('{"ask": "What should the perspective be called?"}')]
+        )
+        monkeypatch.setattr(A, "call_llm_raw", llm)
+        detailed = _run(A._make_plan_detailed("optimize M", "chat", [], "t-ask-1"))
+        assert detailed["skill"] is one_skill
+        assert detailed["skill_plan"] == {"ask": "What should the perspective be called?", "attempts": 1}
+        out = pop_turn_output("t-ask-1")
+        assert out["skill_handoff"] == {"skill_name": "one", "skill_plan": detailed["skill_plan"]}
+
+    def test_attempts_carry_over_from_the_resume_path(self, one_skill, monkeypatch):
+        from backend.agent._config import pop_turn_output, turn_output
+
+        self._turn("t-ask-2")
+        turn_output()["skill_clarify_attempts"] = 1  # what call_llm_with_tools sets on a skill-clarification resume
+        llm = AsyncMock(side_effect=[_llm_reply("SKILL: one"), _llm_reply('{"ask": "Still: the name?"}')])
+        monkeypatch.setattr(A, "call_llm_raw", llm)
+        detailed = _run(A._make_plan_detailed("dunno", "chat", [], "t-ask-2"))
+        assert detailed["skill_plan"]["attempts"] == 2
+        assert "skill_clarify_attempts" not in pop_turn_output("t-ask-2"), "consumed, never leaks to the response"
+
+    def test_a_real_plan_after_a_question_drops_the_counter(self, one_skill, monkeypatch):
+        from backend.agent._config import pop_turn_output, turn_output
+
+        self._turn("t-ask-3")
+        turn_output()["skill_clarify_attempts"] = 1
+        plan_json = '{"steps": [{"id": "1", "tool": "datamodel.get_all_datamodel", "args": {}}]}'
+        llm = AsyncMock(side_effect=[_llm_reply("SKILL: one"), _llm_reply(plan_json)])
+        monkeypatch.setattr(A, "call_llm_raw", llm)
+        detailed = _run(A._make_plan_detailed("call it X", "chat", [], "t-ask-3"))
+        assert "steps" in detailed["skill_plan"]
+        assert "skill_clarify_attempts" not in pop_turn_output("t-ask-3")
+
+    def test_parser_accepts_ask_and_steps_only(self):
+        assert A._parse_skill_plan_json('{"ask": "name?"}') == {"ask": "name?"}
+        assert A._parse_skill_plan_json('```json\n{"steps": []}\n```') == {"steps": []}
+        assert A._parse_skill_plan_json('{"plan": 1}') is None
+
+
+def test_approval_section_is_parsed_from_the_body(tmp_path):
+    d = tmp_path / "with-approval"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\nname: with-approval\ndescription: x\nversion: 1\ntools: [datamodel.get_all_datamodel]\n---\n"
+        "## When this applies\nAlways.\n\n## Procedure\n1. List (`datamodel.get_all_datamodel`).\n\n"
+        "## Approval\nI will list {get_all_datamodel.count} models. Approve?\n\n## Report\n- done\n",
+        encoding="utf-8",
+    )
+    sk = skills_m.parse_skill_file(d / "SKILL.md")
+    assert sk.approval == "I will list {get_all_datamodel.count} models. Approve?"
+    assert "## Approval" in sk.body, "the body is left whole"
+
+
+def test_ask_section_is_parsed(tmp_path):
+    d = tmp_path / "asker"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\nname: asker\ndescription: x\nversion: 1\ntools: [datamodel.get_all_datamodel]\n---\n"
+        "## Procedure\n1. List (`datamodel.get_all_datamodel`).\n\n## Ask\nFound {get_all_datamodel.count}. Name?\n",
+        encoding="utf-8",
+    )
+    assert skills_m.parse_skill_file(d / "SKILL.md").ask == "Found {get_all_datamodel.count}. Name?"
+
+
+def test_parser_tolerates_python_literals():
+    plan = A._parse_skill_plan_json('{"steps": [{"id": "1", "tool": "a.b", "args": {"detailed": True, "x": None}}]}')
+    assert plan["steps"][0]["args"] == {"detailed": True, "x": None}
+
+
+def test_step_labels_are_parsed_and_must_name_declared_tools(tmp_path):
+    d = tmp_path / "labelled"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\nname: labelled\ndescription: x\nversion: 1\ntools: [datamodel.get_all_datamodel]\n"
+        "step_labels:\n  datamodel.get_all_datamodel: Listing your   data models\n---\n## Procedure\n1. List.\n",
+        encoding="utf-8",
+    )
+    sk = skills_m.parse_skill_file(d / "SKILL.md")
+    assert sk.step_labels == {"datamodel.get_all_datamodel": "Listing your data models"}
+    (d / "SKILL.md").write_text(
+        "---\nname: labelled\ndescription: x\nversion: 1\ntools: [datamodel.get_all_datamodel]\n"
+        "step_labels:\n  dashboard.get_dashboards: nope\n---\n## Procedure\n1. List.\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(skills_m.SkillError, match="step_labels names tools not declared"):
+        skills_m.parse_skill_file(d / "SKILL.md")

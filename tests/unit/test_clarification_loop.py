@@ -774,3 +774,93 @@ def test_validate_tool_args_rejects_present_but_empty_required():
     m._validate_tool_args(schema, {"source_dashboard_ids": ["d1"], "target_dashboard_ids": ["dA"]})
     opt = {"type": "object", "properties": {"action": {"type": "string"}}, "required": []}
     m._validate_tool_args(opt, {"action": ""})
+
+
+def test_skill_clarification_resume_replans_instead_of_pinning_a_tool(monkeypatch):
+    """A skill asked the user a question (tool_id skill.plan). There is no single
+    tool to pin, so the resume path must NOT drop it as 'not in registry': it
+    anchors the question in history, hands the attempt count to the planner,
+    and enters the loop fresh — the planner picks the procedure again."""
+    from backend.agent._config import turn_output
+
+    captured = {}
+
+    async def _fake_engine(**kwargs):
+        captured["history"] = kwargs["history"]
+        captured["slot"] = dict(turn_output() or {})
+        return "planned"
+
+    monkeypatch.setattr(m, "_run_loop_engine", _fake_engine)
+    pending = {
+        "tool_id": "skill.plan",
+        "skill": {"name": "optimize-datamodel-for-ai-assistant", "version": 1},
+        "question": "What should the perspective be called?",
+        "attempts": 1,
+        "missing_fields": [],
+        "filled_args": {},
+    }
+    tools = [_tool_def("access_management.get_user", GET_USER_SCHEMA)]
+    messages = [{"role": "user", "content": "optimize M"}, {"role": "user", "content": "call it Sales_AI"}]
+    reply = run(
+        m.call_llm_with_tools(messages, tools, _fake_client(), allow_summarization=False, pending_clarification=pending)
+    )
+    assert reply == "planned"
+    assert captured["slot"]["skill_clarify_attempts"] == 1
+    assert {"role": "assistant", "content": "What should the perspective be called?"} in captured["history"], (
+        "the question is anchored so the planner sees question + answer"
+    )
+
+
+def test_skill_ask_after_reads_resumes_through_skill_flow_answer(monkeypatch):
+    """A skill question asked AFTER its reads carries the paused plan; the resume
+    turn goes to skill_flow.answer — no re-plan, no pinned tool. None from it
+    means 'new request': the turn falls through to fresh planning."""
+    import backend.agent.skill_flow as F
+
+    calls = {}
+
+    async def _fake_answer(pending, **kw):
+        calls["pending"] = pending
+        return "Approve?"
+
+    monkeypatch.setattr(F, "answer", _fake_answer)
+    pending = {
+        "tool_id": "skill.plan",
+        "ask": {"step_id": "2", "param": "name"},
+        "question": "Name?",
+        "attempts": 1,
+        "skill": {"name": "s", "version": 1},
+        "plan": {"steps": []},
+        "missing_fields": ["name"],
+        "filled_args": {},
+    }
+    tools = [_tool_def("access_management.get_user", GET_USER_SCHEMA)]
+    reply = run(
+        m.call_llm_with_tools(
+            [{"role": "user", "content": "Sales_AI"}],
+            tools,
+            _fake_client(),
+            allow_summarization=False,
+            pending_clarification=pending,
+        )
+    )
+    assert reply == "Approve?" and calls["pending"] is pending
+
+    async def _new_request(pending, **kw):
+        return None
+
+    async def _fake_engine(**kwargs):
+        return "planned fresh"
+
+    monkeypatch.setattr(F, "answer", _new_request)
+    monkeypatch.setattr(m, "_run_loop_engine", _fake_engine)
+    reply = run(
+        m.call_llm_with_tools(
+            [{"role": "user", "content": "list users"}],
+            tools,
+            _fake_client(),
+            allow_summarization=False,
+            pending_clarification=pending,
+        )
+    )
+    assert reply == "planned fresh"
