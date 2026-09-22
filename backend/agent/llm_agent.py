@@ -2511,7 +2511,20 @@ async def call_llm_with_tools(
     """
     global LAST_TOOL_RESULT, LAST_PENDING_CLARIFICATION, LAST_PENDING_LOOP, LAST_STEP_RESULTS, LAST_TRACE_ID
 
-    approved_mutations = approved_mutations or set()
+    # `is None`, NOT `or`: an EMPTY ApprovalSet is falsy, and turn one — the
+    # turn that ISSUES the dialog — always has zero approvals by definition.
+    # `or set()` silently swapped the session-bound set for a plain one, so
+    # record_issued no-oped and turn two's legitimate approval was refused as
+    # forged. That shipped in 2.7.3 and blocked every write in the product:
+    # chat mutations, migrations and skill runs alike. It failed CLOSED, so
+    # nothing unsafe ran, but nothing approved ran either.
+    #
+    # The unit suite passed throughout because it calls _consume_approval
+    # directly with plain sets, which take the unbound legacy path. Only a live
+    # two-turn run reaches this seam. Any future change here needs the
+    # integration tier, not just `pytest tests/unit`.
+    if approved_mutations is None:
+        approved_mutations = set()
 
     # Global is a hard cap; per-turn can only further restrict.
     if allow_summarization is None:

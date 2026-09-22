@@ -154,3 +154,62 @@ class TestTheApiPathIsGuarded:
                 f"{rel} constructs {n_dialogs} pending_confirmation(s) but calls "
                 f"record_issued {n_records} time(s) — an unrecorded dialog can never be approved"
             )
+
+
+class TestTheBindingSurvivesTheWholeTurn:
+    """The registry has to survive every hop, including the empty first turn.
+
+    It did not. `call_llm_with_tools` normalised its argument with
+    `approved_mutations = approved_mutations or set()`, and an empty
+    ApprovalSet is FALSY — so on turn one, the turn that ISSUES the dialog and
+    has zero approvals by definition, the session-bound set was replaced by a
+    plain one. `record_issued` then no-oped, and turn two's legitimate approval
+    was refused as forged. Shipped in 2.7.3; it blocked every write in the
+    product — chat mutations, migrations and skill runs.
+
+    The unit suite passed throughout, because the tests above call
+    `_consume_approval` directly with plain sets, which take the unbound legacy
+    path. Only a live two-turn run reaches the seam. These pin it here so the
+    next person does not need a production outage to find it.
+    """
+
+    def test_an_empty_approval_set_is_falsy_which_is_the_whole_trap(self) -> None:
+        empty = A.ApprovalSet(issued={})
+        assert not empty, "if this ever becomes truthy the regression below is moot"
+        assert empty.issued == {}
+
+    def test_normalising_an_empty_set_must_not_drop_the_registry(self) -> None:
+        issued: dict = {}
+        approved = A.ApprovalSet(issued=issued)
+
+        # The bug: `approved or set()` discards the binding on an empty set.
+        assert getattr(approved or set(), "issued", None) is None, "documents the old behaviour"
+
+        # The fix: an explicit None check preserves it.
+        normalised = set() if approved is None else approved
+        assert getattr(normalised, "issued", None) is issued
+
+    def test_the_source_uses_an_is_none_check_not_truthiness(self) -> None:
+        import inspect
+
+        src = inspect.getsource(A.call_llm_with_tools)
+        assert "approved_mutations = approved_mutations or set()" not in src, (
+            "an empty ApprovalSet is falsy; `or set()` drops the session binding "
+            "on the very turn that issues the dialog"
+        )
+        assert "if approved_mutations is None:" in src
+
+    def test_issue_then_approve_across_two_turns_with_a_shared_registry(self) -> None:
+        """End to end over the registry, the way runtime binds it per session."""
+        session_registry: dict = {}
+
+        # Turn 1: no approvals. Must still record what was offered.
+        turn1 = A.ApprovalSet(issued=session_registry)
+        turn1 = set() if turn1 is None else turn1  # the normalisation, fixed
+        assert A._consume_approval(turn1, TOOL, ARGS) is False
+        A.record_issued(turn1, TOOL, ARGS)
+        assert session_registry, "turn 1 must leave a record for turn 2 to match"
+
+        # Turn 2: client returns the key; same session registry.
+        turn2 = A.ApprovalSet([A._approval_key(TOOL, ARGS)], issued=session_registry)
+        assert A._consume_approval(turn2, TOOL, ARGS) is True
