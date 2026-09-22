@@ -32,6 +32,11 @@ Adding a case = appending one dict to EVAL_CASES (no new code):
   forbid_tools         - no executed tool id may contain any of these
   expect_reply_any     - reply must contain at least one of these (case-insensitive)
   forbid_reply         - reply must contain none of these (case-insensitive)
+  expect_sequential    - True: the turn's tool executions must not overlap in
+                         time. The response carries no timing, so this reads
+                         logs/tool_calls.csv by trace_id; it SKIPS (never
+                         passes) when that file cannot answer — a remote
+                         backend or CSV observability off.
   origin               - date + one line on the failure this guards against
 
 Run (cred-gated like all integration tests; skipped without config):
@@ -41,13 +46,36 @@ Like all LLM-judgment tests these are non-deterministic: re-run a single failure
 once before treating it as real (see tests/integration/README.md).
 """
 
+import csv
+import pathlib
 import re
 import uuid
+from datetime import datetime
 
 import httpx
 import pytest
 
 EVAL_CASES = [
+    {
+        "id": "user-sequenced-reads-run-one-at-a-time",
+        "prompt": "show me all users and then show all groups",
+        # "then" is an ORDERING instruction, not a data dependency: neither read
+        # needs anything from the other, so both were fanned out. On builds that
+        # meant two cubes starting at once while deploy_datamodel returns
+        # "accepted" in under a second — the critic saw two successes mid-build.
+        # Reads are the honest test: no approval gate can mask the overlap.
+        "allow_summarization": "both",
+        "expect_tools_any": [],
+        "expect_tools_all": ["get_users_all", "get_groups"],
+        "expect_sequential": True,
+        "forbid_tools": [],
+        "expect_reply_any": [],
+        "forbid_reply": [],
+        "origin": "2026-09-21: the [needs-prior-result] rule covered data only and ended "
+        "'steps runnable from the user's message alone get no marker' — which is exactly an "
+        "ordered-but-independent step, so it fanned out. One rule, two reasons, plus a code "
+        "backstop on the user's own ordering words.",
+    },
     {
         "id": "role-lookup-then-users-with-role",
         "prompt": "what role does {user_a_email} has? Also find all the users belong to that role",
@@ -405,6 +433,25 @@ def _resolve_identities(case, identities):
     return out
 
 
+def _tool_call_spans(trace_id):
+    """[(start, end)] epoch seconds per tool execution of this turn, or None
+    when the local CSV cannot answer (remote backend, observability off)."""
+    path = pathlib.Path(__file__).resolve().parents[2] / "logs" / "tool_calls.csv"
+    if not trace_id or not path.exists():
+        return None
+    spans = []
+    with path.open(encoding="utf-8", newline="") as fh:
+        for row in csv.DictReader(fh):
+            if row.get("trace_id") != trace_id:
+                continue
+            try:
+                end = datetime.fromisoformat(row["timestamp"]).timestamp()
+                spans.append((end - int(row["latency_ms"]) / 1000.0, end))
+            except (KeyError, TypeError, ValueError):
+                return None
+    return spans or None
+
+
 @pytest.mark.integration
 @pytest.mark.eval
 @pytest.mark.parametrize("case", [r[0] for r in _EVAL_RUNS], ids=[r[1] for r in _EVAL_RUNS])
@@ -438,6 +485,17 @@ def test_planner_eval(backend_url, tenant_config, eval_identities, case):
         assert len(tools) >= case["expect_min_steps"], (
             f"expected >= {case['expect_min_steps']} executed steps, got {len(tools)}{ctx}"
         )
+    if case.get("expect_sequential"):
+        spans = _tool_call_spans(str(body.get("trace_id") or ""))
+        if spans is None:
+            pytest.skip("expect_sequential needs the local logs/tool_calls.csv (CSV observability on, local backend)")
+        assert len(spans) >= 2, f"expected at least two executions to order{ctx}"
+        ordered = sorted(spans)
+        overlaps = [(a, b) for a, b in zip(ordered, ordered[1:]) if b[0] < a[1]]
+        assert not overlaps, (
+            f"the user sequenced these steps, but {len(overlaps)} pair(s) overlapped in time (fan-out): {overlaps}{ctx}"
+        )
+
     for frag in case["forbid_tools"]:
         # Exact-fragment check, but don't let e.g. "users_per_group" ban
         # "users_per_group_all" unless explicitly listed — match whole ids.
