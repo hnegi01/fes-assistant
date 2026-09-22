@@ -223,7 +223,7 @@
   },
   {
     "tool_id": "datamodel.deploy_datamodel",
-    "description": "Deploy (build or publish) the specified data model based on its type.",
+    "description": "Build an ElastiCube or publish a live data model, and optionally wait for the run to finish.",
     "parameters": {
       "type": "object",
       "properties": {

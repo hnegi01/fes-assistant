@@ -1,7 +1,7 @@
 [
   {
     "tool_id": "access_management.create_schedule_build",
-    "description": "Create a schedule build for a DataModel.",
+    "description": "Schedule a recurring build for an ElastiCube.",
     "parameters": {
       "type": "object",
       "properties": {

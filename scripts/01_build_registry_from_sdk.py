@@ -748,6 +748,31 @@ def _datasecurity_rules_schema(*, party_key: str, description: str) -> Dict[str,
     }
 
 
+# ---------------------------------------------------------------------------
+# TEMPORARY summary overrides — mirror of an unreleased SDK docstring fix
+# ---------------------------------------------------------------------------
+# A tool's description is the FIRST LINE of its SDK docstring, and it is the
+# only text the planner and both routing levels ever see. Two lines routed
+# "run cube X" / "build cube X" to the wrong tool (measured 2026-09-21: the
+# schedule tool won, or nothing matched, 3 of 4 runs) because the real build
+# operation led with "Deploy" while the schedule operation led with "build".
+#
+# Fixed upstream on pysisense branch himanshu/docstring-build-summaries, not
+# yet released. These entries carry that exact wording so the assistant does
+# not wait for a release cut only for two sentences.
+#
+# DELETE THEM when the SDK release lands: the drift guard
+# (tests/unit/test_registry_builder.py::TestSummaryOverrides) FAILS as soon as
+# the installed SDK's own first line already matches, so this cannot rot
+# silently — a redundant override is a test failure, not a mystery.
+_SUMMARY_OVERRIDES: Dict[str, str] = {
+    "datamodel.deploy_datamodel": (
+        "Build an ElastiCube or publish a live data model, and optionally wait for the run to finish."
+    ),
+    "access_management.create_schedule_build": "Schedule a recurring build for an ElastiCube.",
+}
+
+
 SCHEMA_RULES: Dict[str, Dict[str, Any]] = {
     # Generate connection payload → datasource_type is a documented closed set;
     # connection_params fields are documented PER TYPE (different required sets
@@ -1124,6 +1149,8 @@ def build_registry() -> list:
             sig = inspect.signature(func)
 
             tool_id = f"{module_name}.{name}"
+            # Temporary, self-removing (see _SUMMARY_OVERRIDES).
+            one_liner = _SUMMARY_OVERRIDES.get(tool_id, one_liner)
             if tool_id in _EXCLUDED_TOOL_IDS:
                 continue
             try:
