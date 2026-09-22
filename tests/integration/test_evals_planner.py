@@ -247,7 +247,20 @@ EVAL_CASES = [
         ],
         "expect_tools_any": [],
         "forbid_tools": ["get_datasources", "get_elasticubes"],
-        "expect_reply_any": ["i need", "more information", "more details", "needs:", "could you provide"],
+        # The invariant is "it names what is missing instead of exploring", not a
+        # house phrasing. Live 2026-09-21 it said "essential details like type,
+        # database, schema, and tables are missing" — the right behaviour, and a
+        # 1-in-3 failure against a list that only knew "more details".
+        "expect_reply_any": [
+            "i need",
+            "more information",
+            "more details",
+            "required details",
+            "essential details",
+            "are missing",
+            "needs:",
+            "could you provide",
+        ],
         "forbid_reply": ["didn't quite understand"],
         "origin": "2026-08-21: topic-change to a second create request mid-clarification sent "
         "the planner into discovery reads instead of clarifying the new create.",
