@@ -10,7 +10,7 @@ decide/replan, critic, finalize — accessed here via module attributes
 to both engines. The unit suite therefore doubles as the parity harness: run
 it with the env flag flipped.
 
-Graph shape (mirrors AGENT_ARCHITECTURE.md → "Mapping to LangGraph"):
+Graph shape (mirrors docs/architecture.md → "Mapping to LangGraph"):
 
     entry ─┬─ seed (clarify-resolved pinned call) ──────────────┐
            └─ planner ──┬─ Send fan-out → branch* → join ──┐    │
@@ -35,6 +35,7 @@ are mutated in place — same objects the resume paths persist.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import operator
 from typing import Annotated, Any, Dict, List, Optional, Tuple
@@ -183,9 +184,35 @@ async def node_seed(s: GraphState) -> Dict[str, Any]:
 
 
 async def node_planner(s: GraphState) -> Dict[str, Any]:
-    """The PLANNER: drafts the dependency-ordered plan (catalog, no schemas)."""
-    await A._emit_agent_progress({"phase": "planning", "step": 1, "max_steps": A.MAX_AGENT_STEPS})
+    """The PLANNER: drafts the dependency-ordered plan (catalog, no schemas).
+    `_make_plan_detailed` announces the `understanding` stage itself."""
     raw_plan = await A._make_plan(s["user_text"], s["mode"], s["history"], s["turn_trace_id"])
+    handoff = A._take_skill_handoff(s["mode"])
+    if handoff is not None:
+        # A procedure matched: skill_flow validates, gates once and executes in
+        # code. Its reply (or approval pause) ends the graph — see
+        # route_after_planner.
+        from . import skill_flow  # lazy: circular import at module load
+
+        reply = await skill_flow.run(
+            skill=handoff[0],
+            plan=handoff[1],
+            latest_user_message=s["latest_user_message"],
+            history=s["history"],
+            planning_context=s["planning_context"],
+            mode=s["mode"],
+            passed_tools=s["passed_tools"],
+            user_text=s["user_text"],
+            mcp_client=s["mcp_client"],
+            approved_mutations=s["approved_mutations"],
+            summ_on=s["summ_on"],
+            turn_trace_id=s["turn_trace_id"],
+            trace=s["trace"],
+            transcript=s["transcript"],
+            raw_results=s["raw_results"],
+            steps_executed=s["steps_executed"],
+        )
+        return {"reply": reply, "disposition": "end"}
     independent_steps, dependent_steps = A._split_dependent_tail(raw_plan)
     if len(independent_steps) + len(dependent_steps) == 1 and not s["history"]:
         # Faithfulness guard: fresh single-step request → the user's words ARE the step.
@@ -206,10 +233,22 @@ async def node_planner(s: GraphState) -> Dict[str, Any]:
 
 
 def route_after_planner(s: GraphState):
-    """Fan out independent steps via Send, or go sequential."""
+    """Fan out independent steps via Send, or go sequential.
+
+    A planner that handed the turn to a skill flow has already produced the
+    reply (or the approval pause) — nothing left for the graph to do."""
+    if s.get("reply") is not None:
+        return END
     fan = s["independent_steps"][: A.MAX_PARALLEL_STEPS] if A.MAX_PARALLEL_STEPS > 1 else []
+    if A.user_sequenced_steps(s["user_text"]) and len(fan) >= 2:
+        logger.info("User sequenced the steps — running them one at a time, not fanning out.")
+        fan = []
     if s["mode"] != "migration" and len(fan) >= 2:
         logger.info("Fan-out: running %d independent steps concurrently.", len(fan))
+        try:  # a conditional edge is synchronous — schedule the event on the running loop
+            asyncio.get_running_loop().create_task(A._emit_agent_progress({"phase": "fanout", "count": len(fan)}))
+        except RuntimeError:
+            pass
         return [
             Send("branch", {**s, "branch_op": op, "branch_step": i + 1, "branch_results": []})
             for i, op in enumerate(fan)
@@ -494,6 +533,7 @@ async def node_decide(s: GraphState) -> Dict[str, Any]:
             overrides = s["checker_overrides"] + 1
             s["trace"]["goal_rechecks"] = overrides
             logger.info("Goal checker: INCOMPLETE → continuing with: %s", missing[:160])
+            await A._emit_agent_progress({"phase": "verify_pushed"})
             return {"remains": missing, "disposition": "continue", "checker_overrides": overrides}
     return {"reply": _done_reply(s, answer), "disposition": "end"}
 
@@ -746,7 +786,7 @@ def _build_graph():
 
     g.add_conditional_edges(START, route_entry, ["seed", "planner", "decide"])
     g.add_edge("seed", "validator")
-    g.add_conditional_edges("planner", route_after_planner, ["branch", "first_select"])
+    g.add_conditional_edges("planner", route_after_planner, ["branch", "first_select", END])
     g.add_edge("branch", "join")
     g.add_conditional_edges("join", route_after_join, ["decide", "first_select", END])
     g.add_conditional_edges(

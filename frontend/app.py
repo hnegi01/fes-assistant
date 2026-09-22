@@ -232,50 +232,104 @@ def _write_run_log(run_log: Any, _run_log_out: Optional[Dict[str, Any]] = None) 
         pass  # Called from background thread — session state not accessible
 
 
+_STAGES_SHOWN = 12  # the timeline keeps the most recent stage lines
+
+
 def _render_agent_progress(
     placeholder: Any,
     completed_steps: List[Dict[str, Any]],
     status_line: Optional[str],
     plan_text: Optional[str] = None,
+    stages: Optional[List[str]] = None,
 ) -> None:
-    """Render the agentic-loop progress block: the current plan (when the
-    strategist made one), a collapsed checklist of completed steps, and a live
-    status line for the current phase."""
+    """Render the progress block: the plan (when one was made), the stages the
+    loop has been through so far as a short timeline, a checklist of completed
+    steps with their outcomes, and the live status line for the current stage.
+
+    Every line comes from an event the backend emitted at the moment the stage
+    happened — nothing is inferred from timing, and a stage that did not run
+    (the critic with summarization off, say) never appears."""
     if placeholder is None:
         return
     md = ""
     if plan_text:
         plan_lines = "\n".join(f"> {ln}" for ln in plan_text.splitlines())
         md += f"**📋 Plan**\n{plan_lines}\n\n"
+    past = [ln for ln in (stages or []) if ln and ln != status_line][-_STAGES_SHOWN:]
+    if past:
+        md += "\n".join(f"<sub>· {ln}</sub>" for ln in past) + "\n\n"
     lines: List[str] = []
     for s in completed_steps:
         mark = "✅" if s.get("ok") else "⚠️"
-        lines.append(f"- {mark} Step {s.get('step')}: `{s.get('tool_id', '?')}`")
+        pos = _loop_position(s)
+        what = s.get("label") or f"`{s.get('tool_id', '?')}`"
+        line = f"- {mark} Step {s.get('step')}{pos}: {what}"
+        # Skill runs attach a code-built outcome ("Dashboards by datasource — 4
+        # rows"); metadata only, so it is safe to show in both summarization modes.
+        if s.get("outcome"):
+            line += f" — {s['outcome']}"
+        lines.append(line)
     if lines:
         md += "\n".join(lines) + "\n\n"
     if status_line:
         md += f"*{status_line}*"
     if md:
-        placeholder.markdown(md)
+        placeholder.markdown(md, unsafe_allow_html=True)
+
+
+def _loop_position(data: Dict[str, Any]) -> str:
+    """' (dashboard 2 of 4)' when a skill step runs inside a for_each loop, else ''."""
+    idx, total = data.get("loop_index"), data.get("loop_total")
+    if not (isinstance(idx, int) and isinstance(total, int)):
+        return ""
+    var = data.get("loop_var")
+    return f" ({var} {idx} of {total})" if isinstance(var, str) and var else f" ({idx}/{total})"
 
 
 def _agent_progress_status_line(data: Dict[str, Any]) -> Optional[str]:
-    """Map an agent_progress event to a human status line (None for 'completed')."""
+    """Map an agent_progress event to a human status line.
+
+    None for 'completed' (the checklist line carries it) and for 'running'
+    (the heartbeat — the caller appends the elapsed time to the current line).
+    Each phase is a real stage of the loop, emitted by code when it happens."""
     phase = data.get("phase")
     step = data.get("step")
     tool_id = data.get("tool_id")
+    label = data.get("label")
+    skill = data.get("skill")
+    if phase == "understanding":
+        return "🧭 Understanding your request and drafting a plan…"
+    if phase == "skill_loading":
+        return f"📘 Loading skill `{skill}`…"
+    if phase == "skill_planning":
+        return "📘 Planning from the skill…"
+    if phase == "planned":
+        return f"📋 Plan ready from the skill `{skill}`" if skill else "📋 Plan ready"
+    if phase == "fanout":
+        return f"⚡ Running {data.get('count')} independent steps in parallel…"
+    if phase == "planning":
+        return f"🔎 Step {step}: finding the right tool…"
+    if phase == "executing":
+        what = f"{label}…" if label else f"running `{tool_id}`…"
+        return f"⏳ Step {step}{_loop_position(data)}: {what}"
     if phase == "deciding":
-        return "🤔 Checking progress against your request…"
+        return "🤔 Checking results against your request…"
     if phase == "replanning":
         return "🧠 That approach didn't work — rethinking the plan…"
     if phase == "replanned":
         return "📋 Plan revised — continuing…"
     if phase == "verifying":
-        return "🔎 Double-checking the result covers your whole request…"
-    if phase == "planning":
-        return f"🧭 Planning step {step}…"
-    if phase == "executing":
-        return f"⏳ Step {step}: running `{tool_id}`…"
+        return "🔍 Independent check that the answer covers your whole request…"
+    if phase == "verify_pushed":
+        return "↩ The check found something missing — one more step…"
+    if phase == "awaiting_answer":
+        return "❓ Waiting for your answer"
+    if phase == "awaiting_approval":
+        return "⏸ Waiting for your approval"
+    if phase == "compensating":
+        return f"↩ Undoing: {label or tool_id}…"
+    if phase == "done":
+        return "✅ Done" if data.get("outcome") == "ok" else "⚠️ Stopped — see the report"
     return None
 
 
@@ -520,7 +574,9 @@ def _launch_migration_turn(
 
     def _run() -> None:
         try:
-            reply, tool_result, step_results, trace_id, usage, _display_hints = call_backend_turn(**call_kwargs)
+            reply, tool_result, step_results, trace_id, usage, _display_hints, _skill, _awaiting = call_backend_turn(
+                **call_kwargs
+            )
             ctx["reply"] = reply
             ctx["tool_result"] = tool_result
             ctx["step_results"] = step_results
@@ -605,6 +661,8 @@ def call_backend_turn(
         final_trace_id: Optional[str] = None
         final_usage: Optional[Dict[str, Any]] = None
         final_display_hints: Optional[List[str]] = None
+        final_skill: Optional[Dict[str, Any]] = None
+        final_awaiting: bool = False
 
         run_log: Dict[str, Any] = {
             "started_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
@@ -613,6 +671,8 @@ def call_backend_turn(
 
         progress_lines: List[str] = []
         agent_steps: List[Dict[str, Any]] = []
+        agent_stages: List[str] = []
+        agent_status: Optional[str] = None
         agent_plan: Optional[str] = None
 
         for event, data in _iter_sse_events(resp):
@@ -635,12 +695,33 @@ def call_backend_turn(
                 if data.get("plan"):
                     agent_plan = data["plan"]
                 if data.get("phase") == "completed":
-                    agent_steps.append({"step": data.get("step"), "tool_id": data.get("tool_id"), "ok": data.get("ok")})
-                    _render_agent_progress(progress_placeholder, agent_steps, None, agent_plan)
-                else:
-                    _render_agent_progress(
-                        progress_placeholder, agent_steps, _agent_progress_status_line(data), agent_plan
+                    agent_steps.append(
+                        {
+                            k: data.get(k)
+                            for k in (
+                                "step",
+                                "tool_id",
+                                "ok",
+                                "outcome",
+                                "label",
+                                "loop_index",
+                                "loop_total",
+                                "loop_var",
+                            )
+                            if k in data
+                        }
                     )
+                    agent_status = None
+                elif data.get("phase") == "running":
+                    # Heartbeat: same stage, just alive — show the elapsed time on
+                    # the current line instead of adding a new one.
+                    base = agent_stages[-1] if agent_stages else f"⏳ Running `{data.get('tool_id')}`…"
+                    agent_status = f"{base} ({data.get('elapsed')}s)"
+                else:
+                    agent_status = _agent_progress_status_line(data)
+                    if agent_status and (not agent_stages or agent_stages[-1] != agent_status):
+                        agent_stages.append(agent_status)
+                _render_agent_progress(progress_placeholder, agent_steps, agent_status, agent_plan, agent_stages)
                 # Migration runs this loop on a background thread, where touching
                 # a Streamlit placeholder is illegal — hand the same structured
                 # state to the polling block instead, which renders on the main
@@ -648,12 +729,11 @@ def call_backend_turn(
                 if _run_log_out is not None:
                     _run_log_out["agent_plan"] = agent_plan
                     _run_log_out["agent_steps"] = list(agent_steps)
-                    _run_log_out["agent_status"] = _agent_progress_status_line(data)
-                elif progress_callback is not None:
+                    _run_log_out["agent_status"] = agent_status
+                    _run_log_out["agent_stages"] = list(agent_stages)
+                elif progress_callback is not None and agent_status:
                     # No structured channel — fall back to a flat status line.
-                    line = _agent_progress_status_line(data)
-                    if line:
-                        progress_callback(line)
+                    progress_callback(agent_status)
                 continue
 
             if event == "status":
@@ -689,6 +769,8 @@ def call_backend_turn(
                 final_trace_id = data.get("trace_id")
                 final_usage = data.get("usage")
                 final_display_hints = data.get("display_hints")
+                final_skill = data.get("skill")
+                final_awaiting = bool(data.get("awaiting_input"))
 
             elif event == "error":
                 err = data.get("error") or "Unknown error"
@@ -718,6 +800,8 @@ def call_backend_turn(
             final_trace_id,
             final_usage,
             final_display_hints,
+            final_skill,
+            final_awaiting,
         )
 
     # Fallback: backend returned JSON even though we asked for SSE
@@ -726,7 +810,16 @@ def call_backend_turn(
     reply = data.get("reply", "")
     tool_result = data.get("tool_result")
     step_results = data.get("step_results")
-    return reply, tool_result, step_results, data.get("trace_id"), data.get("usage"), data.get("display_hints")
+    return (
+        reply,
+        tool_result,
+        step_results,
+        data.get("trace_id"),
+        data.get("usage"),
+        data.get("display_hints"),
+        data.get("skill"),
+        bool(data.get("awaiting_input")),
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -833,6 +926,30 @@ def _login_for_token(domain: str, username: str, password: str, verify_ssl: bool
     if not token:
         raise RuntimeError("Sign-in succeeded but Sisense returned no access token.")
     return str(token)
+
+
+def _whoami(domain: str, token: str, verify_ssl: bool) -> Optional[str]:
+    """The user the token belongs to (email, else username), or None.
+
+    GET /api/users/loggedin — the endpoint PySisense's get_my_user uses. Best
+    effort: any failure just leaves the sidebar without a name. The result is
+    kept in its own session key, never inside the tenant config dict, because
+    that dict's keys are injected into every tool call as credentials."""
+    try:
+        r = requests.get(
+            f"{domain.rstrip('/')}/api/users/loggedin",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+            verify=verify_ssl,
+        )
+        if r.status_code != 200:
+            return None
+        body = r.json() if r.content else {}
+        if isinstance(body, dict):
+            return (body.get("email") or body.get("userName") or body.get("username") or "").strip() or None
+    except Exception as exc:  # noqa: BLE001 — cosmetic lookup
+        logger.debug("whoami lookup failed: %s", exc)
+    return None
 
 
 def _auth_mode_radio(key: str) -> str:
@@ -1049,7 +1166,9 @@ def _is_row_list(v: Any) -> bool:
     return isinstance(v, list) and bool(v) and isinstance(v[0], dict)
 
 
-def _flatten_record(obj: dict, prefix: str = "", depth: int = 0, out: Optional[dict] = None) -> dict:
+def _flatten_record(
+    obj: dict, prefix: str = "", depth: int = 0, out: Optional[dict] = None, stats: Optional[dict] = None
+) -> dict:
     """Expand one record into flat `a.b.c` columns.
 
     Nesting is the only reason a result is unreadable as a table, so unfold it
@@ -1063,12 +1182,16 @@ def _flatten_record(obj: dict, prefix: str = "", depth: int = 0, out: Optional[d
     for k, v in obj.items():
         key = f"{prefix}{k}"
         if isinstance(v, dict) and v and depth < MAX_FLATTEN_DEPTH:
-            _flatten_record(v, f"{key}.", depth + 1, out)
+            _flatten_record(v, f"{key}.", depth + 1, out, stats)
         elif isinstance(v, (dict, list, tuple, set)) and not v:
             out[key] = ""
         elif isinstance(v, (list, tuple, set)) and all(isinstance(x, _SCALAR_TYPES) for x in v):
             out[key] = ", ".join("" if x is None else str(x) for x in v)
         elif isinstance(v, (dict, list, tuple, set)):
+            # Still nested at the limit, or a list of records inside a record:
+            # it lands in the cell as JSON text — readable only in the raw view.
+            if stats is not None:
+                stats["lossy"] = True
             try:
                 out[key] = json.dumps(v, ensure_ascii=False, default=str)
             except Exception:
@@ -1078,16 +1201,22 @@ def _flatten_record(obj: dict, prefix: str = "", depth: int = 0, out: Optional[d
     return out
 
 
-def _flatten_rows(rows: List[Any]) -> List[dict]:
+def _flatten_rows(rows: List[Any], stats: Optional[dict] = None) -> List[dict]:
     """Flatten every row, unless doing so makes the grid unusably wide."""
-    flat = [_flatten_record(r) if isinstance(r, dict) else {"value": r} for r in rows]
+    local: dict = {"lossy": False}
+    flat = [_flatten_record(r, stats=local) if isinstance(r, dict) else {"value": r} for r in rows]
     columns = {k for r in flat[:FLATTEN_SAMPLE_ROWS] for k in r}
     if len(columns) > MAX_FLAT_COLUMNS:
+        # Too wide to unfold: the grid shows the nested cells as text instead.
+        if stats is not None:
+            stats["lossy"] = True
         return rows
+    if stats is not None and local["lossy"]:
+        stats["lossy"] = True
     return flat
 
 
-def _tabular_sections(data: Any) -> List[Tuple[str, List[dict]]]:
+def _tabular_sections(data: Any, stats: Optional[dict] = None) -> List[Tuple[str, List[dict]]]:
     """Find the table(s) in a tool result: [(label, rows), ...], empty if none.
 
     Bias is strongly toward a table. Nobody reads JSON by choice, so every
@@ -1107,13 +1236,13 @@ def _tabular_sections(data: Any) -> List[Tuple[str, List[dict]]]:
     one to build in here.
     """
     if _is_row_list(data):
-        return [("", _flatten_rows(data))]
+        return [("", _flatten_rows(data, stats))]
 
     if isinstance(data, list) and data and all(isinstance(x, _SCALAR_TYPES) for x in data):
         return [("", [{"value": x} for x in data])]
 
     if isinstance(data, dict) and data:
-        sections = [(k, _flatten_rows(v)) for k, v in data.items() if _is_row_list(v)]
+        sections = [(k, _flatten_rows(v, stats)) for k, v in data.items() if _is_row_list(v)]
         # An empty container is a section with no rows — `errors: []` on a
         # clean run. Saying so in a one-row table with a blank cell is noise,
         # and the absence of an `errors` table already says it.
@@ -1122,7 +1251,8 @@ def _tabular_sections(data: Any) -> List[Tuple[str, List[dict]]]:
                 k: v
                 for k, v in data.items()
                 if not _is_row_list(v) and not (isinstance(v, (dict, list, tuple, set)) and not v)
-            }
+            },
+            stats=stats,
         )
         if leftovers:
             # Unlabeled when it IS the whole result; named when it sits beside
@@ -1192,6 +1322,13 @@ def _render_table(rows: List[dict], fname: str) -> None:
     )
 
 
+def _code_json(data: Any) -> None:
+    """A JSON block that scrolls inside its own box past ~30 lines — like the
+    table, the page scrolls when the pointer is outside it."""
+    text = json.dumps(data, indent=2, ensure_ascii=False, default=str)
+    st.code(text, language="json", height=420 if text.count("\n") > 30 else None)
+
+
 def render_tool_result(tr: dict):
     if not tr or not isinstance(tr, dict):
         return
@@ -1204,24 +1341,22 @@ def render_tool_result(tr: dict):
 
     if tr.get("ok", True):
         data = tr.get("result")
-        sections = _tabular_sections(data)
+        stats: dict = {"lossy": False}
+        sections = _tabular_sections(data, stats)
         if sections:
-            # `_flatten_rows` hands back the SAME list object when it changes
-            # nothing, so identity tells us whether what is on screen is a
-            # faithful copy of the payload or a view we built from it.
-            verbatim = len(sections) == 1 and sections[0][0] == "" and sections[0][1] is data
             for label, rows in sections:
                 st.markdown(f"**{label}** · {len(rows)} rows" if label else "**Result**")
                 _render_table(rows, f"{_fname}_{label}" if label else _fname)
-            if not verbatim:
-                # We built a view rather than showing the payload whole, so the
-                # untouched original stays one click away — pre-flatten nesting,
-                # and anything a grid could not carry.
-                with st.expander("Raw JSON"):
-                    st.code(json.dumps(data, indent=2, ensure_ascii=False), language="json")
+            if stats["lossy"]:
+                # Only when the grid could NOT carry everything — a nested
+                # structure folded into a cell as text, or a result too wide to
+                # unfold. A complete table needs no second copy of the data;
+                # the export buttons already give the JSON.
+                with st.expander("Fields the table could not show (raw JSON)"):
+                    _code_json(data)
         else:
             st.markdown("**Result (JSON)**")
-            st.code(json.dumps(data, indent=2), language="json")
+            _code_json(data)
             if data is not None:
                 _payload = json.dumps(data, indent=2, ensure_ascii=False)
                 _c1, _c2, _ = st.columns([1, 1, 5])
@@ -1242,7 +1377,7 @@ def render_tool_result(tr: dict):
     else:
         if not tr.get("pending_confirmation"):
             st.markdown("**Tool error**")
-            st.code(json.dumps(tr, indent=2), language="json")
+            _code_json(tr)
 
 
 def _render_result_expander(label: str, res: Any, expanded_when_ok: bool = False) -> None:
@@ -1266,9 +1401,15 @@ def render_results(step_results, fallback_tr=None):
     tool_result for older messages / single-step turns."""
     steps = [s for s in (step_results or []) if isinstance(s, dict)]
     if len(steps) > 1:
-        st.caption(f"This answer used {len(steps)} steps — raw output of each:")
+        _nums = [s.get("step") for s in steps if isinstance(s.get("step"), int)]
+        if _nums and min(_nums) > 1:
+            # A continued request: earlier steps sit under the message that ran them.
+            st.caption(f"Steps {min(_nums)}–{max(_nums)} of this request — raw output of each:")
+        else:
+            st.caption(f"This answer used {len(steps)} steps — raw output of each:")
         for s in steps:
-            _render_result_expander(f"Step {s.get('step', '?')} · `{s.get('tool_id', '?')}`", s.get("result") or {})
+            _what = s.get("label") or f"`{s.get('tool_id', '?')}`"
+            _render_result_expander(f"Step {s.get('step', '?')} · {_what}", s.get("result") or {})
     elif len(steps) == 1:
         s = steps[0]
         _render_result_expander(f"Result · `{s.get('tool_id', '?')}`", s.get("result") or {}, expanded_when_ok=True)
@@ -1331,6 +1472,25 @@ def _question_before(messages: List[Dict[str, Any]], idx: int) -> str:
         if m.get("role") == "user":
             return str(m.get("content", ""))
     return ""
+
+
+def _merge_usage(*parts: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """Sum token/cost usage across the turns of one request (a clarifying
+    question plus the answer that completes it). Cost stays None if any part
+    had no pricing, so 'n/a' is never silently turned into a number."""
+    out: Dict[str, Any] = {"tokens_in": 0, "tokens_out": 0, "cost": 0.0}
+    seen = False
+    for u in parts:
+        if not isinstance(u, dict):
+            continue
+        seen = True
+        out["tokens_in"] += int(u.get("tokens_in") or 0)
+        out["tokens_out"] += int(u.get("tokens_out") or 0)
+        if out["cost"] is None or u.get("cost") is None:
+            out["cost"] = None
+        else:
+            out["cost"] += float(u.get("cost") or 0)
+    return out if seen else None
 
 
 def _usage_caption(u: Optional[Dict[str, Any]]) -> Optional[str]:
@@ -1992,8 +2152,11 @@ migration_tools = st.session_state.migration_tools
 # =============================================================================
 if mode == MODE_CHAT:
     CHAT_TENANT_KEY = "chat_tenant_config"
+    CHAT_TENANT_USER_KEY = "chat_tenant_user"  # who the token belongs to — sidebar only, never sent
     CHAT_MESSAGES_KEY = "chat_messages"
     CHAT_PENDING_KEY = "chat_pending_confirmation"
+    CHAT_AWAITING_KEY = "chat_awaiting_answer"  # the last reply was a question the agent is waiting on
+    CHAT_CARRY_USAGE_KEY = "chat_carry_usage"  # tokens of pending-question turns, shown with the completing reply
     CHAT_APPROVED_KEY = "chat_approved_mutations"
 
     if CHAT_TENANT_KEY not in st.session_state:
@@ -2031,6 +2194,9 @@ if mode == MODE_CHAT:
                 "token": token,
                 "ssl": ssl,
             }
+            st.session_state[CHAT_TENANT_USER_KEY] = (
+                _whoami(_normalize_domain(domain), token, ssl) or (creds.get("username") or "").strip() or None
+            )
             logger.info("[CHAT] Tenant configured for domain=%s, ssl=%s", domain.strip(), ssl)
             # st.toast survives the rerun; st.success here would be erased by it
             st.toast("Connected. You can now chat with your Sisense deployment.", icon="✅")
@@ -2074,8 +2240,9 @@ if mode == MODE_CHAT:
         )
         st.markdown("**Mode:** Chat with deployment")
 
-        st.markdown("**Connected tenant**")
+        st.markdown("**Connected Tenant**")
         st.write(f"Domain: `{chat_tenant_config.get('domain', '')}`")
+        st.write(f"User: `{st.session_state.get(CHAT_TENANT_USER_KEY) or 'unknown'}`")
         st.write(f"SSL verification: `{chat_tenant_config.get('ssl', True)}`")
 
         # Two-click disconnect: it also deletes the chat transcript, which is
@@ -2092,6 +2259,7 @@ if mode == MODE_CHAT:
                     CHAT_MESSAGES_KEY,
                     CHAT_PENDING_KEY,
                     CHAT_APPROVED_KEY,
+                    CHAT_TENANT_USER_KEY,
                     "_chat_disconnect_confirm",
                 ]:
                     if key in st.session_state:
@@ -2154,7 +2322,16 @@ if mode == MODE_CHAT:
 
                     # Chat mode: do NOT render run log (no progress emitted for these tools)
 
-                st.markdown(msg.get("content", ""))
+                # A clarifying question is a PAUSE in the request, not a finished
+                # turn: it renders in the info box (the same element the option
+                # hints use, so "the agent needs something from you" always looks
+                # the same), with no skill caption, usage or thumbs — those come
+                # with the reply that completes it (its usage includes this turn's).
+                _is_pause = msg["role"] == "assistant" and bool(msg.get("awaiting"))
+                if _is_pause:
+                    st.info(msg.get("content", ""), icon="❓")
+                else:
+                    st.markdown(msg.get("content", ""))
 
                 # Screen-only hints (e.g. clarification option names): rendered
                 # under the reply, NEVER merged into `content` — content is the
@@ -2165,8 +2342,22 @@ if mode == MODE_CHAT:
                     for _hint in msg["display_hints"]:
                         st.info(_hint)
 
+                if _is_pause:
+                    if _i == len(st.session_state[CHAT_MESSAGES_KEY]) - 1 and st.session_state.get(CHAT_AWAITING_KEY):
+                        st.caption("⏳ Waiting for your answer…")
+
+                # Which skill planned this turn, if any (chat only) — same idea as
+                # the tool expander naming the SDK method that ran.
+                if (
+                    msg["role"] == "assistant"
+                    and not _is_pause
+                    and isinstance(msg.get("skill"), dict)
+                    and msg["skill"].get("name")
+                ):
+                    st.caption(f"📘 Skill: `{msg['skill']['name']}`")
+
                 # Usage line + thumbs on real turns (a trace_id means a backend turn ran)
-                if msg["role"] == "assistant" and msg.get("trace_id"):
+                if msg["role"] == "assistant" and msg.get("trace_id") and not _is_pause:
                     _uc = _usage_caption(msg.get("usage"))
                     if _uc:
                         st.caption(_uc)
@@ -2186,9 +2377,12 @@ if mode == MODE_CHAT:
                 pending.get("reason")
                 or "This action requires approval before it can make changes to your Sisense deployment."
             )
-            with st.expander("View operation details", expanded=True):
+            with st.expander("View operation details", expanded=not pending.get("details")):
+                if pending.get("details"):
+                    # A skill plan: the exact ordered operation list, code-built.
+                    st.markdown(pending["details"])
                 st.markdown("**Tool:** `{}`".format(pending.get("tool_id", "")))
-                st.code(json.dumps(pending.get("arguments", {}), indent=2), language="json")
+                _code_json(pending.get("arguments", {}))
 
             cols = st.columns([1, 1])
             with cols[0]:
@@ -2203,7 +2397,7 @@ if mode == MODE_CHAT:
                     _approve_failed = False
                     with st.spinner("Running approved action..."):
                         try:
-                            reply, tr, sr, tid, usage, hints = call_backend_turn(
+                            reply, tr, sr, tid, usage, hints, skill_meta, awaiting = call_backend_turn(
                                 messages=st.session_state[CHAT_MESSAGES_KEY],
                                 user_input="",
                                 tenant_config=chat_tenant_config,
@@ -2219,13 +2413,15 @@ if mode == MODE_CHAT:
                             # Put the failure in history BEFORE rerunning — st.error
                             # followed by st.rerun() is a frame the user never sees.
                             _approve_failed = True
-                            reply, tr, sr, tid, usage, hints = (
+                            reply, tr, sr, tid, usage, hints, skill_meta, awaiting = (
                                 f"The approved action failed: {e}",
                                 None,
                                 None,
                                 None,
                                 None,
                                 None,
+                                None,
+                                False,
                             )
                     _agent_ph.empty()
 
@@ -2242,8 +2438,17 @@ if mode == MODE_CHAT:
                             "trace_id": tid,
                             "usage": usage,
                             "display_hints": hints,
+                            "skill": skill_meta,
+                            "awaiting": bool(awaiting),
                         }
                     )
+                    st.session_state[CHAT_AWAITING_KEY] = bool(awaiting)
+                    # The approved run completes a request that may have paused
+                    # on a question: show the whole request's usage here.
+                    if st.session_state.get(CHAT_CARRY_USAGE_KEY) and not awaiting:
+                        st.session_state[CHAT_MESSAGES_KEY][-1]["usage"] = _merge_usage(
+                            st.session_state.pop(CHAT_CARRY_USAGE_KEY), usage
+                        )
 
                     st.session_state[CHAT_PENDING_KEY] = None
                     st.rerun()
@@ -2263,13 +2468,18 @@ if mode == MODE_CHAT:
         # silently abandoned the gated action (the topic-change rule below
         # still backstops any stale state).
         _gate_open = bool(st.session_state.get(CHAT_PENDING_KEY))
+        _awaiting = bool(st.session_state.get(CHAT_AWAITING_KEY))
         user_input = (
             st.chat_input(
-                "Approve or cancel the pending action above first…" if _gate_open else "Ask something about Sisense...",
+                "Approve or cancel the pending action above first…"
+                if _gate_open
+                else ("Answer the question above…" if _awaiting else "Ask something about Sisense..."),
                 disabled=_gate_open,
             )
             or ""
         ).strip() or None
+        if user_input:
+            st.session_state[CHAT_AWAITING_KEY] = False
 
     if user_input:
         logger.debug("[CHAT] User question: %s", user_input)
@@ -2291,7 +2501,7 @@ if mode == MODE_CHAT:
             _call_failed = False
             with st.spinner("Thinking..."):
                 try:
-                    reply, tr, sr, tid, usage, hints = call_backend_turn(
+                    reply, tr, sr, tid, usage, hints, skill_meta, awaiting = call_backend_turn(
                         messages=st.session_state[CHAT_MESSAGES_KEY],
                         user_input=user_input,
                         tenant_config=chat_tenant_config,
@@ -2312,6 +2522,8 @@ if mode == MODE_CHAT:
                     tid = None
                     usage = None
                     hints = None
+                    skill_meta = None
+                    awaiting = False
             _agent_ph.empty()
 
             # Ensure run log is not shown/stored for chat
@@ -2340,8 +2552,21 @@ if mode == MODE_CHAT:
                         # Screen-only: rendered under the reply, never part of
                         # `content`, so it can't re-enter LLM prompts via history.
                         "display_hints": hints,
+                        "skill": skill_meta,
+                        "awaiting": bool(awaiting),
                     }
                 )
+                st.session_state[CHAT_AWAITING_KEY] = bool(awaiting)
+                # Usage is reported once per REQUEST: a question's tokens ride
+                # along until the reply that completes the request shows them.
+                if awaiting:
+                    st.session_state[CHAT_CARRY_USAGE_KEY] = _merge_usage(
+                        st.session_state.get(CHAT_CARRY_USAGE_KEY), usage
+                    )
+                elif st.session_state.get(CHAT_CARRY_USAGE_KEY):
+                    st.session_state[CHAT_MESSAGES_KEY][-1]["usage"] = _merge_usage(
+                        st.session_state.pop(CHAT_CARRY_USAGE_KEY), usage
+                    )
                 if not _call_failed:
                     st.rerun()
 
@@ -2352,6 +2577,8 @@ if mode == MODE_CHAT:
 if mode == MODE_MIGRATION:
     MIG_SRC_KEY = "migration_source_config"
     MIG_TGT_KEY = "migration_target_config"
+    MIG_SRC_USER_KEY = "migration_source_user"
+    MIG_TGT_USER_KEY = "migration_target_user"
     MIG_MESSAGES_KEY = "migration_messages"
     MIG_PENDING_KEY = "migration_pending_confirmation"
     MIG_APPROVED_KEY = "migration_approved_mutations"
@@ -2367,6 +2594,7 @@ if mode == MODE_MIGRATION:
         wrong environment (chat mode's disconnect does the same). The turn
         threading keys must go too — a surviving _mig_turn_in_progress=True
         keeps the chat input disabled with no turn left to finish it."""
+        st.session_state.pop({MIG_SRC_KEY: MIG_SRC_USER_KEY, MIG_TGT_KEY: MIG_TGT_USER_KEY}.get(which_key, ""), None)
         st.session_state[which_key] = None
         for key in [
             MIG_MESSAGES_KEY,
@@ -2413,6 +2641,11 @@ if mode == MODE_MIGRATION:
                         "token": src_token,
                         "ssl": src_ssl,
                     }
+                    st.session_state[MIG_SRC_USER_KEY] = (
+                        _whoami(_normalize_domain(src_domain), src_token, src_ssl)
+                        or (src_creds.get("username") or "").strip()
+                        or None
+                    )
                     logger.info("[MIGRATION] Source configured for domain=%s ssl=%s", src_domain.strip(), src_ssl)
                     st.toast("Source environment connected.", icon="✅")
                     st.rerun()
@@ -2446,6 +2679,11 @@ if mode == MODE_MIGRATION:
                         "token": tgt_token,
                         "ssl": tgt_ssl,
                     }
+                    st.session_state[MIG_TGT_USER_KEY] = (
+                        _whoami(_normalize_domain(tgt_domain), tgt_token, tgt_ssl)
+                        or (tgt_creds.get("username") or "").strip()
+                        or None
+                    )
                     logger.info("[MIGRATION] Target configured for domain=%s ssl=%s", tgt_domain.strip(), tgt_ssl)
                     st.toast("Target environment connected.", icon="✅")
                     st.rerun()
@@ -2466,6 +2704,7 @@ if mode == MODE_MIGRATION:
         st.markdown("**Source**")
         if src_cfg:
             st.write(f"Domain: `{src_cfg.get('domain', '')}`")
+            st.write(f"User: `{st.session_state.get(MIG_SRC_USER_KEY) or 'unknown'}`")
             st.write(f"SSL verification: `{src_cfg.get('ssl', True)}`")
             if st.button("Disconnect source", key="mig_disconnect_src"):
                 logger.info("[MIGRATION] Disconnecting source.")
@@ -2476,6 +2715,7 @@ if mode == MODE_MIGRATION:
         st.markdown("**Target**")
         if tgt_cfg:
             st.write(f"Domain: `{tgt_cfg.get('domain', '')}`")
+            st.write(f"User: `{st.session_state.get(MIG_TGT_USER_KEY) or 'unknown'}`")
             st.write(f"SSL verification: `{tgt_cfg.get('ssl', True)}`")
             if st.button("Disconnect target", key="mig_disconnect_tgt"):
                 logger.info("[MIGRATION] Disconnecting target.")
@@ -2663,6 +2903,7 @@ if mode == MODE_MIGRATION:
                     ctx.get("agent_steps") or [],
                     ctx.get("agent_status"),
                     ctx.get("agent_plan"),
+                    ctx.get("agent_stages"),
                 )
                 # Then the SDK's own per-asset progress ("migrated 12 of 40...").
                 # Agent phase lines are not in here — they go to the checklist above.
@@ -2700,7 +2941,7 @@ if mode == MODE_MIGRATION:
             if pending_mig.get("tool_id") != MIGRATION_PLAN_TOOL_ID:
                 with st.expander("View operation details", expanded=True):
                     st.markdown("**Tool:** `{}`".format(pending_mig.get("tool_id", "")))
-                    st.code(json.dumps(pending_mig.get("arguments", {}), indent=2), language="json")
+                    _code_json(pending_mig.get("arguments", {}))
 
             cols = st.columns([1, 1])
             with cols[0]:

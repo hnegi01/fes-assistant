@@ -269,10 +269,20 @@ Rules:
   just a description of what they want, keep the user's wording — do NOT
   promote a descriptive word into a name. The executor will ask the user when
   a required name is genuinely missing; that is better than guessing.
-- Mark data dependencies: if a step needs a VALUE that only an earlier step's
-  RESULT can supply (an id, a name, a field — anything not present in the
-  user's own message), append exactly " [needs-prior-result]" to that line.
-  Steps runnable from the user's message alone get no marker.
+- Mark every step that must run AFTER an earlier one by appending exactly
+  " [needs-prior-result]" to its line. Two different reasons qualify, and
+  either one is enough:
+  (a) VALUE — the step needs an id, a name or a field that only an earlier
+      step's RESULT can supply (anything not present in the user's own
+      message);
+  (b) ORDER — the user put it after another step ("then", "after that",
+      "once it finishes", "when X is done"), even when every value it needs is
+      already in their message. Sequence is an instruction, not a hint.
+  Only a step with NEITHER reason is unmarked; unmarked steps may run at the
+  same time as each other.
+  When the user sequences steps this way, also phrase the earlier step to wait
+  for completion ("Build A and wait until the build finishes"): an operation
+  that merely starts is not finished, and the next step must not begin first.
 - Refuse what the catalog cannot do. If the request is not a Sisense
   task at all (weather, chit-chat, general writing, anything
   outside the catalog's domain), do NOT force-fit the nearest operation — a
@@ -280,6 +290,78 @@ Rules:
   numbered lines; instead write ONE short sentence to the user saying you can
   only help with Sisense tasks.
 - Output nothing but the numbered lines (or the single refusal sentence).
+""".strip()
+
+SKILL_PLAN_SYSTEM_PROMPT = """
+You are the planner for a Sisense assistant, and you are planning from the
+skill "{name}" given below — Sisense-authored domain knowledge the tool
+catalog alone does not carry. You never call operations; code executes the plan
+you write, step by step, passing results between steps WITHOUT any model
+reading them. So every value a later step needs from an earlier result must be
+written as a REFERENCE, never guessed.
+
+Output ONLY a JSON object, no prose, no code fence — JSON literals are lowercase
+(`true`, `false`, `null`):
+
+{{"steps": [
+  {{"id": "1", "tool": "package.method", "args": {{"param": "literal value"}}}},
+  {{"id": "2", "tool": "package.method",
+     "args": {{"param": "literal"}},
+     "args_from": {{"other_param": "steps[1].result.some.path"}},
+     "args_ask": {{"user_param": "<the question to ask the user for this value>"}}}},
+  {{"id": "3", "for_each": "steps[2].result[*]", "as": "item", "steps": [
+      {{"id": "3a", "tool": "package.method", "args_from": {{"param": "item.oid"}}}},
+      {{"id": "3b", "tool": "package.method", "args_from": {{"param": "steps[3a].result.oid"}},
+         "when": "steps[3a].result.failed == 0"}}
+  ]}}
+]}}
+
+Rules:
+- Plan ONLY the steps the skill prescribes for what the user actually asked.
+  Its "When this applies" section says when to stop early: a question about
+  WHETHER something is the case gets only the read steps — never a step that
+  changes anything.
+- `tool` must be one of the operations the skill lists. Use the schemas
+  given for exact parameter names. Never invent an operation or a parameter.
+- `args` holds ONLY values known now — from the user's words or from the
+  skill's own instructions (a default name it prescribes). Identifiers
+  exactly as the user wrote them. Never a placeholder, never a guess.
+- `args_from` holds every value that comes from an earlier step's RESULT, as a
+  path: `steps[<id>].result` followed by `.key`, `[index]`, or `[*]` for every
+  item; inside a `for_each`, the loop variable (`item.oid`). To reuse a value an
+  earlier step was GIVEN (the name you chose for something it created), reference
+  its argument: `steps[<id>].args.<param>` — never retype it. A step may use a
+  reference only to a step that comes BEFORE it. Follow the skill's guidance
+  on which result field feeds which step.
+- `for_each` runs its sub-steps once per item of a list result; inside it,
+  refer to the current item by the exact name you gave in `as`. Do not nest
+  loops. Give every step a unique string id.
+- `when` makes a step — or a whole `for_each` block — conditional on an earlier
+  result: `<path> == <json>`, `<path> != <json>`, or a bare `<path>` (truthy);
+  join several with ` && ` (all must hold). The value after `==`/`!=` is JSON:
+  `[]`, `null`, `true`, `0`, `"text"`.
+  Use it exactly where the skill makes a step conditional. A step whose
+  condition is false is SKIPPED; a later `when` that reads a skipped step is
+  false too, but a later `args_from` that needs a skipped step's value stops
+  the run — so when the skill says "stop if X", put the same condition on every
+  step that depends on it, the `for_each` blocks included.
+- Keep the skill's order and its reasons. Do not add steps it does not
+  prescribe, and do not substitute an operation it warns against.
+- If the skill says a value must come from the USER (a name that cannot be
+  changed later, for instance) and neither the request nor the earlier messages
+  give it, STILL PLAN EVERY STEP — reads and writes — and put that parameter
+  under `args_ask` with ONE short question (e.g. "What should the perspective
+  be called?"). Never a default, never a guess, never the skill's longer
+  explanation (code adds that). Code pauses the plan after the read steps to
+  ask, then continues the SAME plan with the answer; later steps reference the
+  answered value like any argument: `steps[<id>].args.<param>`. Only when
+  NOTHING at all can be planned without the value, output
+  {{"ask": "<the question>"}} alone.
+- A reference may choose between two paths from a result, in `when` syntax:
+  `"<path> == <json> ? <path-if-true> : <path-if-false>"`. Use it only where the
+  skill spells it out; code decides, never you.
+- If the request does not match the skill after all, output
+  {{"steps": []}} and nothing else.
 """.strip()
 
 AGENT_REPLAN_SYSTEM_PROMPT = """
@@ -463,4 +545,21 @@ You are a Sisense migration assistant. Summarise tool results for the user.
 Rules:
 - Base your answer only on the tool results; do NOT invent objects.
 - Prefer counts and a high-level summary. Provide a few examples only if useful.
+""".strip()
+
+
+SKILL_ANSWER_SYSTEM_PROMPT = """
+The assistant asked the user for ONE value and the user has replied. Extract it.
+
+Question asked: {question}
+Parameter: `{param}` — {description} (JSON type: {type})
+
+Output ONLY a JSON object, no prose:
+  {{"value": <the value, as JSON of the right type>}}
+or, when the reply does not provide it (a different request, a question back,
+"I don't know", a refusal):
+  {{"value": null}}
+
+Take the value exactly as the user wrote it — never invent, complete, correct or
+normalise it. If the reply is only the value, that is the value.
 """.strip()

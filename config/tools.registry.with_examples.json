@@ -45,8 +45,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Transfer ownership of the 'Sales Reports' folder to jane.doe@example.com, running as admin@example.com, and transfer the dashboards inside it too \u2014 the previous owner should keep edit access.",
@@ -114,8 +114,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Change the password for user 'user123' to 'NewSecurePassword123!'.",
@@ -172,8 +172,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Create multiple groups for the new project team: 'Data Analysts', 'Project Managers', and 'QA Engineers'.",
@@ -231,7 +231,7 @@
     "sub_module": "access_management.admin",
     "class": "AccessManagement",
     "method": "create_schedule_build",
-    "description": "Create a schedule build for a DataModel.",
+    "description": "Schedule a recurring build for an ElastiCube.",
     "full_doc": "Create a schedule build for a DataModel.\n\nSupports both cron-based schedules (e.g. every Monday at 9:00 UTC) and\ninterval-based schedules (e.g. every 2 days, 1 hour, 30 minutes). An\ninterval-based schedule is created when any of the ``interval_*``\nparameters are provided; otherwise a cron-based schedule is created from\n``days``, ``hour``, and ``minute``.\n\nParameters\n----------\ndatamodel_name : str\n    The name of the DataModel.\nbuild_type : str, optional\n    Type of the build, one of ``\"ACCUMULATE\"``, ``\"FULL\"``, or\n    ``\"SCHEMA_CHANGES\"``. Defaults to ``\"ACCUMULATE\"``.\ndays : list[str] | None, optional\n    Keyword-only. List of days for a cron schedule, e.g.\n    ``[\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"]`` or ``[\"*\"]``\n    for all days.\nhour : int | None, optional\n    Keyword-only. Hour in 24-hour format (UTC) for a cron schedule.\nminute : int | None, optional\n    Keyword-only. Minute of the hour (UTC) for a cron schedule.\ninterval_days : int | None, optional\n    Keyword-only. Interval in days for an interval-based schedule.\ninterval_hours : int | None, optional\n    Keyword-only. Interval in hours for an interval-based schedule.\ninterval_minutes : int | None, optional\n    Keyword-only. Interval in minutes for an interval-based schedule.\n\nReturns\n-------\ndict[str, Any]\n    The API response on success, or ``{\"error\": \"...\"}`` on failure or\n    invalid schedule configuration.",
     "parameters": {
       "type": "object",
@@ -281,8 +281,8 @@
       "access_management",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Schedule a full build for the 'SalesDataModel' data model every Monday at 3:00 UTC.",
@@ -387,8 +387,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Create a Viewer user for Jane Doe at jane.doe@example.com, add them to the Sales and Marketing groups, and set their language to English and timezone to America/New_York.",
@@ -477,8 +477,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Create two users at once: john.doe@example.com with first name John and role admin, and jane.smith@example.com with first name Jane and role editor.",
@@ -567,8 +567,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Delete the group with ID 'group_12345'.",
@@ -620,8 +620,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Remove the user with the email john.doe@example.com from the system.",
@@ -665,8 +665,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show me all the dashboards and who they are shared with.",
@@ -711,8 +711,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show the columns available in the 'SalesAnalytics' DataModel.",
@@ -761,8 +761,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Retrieve all groups from the Sisense server.",
@@ -800,8 +800,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show which user I am currently logged in as.",
@@ -838,8 +838,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List all roles available in our Sisense instance.",
@@ -876,8 +876,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Retrieve all tenants from the Sisense server.",
@@ -903,7 +903,7 @@
     "class": "AccessManagement",
     "method": "get_unused_columns_bulk",
     "description": "Run unused-column analysis for one or more data models and return a",
-    "full_doc": "Run unused-column analysis for one or more data models and return a\ncombined per-model outcome.\n\nParameters\n----------\ndatamodels : str or list of str\n    One or more data model references to analyze. **Required.** Each\n    reference can be:\n      - a data model ID, or\n      - a data model title (name).\n    At runtime this parameter is tolerant of a single string and will\n    normalize it to a one-element list.\n\nReturns\n-------\ndict[str, Any]\n    Always a dict with ``\"results\"`` and ``\"errors\"``:\n      - ``\"results\"``: flat list of column rows across all processed\n        data models, each row shaped as ``get_datamodel_columns`` rows\n        plus a ``\"used\"`` boolean. A model that resolves and genuinely\n        has no columns in use contributes rows with ``used: False``.\n      - ``\"errors\"``: list of ``{\"ref\": ..., \"error\": ...}`` entries,\n        one per reference that could not be resolved or processed \u2014\n        empty when every reference succeeded.\n    When **none** of the given references can be processed (or the\n    input is invalid), the dict additionally carries ``\"ok\": False``\n    and a top-level ``\"error\"`` summary, so standard failure detection\n    (``payload.get(\"ok\") is False``) still fires.",
+    "full_doc": "Run unused-column analysis for one or more data models and return a\ncombined per-model outcome.\n\n\nUnder Dashboard Co-Authoring the export returns the owner's private copy, while\nviewers see the shared copy; for a published dashboard the shared copy is read\ninstead \u2014 its own filters, hierarchies and widgets \u2014 as administrator\n(``GET /api/dashboards/{id}?adminAccess=true``) or as owner (``sharedMode=true``).\nA shared copy neither route can read fails that model's analysis with the standard\nerror dict under ``\"errors\"`` rather than the private copy being analysed in its place.\nParameters\n----------\ndatamodels : str or list of str\n    One or more data model references to analyze. **Required.** Each\n    reference can be:\n      - a data model ID, or\n      - a data model title (name).\n    At runtime this parameter is tolerant of a single string and will\n    normalize it to a one-element list.\n\nReturns\n-------\ndict[str, Any]\n    Always a dict with ``\"results\"`` and ``\"errors\"``:\n      - ``\"results\"``: flat list of column rows across all processed\n        data models, each row shaped as ``get_datamodel_columns`` rows\n        plus a ``\"used\"`` boolean. A model that resolves and genuinely\n        has no columns in use contributes rows with ``used: False``.\n      - ``\"errors\"``: list of ``{\"ref\": ..., \"error\": ...}`` entries,\n        one per reference that could not be resolved or processed \u2014\n        empty when every reference succeeded.\n    When **none** of the given references can be processed (or the\n    input is invalid), the dict additionally carries ``\"ok\": False``\n    and a top-level ``\"error\"`` summary, so standard failure detection\n    (``payload.get(\"ok\") is False``) still fires.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -924,8 +924,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Find the unused columns in the 'Sales Data' and 'Marketing Analytics' data models.",
@@ -986,8 +986,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Find details for the user with email john.doe@example.com.",
@@ -1031,8 +1031,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show me all the users in the system along with their roles and group memberships.",
@@ -1115,8 +1115,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Change john.doe@example.com's email address to john.doe.new@example.com and set their role to designer.",
@@ -1178,8 +1178,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List the members of the 'Data Analysts' group.",
@@ -1229,8 +1229,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Remove the custom Blox action called 'export_to_csv' from my Sisense instance.",
@@ -1273,8 +1273,8 @@
       "blox",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List the custom Blox actions available in my Sisense instance.",
@@ -1327,8 +1327,8 @@
       "blox",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Retrieve the style objects for the BloX widget with ID 'widget123' in dashboard 'dashboard456', using admin access.",
@@ -1383,8 +1383,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Save a custom Blox action named 'ExportDashboardAction' that exports dashboard dashboard_12345 to PDF.",
@@ -1446,7 +1446,7 @@
     "class": "Blox",
     "method": "update_blox_widget_style",
     "description": "Update the style objects of a BloX widget.",
-    "full_doc": "Update the style objects of a BloX widget.\n\nReads the current widget, replaces its ``style.currentCard`` and/or\n``style.currentConfig`` objects with the provided values, and writes\nthe result back via ``PUT /api/dashboards/{dashboard_id}/widgets/{widget_id}``.\nServer-managed fields are stripped before the write.\n\nThe typical flow is read-modify-write: fetch the objects with\n:meth:`get_blox_widget_style`, change the fields you need (for example\nthe ``style`` CSS string on the card, or ``fontFamily`` on the config),\nand pass the modified objects back here. Each provided object replaces\nthe existing one wholesale; omitted objects are left unchanged.\n\nWhen ``executing_user_id`` is provided, ownership of the dashboard is\ntemporarily transferred to that user before the write, then restored\nin a ``finally`` block regardless of whether the write succeeds. Pass\nthe Sisense user ID (not email); resolve it with\n``AccessManagement.get_my_user()`` for the API token user, or\n``AccessManagement.get_user(email)`` for any other user.\n\nWhen neither ``current_card`` nor ``current_config`` is provided the\nmethod returns immediately with the current style objects and makes\nno write.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard that contains the widget.\nwidget_id : str\n    The ``oid`` of the BloX widget to update.\ncurrent_card : dict[str, Any] | None, optional\n    Replacement for the ``style.currentCard`` object. Omit to leave\n    the current value unchanged.\ncurrent_config : dict[str, Any] | None, optional\n    Replacement for the ``style.currentConfig`` object. Omit to leave\n    the current value unchanged.\nexecuting_user_id : str | None, optional\n    Sisense user ID of the user who should own the dashboard during the\n    write. Required when the API token user is not the dashboard owner.\n\nReturns\n-------\ndict[str, Any]\n    The style objects after the update:\n\n    - ``currentCard`` (dict): The value of ``style.currentCard`` after the write.\n    - ``currentConfig`` (dict): The value of ``style.currentConfig`` after the write.\n\n    Returns ``{\"error\": \"...\"}`` on failure or if the widget is not a BloX type.",
+    "full_doc": "Update the style objects of a BloX widget.\n\nReads the current widget, replaces its ``style.currentCard`` and/or\n``style.currentConfig`` objects with the provided values, and writes\nthe result back via ``PUT /api/dashboards/{dashboard_id}/widgets/{widget_id}``.\nServer-managed fields are stripped before the write.\n\nThe typical flow is read-modify-write: fetch the objects with\n:meth:`get_blox_widget_style`, change the fields you need (for example\nthe ``style`` CSS string on the card, or ``fontFamily`` on the config),\nand pass the modified objects back here. Each provided object replaces\nthe existing one wholesale; omitted objects are left unchanged.\n\nWith Dashboard Co-Authoring on, a published dashboard's widget lives on its\nshared copy (what viewers see) and on the owner's private copy; both are\nwritten, shared first with ``sharedMode=true``, and the dashboard is\nrepublished. Only the owner may write; a non-owner is refused with the owner\nnamed, unless ``act_as_owner`` is true and the token belongs to an\nadministrator, in which case ownership is borrowed for the change and\nreturned afterwards together with the exact share list. ``executing_user_id``\nis the older form of the same thing: when provided, ownership is borrowed for\nthat user (a Sisense user ID) instead of the token's user.\n\nWhen neither ``current_card`` nor ``current_config`` is provided the\nmethod returns immediately with the current style objects and makes\nno write.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard that contains the widget.\nwidget_id : str\n    The ``oid`` of the BloX widget to update.\ncurrent_card : dict[str, Any] | None, optional\n    Replacement for the ``style.currentCard`` object. Omit to leave\n    the current value unchanged.\ncurrent_config : dict[str, Any] | None, optional\n    Replacement for the ``style.currentConfig`` object. Omit to leave\n    the current value unchanged.\nexecuting_user_id : str | None, optional\n    Deprecated in favour of ``act_as_owner``: the Sisense user ID to transfer\n    ownership to for the change. Default ``None``.\nact_as_owner : bool, optional\n    Take ownership temporarily when the token's user is an administrator but not\n    the owner. Default ``False``: refuse instead.\n\nReturns\n-------\ndict[str, Any]\n    The style objects after the update:\n\n    - ``currentCard`` (dict): The value of ``style.currentCard`` after the write.\n    - ``currentConfig`` (dict): The value of ``style.currentConfig`` after the write.\n\n    ``published`` (and ``publish_error``) is added when a shared copy was written,\n    ``ownership_transferred_temporarily`` / ``original_owner`` when ownership was\n    borrowed. On failure, or if the widget is not a BloX type, the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict, with ``owner`` and ``co_owners``\n    when the token's user is not the owner.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -1468,7 +1468,11 @@
         },
         "executing_user_id": {
           "type": "string",
-          "description": "Sisense user ID of the user who should own the dashboard during the write. Required when the API token user is not the dashboard owner."
+          "description": "Deprecated in favour of ``act_as_owner``: the Sisense user ID to transfer ownership to for the change. Default ``None``."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [
@@ -1481,8 +1485,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Update the style of the BloX widget with ID 'widget123' on dashboard 'dashboard456', replacing the current card style but leaving the config unchanged.",
@@ -1568,8 +1572,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Create a new Python notebook named 'Sales Analysis 2023'.",
@@ -1644,8 +1648,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Delete the notebook with ID 'abc123'.",
@@ -1695,8 +1699,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Export the notebook definition for notebook 123e4567-e89b-12d3-a456-426614174000.",
@@ -1748,8 +1752,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Fetch all available notebooks in the system.",
@@ -1801,8 +1805,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List the files in the 'data-analysis' notebook folder.",
@@ -1857,8 +1861,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Rename the notebook file at 'notebooks/custom_code_notebooks/12345/analysis.ipynb' to 'sales_analysis.ipynb'.",
@@ -1923,8 +1927,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Rename the 'DataScienceProjects' notebook folder to 'MLProjects'.",
@@ -2004,8 +2008,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Update notebook 123e4567-e89b-12d3-a456-426614174000 \u2014 set its title to 'Updated Sales Analysis' and its description to 'Notebook with updated insights for Q4 sales.'",
@@ -2054,14 +2058,14 @@
     "sub_module": "dashboard.scripts",
     "class": "Dashboard",
     "method": "add_dashboard_script",
-    "description": "Add or overwrite a script on a dashboard.",
-    "full_doc": "Add or overwrite a script on a dashboard.\n\nAdds or overwrites a script on a dashboard, temporarily changing\nownership to the executing user and restoring it (along with the\noriginal shares) afterwards when required, as only the dashboard owner\ncan modify scripts.\n\nParameters\n----------\ndashboard_id : str\n    The ID of the dashboard where the script will be added.\nscript : str | dict[str, Any]\n    The JavaScript script to add, provided as either a properly\n    formatted JSON string, a raw multi-line script string, or a\n    pre-built payload dictionary.\nexecuting_user : str | None, optional\n    The username of the API user, used to temporarily change the owner\n    of the dashboard, as only the owner can add scripts. If not\n    provided, assumes the dashboard owner is the same as the API user.\n    (format: email)\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True, \"message\": \"...\"}`` on success, or the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict on failure.",
+    "description": "Attach a JavaScript script to a dashboard.",
+    "full_doc": "Attach a JavaScript script to a dashboard.\n\nSends ``PUT /api/dashboards/{dashboard_id}`` with ``{\"script\": ...}``. With Dashboard\nCo-Authoring on, a published dashboard's script lives on its shared copy (what\nviewers see) and on the owner's private copy; both are written, shared first with\n``sharedMode=true``, and the dashboard is republished. Only the owner may write; a\nnon-owner is refused with the owner named, unless ``act_as_owner`` is true and the\ntoken belongs to an administrator, in which case ownership is borrowed for the\nchange and returned afterwards, together with the exact share list.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard.\nscript : str | dict[str, Any]\n    The script, as plain JavaScript, as a JSON string ``{\"script\": \"...\"}``, or as\n    that dict.\nexecuting_user : str | None, optional\n    Deprecated in favour of ``act_as_owner``: the email of the user to transfer\n    ownership to for the change. When given, ownership is borrowed for that user\n    exactly as ``act_as_owner`` does for the token's user. Default ``None``.\nact_as_owner : bool, optional\n    Take ownership temporarily when the token's user is an administrator but not\n    the owner. Default ``False``: refuse instead.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True, \"message\": \"...\", \"copies_updated\": [...], \"published\": bool | None}``\n    (``published`` is ``None`` when no shared copy exists), plus\n    ``ownership_transferred_temporarily`` / ``original_owner`` when ownership was\n    borrowed. On failure the standard ``{\"ok\": False, \"error\": \"...\", ...}`` dict, with\n    ``owner`` and ``co_owners`` when the token's user is not the owner.",
     "parameters": {
       "type": "object",
       "properties": {
         "dashboard_id": {
           "type": "string",
-          "description": "The ID of the dashboard where the script will be added."
+          "description": "The ``oid`` of the dashboard."
         },
         "script": {
           "anyOf": [
@@ -2072,12 +2076,15 @@
               "type": "object"
             }
           ],
-          "description": "The JavaScript script to add, provided as either a properly formatted JSON string, a raw multi-line script string, or a pre-built payload dictionary."
+          "description": "The script, as plain JavaScript, as a JSON string ``{\"script\": \"...\"}``, or as that dict."
         },
         "executing_user": {
           "type": "string",
-          "description": "The username of the API user, used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user.",
-          "format": "email"
+          "description": "Deprecated in favour of ``act_as_owner``: the email of the user to transfer ownership to for the change. When given, ownership is borrowed for that user exactly as ``act_as_owner`` does for the token's user. Default ``None``."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [
@@ -2091,8 +2098,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "As admin@sisense.com, add this raw script to dashboard dashboard_12345: function customBehavior() { console.log('Custom script executed'); }",
@@ -2168,8 +2175,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Give john.doe@example.com and the 'sales-team' group view access to dashboard 63f2c9e4b8a4e2001d3f9a23.",
@@ -2236,18 +2243,18 @@
     "sub_module": "dashboard.scripts",
     "class": "Dashboard",
     "method": "add_widget_script",
-    "description": "Add or overwrite a script for a specific widget within a dashboard.",
-    "full_doc": "Add or overwrite a script for a specific widget within a dashboard.\n\nAdds or overwrites a script for a specific widget, republishing the\ndashboard to apply the changes. If required, it temporarily changes the\ndashboard ownership to the executing user and restores it (along with\nthe original shares) afterwards, as only the owner can modify widget\nscripts.\n\nParameters\n----------\ndashboard_id : str\n    The ID of the dashboard containing the widget.\nwidget_id : str\n    The ID of the widget where the script will be added.\nscript : str | dict[str, Any]\n    The JavaScript script to add, provided as either a properly\n    formatted JSON string, a raw multi-line script string, or a\n    pre-built payload dictionary.\nexecuting_user : str | None, optional\n    The username of the API user, used to temporarily change the owner\n    of the dashboard, as only the owner can add scripts. If not\n    provided, assumes the dashboard owner is the same as the API user.\n    (format: email)\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True, \"message\": \"...\"}`` on success, or the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict on failure (including\n    when the script was added but republishing the dashboard failed).",
+    "description": "Attach a JavaScript script to a widget.",
+    "full_doc": "Attach a JavaScript script to a widget.\n\nSends ``PUT /api/dashboards/{dashboard_id}/widgets/{widget_id}`` with ``{\"script\": ...}``\nand republishes the dashboard (``POST .../publish?force=true``) so the change reaches\nviewers. With Dashboard Co-Authoring on, a published dashboard's widget lives on its\nshared copy and on the owner's private copy; both are written, shared first with\n``sharedMode=true``. Only the owner may write; a non-owner is refused with the owner\nnamed, unless ``act_as_owner`` is true and the token belongs to an administrator, in\nwhich case ownership is borrowed for the change and returned afterwards, together\nwith the exact share list.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard that contains the widget.\nwidget_id : str\n    The ``oid`` of the widget.\nscript : str | dict[str, Any]\n    The script, as plain JavaScript, as a JSON string ``{\"script\": \"...\"}``, or as\n    that dict.\nexecuting_user : str | None, optional\n    Deprecated in favour of ``act_as_owner``: the email of the user to transfer\n    ownership to for the change. When given, ownership is borrowed for that user\n    exactly as ``act_as_owner`` does for the token's user. Default ``None``.\nact_as_owner : bool, optional\n    Take ownership temporarily when the token's user is an administrator but not\n    the owner. Default ``False``: refuse instead.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True, \"message\": \"...\", \"copies_updated\": [...], \"published\": bool}``,\n    plus ``ownership_transferred_temporarily`` / ``original_owner`` when ownership was\n    borrowed. On failure the standard ``{\"ok\": False, \"error\": \"...\", ...}`` dict, with\n    ``owner`` and ``co_owners`` when the token's user is not the owner.",
     "parameters": {
       "type": "object",
       "properties": {
         "dashboard_id": {
           "type": "string",
-          "description": "The ID of the dashboard containing the widget."
+          "description": "The ``oid`` of the dashboard that contains the widget."
         },
         "widget_id": {
           "type": "string",
-          "description": "The ID of the widget where the script will be added."
+          "description": "The ``oid`` of the widget."
         },
         "script": {
           "anyOf": [
@@ -2258,12 +2265,15 @@
               "type": "object"
             }
           ],
-          "description": "The JavaScript script to add, provided as either a properly formatted JSON string, a raw multi-line script string, or a pre-built payload dictionary."
+          "description": "The script, as plain JavaScript, as a JSON string ``{\"script\": \"...\"}``, or as that dict."
         },
         "executing_user": {
           "type": "string",
-          "description": "The username of the API user, used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user.",
-          "format": "email"
+          "description": "Deprecated in favour of ``act_as_owner``: the email of the user to transfer ownership to for the change. When given, ownership is borrowed for that user exactly as ``act_as_owner`` does for the token's user. Default ``None``."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [
@@ -2277,8 +2287,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "As admin@sisense.com, add the script console.log('Widget script executed'); to widget widget_67890 on dashboard dashboard_12345.",
@@ -2347,8 +2357,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Check whether I can take ownership of the dashboard with ID '12345abcde'.",
@@ -2412,8 +2422,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Transfer ownership of dashboard 'sales_dashboard_2023' to user 'new_owner_123', and set the original owner's access to 'view'.",
@@ -2445,13 +2455,81 @@
     ]
   },
   {
+    "tool_id": "dashboard.compare_dashboard_values",
+    "module": "dashboard",
+    "sub_module": "dashboard.core",
+    "class": "Dashboard",
+    "method": "compare_dashboard_values",
+    "description": "Run every widget's query against two datasources and report whether the values match.",
+    "full_doc": "Run every widget's query against two datasources and report whether the values match.\n\nReads the dashboard's widgets and filters, builds each widget's query the\nway the widget itself does \u2014 its own fields plus the dashboard filters that\napply to it, honouring a widget's \"ignore dashboard filters\" settings \u2014 and\nruns it through ``POST /api/datasources/{name}/jaql`` once against\n``datasource_a`` and once against ``datasource_b``, up to 1000 rows each,\nthen compares the two result sets row for row, ignoring row order. This\nanswers \"does the dashboard show the same numbers on both\": a perspective\nagainst its root model, or one model against another. Nothing on the\ndashboard is modified. Before querying, each widget's fields are checked\nagainst what each datasource exposes \u2014 a perspective's kept columns, or a\nmodel's columns \u2014 and a widget that references a missing field is reported\n``\"error\"`` with the missing dims, since the query engine does not answer\nfor such a query. Widgets on another datasource than the dashboard's own,\nBloX widgets and widgets with nothing to query are ``\"skipped\"``.\n\nParameters\n----------\ndashboard : str\n    The dashboard, as an ID or title.\ndatasource_a : str\n    Title of the first data model or perspective, the reference.\ndatasource_b : str\n    Title of the second data model or perspective, the one under test.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"dashboard_id\", \"title\", \"datasource_a\", \"datasource_b\", \"all_match\", \"compared\",\n    \"skipped\", \"counts\": {\"match\", \"mismatch\", \"error\", \"skipped\"}, \"widgets\": [...]}``. Each\n    widget entry carries ``widget_id``, ``title``, ``type``, ``status`` \u2014 ``\"match\"``,\n    ``\"mismatch\"``, ``\"error\"`` (a query failed, stalled or names a field a datasource lacks;\n    detail in ``error``) or ``\"skipped\"`` (reason in ``error``) \u2014 ``rows_a``, ``rows_b`` (row\n    counts returned by each datasource, ``None`` when not queried) and ``seconds``. ``all_match``\n    is true only when at least one widget was compared and none is ``\"mismatch\"`` or\n    ``\"error\"``. On failure to read the dashboard or resolve a datasource, the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard": {
+          "type": "string",
+          "description": "The dashboard, as an ID or title."
+        },
+        "datasource_a": {
+          "type": "string",
+          "description": "Title of the first data model or perspective, the reference."
+        },
+        "datasource_b": {
+          "type": "string",
+          "description": "Title of the second data model or perspective, the one under test."
+        }
+      },
+      "required": [
+        "dashboard",
+        "datasource_a",
+        "datasource_b"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "dashboard",
+      "dashboards",
+      "read"
+    ],
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
+    "examples": [
+      {
+        "user_query": "Compare all widget values on the 'Sales Overview' dashboard between the 'Production Data' and 'Test Data' datasources.",
+        "arguments": {
+          "dashboard": "Sales Overview",
+          "datasource_a": "Production Data",
+          "datasource_b": "Test Data"
+        },
+        "notes": "This call compares the data displayed by all widgets on the 'Sales Overview' dashboard between the 'Production Data' and 'Test Data' datasources to check for discrepancies."
+      },
+      {
+        "user_query": "Does the 'Marketing Performance' dashboard show the same results between the 'Q1 Data' and 'Q2 Data' datasources?",
+        "arguments": {
+          "dashboard": "Marketing Performance",
+          "datasource_a": "Q1 Data",
+          "datasource_b": "Q2 Data"
+        },
+        "notes": "This call verifies if the widgets on the 'Marketing Performance' dashboard produce consistent results when queried against the 'Q1 Data' and 'Q2 Data' datasources."
+      },
+      {
+        "user_query": "Check if the 'Customer Insights' dashboard matches between the '2022 Dataset' and '2023 Dataset'.",
+        "arguments": {
+          "dashboard": "Customer Insights",
+          "datasource_a": "2022 Dataset",
+          "datasource_b": "2023 Dataset"
+        },
+        "notes": "This call ensures that the 'Customer Insights' dashboard shows matching data when comparing the '2022 Dataset' and '2023 Dataset'."
+      }
+    ]
+  },
+  {
     "tool_id": "dashboard.delete_dashboard",
     "module": "dashboard",
     "sub_module": "dashboard.core",
     "class": "Dashboard",
     "method": "delete_dashboard",
     "description": "Delete a dashboard, but only if both its ID and its title match.",
-    "full_doc": "Delete a dashboard, but only if both its ID and its title match.\n\nSends ``DELETE /api/v1/dashboards/{dashboard_id}`` after reading the\ndashboard and checking that its stored title equals ``title`` exactly.\nRequiring both is a deliberate safety catch: a wrong or stale id, or a\ndashboard renamed since it was listed, is refused instead of deleted.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard's 24-character ``oid``.\ntitle : str\n    The dashboard's exact current title.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True, \"message\": \"...\", \"dashboard_id\", \"title\", \"owner\"}`` on success. On\n    failure (not found, title mismatch, or an API error), the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
+    "full_doc": "Delete a dashboard, but only if both its ID and its title match.\n\nSends ``DELETE /api/v1/dashboards/{dashboard_id}`` after reading the\ndashboard and checking that its stored title equals ``title`` exactly.\nRequiring both is a deliberate safety catch: a wrong or stale id, or a\ndashboard renamed since it was listed, is refused instead of deleted.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard's 24-character ``oid``.\ntitle : str\n    The dashboard's exact current title \u2014 under Dashboard Co-Authoring, that of either\n    its private copy or its shared copy.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True, \"message\": \"...\", \"dashboard_id\", \"title\", \"owner\"}`` on success. On\n    failure (not found, title mismatch, or an API error), the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2461,7 +2539,7 @@
         },
         "title": {
           "type": "string",
-          "description": "The dashboard's exact current title."
+          "description": "The dashboard's exact current title \u2014 under Dashboard Co-Authoring, that of either its private copy or its shared copy."
         }
       },
       "required": [
@@ -2475,8 +2553,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Delete the dashboard with ID '63a9f0ea8b1d4c0012345678' and title 'Sales Overview'.",
@@ -2530,8 +2608,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Duplicate the dashboard with ID 'sales_dashboard_2023'.",
@@ -2582,8 +2660,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Export the definition of dashboard 5f7d3b2e4c8b9a0012345678.",
@@ -2648,8 +2726,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Find all BloX widgets across all dashboards visible to the API token user.",
@@ -2699,8 +2777,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List all dashboards available on the Sisense server.",
@@ -2745,8 +2823,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Fetch the dashboard with ID '5f7d3a2e4b8c9a0012345678'.",
@@ -2797,8 +2875,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Find the dashboard named 'Sales Performance Overview'.",
@@ -2830,7 +2908,7 @@
     "class": "Dashboard",
     "method": "get_dashboard_columns",
     "description": "Retrieve columns referenced by a dashboard, including widget and filter columns.",
-    "full_doc": "Retrieve columns referenced by a dashboard, including widget and filter columns.\n\nResolves the dashboard by title with ``get_dashboard_by_name``, exports\nits full metadata, then extracts column references from dashboard and\ndefault filters (plain, dependent and measured), drill hierarchies,\nevery widget panel item (including nested formulas, conditional\nformatting and drill chains), widget drill history, widget query\nmetadata and table headers. Widgets on another datasource are\nincluded, since the dashboard references them. Both ``[Table.Column]``\nand ``[Table].[Column]`` references are understood, and table or column\nnames may contain any character. The final list is deduplicated by\n``table`` and ``column``.\n\nParameters\n----------\ndashboard_name : str\n    Title of the dashboard to retrieve columns from.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of distinct column entries. Each entry contains\n    ``dashboard_name``, ``source`` (``\"filter\"``, ``\"hierarchy\"`` or ``\"widget\"``),\n    ``widget_id`` (the widget's own ``oid``, or ``\"N/A\"`` for dashboard\n    filters), ``table``, and ``column`` \u2014 an empty list means the\n    dashboard genuinely references no columns. On failure (dashboard\n    not found, or its metadata cannot be retrieved or parsed), returns\n    the standard ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
+    "full_doc": "Retrieve columns referenced by a dashboard, including widget and filter columns.\n\nResolves the dashboard by title with ``get_dashboard_by_name``, exports\nits full metadata, then extracts column references from dashboard and\ndefault filters (plain, dependent and measured), drill hierarchies,\nevery widget panel item (including nested formulas, conditional\nformatting and drill chains), widget drill history, widget query\nmetadata and table headers. Widgets on another datasource are\nincluded, since the dashboard references them. Both ``[Table.Column]``\nand ``[Table].[Column]`` references are understood, and table or column\nnames may contain any character. The final list is deduplicated by\n``table`` and ``column``.\n\nUnder Dashboard Co-Authoring the export returns the owner's private copy, while\nviewers see the shared copy; for a published dashboard the shared copy is read\ninstead \u2014 its own filters, hierarchies and widgets \u2014 as administrator\n(``GET /api/dashboards/{id}?adminAccess=true``) or as owner (``sharedMode=true``).\nA shared copy neither route can read returns the standard error dict rather than\nthe private copy being analysed in its place.\n\nParameters\n----------\ndashboard_name : str\n    Title of the dashboard to retrieve columns from.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    A list of distinct column entries. Each entry contains\n    ``dashboard_name``, ``source`` (``\"filter\"``, ``\"hierarchy\"`` or ``\"widget\"``),\n    ``widget_id`` (the widget's own ``oid``, or ``\"N/A\"`` for dashboard\n    filters), ``table``, and ``column`` \u2014 an empty list means the\n    dashboard genuinely references no columns. On failure (dashboard\n    not found, or its metadata cannot be retrieved or parsed), returns\n    the standard ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2849,8 +2927,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List the columns used in the 'Sales Performance' dashboard.",
@@ -2901,8 +2979,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Get the script for dashboard sales_dashboard_2023.",
@@ -2953,8 +3031,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show who has access to the 'Sales Overview' dashboard.",
@@ -3009,8 +3087,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show who has access to dashboard 5f7d3a2b8e4b0c0012345678, using admin access.",
@@ -3064,8 +3142,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List the widgets in the dashboard titled 'Sales Overview'.",
@@ -3117,8 +3195,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show me the dashboards I own with their titles and IDs.",
@@ -3179,8 +3257,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Find all dashboards using the data model 'Sales Data' and include dashboards with empty widget-datasource summaries.",
@@ -3241,8 +3319,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Retrieve the widget with ID 'widget123' from the dashboard 'dashboard456', ensuring admin access.",
@@ -3302,8 +3380,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Get the script for widget Sales_Overview in dashboard Q3_Performance.",
@@ -3364,8 +3442,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Import dashboards dashboard_123 'Sales Overview' and dashboard_456 'Marketing Performance', skipping any that already exist.",
@@ -3427,7 +3505,7 @@
     "class": "Dashboard",
     "method": "move_dashboard_to_folder",
     "description": "Move a dashboard into a folder.",
-    "full_doc": "Move a dashboard into a folder.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` with only ``parentFolder``\nin the request body. Other dashboard fields are not modified.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to move.\nfolder_id : str\n    The target folder ``oid`` (``parentFolder`` value).\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object from the API, or ``{\"success\": True}``\n    when the API responds 200 with an empty body. ``{\"error\": \"...\"}``\n    on failure.",
+    "full_doc": "Move a dashboard into a folder.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` \u2014 or ``PUT`` on versions without the\nPATCH route \u2014 with only ``parentFolder`` in the body. Other dashboard fields are\nnot modified. The folder is one property of the dashboard, shared by its copies\nunder Dashboard Co-Authoring, so a single write moves it for everyone. Only the\nowner may write; a non-owner is refused with the owner named, unless\n``act_as_owner`` is true and the token belongs to an administrator, in which case\nownership is borrowed for the change and returned afterwards.\n\nParameters\n----------\ndashboard_id : str\n    The dashboard ``oid`` to move.\nfolder_id : str\n    The target folder ``oid`` (``parentFolder`` value).\nact_as_owner : bool, optional\n    Take ownership temporarily when the token's user is an administrator but not\n    the owner. Default ``False``: refuse instead.\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object on success, or ``{\"success\": True}`` when the API\n    responds with an empty body; ``ownership_transferred_temporarily`` / ``original_owner``\n    when ownership was borrowed. On failure the standard ``{\"ok\": False, \"error\": \"...\",\n    ...}`` dict, with ``owner`` and ``co_owners`` when the token's user is not the owner.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3438,6 +3516,10 @@
         "folder_id": {
           "type": "string",
           "description": "The target folder ``oid`` (``parentFolder`` value)."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [
@@ -3451,8 +3533,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Move dashboard dashboard_12345 into folder folder_67890.",
@@ -3514,8 +3596,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Publish the dashboard with ID 'dashboard_12345'.",
@@ -3551,7 +3633,7 @@
     "class": "Dashboard",
     "method": "rename_dashboard",
     "description": "Rename a dashboard.",
-    "full_doc": "Rename a dashboard.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` with only ``title`` in\nthe request body. Other dashboard fields are not modified.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard to rename.\ntitle : str\n    The new dashboard title.\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object on success, or ``{\"success\": True}``\n    when the API responds 200 with an empty body. ``{\"error\": \"...\"}``\n    on failure.",
+    "full_doc": "Rename a dashboard.\n\nSends ``PATCH /api/dashboards/{dashboard_id}`` \u2014 or ``PUT`` on versions without the\nPATCH route \u2014 with only ``title`` in the body. Other dashboard fields are not\nmodified. With Dashboard Co-Authoring on, a published dashboard's title lives on its\nshared copy (what viewers see) and on the owner's private copy; both are written,\nshared first with ``sharedMode=true``, and the dashboard is republished. Only the\nowner may write; a non-owner is refused with the owner named, unless\n``act_as_owner`` is true and the token belongs to an administrator, in which case\nownership is borrowed for the change and returned afterwards.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard to rename.\ntitle : str\n    The new dashboard title.\nact_as_owner : bool, optional\n    Take ownership temporarily when the token's user is an administrator but not\n    the owner. Default ``False``: refuse instead.\n\nReturns\n-------\ndict[str, Any]\n    The updated dashboard object on success, or ``{\"success\": True}`` when the API\n    responds with an empty body; ``published`` (and ``publish_error``) when a shared\n    copy was written, and ``ownership_transferred_temporarily`` / ``original_owner``\n    when ownership was borrowed. On failure the standard ``{\"ok\": False, \"error\": \"...\",\n    ...}`` dict, with ``owner`` and ``co_owners`` when the token's user is not the owner.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3562,6 +3644,10 @@
         "title": {
           "type": "string",
           "description": "The new dashboard title."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [
@@ -3575,8 +3661,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Rename dashboard 62f1a2b3c4d5e6f7890abc12 to 'Q3 Sales Performance'.",
@@ -3611,7 +3697,7 @@
     "class": "Dashboard",
     "method": "replace_datasource",
     "description": "Change the datasource a dashboard queries \u2014 for example from a data model to a perspective built over it.",
-    "full_doc": "Change the datasource a dashboard queries \u2014 for example from a data model to a perspective built over it.\n\nSends ``POST /api/v1/dashboards/{server}/{old title}/replace_datasource?dashboardId=...``\nwith the new datasource object. Sisense then rewrites the dashboard and\nevery widget and filter that used the old datasource; widgets on other\ndatasources are left alone. The old datasource defaults to the dashboard's\nown; pass ``from_datasource`` to change a datasource that only some widgets\nuse. Sisense accepts the call from a non-owner but silently changes nothing,\nso the call is sent as the owner first and the dashboard read back; if it\ndid not change, the call is repeated with admin access (which lets an admin\ntoken change dashboards it does not own) and read back again. If it still\ndid not change, the failure dict carries the dashboard's ``owner``. Once the\nchange has applied the dashboard is republished (``POST /api/v1/dashboards/{id}/publish``)\nso viewers see it; a failed publish is reported, not treated as a failed change \u2014 on\nSisense versions where only the owner may publish, the result carries ``owner`` instead.\n\nParameters\n----------\ndashboard : str\n    The dashboard, as an ID or title.\ndatasource : str\n    Title of the new datasource: a data model or a perspective.\nfrom_datasource : str | None, optional\n    Title of the datasource being replaced. Default: the dashboard's own datasource.\npublish : bool, optional\n    Republish the dashboard after the change so shared viewers see it. Default ``True``.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True, \"dashboard_id\", \"title\", \"previous_datasource\", \"new_datasource\",\n    \"widgets_updated\", \"widgets_unchanged\", \"published\"}`` \u2014 returned only once the read-back\n    shows the new datasource; ``published`` is ``False`` (with ``publish_error``, and ``owner``\n    when only the owner may publish) when the republish failed or was not requested. ``previous_datasource`` is the full old object, so the change can be\n    reverted with another ``replace_datasource`` call; ``widgets_unchanged`` lists the\n    datasource titles of widgets that were on something else. On failure (unknown\n    dashboard or datasource, a change that did not apply as owner or admin, or an API\n    error), the standard ``{\"ok\": False, \"error\": \"...\", ...}`` dict; when the change did\n    not apply, ``owner`` (email, or id) says who owns the dashboard.",
+    "full_doc": "Change the datasource a dashboard queries \u2014 for example from a data model to a perspective built over it.\n\nSends ``POST /api/v1/dashboards/{server}/{old title}/replace_datasource?dashboardId=...``\nwith the new datasource object; Sisense rewrites the dashboard and every widget\nand filter that used the old datasource, leaving widgets on other datasources\nalone. The old datasource defaults to the dashboard's own; pass ``from_datasource``\nto change one that only some widgets use.\n\nWith Dashboard Co-Authoring enabled (system setting ``dashboardCoAuthoring``), a\npublished dashboard exists as a shared copy \u2014 what viewers see, read with\n``sharedMode=true`` \u2014 and a private copy per owner, and publishing flows from the\nshared copy to the private ones. The method therefore compares against and writes\nthe shared copy first (``sharedMode=true``), verifies that the shared dashboard and\nevery widget carry the new datasource, then writes the owner's private copy so the\nowner's own view matches, publishes, and verifies the shared copy again. A dashboard\nthat was never published has a single copy and is written once. With the feature\noff, the single copy is written and published as before.\n\nOnly the dashboard's owner can read or write the shared copy and publish. When the\ntoken's user is not the owner the method refuses before writing anything and names\nthe owner and co-owners \u2014 unless ``act_as_owner`` is true and the token belongs to an\nadministrator, in which case ownership is transferred to the token's user for the\nduration of the change (``POST /api/v1/dashboards/{id}/change_owner``), the change is\nmade as owner, and ownership and the exact share list are restored afterwards, even\nwhen the change or the publish fails. The private copy written in that case is the\ntoken user's; the original owner's private copy keeps the old datasource until they\nopen or restore the dashboard, while the shared copy viewers see carries the change.\nA temporary co-owner share was tried first and is not available to a non-owner: the\nshare endpoint refuses it without ``adminAccess=true``, and with it a share of rule\n``\"owner\"`` makes that user the owner outright and drops the previous owner, which is\nwhy the transfer-and-restore route is used instead.\n\nParameters\n----------\ndashboard : str\n    The dashboard, as an ID or title.\ndatasource : str\n    Title of the new datasource: a data model or a perspective.\nfrom_datasource : str | None, optional\n    Title of the datasource being replaced. Default: the dashboard's own datasource.\npublish : bool, optional\n    Republish the dashboard after the change so shared viewers see it. Default ``True``.\nact_as_owner : bool, optional\n    When the token's user is an administrator but not the owner, take ownership\n    temporarily to make the change, then hand it back. Default ``False``: refuse instead.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True, \"dashboard_id\", \"title\", \"previous_datasource\",\n    \"previous_datasource_title\", \"new_datasource\", \"widgets_updated\", \"widgets_unchanged\",\n    \"published\", \"co_authoring\", \"shared_copy_updated\", \"private_copy_updated\",\n    \"ownership_transferred_temporarily\"}`` \u2014 returned only once the read-back shows the new\n    datasource on every copy written. ``previous_datasource`` is the full old object and\n    ``previous_datasource_title`` its title, so the change can be reverted with another call.\n    ``shared_copy_updated`` is ``None`` when the dashboard has no shared copy (co-authoring\n    off, or never published). ``published`` is true only when the publish succeeded and, where\n    a shared copy exists, it was read back with the new datasource; otherwise ``False`` with\n    ``publish_error``. When ownership was borrowed, ``original_owner`` (email, or id) is set\n    and ``ownership_restore_error`` reports a failed hand-back. On failure \u2014 unknown\n    dashboard or datasource, a token that is not the owner (``owner`` and ``co_owners`` name\n    who is), a write that did not apply to a copy, or an API error \u2014 the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict, carrying ``shared_copy_updated`` and\n    ``private_copy_updated`` when any write was attempted.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3630,6 +3716,10 @@
         "publish": {
           "type": "boolean",
           "description": "Republish the dashboard after the change so shared viewers see it. Default ``True``."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "When the token's user is an administrator but not the owner, take ownership temporarily to make the change, then hand it back. Default ``False``: refuse instead."
         }
       },
       "required": [
@@ -3642,8 +3732,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Replace the datasource for the 'Sales Overview' dashboard to use the 'Regional Sales Perspective' and republish it.",
@@ -3700,8 +3790,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Resolve 'Sales Overview' to its dashboard ID and title.",
@@ -3733,7 +3823,7 @@
     "class": "Dashboard",
     "method": "update_widget",
     "description": "Write updated widget data back to Sisense.",
-    "full_doc": "Write updated widget data back to Sisense.\n\nSends ``PUT /api/dashboards/{dashboard_id}/widgets/{widget_id}``.\nServer-managed fields (``oid``, ``_id``, ``owner``, ``userId``,\n``created``, ``lastUpdated``, ``instanceType``, ``dashboardid``) are\nstripped from ``widget_data`` before the request is sent.\n\nThe caller is responsible for obtaining the current widget via\n:meth:`get_widget_by_id`, modifying the desired fields, and passing\nthe result here.\n\nOnly the dashboard owner can write widgets. Pair with\n:meth:`change_dashboard_owner` if the API token user is not the owner.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard that contains the widget.\nwidget_id : str\n    The ``oid`` of the widget to update.\nwidget_data : dict[str, Any]\n    The full widget payload with the desired changes applied. Server-managed\n    fields are removed automatically before the PUT request.\n\nReturns\n-------\ndict[str, Any]\n    The API response body on success, or ``{\"error\": \"...\"}`` on failure.",
+    "full_doc": "Write updated widget data back to Sisense.\n\nSends ``PUT /api/dashboards/{dashboard_id}/widgets/{widget_id}``. Server-managed\nfields (``oid``, ``_id``, ``owner``, ``userId``, ``created``, ``lastUpdated``,\n``instanceType``, ``dashboardid``) are stripped from ``widget_data`` before the\nrequest is sent. With Dashboard Co-Authoring on, a published dashboard's widget\nlives on its shared copy (what viewers see) and on the owner's private copy; both\nare written, shared first with ``sharedMode=true``, and the dashboard is\nrepublished. Only the owner may write; a non-owner is refused with the owner\nnamed, unless ``act_as_owner`` is true and the token belongs to an administrator,\nin which case ownership is borrowed for the change and returned afterwards.\n\nThe caller is responsible for obtaining the current widget via\n``get_widget_by_id``, modifying the desired fields, and passing the result here.\n\nParameters\n----------\ndashboard_id : str\n    The ``oid`` of the dashboard that contains the widget.\nwidget_id : str\n    The ``oid`` of the widget to update.\nwidget_data : dict[str, Any]\n    The full widget payload with the desired changes applied. Server-managed\n    fields are removed automatically before the PUT request.\nact_as_owner : bool, optional\n    Take ownership temporarily when the token's user is an administrator but not\n    the owner. Default ``False``: refuse instead.\n\nReturns\n-------\ndict[str, Any]\n    The API response body on success (or ``{\"success\": True}`` when it is empty);\n    ``published`` (and ``publish_error``) when a shared copy was written, and\n    ``ownership_transferred_temporarily`` / ``original_owner`` when ownership was\n    borrowed. On failure the standard ``{\"ok\": False, \"error\": \"...\", ...}`` dict, with\n    ``owner`` and ``co_owners`` when the token's user is not the owner.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -3748,6 +3838,10 @@
         "widget_data": {
           "type": "object",
           "description": "The full widget payload with the desired changes applied. Server-managed fields are removed automatically before the PUT request."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [
@@ -3761,8 +3855,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Update widget widget123 on dashboard dashboard456: title it 'Updated Sales Chart', make it a bar chart in blue with font size 12, labelled Q1, Q2, Q3, Q4 with values 15000, 20000, 18000 and 22000.",
@@ -3894,8 +3988,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Validate all widget queries for the dashboard 'Sales Performance' against the 'Global Sales Model' datasource.",
@@ -3955,8 +4049,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Give the 'Sales Team' group edit access and john.doe@example.com read access to the 'Revenue Analysis' data model.",
@@ -4019,7 +4113,7 @@
     "class": "DataModel",
     "method": "analyze_perspective_requirements",
     "description": "Work out which tables and columns of a data model its dashboards need, ready to build a perspective from.",
-    "full_doc": "Work out which tables and columns of a data model its dashboards need, ready to build a perspective from.\n\nRead-only. Finds every dashboard that uses the model \u2014 directly, through a\nsingle widget, or through a perspective already built over it \u2014 reads each one's fields\n(filters, hierarchies, widget panels, nested formulas, drill history), keeping\nonly references that belong to this model, resolves them against the model's\nschema, then adds what those columns depend on to keep working: join columns\nand intermediate tables on the relation paths between used tables, the columns\ncustom columns read, and the tables custom tables select from. Anything that\ncould not be resolved or verified is reported as an issue rather than dropped.\n\nParameters\n----------\ndatamodel : str\n    The data model, as an ID or title.\ndetailed : bool, optional\n    Include the per-dashboard, per-column, per-dependency and per-issue detail.\n    Default ``False`` returns the summary view only.\n\nReturns\n-------\ndict[str, Any]\n    Always: ``datamodel`` (``oid``, ``title``, ``type``, counts of ``tables``, ``columns``,\n    ``relations``, ``custom_columns`` and ``custom_tables``, and the names of its existing\n    ``perspectives``); ``summary`` (``model_tables``, ``model_columns``, ``dashboards_analyzed``,\n    ``dashboards_failed``, ``tables_used_by_dashboards``, ``columns_used_by_dashboards``,\n    ``columns_required_for_dependencies``, ``tables_required_in_perspective``,\n    ``columns_required_in_perspective``, ``tables_not_required``, ``columns_not_required``, and\n    ``issues`` by severity); ``perspective_tables`` \u2014 the ``{\"table\", \"columns\"}`` entries a\n    perspective must keep, every used column plus every dependency, in the form\n    ``create_perspective`` accepts; ``errors`` \u2014 the distinct error messages; and ``warnings`` \u2014\n    warning counts by kind.\n\n    With ``detailed=True`` also: ``required`` (``tables``: ``table``, ``columns_used``,\n    ``columns_total``, ``used_by_dashboards``; ``columns``: ``table``, ``column``, ``used_in`` \u2014\n    ``\"filter\"``, ``\"hierarchy\"`` and/or ``\"widget\"`` \u2014 ``used_by``); ``dependencies`` (``columns``\n    with ``table``, ``column``, ``reason`` \u2014 ``join_column``, ``custom_column_expression``,\n    ``custom_table_source`` \u2014 ``required_by``, ``detail``; ``tables`` required only as join\n    paths; ``join_paths``); ``not_required`` (``tables``, ``columns``); ``dashboards``\n    (``analyzed``: ``dashboard_id``, ``title``, ``match``, ``datasource`` \u2014 the model or the\n    perspective the dashboard sits on \u2014 ``owner``, ``owner_email``, ``tables_used``,\n    ``columns_used``, ``columns`` as ``\"Table.Column\"``, ``widgets_on_other_datasources``;\n    ``failed``); and ``issues`` (``severity``, ``kind``, ``dashboard``, ``widget_id``, ``detail``).\n    On failure to resolve the model, read its schema or list dashboards, the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
+    "full_doc": "Work out which tables and columns of a data model its dashboards need, ready to build a perspective from.\n\nRead-only. Finds every dashboard that uses the model \u2014 directly, through a\nsingle widget, or through a perspective already built over it \u2014 reads each one's fields\n(filters, hierarchies, widget panels, nested formulas, drill history) from the\ndashboard export \u2014 under Dashboard Co-Authoring, from the shared copy viewers see \u2014 its own filters,\nhierarchies and widgets, read as administrator or as owner; a shared copy neither can read fails that dashboard with a\n``shared_copy_unreadable`` error rather than analysing the owner's private copy in its\nplace \u2014 keeping only references that belong to this model, and resolves\nthem against the model's schema. It then adds what the joins need: for every pair\nof tables that meet in one query \u2014 a widget's own tables together with the tables\nof the dashboard's filters and hierarchies, which apply to every widget, including\nwidgets that have switched a filter off \u2014 it follows the shortest relation paths\nbetween them in the model and keeps both key columns of every relation on the way\nand any intermediate table. Tables used only by separate widgets, or by separate\ndashboards, need no join and get none. A perspective inherits a relation only when\nboth of its columns are kept, and it evaluates custom columns and custom tables\nthrough the root model, so nothing else is added.\n\nWhen two tables are joined by more than one equally short path, and at least one of\nthose paths runs through a table nothing else needs, the pair is a choice. For each\nwidget behind such a pair the method sends the widget's query, with the dashboard\nfilters applied, to ``POST /api/datasources/{model}/jaql/sql`` \u2014 translation only,\nnothing is executed \u2014 and reads from the returned SQL which of the candidate tables\nthe query engine actually joins through. ``perspective_tables`` keeps only those\npaths; ``perspective_tables_all_paths`` keeps every path; ``join_path_choices`` lists\nthe pair, every path and which ones are in use. When the translation cannot be\nobtained, or names none of the candidates, every path is kept in both lists and the\npair is reported as ``ambiguous_join_path``. Every relation between two kept tables is\nthen tested for a many-to-many join with one aggregate SQL query per side\n(``GET /api/datasources/{model}/sql``): a perspective inherits the root model's\nrelations, so a query spanning two kept tables joined many-to-many can fan out and\ndouble count. Such a pair is a warning with its evidence, never an error and never a\nreason to drop a table. Anything that could not be resolved or verified is reported as\nan issue rather than dropped.\n\nParameters\n----------\ndatamodel : str\n    The data model, as an ID or title.\ndetailed : bool, optional\n    Include the per-dashboard, per-column, per-dependency and per-issue detail.\n    Default ``False`` returns the summary view only.\n\nReturns\n-------\ndict[str, Any]\n    Always: ``datamodel`` (``oid``, ``title``, ``type``, counts of ``tables``, ``columns``,\n    ``relations``, ``custom_columns`` and ``custom_tables``, and the names of its existing\n    ``perspectives``); ``summary`` (``model_tables``, ``model_columns``, ``dashboards_analyzed``,\n    ``dashboards_failed``, ``tables_used_by_dashboards``, ``columns_used_by_dashboards``,\n    ``columns_required_for_dependencies``, ``tables_required_in_perspective``,\n    ``columns_required_in_perspective``, ``tables_required_all_paths``,\n    ``columns_required_all_paths``, ``tables_not_required``, ``columns_not_required``, and\n    ``issues`` by severity); ``perspective_tables`` \u2014 the ``{\"table\", \"columns\"}`` entries a\n    perspective must keep, ``columns`` always the explicit list of names: every used column\n    plus the join columns and intermediate tables of the paths the query engine uses (every\n    path where that could not be determined); ``perspective_tables_all_paths`` \u2014 the same\n    with every equally short path kept; ``join_path_choices`` \u2014 one entry per pair of\n    tables joined by more than one equally short path where some path runs through a\n    table nothing else needs, with ``from``, ``to``, ``needed_by`` (which dashboards, filters\n    and how many widgets put the two tables in one query), ``resolved`` (whether the\n    engine's path is known) and ``paths`` (each ``{\"via\": [...], \"in_use\": ...}`` \u2014 the\n    intermediate tables of one path and whether the engine uses it; ``None`` when not\n    resolved); ``errors`` \u2014 the distinct error messages; and ``warnings`` \u2014 warning counts\n    by kind, ``many_to_many_in_perspective`` always present (``0`` when none), plus\n    ``many_to_many_unchecked`` when a pair's SQL check failed.\n\n    With ``detailed=True`` also: ``required`` (``tables``: ``table``, ``columns_used``,\n    ``columns_total``, ``used_by_dashboards``; ``columns``: ``table``, ``column``, ``used_in`` \u2014\n    ``\"filter\"``, ``\"hierarchy\"`` and/or ``\"widget\"`` \u2014 ``used_by``); ``dependencies`` (``columns``\n    with ``table``, ``column``, ``reason`` \u2014 always ``join_column`` \u2014 ``required_by``, ``detail``,\n    ``in_use`` \u2014 whether the column is in ``perspective_tables``; ``tables`` kept only as join\n    paths in ``perspective_tables``; ``tables_all_paths`` the same for every path; ``join_paths``);\n    ``not_required`` (``tables``, ``columns`` \u2014 relative to ``perspective_tables``); ``many_to_many``\n    (one entry per kept table pair joined many-to-many or not checkable: ``table_a``, ``columns_a``,\n    ``table_b``, ``columns_b``, ``duplicate_keys_a``, ``duplicate_keys_b``, ``is_m2m``, ``status``,\n    ``error``, and ``scope`` \u2014 ``\"perspective\"``, or ``\"all_paths\"`` for a pair kept only by the\n    all-paths variant); ``dashboards``\n    (``analyzed``: ``dashboard_id``, ``title``, ``match``, ``datasource`` \u2014 the model or the\n    perspective the dashboard sits on \u2014 ``copy`` \u2014 ``\"shared\"`` under Dashboard Co-Authoring\n    for a published dashboard, else ``\"private\"`` (the single copy) \u2014 ``owner``, ``owner_email``, ``tables_used``,\n    ``columns_used``, ``columns`` as ``\"Table.Column\"``, ``widgets_on_other_datasources``;\n    ``failed``); and ``issues`` (``severity``, ``kind``, ``dashboard``, ``widget_id``, ``detail``).\n    On failure to resolve the model, read its schema or list dashboards, the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -4041,8 +4135,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Analyze all dashboards for the 'Sales Data Model' and include detailed results for dependencies and issues.",
@@ -4126,8 +4220,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Create a PostgreSQL connection named 'SalesDB Connection' pointing at host sales-db.example.com on port 5432, database 'sales', with username analytics_user and password securepassword123, created by admin_user, enabled for live and elasticube models.",
@@ -4246,8 +4340,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Create a new extract (Elasticube) data model called 'Sales Analytics'.",
@@ -4321,8 +4415,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Create a dataset named 'SalesDataset' in the 'SalesDataModel' data model, using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema.",
@@ -4439,8 +4533,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Create a perspective named 'Sales Overview' on the 'Global Sales' data model, keeping only the 'Orders' table with all columns and the 'Customers' table with the 'Name' and 'Region' columns.",
@@ -4552,8 +4646,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Create a new table named 'sales_summary' in the 'ecommerce_data' data model.",
@@ -4620,8 +4714,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Delete the 'Sales Data' model from the 'LocalHost' server.",
@@ -4684,8 +4778,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Delete all datasecurity rules for the column 'customer_id' in the 'orders' table of the 'Sales_Model' datamodel.",
@@ -4745,8 +4839,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Delete the perspective named 'Sales Overview' from the data model titled 'Global Sales'.",
@@ -4779,8 +4873,8 @@
     "sub_module": "datamodel.build",
     "class": "DataModel",
     "method": "deploy_datamodel",
-    "description": "Deploy (build or publish) the specified data model based on its type.",
-    "full_doc": "Deploy (build or publish) the specified data model based on its type.\n\nSupports both Elasticube (EXTRACT) and Live models. For EXTRACT models a\nbuild is triggered using ``build_type``, ``row_limit``, and ``schema_origin``.\nFor LIVE models a publish is triggered and ``row_limit`` and\n``schema_origin`` are ignored.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to deploy.\nbuild_type : Literal[\"full\", \"by_table\", \"schema_changes\"], optional\n    Type of deployment for EXTRACT models. One of ``\"schema_changes\"``\n    (build only schema changes), ``\"by_table\"`` (build per each table's\n    config, e.g. incremental/accumulative), or ``\"full\"`` (rebuild the\n    entire model, the default). For LIVE models this is overridden to\n    ``\"publish\"``.\nrow_limit : int, optional\n    Maximum number of rows to process for EXTRACT builds. Defaults to ``0``\n    (no limit). Ignored for LIVE models.\nschema_origin : Literal[\"latest\", \"running\"], optional\n    Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen\n    in the Data page, the default) or ``\"running\"`` (last successfully built\n    version). Ignored for LIVE models.\n\nReturns\n-------\ndict[str, Any]\n    Deployment result including status on success, or ``{\"error\": \"...\"}``\n    on failure.",
+    "description": "Build an ElastiCube or publish a live data model, and optionally wait for the run to finish.",
+    "full_doc": "Deploy (build or publish) the specified data model based on its type.\n\nSupports both Elasticube (EXTRACT) and Live models. For EXTRACT models a\nbuild is triggered using ``build_type``, ``row_limit``, and ``schema_origin``.\nFor LIVE models a publish is triggered and ``row_limit`` and\n``schema_origin`` are ignored. Sends ``POST /api/v2/builds``, which only\naccepts the build: the returned object has ``status`` ``None`` and the build\nruns in the background. With ``wait=True`` the method then polls\n``GET /api/v2/builds/{oid}`` every ``poll_interval`` seconds until the build\nreaches a final state or ``timeout`` elapses, so that whatever follows \u2014 a\nquery, a perspective built over the model \u2014 sees the finished build.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to deploy.\nbuild_type : Literal[\"full\", \"by_table\", \"schema_changes\"], optional\n    Type of deployment for EXTRACT models. One of ``\"schema_changes\"``\n    (build only schema changes), ``\"by_table\"`` (build per each table's\n    config, e.g. incremental/accumulative), or ``\"full\"`` (rebuild the\n    entire model, the default). For LIVE models this is overridden to\n    ``\"publish\"``.\nrow_limit : int, optional\n    Maximum number of rows to process for EXTRACT builds. Defaults to ``0``\n    (no limit). Ignored for LIVE models.\nschema_origin : Literal[\"latest\", \"running\"], optional\n    Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen\n    in the Data page, the default) or ``\"running\"`` (last successfully built\n    version). Ignored for LIVE models.\nwait : bool, optional\n    Poll the build until it finishes instead of returning as soon as it is\n    accepted. Default ``False``.\ntimeout : float, optional\n    Seconds to wait for the build to finish when ``wait`` is true. Default ``900``.\npoll_interval : float, optional\n    Seconds between two status reads when ``wait`` is true; also the pause before\n    the first read, since the build is not readable in its first moments. Default ``5``.\n\nReturns\n-------\ndict[str, Any]\n    The build object from ``POST /api/v2/builds`` (``oid``, ``datamodelId``,\n    ``buildType``, ``status`` \u2014 ``None`` when just accepted \u2014 ``datamodelTitle``,\n    ``datamodelType``, ``created``, ``started``, ``completed``, ...). With ``wait=True``,\n    the same object as last read, with ``status`` ``\"done\"``, once the model's\n    ``lastSuccessfulBuildTime`` (``lastPublishTime`` for a live model) has moved to the\n    build's start or later \u2014 a failed rebuild leaves the previous build running and moves\n    only ``lastBuildTime``, so the build's own status is confirmed against the model. When\n    the build ends in any other final state (``\"failed\"``, ``\"cancelled\"``), the model never\n    confirms it, or it does not finish within ``timeout``, the standard ``{\"ok\": False,\n    \"error\": \"...\", ...}`` dict with the last build object read under ``build`` \u2014 every field\n    Sisense reported on it, verbatim \u2014 and the model's ``lastBuildTime``,\n    ``lastSuccessfulBuildTime`` and ``lastPublishTime`` under ``model`` when readable.\n    ``{\"ok\": False, \"error\": \"...\"}`` when the model is not found or the build is refused.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -4829,6 +4923,18 @@
             "running"
           ],
           "description": "Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen in the Data page, the default) or ``\"running\"`` (last successfully built version). Ignored for LIVE models."
+        },
+        "wait": {
+          "type": "boolean",
+          "description": "Poll the build until it finishes instead of returning as soon as it is accepted. Default ``False``."
+        },
+        "timeout": {
+          "type": "number",
+          "description": "Seconds to wait for the build to finish when ``wait`` is true. Default ``900``."
+        },
+        "poll_interval": {
+          "type": "number",
+          "description": "Seconds between two status reads when ``wait`` is true; also the pause before the first read, since the build is not readable in its first moments. Default ``5``."
         }
       },
       "required": [
@@ -4840,8 +4946,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Run a full build of the 'Sales_Analytics' data model.",
@@ -4896,8 +5002,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Describe the structure of the 'Sales Analytics' data model.",
@@ -4947,8 +5053,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show the detailed definition of the 'Sales Analytics' data model.",
@@ -5005,8 +5111,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Export the full schema for data model OID 'dm12345', including dependencies for 'dataContext' and 'formulaManagement'.",
@@ -5150,8 +5256,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Build an Athena connection payload named 'Athena_Connection_1' for region us-west-2 with S3 output location s3://athena-query-results/, schema 'default', workgroup 'primary', using access key AKIAEXAMPLE and secret SECRETEXAMPLE.",
@@ -5221,8 +5327,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List all data models in the system with their metadata.",
@@ -5266,8 +5372,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Find the connection details for the 'Salesforce_Prod' data source.",
@@ -5310,8 +5416,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List all the connections available in my Sisense environment.",
@@ -5364,8 +5470,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Fetch all rows from the 'sales_data' table in the 'ecommerce_model'.",
@@ -5419,8 +5525,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Fetch the data model titled 'Sales Dashboard'.",
@@ -5470,8 +5576,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Retrieve raw share entries for the 'Sales_Data_2023' EXTRACT data model.",
@@ -5521,8 +5627,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Retrieve all raw share entries for the LIVE data model with ID 'live-dm-12345'.",
@@ -5572,8 +5678,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show who has access to the 'Sales_Analytics' data model.",
@@ -5623,8 +5729,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show the data security rules for the 'SalesAnalytics' data model.",
@@ -5674,8 +5780,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show the detailed data security rules for the 'SalesAnalytics' data model, including share-level visibility.",
@@ -5729,8 +5835,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Retrieve the raw datasecurity rules for the 'Sales Data' extract model.",
@@ -5775,8 +5881,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show me a list of all ElastiCubes available on the server.",
@@ -5820,8 +5926,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show the schema of the 'Sales Analytics' data model, including its tables and columns.",
@@ -5880,8 +5986,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Retrieve all perspectives for the 'Sales Data' data model, including the default ones.",
@@ -5935,8 +6041,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Count the rows in each table of the 'SalesData' model.",
@@ -6001,8 +6107,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show the schema of the 'sales_data' table in the 'analytics_db' database, 'public' schema, on the 'primary_data_source' connection.",
@@ -6073,8 +6179,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Import a schema with a Sales table containing an integer OrderID column and a float Amount column, overwriting the existing model with ID '12345'.",
@@ -6180,8 +6286,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Look up the OID of the data model titled 'Sales Dashboard' on the 'LocalHost' server.",
@@ -6234,8 +6340,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Resolve 'Sales Analytics' to its data model ID and title.",
@@ -6363,8 +6469,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "In the 'Sales_Live' data model, restrict the Region column of the Orders table to EMEA for the group with id 6a5f9828054024987da24060.",
@@ -6522,8 +6628,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Set up a live data model called 'Sales_Live_Model' with dataset 'Sales_Live_Dataset', using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema, including the customers and orders tables.",
@@ -6666,8 +6772,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Update connection conn_12345 \u2014 rename it to 'Updated Connection Name' and point it at host new-database-host.example.com on port 5432.",
@@ -6743,8 +6849,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Replace the shares on the 'Sales_Analytics_2023' EXTRACT data model: give user_12345 read and group_67890 write.",
@@ -6833,8 +6939,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Replace the shares on the LIVE data model 'live_model_123': give user_456 read and group_789 write.",
@@ -6998,8 +7104,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "In the 'Sales_Elasticube' data model, restrict the Region column of the DimCountries table to EMEA for the group with id 6a5f9828054024987da24060.",
@@ -7052,8 +7158,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Decrypt the value 'ENCRYPTED_PASSWORD_12345'.",
@@ -7109,8 +7215,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Encrypt the value 'my_secure_password_123' so it can be stored safely.",
@@ -7170,8 +7276,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Create a folder named 'Sales Reports' under parent folder 63f2b8c9e4b0a3d2f8e4a123.",
@@ -7223,8 +7329,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Delete the folder with ID '12345abcde'.",
@@ -7267,8 +7373,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show me the entire folder structure for organizing dashboards.",
@@ -7312,8 +7418,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show the ancestor folders for the 'SalesData' structure.",
@@ -7363,8 +7469,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Fetch the details of the folder with ID '12345abcde'.",
@@ -7412,8 +7518,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show me all folders in a flat structure.",
@@ -7454,8 +7560,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Show the navigation tree for our Sisense folders.",
@@ -7511,8 +7617,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Rename the folder with ID '12345abcde' to 'Sales Reports'.",
@@ -7572,8 +7678,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all Blox actions, skipping any that already exist.",
@@ -7632,8 +7738,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7707,8 +7813,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7752,8 +7858,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all datasecurity rules for all data models, providing progress updates.",
@@ -7806,8 +7912,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all folders, skipping any that already exist.",
@@ -7862,8 +7968,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all groups, skipping any that already exist.",
@@ -7920,8 +8026,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all notebooks, skipping any that already exist.",
@@ -7975,8 +8081,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all saved filters for all data models, skipping any that already exist.",
@@ -8029,8 +8135,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all saved formulas, skipping any that already exist.",
@@ -8088,8 +8194,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all users, overwriting any conflicts and ignoring custom roles.",
@@ -8154,8 +8260,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8234,8 +8340,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8330,8 +8436,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8406,8 +8512,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate row-level security rules for data models with IDs 'dm_12345' and 'dm_67890'.",
@@ -8486,8 +8592,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8561,8 +8667,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all groups, skipping any that already exist.",
@@ -8641,8 +8747,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all notebooks by their IDs, skipping any that already exist.",
@@ -8722,8 +8828,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate saved filters for data models 'Sales_Data' and 'Marketing_Analytics', skipping any that already exist.",
@@ -8801,8 +8907,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all saved formulas for data models 'Sales Dashboard' and 'Marketing Dashboard', skipping any that already exist.",
@@ -8879,8 +8985,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all users, skipping any that already exist.",
@@ -8964,8 +9070,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Add a measure 'total_sales' on the 'sales_data' table of the 'sales_db' datasource that sums the sales_amount column (datasource fullname localhost/sales_db).",
@@ -9056,8 +9162,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List the saved dimensions for the 'SalesData' datasource.",
@@ -9110,8 +9216,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List the saved measures for the 'Sales' datasource.",
@@ -9155,8 +9261,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List the datasources I can access in my Sisense environment.",
@@ -9200,8 +9306,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Retrieve metadata for the 'sales_dashboard' object.",
@@ -9284,8 +9390,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards to the target environment, skipping any that already exist there.",
@@ -9373,8 +9479,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all data models with data security and formulas included, and overwrite any existing models in the target environment.",
@@ -9432,8 +9538,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all user groups from the source environment to the target environment.",
@@ -9466,8 +9572,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate all users from the source environment to the target environment.",
@@ -9522,8 +9628,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate shares from source dashboards dash123, dash456 and dash789 to target dashboards dashABC, dashDEF and dashGHI, without changing ownership.",
@@ -9629,8 +9735,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate the dashboards with IDs 'dash123' and 'dash456' to the target environment, skipping any that already exist.",
@@ -9740,8 +9846,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate the data models 'SalesData' and 'CustomerAnalytics' along with their shares to the target environment, and overwrite any existing models.",
@@ -9817,8 +9923,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate the 'Sales Team' and 'Marketing Team' groups to the target environment.",
@@ -9881,8 +9987,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Migrate the users john.doe@example.com and jane.smith@example.com to the target environment.",
@@ -9942,8 +10048,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Disable the 'plugin-advanced-analytics' plugin.",
@@ -10000,8 +10106,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Disable the 'plugin-advanced-viz' and 'plugin-data-export' plugins in one bulk operation.",
@@ -10062,8 +10168,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Enable the 'plugin-sample' plugin.",
@@ -10120,8 +10226,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Enable the 'plugin-advanced-charts' and 'plugin-data-export' plugins in one bulk operation.",
@@ -10175,8 +10281,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "List all plugins installed on my Sisense instance.",
@@ -10220,8 +10326,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Find the plugin named 'plugin-custom-theme'.",
@@ -10289,8 +10395,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Restore the plugin snapshot containing data_connector_v2, custom_theme_manager and audit_logger, in one bulk operation.",
@@ -10351,8 +10457,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Save the current enabled and disabled state of all plugins as a snapshot so it can be restored later.",
@@ -10401,8 +10507,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Fetch total sales by region for 2023 from the 'SalesElasticube' datasource.",
@@ -10538,8 +10644,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Export Q3 2023 sales amounts from the 'sales_elasticube' datasource as CSV.",
@@ -10634,8 +10740,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Create a new report named 'Weekly Sales Report' with PDF and CSV formats enabled, and set it to overwrite existing files on the file share.",
@@ -10717,8 +10823,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Delete the report with ID 'report_12345'.",
@@ -10784,8 +10890,8 @@
       "report_manager",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Retrieve the report with ID 'report123' and include recipient data.",
@@ -10877,8 +10983,8 @@
       "report_manager",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Retrieve all enabled reports owned by user ID 'user123'.",
@@ -10935,8 +11041,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Run the report with ID 'sales_report_2023' immediately.",
@@ -10991,8 +11097,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Update the report with ID 'report123' to enable it and set its priority to high.",
@@ -11067,8 +11173,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Analyze the structure of the dashboard titled 'Sales Overview'.",
@@ -11127,8 +11233,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Count the widgets on the 'Sales Overview' and 'Marketing Performance' dashboards.",
@@ -11188,8 +11294,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Check if any custom tables in the 'Sales Analytics' data model use UNION.",
@@ -11248,8 +11354,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Check if the tables in the 'Sales Analytics' data model have import queries configured.",
@@ -11287,8 +11393,8 @@
     "sub_module": "wellcheck.datamodel_checks",
     "class": "WellCheck",
     "method": "check_datamodel_island_tables",
-    "description": "Identify island tables (tables with no relationships) in one or more data models.",
-    "full_doc": "Identify island tables (tables with no relationships) in one or more data models.\n\nThis method retrieves the schema for each specified data model, inspects\nits relations and tables, and returns information about tables that do\nnot participate in any relationship (often called \"island tables\").\n\nParameters\n----------\ndatamodels : list of str, optional\n    One or more data model references to analyze. Each reference can be:\n      - a Sisense data model ID, or\n      - a data model title (name).\n    At least one data model reference is required. At runtime this\n    method is tolerant of a single string being passed instead of a\n    list, and will normalize it to a one-element list.\n\nReturns\n-------\nlist of dict\n    A list with one entry per island table. Each entry contains:\n      - datamodel (str): Data model title.\n      - datamodel_oid (str): Data model ID.\n      - table (str): Table name.\n      - table_oid (str): Table ID.\n      - type (str): Table type (e.g., 'live', 'custom').\n      - relation (str): Always \"no\" for island tables.\n\n    If no data models are successfully processed, an empty list is\n    returned and details are available in the logs.",
+    "description": "List every table of one or more data models and flag the islands, tables with no relationship.",
+    "full_doc": "List every table of one or more data models and flag the islands, tables with no relationship.\n\nReads each model's schema (``GET /api/v2/datamodels/{id}/schema``), collects the\ntables that appear in any relation, and returns one row per table with\n``relation`` ``\"yes\"`` or ``\"no\"``. Every table is returned, so an empty list means\nthe models have no tables, not that none of them is an island.\n\nParameters\n----------\ndatamodels : list[str] | None, optional\n    One or more data model references, each an ID or a title. A single string is\n    accepted in place of a one-element list.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    One row per table: ``datamodel``, ``datamodel_oid``, ``table``, ``table_oid``,\n    ``type`` (``fact``, ``dim``, ``custom``, ...), ``relation`` (``\"no\"`` for an island\n    table, ``\"yes\"`` otherwise), ``status`` (``\"checked\"``) and ``error`` (``None``).\n    A data model that cannot be resolved or read contributes one row with ``status``\n    ``\"error\"``, the message in ``error`` and ``None`` for the other fields. When\n    ``datamodels`` is missing or holds no reference, the standard\n    ``{\"ok\": False, \"error\": \"...\"}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -11297,7 +11403,7 @@
           "items": {
             "type": "string"
           },
-          "description": "One or more data model references to analyze. Each reference can be: - a Sisense data model ID, or - a data model title (name). At least one data model reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+          "description": "One or more data model references, each an ID or a title. A single string is accepted in place of a one-element list."
         }
       },
       "required": []
@@ -11308,8 +11414,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Find all island tables in the 'Sales Analytics' data model.",
@@ -11347,8 +11453,8 @@
     "sub_module": "wellcheck.datamodel_checks",
     "class": "WellCheck",
     "method": "check_datamodel_m2m_relationships",
-    "description": "Check for potential many-to-many (M2M) relationships between tables",
-    "full_doc": "Check for potential many-to-many (M2M) relationships between tables\nin one or more data models.\n\nFor each data model, this method inspects the relation graph, builds\ntable/column pairs from the relations, and runs aggregate SQL queries\nagainst the data source to detect whether both sides of the relation\ncontain duplicate keys. Pairs where each side has more than one\noccurrence of its key are flagged as many-to-many.\n\nParameters\n----------\ndatamodels : list of str, optional\n    One or more data model references to analyze. Each reference can be:\n      - a Sisense data model ID, or\n      - a data model title (name).\n    At least one data model reference is required. At runtime this\n    method is tolerant of a single string being passed instead of a\n    list, and will normalize it to a one-element list.\n\nReturns\n-------\nlist of dict\n    A list with one entry per relation field pair checked. Each entry\n    contains:\n      - data_model (str): Data model title.\n      - left_table (str): Name of the left table.\n      - left_column (str): Name of the left column.\n      - right_table (str): Name of the right table.\n      - right_column (str): Name of the right column.\n      - is_m2m (bool): True when both sides have more than one\n        occurrence of their key, False otherwise.\n\n    If no data models are successfully processed, an empty list is\n    returned and details are available in the logs.",
+    "description": "Check every relation of one or more data models for a many-to-many (M2M) join.",
+    "full_doc": "Check every relation of one or more data models for a many-to-many (M2M) join.\n\nA relation is many-to-many when its join key is not unique on either side,\nwhich is how Sisense itself classifies a relationship. For each pair of tables\nconnected by relations, the method runs one aggregate SQL query per side\nthrough ``GET /api/datasources/{title}/sql``, counting the key values that\noccur more than once:\n\n``select count(*) from (select <key columns> from <table> group by <key columns>\nhaving count(*) > 1) t``\n\nBoth counts above zero means many-to-many. Tables joined on several columns\n(several relations between the same two tables) are checked on the column\ntuple together, since that is the key the engine joins on; a relation that\nspans more than two tables is checked pairwise. Table and column names are\nquoted in square brackets for ElastiCubes and in double quotes for live\nmodels, whose SQL is passed to the source.\n\nParameters\n----------\ndatamodels : list[str] | None, optional\n    One or more data model references, each an ID or a title. A single string\n    is accepted in place of a one-element list.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    One row per pair of tables checked: ``data_model``, ``left_table``,\n    ``left_columns`` (list of names), ``left_column`` (the same names joined with\n    ``\", \"``), ``right_table``, ``right_columns``, ``right_column``,\n    ``left_duplicate_keys`` and ``right_duplicate_keys`` (how many key values\n    occur more than once on each side, ``None`` when not counted), ``is_m2m``\n    (``True``/``False``, or ``None`` when the pair could not be checked),\n    ``status`` \u2014 ``\"checked\"`` or ``\"error\"`` \u2014 and ``error`` (the engine's\n    message when a query failed, otherwise ``None``). A data model that cannot\n    be resolved contributes one row with ``status`` ``\"error\"`` and no tables.\n    When ``datamodels`` is missing or holds no reference, the standard\n    ``{\"ok\": False, \"error\": \"...\"}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -11357,7 +11463,7 @@
           "items": {
             "type": "string"
           },
-          "description": "One or more data model references to analyze. Each reference can be: - a Sisense data model ID, or - a data model title (name). At least one data model reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+          "description": "One or more data model references, each an ID or a title. A single string is accepted in place of a one-element list."
         }
       },
       "required": []
@@ -11368,8 +11474,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Check for many-to-many relationships in the 'Sales Data' data model.",
@@ -11428,8 +11534,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Check the datatypes of the columns used in RLS rules for the 'Sales Dashboard' data model.",
@@ -11467,8 +11573,8 @@
     "sub_module": "wellcheck.dashboard_checks",
     "class": "WellCheck",
     "method": "check_pivot_widget_fields",
-    "description": "Analyze pivot widgets on one or more dashboards and report those with many fields.",
-    "full_doc": "Analyze pivot widgets on one or more dashboards and report those with many fields.\n\nThis method retrieves each specified dashboard, scans all pivot widgets\n(types containing ``\"pivot\"`` or ``\"pivot2\"``), counts how many fields\n(items) are attached to those widgets, and returns a per-widget summary\nfor any pivot with more than ``max_fields`` fields.\n\nParameters\n----------\ndashboards : list of str, optional\n    One or more dashboard references to analyze. Each reference can be:\n      - a Sisense dashboard ID, or\n      - a dashboard title (name).\n    At least one dashboard reference is required. At runtime this\n    method is tolerant of a single string being passed instead of a\n    list, and will normalize it to a one-element list.\nmax_fields : int, optional\n    Threshold for the number of fields on a pivot widget. Only pivot\n    widgets with more than this number of fields are included in the\n    returned data. Defaults to 20.\n\nReturns\n-------\nlist of dict\n    A list of dictionaries, each describing a pivot widget that exceeds\n    the configured field threshold. Each entry contains:\n      - dashboard_id (str): Resolved dashboard ID.\n      - dashboard_title (str): Resolved dashboard title.\n      - widget_id (str): Pivot widget ID.\n      - has_more_fields (bool): Always True for returned rows, since\n        only widgets above the threshold are included.\n      - field_count (int): Total number of fields (items) in the widget.\n\n    If no dashboards are successfully processed, or no pivot widgets\n    exceed the threshold, an empty list is returned and details are\n    available in the logs.",
+    "description": "Count the fields of every pivot widget on one or more dashboards and flag the wide ones.",
+    "full_doc": "Count the fields of every pivot widget on one or more dashboards and flag the wide ones.\n\nReads each dashboard (``GET /api/dashboards/{id}?adminAccess=true``), finds its pivot\nwidgets (types containing ``\"pivot\"``), counts the items across their panels and\nreturns one row per pivot widget, flagged when the count is above ``max_fields``.\nEvery pivot is returned, so an empty list means the dashboards have no pivot\nwidgets, not that all of them are within the limit.\n\nParameters\n----------\ndashboards : list[str] | None, optional\n    One or more dashboard references, each an ID or a title. A single string is\n    accepted in place of a one-element list.\nmax_fields : int, optional\n    Field count above which a pivot widget is flagged (strictly greater). Default ``20``.\n\nReturns\n-------\nlist[dict[str, Any]] | dict[str, Any]\n    One row per pivot widget: ``dashboard_id``, ``dashboard_title``, ``widget_id``,\n    ``field_count`` (items across the widget's panels), ``has_more_fields``\n    (``field_count > max_fields``), ``status`` (``\"checked\"``) and ``error`` (``None``).\n    A dashboard that cannot be resolved or read contributes one row with ``status``\n    ``\"error\"``, the message in ``error`` and ``None`` for the other fields. When\n    ``dashboards`` is missing or holds no reference, the standard\n    ``{\"ok\": False, \"error\": \"...\"}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -11477,11 +11583,11 @@
           "items": {
             "type": "string"
           },
-          "description": "One or more dashboard references to analyze. Each reference can be: - a Sisense dashboard ID, or - a dashboard title (name). At least one dashboard reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+          "description": "One or more dashboard references, each an ID or a title. A single string is accepted in place of a one-element list."
         },
         "max_fields": {
           "type": "integer",
-          "description": "Threshold for the number of fields on a pivot widget. Only pivot widgets with more than this number of fields are included in the returned data. Defaults to 20."
+          "description": "Field count above which a pivot widget is flagged (strictly greater). Default ``20``."
         }
       },
       "required": []
@@ -11491,8 +11597,8 @@
       "wellcheck",
       "read"
     ],
-    "sdk_version": "2.1.0",
-    "updated_at": "2026-09-04T17:37:56Z",
+    "sdk_version": "2.2.0",
+    "updated_at": "2026-09-22T00:13:54Z",
     "examples": [
       {
         "user_query": "Find pivot widgets with more than 25 fields on the 'Sales Dashboard' and 'Marketing Dashboard' dashboards.",

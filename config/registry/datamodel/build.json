@@ -223,7 +223,7 @@
   },
   {
     "tool_id": "datamodel.deploy_datamodel",
-    "description": "Deploy (build or publish) the specified data model based on its type.",
+    "description": "Build an ElastiCube or publish a live data model, and optionally wait for the run to finish.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -272,6 +272,18 @@
             "running"
           ],
           "description": "Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen in the Data page, the default) or ``\"running\"`` (last successfully built version). Ignored for LIVE models."
+        },
+        "wait": {
+          "type": "boolean",
+          "description": "Poll the build until it finishes instead of returning as soon as it is accepted. Default ``False``."
+        },
+        "timeout": {
+          "type": "number",
+          "description": "Seconds to wait for the build to finish when ``wait`` is true. Default ``900``."
+        },
+        "poll_interval": {
+          "type": "number",
+          "description": "Seconds between two status reads when ``wait`` is true; also the pause before the first read, since the build is not readable in its first moments. Default ``5``."
         }
       },
       "required": [

@@ -1,13 +1,13 @@
 [
   {
     "tool_id": "dashboard.add_dashboard_script",
-    "description": "Add or overwrite a script on a dashboard.",
+    "description": "Attach a JavaScript script to a dashboard.",
     "parameters": {
       "type": "object",
       "properties": {
         "dashboard_id": {
           "type": "string",
-          "description": "The ID of the dashboard where the script will be added."
+          "description": "The ``oid`` of the dashboard."
         },
         "script": {
           "anyOf": [
@@ -18,12 +18,15 @@
               "type": "object"
             }
           ],
-          "description": "The JavaScript script to add, provided as either a properly formatted JSON string, a raw multi-line script string, or a pre-built payload dictionary."
+          "description": "The script, as plain JavaScript, as a JSON string ``{\"script\": \"...\"}``, or as that dict."
         },
         "executing_user": {
           "type": "string",
-          "description": "The username of the API user, used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user.",
-          "format": "email"
+          "description": "Deprecated in favour of ``act_as_owner``: the email of the user to transfer ownership to for the change. When given, ownership is borrowed for that user exactly as ``act_as_owner`` does for the token's user. Default ``None``."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [
@@ -75,17 +78,17 @@
   },
   {
     "tool_id": "dashboard.add_widget_script",
-    "description": "Add or overwrite a script for a specific widget within a dashboard.",
+    "description": "Attach a JavaScript script to a widget.",
     "parameters": {
       "type": "object",
       "properties": {
         "dashboard_id": {
           "type": "string",
-          "description": "The ID of the dashboard containing the widget."
+          "description": "The ``oid`` of the dashboard that contains the widget."
         },
         "widget_id": {
           "type": "string",
-          "description": "The ID of the widget where the script will be added."
+          "description": "The ``oid`` of the widget."
         },
         "script": {
           "anyOf": [
@@ -96,12 +99,15 @@
               "type": "object"
             }
           ],
-          "description": "The JavaScript script to add, provided as either a properly formatted JSON string, a raw multi-line script string, or a pre-built payload dictionary."
+          "description": "The script, as plain JavaScript, as a JSON string ``{\"script\": \"...\"}``, or as that dict."
         },
         "executing_user": {
           "type": "string",
-          "description": "The username of the API user, used to temporarily change the owner of the dashboard, as only the owner can add scripts. If not provided, assumes the dashboard owner is the same as the API user.",
-          "format": "email"
+          "description": "Deprecated in favour of ``act_as_owner``: the email of the user to transfer ownership to for the change. When given, ownership is borrowed for that user exactly as ``act_as_owner`` does for the token's user. Default ``None``."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [

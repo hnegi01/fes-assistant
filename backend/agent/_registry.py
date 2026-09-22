@@ -85,6 +85,23 @@ def allowed_tool_ids() -> Optional[Set[str]]:
     return ids
 
 
+def all_registry_tool_ids() -> Set[str]:
+    """Every tool_id in the generated registry, BEFORE the allowlist filter.
+
+    `_load_registry_rows()` returns the exposed surface (post-allowlist). The
+    skill loader needs both sets so its error can say which failure it is: a
+    tool missing here is a RENAME upstream; one present here but not exposed is
+    a DELISTING. Same mtime cache — this just reads the unfiltered rows.
+    """
+    _load_registry_rows()  # ensures the cache is populated / refreshed
+    return {str(r.get("tool_id")) for r in (_registry_cache_rows or []) if r.get("tool_id")}
+
+
+def exposed_tool_ids() -> Set[str]:
+    """Every tool_id the agent may actually call right now (post-allowlist)."""
+    return {str(r.get("tool_id")) for r in _load_registry_rows() if r.get("tool_id")}
+
+
 def _filter_by_allowlist(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Drop registry rows whose tool_id is not on the curated allowlist."""
     allowed = allowed_tool_ids()

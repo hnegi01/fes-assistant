@@ -131,6 +131,10 @@
         "widget_data": {
           "type": "object",
           "description": "The full widget payload with the desired changes applied. Server-managed fields are removed automatically before the PUT request."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [

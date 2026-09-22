@@ -848,3 +848,42 @@ class TestPlannerTextSurfacing:
         )
         assert "didn't quite understand" in reply
         client.invoke_tool.assert_not_awaited()
+
+
+class TestUserSequencedSteps:
+    """Ordering the user asked for suppresses fan-out, in code. The planner's
+    [needs-prior-result] tag is not reliable on short phrasings, and an
+    untagged step fans out; running sequentially when it was not required only
+    costs time, running in parallel when it was required is wrong."""
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "Build A, then build B",
+            "build A and then build B",
+            "Build A. After that, build B",
+            "Build A, afterwards build B",
+            "Build A once it finishes build B",
+            "delete the user when the group is removed",
+            "migrate the groups followed by the users",
+            "build A, wait for it, then build B",
+            "run these one at a time",
+            "do them in order",
+            "build them sequentially",
+        ],
+    )
+    def test_ordering_words_are_detected(self, text):
+        assert m.user_sequenced_steps(text) is True
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "show me all users and all groups",
+            "list dashboards and datamodels",
+            "which columns are unused in fes_assistant",
+            "",
+            "create a user with the viewer role",
+        ],
+    )
+    def test_independent_requests_still_fan_out(self, text):
+        assert m.user_sequenced_steps(text) is False

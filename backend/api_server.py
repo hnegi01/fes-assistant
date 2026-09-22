@@ -265,6 +265,12 @@ class AgentTurnResponse(BaseModel):
     # message's content (so they can't re-enter LLM prompts via history) —
     # e.g. clarification option names, shown in every summarization mode.
     display_hints: Optional[List[str]] = None
+    # {name, version} of the Sisense-authored procedure (skills/<name>/SKILL.md)
+    # whose plan this turn followed; None for an ordinary loop turn.
+    skill: Optional[Dict[str, Any]] = None
+    # True when the reply is a clarifying question the agent is waiting on —
+    # the UI switches the input box to "answer" mode.
+    awaiting_input: bool = False
 
 
 class CancelRequest(BaseModel):
@@ -402,6 +408,8 @@ async def agent_turn(request: Request, payload: AgentTurnRequest):
                 trace_id=trace_id,
                 usage=usage,
                 display_hints=turn.get("display_hints") or None,
+                skill=turn.get("skill") or None,
+                awaiting_input=bool(turn.get("pending_clarification")),
             )
 
         except Exception as exc:
@@ -458,6 +466,8 @@ async def agent_turn(request: Request, payload: AgentTurnRequest):
                         "trace_id": trace_id,
                         "usage": usage,
                         "display_hints": turn.get("display_hints") or None,
+                        "skill": turn.get("skill") or None,
+                        "awaiting_input": bool(turn.get("pending_clarification")),
                     },
                 )
             )

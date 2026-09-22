@@ -97,3 +97,92 @@ def test_agent_turn_response_includes_trace_id(monkeypatch):
     # cross-session leak guard: poisoned globals must NOT reach the response
     assert body["tool_result"] is None
     assert body["step_results"] == []
+
+
+def test_agent_turn_response_names_the_skill_when_one_ran(monkeypatch):
+    """A turn that followed a skill (skills/<name>/SKILL.md) names it in the
+    response — {name, version} — so callers and the UI can attribute the plan
+    to the procedure. Ordinary loop turns carry null."""
+    import backend.api_server as api
+
+    async def _fake_run_turn_once(**kwargs):
+        return {
+            "reply": "done",
+            "tool_result": None,
+            "step_results": [],
+            "trace_id": "trace-skill-1",
+            "pending_clarification": None,
+            "pending_loop": None,
+            "skill": {"name": "optimize-datamodel-for-ai-assistant", "version": 1},
+        }
+
+    monkeypatch.setattr(api, "run_turn_once", _fake_run_turn_once)
+    body = client.post(
+        "/agent/turn",
+        json={
+            "session_id": "test-skill-field",
+            "messages": [{"role": "user", "content": "hi"}],
+            "user_input": "hi",
+            "mode": "chat",
+            "tenant_config": {"domain": "https://x", "token": "t", "ssl": True},
+            "allow_summarization": False,
+        },
+        headers={"Accept": "application/json"},
+    ).json()
+    assert body["skill"] == {"name": "optimize-datamodel-for-ai-assistant", "version": 1}
+    assert body["awaiting_input"] is False
+
+    async def _plain_turn(**kwargs):
+        return {
+            "reply": "ok",
+            "tool_result": None,
+            "step_results": [],
+            "trace_id": "t2",
+            "pending_clarification": None,
+            "pending_loop": None,
+        }
+
+    monkeypatch.setattr(api, "run_turn_once", _plain_turn)
+    body = client.post(
+        "/agent/turn",
+        json={
+            "session_id": "test-skill-field-2",
+            "messages": [{"role": "user", "content": "hi"}],
+            "user_input": "hi",
+            "mode": "chat",
+            "tenant_config": {"domain": "https://x", "token": "t", "ssl": True},
+            "allow_summarization": False,
+        },
+        headers={"Accept": "application/json"},
+    ).json()
+    assert body["skill"] is None
+
+
+def test_agent_turn_flags_when_a_question_is_pending(monkeypatch):
+    """`awaiting_input` tells the UI the reply is a question the agent waits on."""
+    import backend.api_server as api
+
+    async def _asking(**kwargs):
+        return {
+            "reply": "I need a bit more information to run this:\n\n- the name",
+            "tool_result": None,
+            "step_results": [],
+            "trace_id": "t3",
+            "pending_clarification": {"tool_id": "skill.plan"},
+            "pending_loop": None,
+        }
+
+    monkeypatch.setattr(api, "run_turn_once", _asking)
+    body = client.post(
+        "/agent/turn",
+        json={
+            "session_id": "test-awaiting",
+            "messages": [{"role": "user", "content": "hi"}],
+            "user_input": "hi",
+            "mode": "chat",
+            "tenant_config": {"domain": "https://x", "token": "t", "ssl": True},
+            "allow_summarization": False,
+        },
+        headers={"Accept": "application/json"},
+    ).json()
+    assert body["awaiting_input"] is True

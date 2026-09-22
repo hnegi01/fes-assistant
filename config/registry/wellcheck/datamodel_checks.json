@@ -97,7 +97,7 @@
   },
   {
     "tool_id": "wellcheck.check_datamodel_island_tables",
-    "description": "Identify island tables (tables with no relationships) in one or more data models.",
+    "description": "List every table of one or more data models and flag the islands, tables with no relationship.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -106,7 +106,7 @@
           "items": {
             "type": "string"
           },
-          "description": "One or more data model references to analyze. Each reference can be: - a Sisense data model ID, or - a data model title (name). At least one data model reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+          "description": "One or more data model references, each an ID or a title. A single string is accepted in place of a one-element list."
         }
       },
       "required": []
@@ -145,7 +145,7 @@
   },
   {
     "tool_id": "wellcheck.check_datamodel_m2m_relationships",
-    "description": "Check for potential many-to-many (M2M) relationships between tables",
+    "description": "Check every relation of one or more data models for a many-to-many (M2M) join.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -154,7 +154,7 @@
           "items": {
             "type": "string"
           },
-          "description": "One or more data model references to analyze. Each reference can be: - a Sisense data model ID, or - a data model title (name). At least one data model reference is required. At runtime this method is tolerant of a single string being passed instead of a list, and will normalize it to a one-element list."
+          "description": "One or more data model references, each an ID or a title. A single string is accepted in place of a one-element list."
         }
       },
       "required": []

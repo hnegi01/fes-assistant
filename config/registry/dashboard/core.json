@@ -40,6 +40,62 @@
     ]
   },
   {
+    "tool_id": "dashboard.compare_dashboard_values",
+    "description": "Run every widget's query against two datasources and report whether the values match.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dashboard": {
+          "type": "string",
+          "description": "The dashboard, as an ID or title."
+        },
+        "datasource_a": {
+          "type": "string",
+          "description": "Title of the first data model or perspective, the reference."
+        },
+        "datasource_b": {
+          "type": "string",
+          "description": "Title of the second data model or perspective, the one under test."
+        }
+      },
+      "required": [
+        "dashboard",
+        "datasource_a",
+        "datasource_b"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Compare all widget values on the 'Sales Overview' dashboard between the 'Production Data' and 'Test Data' datasources.",
+        "arguments": {
+          "dashboard": "Sales Overview",
+          "datasource_a": "Production Data",
+          "datasource_b": "Test Data"
+        },
+        "notes": "This call compares the data displayed by all widgets on the 'Sales Overview' dashboard between the 'Production Data' and 'Test Data' datasources to check for discrepancies."
+      },
+      {
+        "user_query": "Does the 'Marketing Performance' dashboard show the same results between the 'Q1 Data' and 'Q2 Data' datasources?",
+        "arguments": {
+          "dashboard": "Marketing Performance",
+          "datasource_a": "Q1 Data",
+          "datasource_b": "Q2 Data"
+        },
+        "notes": "This call verifies if the widgets on the 'Marketing Performance' dashboard produce consistent results when queried against the 'Q1 Data' and 'Q2 Data' datasources."
+      },
+      {
+        "user_query": "Check if the 'Customer Insights' dashboard matches between the '2022 Dataset' and '2023 Dataset'.",
+        "arguments": {
+          "dashboard": "Customer Insights",
+          "datasource_a": "2022 Dataset",
+          "datasource_b": "2023 Dataset"
+        },
+        "notes": "This call ensures that the 'Customer Insights' dashboard shows matching data when comparing the '2022 Dataset' and '2023 Dataset'."
+      }
+    ]
+  },
+  {
     "tool_id": "dashboard.delete_dashboard",
     "description": "Delete a dashboard, but only if both its ID and its title match.",
     "parameters": {
@@ -51,7 +107,7 @@
         },
         "title": {
           "type": "string",
-          "description": "The dashboard's exact current title."
+          "description": "The dashboard's exact current title — under Dashboard Co-Authoring, that of either its private copy or its shared copy."
         }
       },
       "required": [
@@ -497,6 +553,10 @@
         "folder_id": {
           "type": "string",
           "description": "The target folder ``oid`` (``parentFolder`` value)."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [
@@ -597,6 +657,10 @@
         "title": {
           "type": "string",
           "description": "The new dashboard title."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [
@@ -653,6 +717,10 @@
         "publish": {
           "type": "boolean",
           "description": "Republish the dashboard after the change so shared viewers see it. Default ``True``."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "When the token's user is an administrator but not the owner, take ownership temporarily to make the change, then hand it back. Default ``False``: refuse instead."
         }
       },
       "required": [

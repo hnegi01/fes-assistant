@@ -77,7 +77,11 @@
         },
         "executing_user_id": {
           "type": "string",
-          "description": "Sisense user ID of the user who should own the dashboard during the write. Required when the API token user is not the dashboard owner."
+          "description": "Deprecated in favour of ``act_as_owner``: the Sisense user ID to transfer ownership to for the change. Default ``None``."
+        },
+        "act_as_owner": {
+          "type": "boolean",
+          "description": "Take ownership temporarily when the token's user is an administrator but not the owner. Default ``False``: refuse instead."
         }
       },
       "required": [
