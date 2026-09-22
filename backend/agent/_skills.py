@@ -57,6 +57,23 @@ REQUIRED_KEYS = frozenset({"name", "description", "version", "tools"})
 # is rejected — an unenforced guardrail is a promise the code cannot keep.
 KNOWN_GUARDRAILS = frozenset({"validate-before-swap"})
 
+# An ABSENT skills feature and a WORKING one used to look identical in the
+# logs: every silent early exit below returned {} and said nothing, so a
+# packaging mistake (2.7.0 shipped skills/ with SKILL.md filtered out by
+# .dockerignore) presented as "the planner just didn't pick it". These states
+# are now announced once each, and again if the state changes.
+_last_empty_reason: Optional[str] = None
+
+
+def _note_no_skills(reason: str, msg: str, *args: object) -> Dict[str, "Skill"]:
+    """Log why zero skills are on offer — once per distinct reason."""
+    global _last_empty_reason
+    if _last_empty_reason != reason:
+        _last_empty_reason = reason
+        logger.warning(msg, *args)
+    return {}
+
+
 _TOOL_ID_RE = re.compile(r"`([a-z_]+\.[a-z_][a-z0-9_]*)`")
 _SKILL_DIRECTIVE_RE = re.compile(r"^\s*SKILL:\s*([A-Za-z0-9][A-Za-z0-9_-]*)\s*$")
 _FRONTMATTER_RE = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n(.*)\Z", re.S)
@@ -284,12 +301,22 @@ def load_skills(
     ``registry_ids``/``allowed`` from ``_registry`` to enforce the tool contract;
     omit them for a structure-only load (tests, tooling).
     """
-    global _cache_key, _cache
+    global _cache_key, _cache, _last_empty_reason
     if not SKILLS_ENABLED:
-        return {}
+        return _note_no_skills(
+            "disabled", "Skills are disabled (%s=false); the planner will not be offered any.", "FES_SKILLS_ENABLED"
+        )
     sig = _dir_signature()
     if sig is None:
-        return {}
+        return _note_no_skills("no_dir", "Skills directory %s does not exist; no skills will be offered.", SKILLS_DIR)
+    if not sig:
+        return _note_no_skills(
+            "no_files",
+            "Skills directory %s exists but contains no %s; no skills will be offered. "
+            "In a container this usually means the build context filtered them out.",
+            SKILLS_DIR,
+            SKILL_FILE,
+        )
 
     reg_key = None if registry_ids is None else len(set(registry_ids))
     allow_key = None if allowed is None else frozenset(allowed)
@@ -318,7 +345,16 @@ def load_skills(
 
     _cache_key, _cache = key, loaded
     if loaded:
+        _last_empty_reason = None
         logger.info("Loaded %d skill(s): %s", len(loaded), ", ".join(sorted(loaded)))
+    else:
+        return _note_no_skills(
+            "all_excluded",
+            "Found %d %s under %s but every one was excluded; see the errors above.",
+            len(sig),
+            SKILL_FILE,
+            SKILLS_DIR,
+        )
     return loaded
 
 

@@ -551,3 +551,61 @@ def test_step_labels_are_parsed_and_must_name_declared_tools(tmp_path):
     )
     with pytest.raises(skills_m.SkillError, match="step_labels names tools not declared"):
         skills_m.parse_skill_file(d / "SKILL.md")
+
+
+class TestEmptySkillsIsNeverSilent:
+    """Zero skills must always say why.
+
+    2.7.0 shipped `skills/` into the backend image with every `SKILL.md`
+    filtered out by `.dockerignore`'s `**/*.md`. The loader returned {} through
+    a silent early exit, so the deployed feature was indistinguishable from a
+    planner that simply chose not to use it: no error, no warning, nothing in
+    llm_skills.log but the logger's own init line. Every empty outcome is now
+    announced once.
+    """
+
+    @staticmethod
+    def _captured(monkeypatch, tmp_path, **env):
+        import logging
+
+        from backend.agent import _skills
+
+        records: list[str] = []
+
+        class _Collect(logging.Handler):
+            def emit(self, record: logging.LogRecord) -> None:
+                records.append(record.getMessage())
+
+        handler = _Collect(level=logging.WARNING)
+        monkeypatch.setattr(_skills, "_last_empty_reason", None, raising=False)
+        for key, value in env.items():
+            monkeypatch.setattr(_skills, key, value, raising=False)
+        _skills.logger.addHandler(handler)
+        try:
+            result = _skills.load_skills()
+            second = _skills.load_skills()
+        finally:
+            _skills.logger.removeHandler(handler)
+        return result, second, records
+
+    def test_directory_present_but_no_skill_files_warns(self, monkeypatch, tmp_path):
+        (tmp_path / "some-skill").mkdir()
+        result, _, records = self._captured(monkeypatch, tmp_path, SKILLS_DIR=tmp_path, SKILLS_ENABLED=True)
+        assert result == {}
+        assert any("contains no SKILL.md" in r for r in records), records
+
+    def test_missing_directory_warns(self, monkeypatch, tmp_path):
+        gone = tmp_path / "not-here"
+        result, _, records = self._captured(monkeypatch, tmp_path, SKILLS_DIR=gone, SKILLS_ENABLED=True)
+        assert result == {}
+        assert any("does not exist" in r for r in records), records
+
+    def test_disabled_warns(self, monkeypatch, tmp_path):
+        result, _, records = self._captured(monkeypatch, tmp_path, SKILLS_DIR=tmp_path, SKILLS_ENABLED=False)
+        assert result == {}
+        assert any("disabled" in r for r in records), records
+
+    def test_the_reason_is_logged_once_not_every_turn(self, monkeypatch, tmp_path):
+        (tmp_path / "some-skill").mkdir()
+        _, _, records = self._captured(monkeypatch, tmp_path, SKILLS_DIR=tmp_path, SKILLS_ENABLED=True)
+        assert len(records) == 1, f"a per-turn warning would flood the log: {records}"

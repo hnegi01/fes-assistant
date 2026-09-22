@@ -60,6 +60,11 @@ docs_src/
 # Repo docs / scripts / tests not needed in containers
 # --------------------------------------------------
 **/*.md
+# ...EXCEPT the skills: SKILL.md IS the product content the planner reads,
+# not repo documentation. Without this negation `COPY skills ./skills`
+# ships an empty directory and the deployed backend silently runs with
+# zero skills (shipped that way in 2.7.0). Verified by build, not by eye.
+!skills/**/*.md
 LICENSE
 refresh_registry.sh
 scripts/

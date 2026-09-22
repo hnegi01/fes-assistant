@@ -184,6 +184,24 @@ and stash would hand you a conflict for no reason. Better still, commit the host
 routes so the repo stops misrepresenting production. **Never `git clean -fd`** on
 a host — it deletes untracked directories, which is where other stacks live.
 
+**A route whose upstream container is gone will not survive a restart.** nginx
+resolves a static `proxy_pass http://name:port` hostname **at startup**, not per
+request. So while nginx is already running, deleting an upstream only produces
+502s on that route — the name was resolved when nginx started and the process
+keeps going. The next restart is where it bites: `up -d` recreates the nginx
+container, resolution fails, and nginx exits with `host not found in upstream`,
+taking the **whole site** down rather than just that path. (Verified 2026-09-21,
+after two standalone MCP containers sharing this Nginx were removed.) Retiring a
+stack therefore means deleting its location blocks in the same change, and
+proving it before the next deploy:
+
+```bash
+docker exec fes-nginx nginx -t          # reads the bind-mounted file as edited, no restart
+docker exec fes-nginx nginx -s reload   # a failed reload keeps the running workers; a restart would not
+```
+
+Reload, don't restart, whenever the config is the only thing that changed.
+
 ### Release ritual (for maintainers)
 
 1. Bump `version` in `pyproject.toml` **and** the three `${FES_IMAGE_TAG:-…}`
