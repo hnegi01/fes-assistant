@@ -95,10 +95,60 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
+  # ── Gate: nothing publishes unless lint and both engines are green ───────
+  # CD used to be independent of CI. Both start on the same push to main and
+  # neither waits for the other, so a commit whose unit tests FAIL still
+  # published :latest to a public registry — the failing CI run just sat next
+  # to the successful deploy. Re-running the checks here, in the same workflow
+  # that publishes, makes the dependency real rather than a convention: this
+  # job cannot be skipped, re-ordered, or raced. It duplicates ~40s of CI,
+  # which is the correct trade against shipping a broken image.
+  #
+  # Branch protection with required status checks is the complementary control
+  # (it stops the merge rather than the publish); this one holds even for a
+  # direct push to main.
+  verify:
+    name: Verify before publishing
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Same fakes as CI: LLM_CONFIG is built at import time, so llm_agent needs
+    # these present to import. No real calls are made.
+    env:
+      LLM_PROVIDER: databricks
+      DATABRICKS_HOST: https://fake.databricks.com
+      DATABRICKS_TOKEN: fake-ci-token
+      LLM_ENDPOINT: fake-endpoint
+      PYSISENSE_MCP_HTTP_URL: http://localhost:8002
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9  # v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies (locked)
+        run: uv sync --frozen
+
+      - name: Check code style
+        run: uv run ruff check .
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Unit tests (langgraph engine — default)
+        run: uv run pytest tests/ -m "not integration and not eval" -q
+
+      # The custom loop must stay at parity; the unit suite is the harness.
+      - name: Unit tests (custom engine)
+        env:
+          FES_AGENT_ENGINE: custom
+        run: uv run pytest tests/ -m "not integration and not eval" -q
+
   # ── Build + push all three images to Docker Hub ──────────────────────────
   push-images:
     name: Push — ${{ matrix.service }}
-    needs: version
+    needs: [version, verify]
     # Publishing happens from main, full stop. `release` was already gated on
     # `event_name == 'push'`, but this job was not: a workflow_dispatch with
     # dry_run=false from ANY branch overwrote the public :latest and :<version>
