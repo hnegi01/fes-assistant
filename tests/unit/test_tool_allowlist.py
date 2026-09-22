@@ -99,11 +99,27 @@ class TestAllowedToolIdsLifecycle:
         os.utime(path, (st.st_atime + 10, st.st_mtime + 10))
         assert registry_m.allowed_tool_ids() == {"a.one", "b.two"}
 
-    def test_unreadable_file_falls_back_to_allow_all(self, tmp_path, monkeypatch):
+    def test_unreadable_file_denies_all_when_nothing_is_cached(self, tmp_path, monkeypatch):
+        """Fail CLOSED. This used to return None (= allow every tool)."""
         # A directory where a file is expected: exists() is True, read_text raises.
         bad = tmp_path / "allowed_tools.txt"
         bad.mkdir()
         monkeypatch.setattr(registry_m, "ALLOWLIST_PATH", bad)
+        monkeypatch.setattr(registry_m, "_allowlist_cache_mtime", None)
+        monkeypatch.setattr(registry_m, "_allowlist_cache_ids", None)
+        assert registry_m.allowed_tool_ids() == set()
+
+    def test_unreadable_file_keeps_the_last_known_good_set(self, tmp_path, monkeypatch):
+        """A transient read failure must not widen the surface mid-session."""
+        bad = tmp_path / "allowed_tools.txt"
+        bad.mkdir()
+        monkeypatch.setattr(registry_m, "ALLOWLIST_PATH", bad)
+        monkeypatch.setattr(registry_m, "_allowlist_cache_mtime", None)
+        monkeypatch.setattr(registry_m, "_allowlist_cache_ids", {"a.one"})
+        assert registry_m.allowed_tool_ids() == {"a.one"}
+
+    def test_missing_file_still_allows_all_by_design(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(registry_m, "ALLOWLIST_PATH", tmp_path / "nope.txt")
         monkeypatch.setattr(registry_m, "_allowlist_cache_mtime", None)
         monkeypatch.setattr(registry_m, "_allowlist_cache_ids", None)
         assert registry_m.allowed_tool_ids() is None

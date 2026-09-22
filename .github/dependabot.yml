@@ -1,0 +1,48 @@
+# Dependency updates as pull requests, so a stale package surfaces here instead
+# of in someone else's security scan.
+#
+# WHY THIS EXISTS: cryptography sat three major versions behind and reached
+# production. It was found by a security review of a DIFFERENT project that
+# happened to scan the shared host. pyproject.toml was tracking the CVE by
+# hand in a comment — exactly the job this file does.
+#
+# A NOTE ON NOISE: several dependencies are deliberately capped to verified
+# series (litellm, langgraph). Dependabot will open PRs for those that cannot
+# be merged as-is. That is intentional — the PR is the reminder that the cap is
+# costing something. Close it with a reason rather than widening the ignore
+# list, or the queue trains you to ignore it.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      # One PR for the routine churn; anything with a CVE comes on its own.
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels: ["dependencies", "ci"]
+    commit-message:
+      prefix: "chore(ci)"
+
+  # The three service images all build FROM python:3.11-slim / nginx:alpine.
+  - package-ecosystem: "docker"
+    directories:
+      - "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker)"

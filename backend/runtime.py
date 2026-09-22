@@ -27,7 +27,7 @@ import contextlib
 import contextvars
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
@@ -35,7 +35,7 @@ from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional
 
 from backend.agent._config import current_turn_trace_id, pop_turn_output
 from backend.agent._tracing import end_turn_trace, start_turn_trace
-from backend.agent.llm_agent import call_llm_with_tools
+from backend.agent.llm_agent import ApprovalSet, call_llm_with_tools
 from backend.agent.mcp_client import McpClient
 
 # -----------------------------------------------------------------------------
@@ -297,6 +297,12 @@ class SessionEntry:
     # Step 7: carried-over clarification state when a turn paused for a missing
     # required arg. {tool_id, missing_fields, filled_args, attempts} or None.
     pending_clarification: Optional[Dict[str, Any]] = None
+    # Approval keys for dialogs this server actually issued, key -> issued_at.
+    # The approval key is a pure function of (tool_id, args), so a client can
+    # compute one without ever seeing a dialog; this is the server's record of
+    # what it really proposed. Lives here, per session, so it survives the
+    # approval round-trip and dies with the session. See llm_agent.ApprovalSet.
+    issued_approvals: Dict[Tuple[str, str], float] = field(default_factory=dict)
     # Step 8: carried-over agentic-loop state when a turn paused mid-loop for a
     # mutation approval. {transcript, steps_executed, tool_id, arguments} or None.
     # On the approval turn the loop resumes from the paused step (Option A).
@@ -500,6 +506,13 @@ async def _run_turn_once(
     # Step 7: restore any clarification state saved on the previous turn so the
     # LLM layer can skip routing and resume the pinned tool.
     entry = SESSION_POOL.get(session_id)
+
+    # Bind the client-supplied approval keys to what THIS session was actually
+    # offered. _get_or_create_mcp_client above always populates the pool, so a
+    # real turn always has an entry; the fallback dict keeps library/test calls
+    # working and simply means nothing was ever issued.
+    approved_keys = ApprovalSet(approved_keys, issued=entry.issued_approvals if entry else {})
+
     prior_clarification = entry.pending_clarification if entry else None
     if prior_clarification:
         logger.info(
