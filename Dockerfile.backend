@@ -1,7 +1,7 @@
 # Backend container for FES FastAPI service (backend.api_server:app)
 
 # 1) Base image
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 # 2) Basic Python runtime settings
 ENV PYTHONUNBUFFERED=1 \

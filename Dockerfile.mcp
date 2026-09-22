@@ -1,7 +1,7 @@
 # MCP Streamable HTTP server container (mcp_server.server:app)
 
 # 1) Base image
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 # 2) Basic Python runtime settings
 ENV PYTHONUNBUFFERED=1 \
