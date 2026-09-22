@@ -496,6 +496,7 @@ async def run(
                 plan_args = plan_arguments(calls)
                 if not A._consume_approval(approved_mutations, PLAN_TOOL_ID, plan_args):
                     explanation = _render_plan_dialog(calls)
+                    A.record_issued(approved_mutations, PLAN_TOOL_ID, plan_args)
                     A._record_tool_result(
                         {
                             "ok": False,

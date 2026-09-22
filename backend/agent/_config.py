@@ -26,7 +26,7 @@ import os
 from dataclasses import dataclass
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import litellm
 
@@ -234,12 +234,18 @@ ALLOW_SUMMARIZATION: bool = _env_bool("ALLOW_SUMMARIZATION", default=True)
 logger.info("ALLOW_SUMMARIZATION=%s", ALLOW_SUMMARIZATION)
 
 # Separate audit logger for mutations
+# AUDIT IS NEVER LEVEL-GATED. These were set to _log_level (FES_LOG_LEVEL),
+# so a supported, documented value — WARNING — silently discarded every
+# mutation record while .env.example and docs/security.md both stated the
+# audit log "has no off switch". An operator turning down log noise turned
+# off their audit trail with no error and no warning. Pinned by
+# tests/unit/test_mutation_audit_not_level_gated.py.
 audit_logger = logging.getLogger("backend.agent.llm_agent.mutations")
-audit_logger.setLevel(_log_level)
+audit_logger.setLevel(logging.INFO)
 audit_logger.propagate = False
 if not any(isinstance(h, logging.FileHandler) for h in audit_logger.handlers):
-    _audit_fh = logging.FileHandler(LOG_DIR / "mutations.log", encoding="utf-8")
-    _audit_fh.setLevel(_log_level)
+    _audit_fh = TimedRotatingFileHandler(LOG_DIR / "mutations.log", when="midnight", backupCount=30, encoding="utf-8")
+    _audit_fh.setLevel(logging.INFO)
     _audit_fh.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s"))
     audit_logger.addHandler(_audit_fh)
 
@@ -426,31 +432,50 @@ LLM_CONFIG = _build_llm_config()
 # -----------------------------------------------------------------------------
 # Observability helpers (credential-safe logging + CSV tracing)
 # -----------------------------------------------------------------------------
+# Credential field markers. MUST stay byte-identical to the twin in
+# mcp_server/tools_core.py — the two are pinned equal by
+# tests/unit/test_secret_scrubbing.py. They drifted once: this list was
+# substring-matched on one side and exact-matched on the other, so
+# `aws_secret_key`, `db_password`, `client_secret` and `private_key` were
+# redacted by the backend and written in CLEARTEXT by the MCP server — into
+# logs/server_mutations.log, the always-on mutation audit, every time an
+# allowlisted connection tool ran. Substring on both sides, always: an
+# exact list silently misses the next variant (source_token, x_api_key).
+_SECRET_MARKERS: Tuple[str, ...] = (
+    "token",
+    "password",
+    "passwd",
+    "pwd",
+    "secret",
+    "api_key",
+    "api-key",
+    "apikey",
+    "authorization",
+    "credential",
+    "passphrase",
+    "private_key",
+    "privatekey",
+    "access_key",
+    "accesskey",
+    "connection_string",
+    "connectionstring",
+)
+# Exact-match only: too short to substring safely ("auth" would hit "author").
+_SECRET_EXACT: Tuple[str, ...] = ("auth", "key", "pass")
+
+
+def _is_secret_key(key: str) -> bool:
+    """True when a dict key names something that must never be logged."""
+    k = str(key).lower()
+    return k in _SECRET_EXACT or any(m in k for m in _SECRET_MARKERS)
+
+
 def _scrub_secrets(obj: Any) -> Any:
     """Recursively redact credential fields from dicts/lists before logging."""
     if isinstance(obj, dict):
         cleaned: Dict[str, Any] = {}
         for k, v in obj.items():
-            key_l = str(k).lower()
-            # Substring match, like the MCP server's twin (tools_core.py):
-            # an exact-match list silently misses variants (source_token,
-            # target_token, x_api_key, …) the moment a new field appears.
-            if (
-                any(
-                    marker in key_l
-                    for marker in (
-                        "token",
-                        "password",
-                        "passwd",
-                        "secret",
-                        "api_key",
-                        "api-key",
-                        "apikey",
-                        "authorization",
-                    )
-                )
-                or key_l == "auth"
-            ):
+            if _is_secret_key(k):
                 cleaned[k] = "***REDACTED***"
             else:
                 cleaned[k] = _scrub_secrets(v)

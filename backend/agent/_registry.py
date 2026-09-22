@@ -74,10 +74,26 @@ def allowed_tool_ids() -> Optional[Set[str]]:
             if entry:
                 ids.add(entry)
     except Exception as exc:
-        logger.exception("Failed to read tool allowlist (%s) — allowing all tools: %s", ALLOWLIST_PATH, exc)
-        _allowlist_cache_mtime = mtime
+        # FAIL CLOSED, not open. A MISSING file is "no policy" and allows all
+        # by design; a file that exists but will not decode is a config error.
+        # Prefer the last known-good set so a transient read does not widen the
+        # surface mid-session; with no cache, deny all and say so loudly.
+        if _allowlist_cache_ids is not None:
+            logger.error(
+                "Failed to read tool allowlist (%s): %s — keeping the last known-good set of %d tool(s)",
+                ALLOWLIST_PATH,
+                exc,
+                len(_allowlist_cache_ids),
+            )
+            return _allowlist_cache_ids
+        logger.exception(
+            "Tool allowlist (%s) exists but could not be read and nothing is cached — DENYING ALL TOOLS: %s",
+            ALLOWLIST_PATH,
+            exc,
+        )
+        _allowlist_cache_mtime = None
         _allowlist_cache_ids = None
-        return None
+        return set()
 
     _allowlist_cache_mtime = mtime
     _allowlist_cache_ids = ids

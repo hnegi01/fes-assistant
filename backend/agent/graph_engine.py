@@ -703,6 +703,7 @@ async def node_gate(s: GraphState) -> Dict[str, Any]:
     if bool(meta.get("mutates")) and A.REQUIRE_MUTATION_CONFIRM:
         if not A._consume_approval(s["approved_mutations"], tool_id, args):
             explanation = await A._generate_mutation_explanation(tool_id, meta, args, s["turn_trace_id"])
+            A.record_issued(s["approved_mutations"], tool_id, args)
             A._record_tool_result(
                 {
                     "ok": False,

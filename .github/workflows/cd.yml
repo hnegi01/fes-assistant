@@ -42,8 +42,11 @@ on:
         type: boolean
         default: true
 
+# Least privilege at the top; the ONE job that creates a tag opts up. This was
+# `write` repo-wide, so `push-images` — the job that loads DOCKERHUB_TOKEN —
+# also held a token that could push to main.
 permissions:
-  contents: write   # the release job creates a git tag + GitHub Release
+  contents: read
 
 jobs:
   # ── Resolve the version once, so every image gets the same tag ───────────
@@ -55,14 +58,14 @@ jobs:
       tag: ${{ steps.get.outputs.tag }}
       tag_exists: ${{ steps.check.outputs.exists }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
         with:
           fetch-depth: 0   # need tags + full history for the tag check
 
       # Explicit interpreter: tomllib is stdlib only on 3.11+, and relying on
       # whatever `python` the runner image happens to ship is how this breaks
       # silently later. 3.11 matches requires-python in pyproject.toml.
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
         with:
           python-version: "3.11"
 
@@ -70,6 +73,14 @@ jobs:
         id: get
         run: |
           VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          # Validate before it flows into `run:` blocks and image tags. The
+          # source is pyproject.toml on main, so this is not fork-reachable —
+          # but it turns "can edit a TOML string" into "runs commands", and
+          # main is the branch a release is cut from.
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.]+)?$'; then
+            echo "::error::Refusing to release: version '$VERSION' is not a plain semver string."
+            exit 1
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION"    >> "$GITHUB_OUTPUT"
           echo "Resolved version: $VERSION"
@@ -88,6 +99,13 @@ jobs:
   push-images:
     name: Push — ${{ matrix.service }}
     needs: version
+    # Publishing happens from main, full stop. `release` was already gated on
+    # `event_name == 'push'`, but this job was not: a workflow_dispatch with
+    # dry_run=false from ANY branch overwrote the public :latest and :<version>
+    # tags with no git tag and no GitHub Release to show for it.
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false   # push all three even if one fails
@@ -104,19 +122,19 @@ jobs:
             image: hnegi01/fes-ui
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
 
-      - uses: docker/setup-buildx-action@v4
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4
 
       # Runs even on a dry run — logging in is how we validate the secrets.
       - name: Log in to Docker Hub
-        uses: docker/login-action@v4
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f  # v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build ${{ matrix.service }}${{ (github.event_name == 'push' || inputs.dry_run == false) && ' and push' || ' (dry run — no push)' }}
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7
         with:
           context: .
           file: ${{ matrix.dockerfile }}
@@ -136,10 +154,12 @@ jobs:
     name: Tag + GitHub Release
     needs: [version, push-images]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # creates the git tag + GitHub Release
     # Real releases only: never on a dry run, and only when the version is new.
     if: github.event_name == 'push' && needs.version.outputs.tag_exists == 'false'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
         with:
           fetch-depth: 0
 
