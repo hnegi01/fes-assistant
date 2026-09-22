@@ -371,7 +371,7 @@ websockets==15.0.1
     #   langgraph-sdk
     #   langsmith
     #   streamlit
-xxhash==3.8.1
+xxhash==4.0.1
     # via
     #   langgraph
     #   langsmith
