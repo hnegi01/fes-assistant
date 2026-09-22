@@ -3,7 +3,7 @@ import re
 import typing
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import pysisense
 
@@ -752,24 +752,34 @@ def _datasecurity_rules_schema(*, party_key: str, description: str) -> Dict[str,
 # TEMPORARY summary overrides — mirror of an unreleased SDK docstring fix
 # ---------------------------------------------------------------------------
 # A tool's description is the FIRST LINE of its SDK docstring, and it is the
-# only text the planner and both routing levels ever see. Two lines routed
+# only text the planner and both routing levels ever see. Two lines sent
 # "run cube X" / "build cube X" to the wrong tool (measured 2026-09-21: the
 # schedule tool won, or nothing matched, 3 of 4 runs) because the real build
-# operation led with "Deploy" while the schedule operation led with "build".
+# operation led with "Deploy" while the schedule operation led with "build" —
+# a user asking to build a cube was offered a recurring schedule instead.
 #
-# Fixed upstream on pysisense branch himanshu/docstring-build-summaries, not
-# yet released. These entries carry that exact wording so the assistant does
-# not wait for a release cut only for two sentences.
+# Fixed upstream on pysisense branch himanshu/docstring-build-summaries; it
+# will not be released on its own, so these entries carry the wording until
+# some later release picks it up. `deploy_datamodel` additionally names the
+# verb "run" next to "Build", which the upstream line does not yet do.
 #
-# DELETE THEM when the SDK release lands: the drift guard
-# (tests/unit/test_registry_builder.py::TestSummaryOverrides) FAILS as soon as
-# the installed SDK's own first line already matches, so this cannot rot
-# silently — a redundant override is a test failure, not a mystery.
-_SUMMARY_OVERRIDES: Dict[str, str] = {
+# tool_id -> (the first line the INSTALLED SDK has today, our replacement)
+#
+# DELETE an entry when the installed SDK's own first line CHANGES AT ALL: the
+# guard (tests/unit/test_registry_builder.py::TestSummaryOverrides) compares
+# against the recorded current line, not against our replacement, so a later
+# release with different-but-fixed wording still trips it. Comparing against
+# our own text would let a stale override outlive — and silently beat — a
+# better upstream line.
+_SUMMARY_OVERRIDES: Dict[str, Tuple[str, str]] = {
     "datamodel.deploy_datamodel": (
-        "Build an ElastiCube or publish a live data model, and optionally wait for the run to finish."
+        "Deploy (build or publish) the specified data model based on its type.",
+        "Build (run) an ElastiCube or publish a live data model, and optionally wait for it to finish.",
     ),
-    "access_management.create_schedule_build": "Schedule a recurring build for an ElastiCube.",
+    "access_management.create_schedule_build": (
+        "Create a schedule build for a DataModel.",
+        "Schedule a recurring build for an ElastiCube.",
+    ),
 }
 
 
@@ -1150,7 +1160,8 @@ def build_registry() -> list:
 
             tool_id = f"{module_name}.{name}"
             # Temporary, self-removing (see _SUMMARY_OVERRIDES).
-            one_liner = _SUMMARY_OVERRIDES.get(tool_id, one_liner)
+            if tool_id in _SUMMARY_OVERRIDES:
+                one_liner = _SUMMARY_OVERRIDES[tool_id][1]
             if tool_id in _EXCLUDED_TOOL_IDS:
                 continue
             try:

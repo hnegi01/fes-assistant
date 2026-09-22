@@ -491,26 +491,30 @@ class TestSummaryOverrides:
             funcs = {n for n, _ in inspect.getmembers(MODULES[module_name], predicate=inspect.isfunction)}
             assert method_name in funcs, f"{tool_id}: method not found on {MODULES[module_name].__name__}"
 
-    def test_override_is_deleted_once_the_sdk_says_it_itself(self):
+    def test_override_is_deleted_once_the_sdk_line_changes(self):
+        """Keyed on the line the SDK has TODAY, not on our replacement: a later
+        release whose wording differs from ours must still trip this, or a
+        stale override would silently beat a better upstream line."""
         import inspect
 
         from scripts.registry_core import MODULES
 
-        for tool_id, override in _builder()._SUMMARY_OVERRIDES.items():
+        for tool_id, (installed_now, _replacement) in _builder()._SUMMARY_OVERRIDES.items():
             module_name, method_name = tool_id.split(".", 1)
             doc = (inspect.getdoc(getattr(MODULES[module_name], method_name)) or "").strip()
             first_line = (doc.splitlines()[0] if doc else "").strip()
-            assert first_line != override, (
-                f"{tool_id}: the installed SDK's own first line now matches the override — "
-                "delete the entry from _SUMMARY_OVERRIDES and regenerate the registry (scripts/01)"
+            assert first_line == installed_now, (
+                f"{tool_id}: the installed SDK's first line changed to {first_line!r} — the override is "
+                "no longer describing the problem it was written for. Delete the entry from "
+                "_SUMMARY_OVERRIDES (or re-record it) and regenerate the registry (scripts/01)"
             )
 
     def test_shipped_registry_carries_the_overrides(self):
         import backend.agent._registry as registry_m
 
         by_id = {r["tool_id"]: r for r in json.loads(registry_m.REGISTRY_PATH.read_text(encoding="utf-8"))}
-        for tool_id, override in _builder()._SUMMARY_OVERRIDES.items():
+        for tool_id, (_installed_now, replacement) in _builder()._SUMMARY_OVERRIDES.items():
             assert tool_id in by_id, f"{tool_id}: overridden but absent from the shipped registry"
-            assert by_id[tool_id]["description"] == override, (
+            assert by_id[tool_id]["description"] == replacement, (
                 f"{tool_id}: shipped description differs from the override — regenerate the registry (scripts/01)"
             )
