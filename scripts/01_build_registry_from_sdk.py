@@ -760,8 +760,11 @@ def _datasecurity_rules_schema(*, party_key: str, description: str) -> Dict[str,
 #
 # Fixed upstream on pysisense branch himanshu/docstring-build-summaries; it
 # will not be released on its own, so these entries carry the wording until
-# some later release picks it up. `deploy_datamodel` additionally names the
-# verb "run" next to "Build", which the upstream line does not yet do.
+# some later release picks it up. They mirror upstream EXACTLY: a variant that
+# named the verb "run" next to "Build" was tried and measured no better
+# ("run cube X" 0/4 vs 1/4 — the phrasing fails in the planner, before tool
+# selection, so the summary cannot fix it), and divergence only complicates
+# the eventual removal.
 #
 # tool_id -> (the first line the INSTALLED SDK has today, our replacement)
 #
@@ -774,7 +777,7 @@ def _datasecurity_rules_schema(*, party_key: str, description: str) -> Dict[str,
 _SUMMARY_OVERRIDES: Dict[str, Tuple[str, str]] = {
     "datamodel.deploy_datamodel": (
         "Deploy (build or publish) the specified data model based on its type.",
-        "Build (run) an ElastiCube or publish a live data model, and optionally wait for it to finish.",
+        "Build an ElastiCube or publish a live data model, and optionally wait for the run to finish.",
     ),
     "access_management.create_schedule_build": (
         "Create a schedule build for a DataModel.",
