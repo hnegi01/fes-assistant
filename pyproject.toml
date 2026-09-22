@@ -32,7 +32,7 @@ dependencies = [
     # has weeks of crash-free service in the local env. Not reproducible
     # off-box (payload/thread probes inside the image all pass), so this is
     # an evidence-based rollback; revisit on the next pyarrow major.
-    "pyarrow==24.0.0",
+    "pyarrow==25.0.1",
     "numpy>=2.3,<2.4",
     "PyYAML>=6.0,<7",
     "anyio==4.11.0",
