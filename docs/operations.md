@@ -140,8 +140,8 @@ cd ~/fes-assistant
 
 docker image prune -a -f              # first — a full pull has run the disk out before
 
-FES_IMAGE_TAG=2.6.0 docker compose -f docker-compose.prod.yml pull
-FES_IMAGE_TAG=2.6.0 docker compose -f docker-compose.prod.yml up -d
+FES_IMAGE_TAG=2.7.0 docker compose -f docker-compose.prod.yml pull
+FES_IMAGE_TAG=2.7.0 docker compose -f docker-compose.prod.yml up -d
 ```
 
 Pin `FES_IMAGE_TAG` explicitly. The compose file carries a default for it, but
