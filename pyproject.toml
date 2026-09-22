@@ -1,6 +1,6 @@
 [project]
 name = "fes-assistant"
-version = "2.7.1"
+version = "2.7.2"
 description = "Agentic AI assistant for Sisense — token-scoped (planner -> orchestrator loop -> critic over MCP/PySisense)"
 requires-python = ">=3.11,<3.12"
 dependencies = [
@@ -50,11 +50,20 @@ dev = [
 # This repo is an application, not an installable package — uv manages the
 # environment/lock only and never tries to build fes-assistant itself.
 package = false
-# cryptography 49.x has no usable wheel for this platform combo (falls back to
-# a Rust source build that fails behind the corporate proxy); 48.x ships wheels
-# and is what the working environment runs. (Pulled in via mcp -> pyjwt[crypto].)
+# cryptography: FLOOR, not a cap. 48.0.1 is affected by CVE-2026-69247
+# (PYSEC-2026-3552), a Bleichenbacher oracle in PKCS#7 EnvelopedData
+# decryption — introduced in 44.0.0, fixed in 50.0.0. Nothing here reaches
+# that API (pyjwt, the only consumer, uses asymmetric primitives and key
+# serialization), so it was never exploitable for us, but a scanner finds it
+# on the host and a floor is cheaper than re-explaining it every quarter.
+# The previous `<49` cap said 49.x had no usable wheel; PyPI shows 49.x and
+# 50.x shipping the same cp311-abi3 manylinux/macOS wheels as 48.x, so that
+# was the security proxy age-suppressing new wheels, not upstream. If an
+# install ever falls back to a Rust source build, that is the proxy again —
+# wait for the wheels to age in rather than restoring the cap.
+# (Pulled in via mcp -> pyjwt[crypto].)
 constraint-dependencies = [
-    "cryptography<49",
+    "cryptography>=50.0.0",
     # Lock to the litellm series this codebase is verified against (1.89.x);
     # newer releases resolve to sdists here (wheels age-suppressed by the
     # security proxy) and require a Rust toolchain build that fails offline.
