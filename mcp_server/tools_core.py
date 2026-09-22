@@ -171,6 +171,44 @@ def _log_json(label: str, obj: Any) -> None:
     logger.debug("%s:\n%s", label, text)
 
 
+# Credential field markers. MUST stay byte-identical to the twin in
+# backend/agent/_config.py — the two are pinned equal by
+# tests/unit/test_secret_scrubbing.py. They drifted once: this list was
+# substring-matched on one side and exact-matched on the other, so
+# `aws_secret_key`, `db_password`, `client_secret` and `private_key` were
+# redacted by the backend and written in CLEARTEXT by the MCP server — into
+# logs/server_mutations.log, the always-on mutation audit, every time an
+# allowlisted connection tool ran. Substring on both sides, always: an
+# exact list silently misses the next variant (source_token, x_api_key).
+_SECRET_MARKERS: Tuple[str, ...] = (
+    "token",
+    "password",
+    "passwd",
+    "pwd",
+    "secret",
+    "api_key",
+    "api-key",
+    "apikey",
+    "authorization",
+    "credential",
+    "passphrase",
+    "private_key",
+    "privatekey",
+    "access_key",
+    "accesskey",
+    "connection_string",
+    "connectionstring",
+)
+# Exact-match only: too short to substring safely ("auth" would hit "author").
+_SECRET_EXACT: Tuple[str, ...] = ("auth", "key", "pass")
+
+
+def _is_secret_key(key: str) -> bool:
+    """True when a dict key names something that must never be logged."""
+    k = str(key).lower()
+    return k in _SECRET_EXACT or any(m in k for m in _SECRET_MARKERS)
+
+
 def _scrub_secrets(obj: Any) -> Any:
     """
     Redact likely secret fields from nested dict/list structures before logging.
@@ -178,13 +216,7 @@ def _scrub_secrets(obj: Any) -> Any:
     if isinstance(obj, dict):
         cleaned: Dict[str, Any] = {}
         for k, v in obj.items():
-            key_l = str(k).lower()
-            if (
-                "token" in key_l
-                or key_l in ("api-key", "apikey")
-                or "authorization" in key_l
-                or key_l in ("auth", "password", "passwd", "secret")
-            ):
+            if _is_secret_key(k):
                 cleaned[k] = "***REDACTED***"
             else:
                 cleaned[k] = _scrub_secrets(v)
@@ -250,13 +282,23 @@ logger.info("  ALLOW_MUTATIONS    = %s (env %s)", ALLOW_MUTATIONS, ALLOW_MUTATIO
 
 
 # Audit logger for mutating operations (separate file)
+# AUDIT IS NEVER LEVEL-GATED. These were set to _log_level (FES_LOG_LEVEL),
+# so a supported, documented value — WARNING — silently discarded every
+# mutation record while .env.example and docs/security.md both stated the
+# audit log "has no off switch". An operator turning down log noise turned
+# off their audit trail with no error and no warning. Pinned by
+# tests/unit/test_mutation_audit_not_level_gated.py.
 audit_logger = logging.getLogger("mcp_server.mutations")
-audit_logger.setLevel(_log_level)
+audit_logger.setLevel(logging.INFO)
 audit_logger.propagate = False
 
 if not any(isinstance(h, logging.FileHandler) for h in audit_logger.handlers):
-    audit_fh = logging.FileHandler(LOG_DIR / "server_mutations.log", encoding="utf-8")
-    audit_fh.setLevel(_log_level)
+    # Rotating, like every other log here: a plain FileHandler grows without
+    # bound, and this one is the file you least want to lose to a full disk.
+    audit_fh = TimedRotatingFileHandler(
+        LOG_DIR / "server_mutations.log", when="midnight", backupCount=30, encoding="utf-8"
+    )
+    audit_fh.setLevel(logging.INFO)
     audit_fmt = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     audit_fh.setFormatter(audit_fmt)
     audit_logger.addHandler(audit_fh)
@@ -418,6 +460,11 @@ def _load_registry(path: str) -> List[Dict[str, Any]]:
     return payload
 
 
+# Set when an EXISTING allowlist could not be read. Surfaced on /health so a
+# deny-all is detectable from outside the process, not just from a log line.
+ALLOWLIST_LOAD_FAILED: bool = False
+
+
 def _load_allowlist(path: str) -> Optional[Set[str]]:
     """
     Read the curated tool allowlist: one tool_id per line, '#' starts a comment.
@@ -445,8 +492,21 @@ def _load_allowlist(path: str) -> Optional[Set[str]]:
         logger.info("Loaded tool allowlist: %d tool(s) permitted (path=%s)", len(ids), p)
         return ids
     except Exception:
-        logger.exception("Failed to read tool allowlist %s — allowing all tools", p)
-        return None
+        # FAIL CLOSED. A MISSING file means "no policy configured" and allows
+        # all tools by design (documented). A file that EXISTS but cannot be
+        # read or decoded is a CONFIG ERROR, and treating it as "no policy"
+        # silently widened the surface on both tiers — one non-UTF8 byte (a
+        # smart quote pasted into a comment) or a bad chmod exposed 20 extra
+        # dispatchable write tools, including executable-notebook CRUD and the
+        # data-security permission setters. The only signal was one log line.
+        global ALLOWLIST_LOAD_FAILED
+        ALLOWLIST_LOAD_FAILED = True
+        logger.exception(
+            "Tool allowlist %s exists but could not be read — DENYING ALL TOOLS. "
+            "Fix the file (encoding/permissions) and restart.",
+            p,
+        )
+        return set()
 
 
 REGISTRY = _load_registry(REGISTRY_JSON)
@@ -965,6 +1025,7 @@ def health_summary() -> Dict[str, Any]:
         "tools": len(TOOLS_BY_ID),
         "mutations_allowed": ALLOW_MUTATIONS,
         "registry_path": str(Path(REGISTRY_JSON).resolve()),
+        "allowlist_ok": not ALLOWLIST_LOAD_FAILED,
     }
 
 

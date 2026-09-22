@@ -1511,6 +1511,12 @@ async def run(
             )
         try:
             items = parse_plan(pending_plan.get("plan") or {})
+            # Re-validate on resume, not just at plan time. The frontmatter
+            # `tools` list is what makes "never change ownership" impossible
+            # rather than discouraged, and validate_plan is what enforces it —
+            # checking only once meant the control held at exactly one moment.
+            # Cheap, and the alternative is a guarantee with a gap in it.
+            validate_plan(items, skill)
         except PlanError as pe:
             return _finish("plan_invalid", f"I could not run the approved plan: {pe}")
         # Continue from where the look-first pass stopped: its read results and
@@ -1742,6 +1748,7 @@ async def _continue(
         plan_args = plan_arguments(items, skill)
         if not A._consume_approval(approved_mutations, PLAN_TOOL_ID, plan_args):
             summary = render_approval(items, skill, root)
+            A.record_issued(approved_mutations, PLAN_TOOL_ID, plan_args)
             A._record_tool_result(
                 {
                     "ok": False,
@@ -1853,7 +1860,7 @@ async def answer(
     question = str(pending.get("question") or step.args_ask[param])
     prop = ((A.TOOL_REGISTRY.get(step.tool) or {}).get("parameters") or {}).get("properties", {}).get(param) or {}
 
-    value = await _interpret_answer(question, param, prop, user_text, turn_trace_id)
+    value = await _interpret_answer(question, param, prop, user_text, turn_trace_id, summ_on=summ_on)
     if value is None:
         # Not an answer. A real change of subject stands on its own words;
         # a non-answer ("hmm", "why?") does not — re-ask, up to the cap.
@@ -1932,16 +1939,34 @@ async def answer(
     )
 
 
-async def _interpret_answer(question: str, param: str, prop: Dict[str, Any], reply: str, trace_id: str) -> Any:
+async def _interpret_answer(
+    question: str,
+    param: str,
+    prop: Dict[str, Any],
+    reply: str,
+    trace_id: str,
+    *,
+    summ_on: bool = False,
+) -> Any:
     """One small model call: the user's reply → the parameter's value, or None.
-    The value is what the user WROTE — the prompt forbids inventing or normalising."""
+    The value is what the user WROTE — the prompt forbids inventing or normalising.
+
+    The rendered question is filled from LIVE RESULTS (`{method.result.path}`,
+    `{method.count}`), so passing it verbatim sent Sisense data to the model
+    even with summarization OFF — the one place a skill run was NOT identical
+    in both modes, contrary to what CLAUDE.md and docs/security.md say. With
+    the switch off the model gets the parameter's own metadata instead, which
+    is all an extraction task needs: it is reading the USER's reply, not the
+    question.
+    """
     from ._prompts import SKILL_ANSWER_SYSTEM_PROMPT
 
     reply = (reply or "").strip()
     if not reply:
         return None
+    safe_question = question if summ_on else f"What value should be used for `{param}`?"
     system = SKILL_ANSWER_SYSTEM_PROMPT.format(
-        question=question,
+        question=safe_question,
         param=param,
         description=str(prop.get("description") or "").split(". ")[0],
         type=prop.get("type") or "string",

@@ -271,6 +271,63 @@ def _approval_key(tool_id: str, args: Dict[str, Any]) -> Tuple[str, str]:
     return tool_id, json.dumps(args or {}, sort_keys=True, ensure_ascii=False)
 
 
+# How long a dialog the server issued stays approvable. Long enough for a
+# person to actually read a migration plan; short enough that a key scraped
+# from an old response body is not useful later.
+APPROVAL_TTL_SECONDS: float = float(os.getenv("FES_APPROVAL_TTL_SECONDS", "3600"))
+
+
+class ApprovalSet(Set[Tuple[str, str]]):
+    """Client-supplied approval keys, bound to what the server actually issued.
+
+    The key is a pure function of ``(tool_id, canonical args)``, so a client
+    could always COMPUTE one — no dialog needed, and the mutation audit would
+    record it as approved. That made the gate advisory for anything other than
+    the shipped UI, while ``docs/security.md`` said nothing that writes runs
+    without a dialog.
+
+    ``issued`` is the server's own record, living in the session entry: a key
+    lands there only when the backend actually emitted a
+    ``pending_confirmation`` carrying it. An approval is honoured only if the
+    server issued that exact operation, in THIS session, within
+    ``APPROVAL_TTL_SECONDS``.
+
+    What this does and does not buy, stated honestly: it stops a caller from
+    approving an operation the server never proposed, from replaying a key
+    across sessions, and from replaying an old one indefinitely. It cannot stop
+    a scripted client from driving the dialog and then answering it — no
+    server-side check can, because that is what the API is for. The control it
+    restores is that every executed mutation corresponds to a dialog the server
+    really rendered, with exactly these arguments.
+    """
+
+    __slots__ = ("issued",)
+
+    def __init__(self, keys: Any = (), issued: Optional[Dict[Tuple[str, str], float]] = None) -> None:
+        super().__init__()
+        self.update(tuple(k) for k in (keys or ()))
+        # None = no server-side registry (library/test use, no session). The API
+        # layer always supplies one; test_approval_gate.py pins that.
+        self.issued: Optional[Dict[Tuple[str, str], float]] = issued
+
+
+def record_issued(approved: Optional[Set[Tuple[str, str]]], tool_id: str, args: Dict[str, Any]) -> None:
+    """Record that the server is showing a dialog for this exact operation.
+
+    Call this wherever a ``pending_confirmation`` is constructed. Without it the
+    matching approval can never be consumed, so a missed call fails CLOSED.
+    """
+    issued = getattr(approved, "issued", None)
+    if issued is None:
+        return
+    now = time.time()
+    issued[_approval_key(tool_id, args)] = now
+    # Opportunistic expiry so a long session cannot grow this without bound.
+    for key, ts in list(issued.items()):
+        if now - ts > APPROVAL_TTL_SECONDS:
+            issued.pop(key, None)
+
+
 def _consume_approval(approved: Set[Tuple[str, str]], tool_id: str, args: Dict[str, Any]) -> bool:
     """Check-and-consume one mutation approval. Returns True if this execution is authorised.
 
@@ -285,10 +342,34 @@ def _consume_approval(approved: Set[Tuple[str, str]], tool_id: str, args: Dict[s
     fan-out branches cannot both claim the same approval.
     """
     key = _approval_key(tool_id, args)
-    if key in approved:
-        approved.discard(key)
-        return True
-    return False
+    if key not in approved:
+        return False
+
+    issued = getattr(approved, "issued", None)
+    if issued is not None:
+        issued_at = issued.get(key)
+        if issued_at is None:
+            audit_logger.warning(
+                "REJECTED approval for %s: the server never issued a dialog for these arguments "
+                "in this session (forged or cross-session approval key)",
+                tool_id,
+            )
+            approved.discard(key)
+            return False
+        if time.time() - issued_at > APPROVAL_TTL_SECONDS:
+            audit_logger.warning(
+                "REJECTED approval for %s: the dialog was issued %.0fs ago, past the %.0fs limit",
+                tool_id,
+                time.time() - issued_at,
+                APPROVAL_TTL_SECONDS,
+            )
+            issued.pop(key, None)
+            approved.discard(key)
+            return False
+        issued.pop(key, None)
+
+    approved.discard(key)
+    return True
 
 
 _CREDENTIAL_FIELDS: frozenset = frozenset(
@@ -2336,6 +2417,9 @@ async def _reactive_loop(
         if bool(meta.get("mutates")) and REQUIRE_MUTATION_CONFIRM:
             if not _consume_approval(approved_mutations, tool_id, args):
                 explanation = await _generate_mutation_explanation(tool_id, meta, args, turn_trace_id)
+                # Record that the server is showing this exact dialog; an
+                # approval is honoured only if it matches one we issued.
+                record_issued(approved_mutations, tool_id, args)
                 _record_tool_result(
                     {
                         "ok": False,

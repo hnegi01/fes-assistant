@@ -146,8 +146,13 @@ under the section named.
   `_registry.py::allowed_tool_ids` (agent + planner catalog),
   `_routing.py::_load_mixin_tools` (selection menu), and `TOOLS_BY_ID` in
   `mcp_server/tools_core.py` (dispatch — independent, so a delisted tool is
-  unreachable even from a non-backend client). Missing file = allow-all with a
-  warning, never deny-all. Backend re-reads on mtime; MCP reads once at import.
+  unreachable even from a non-backend client). A **missing** file = allow-all
+  with a warning: no policy configured, by design. A file that **exists but
+  cannot be read or decoded** is a config error and fails **closed** — the
+  backend keeps the last known-good set (or denies everything with none), MCP
+  denies everything and reports `allowlist_ok: false` on `/health`. One
+  non-UTF8 byte in a comment used to widen both tiers silently.
+  Backend re-reads on mtime; MCP reads once at import.
 - **One home per kind of curated fact** — the litmus:
   - code applies it deterministically → `SCHEMA_RULES` in
     `scripts/01_build_registry_from_sdk.py` (enums, x-aliases, rich schemas,

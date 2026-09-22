@@ -178,7 +178,22 @@ adaptive chains, verify its own work with the critic, and write answers in prose
   from arguments before any LLM call and scrubbed from audit logs.
 - **Mutations require explicit approval.** Nothing that writes runs without a
   dialog naming the operation and its arguments. Approvals are **single use** — the
-  same request again asks again. Every execution is recorded in `logs/mutations.log`.
+  same request again asks again. Every execution is recorded in `logs/mutations.log`,
+  which is written at INFO unconditionally: `FES_LOG_LEVEL` cannot silence the
+  audit trail, and the file rotates daily (30 days kept).
+
+  **What that guarantee is, precisely.** The approval key is derived from the
+  tool id and its arguments, so a client could always *compute* one. An
+  approval is therefore honoured only when it matches a dialog **this server
+  actually issued**, for **this session**, within `FES_APPROVAL_TTL_SECONDS`
+  (default one hour); anything else is refused and logged to the audit trail as
+  a rejected approval. What this stops is a write that no dialog ever proposed,
+  a key replayed into another session, and a stale key replayed later. What it
+  does **not** stop is a scripted client driving the dialog and then answering
+  it — no server-side check can, because that is what the API is for. The
+  control is that every write matches an operation the server really proposed,
+  with exactly these arguments. If you need writes tied to a *person*, put an
+  authenticating layer in front (see *Deploying this safely* below).
 - **Cloud observability is opt-in** — see *Optional observability (LangSmith)*
   at the top of this page. Local CSV logs carry request text + call metadata,
   never Sisense result data.

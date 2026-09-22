@@ -47,10 +47,33 @@ class TestLoadAllowlist:
         path.write_text("# nothing enabled\n", encoding="utf-8")
         assert tools_core._load_allowlist(str(path)) == set()
 
-    def test_unreadable_path_returns_none(self, tmp_path):
+    def test_unreadable_path_denies_all_it_does_not_allow_all(self, tmp_path):
+        """A file that EXISTS but cannot be read is a config error, not "no policy".
+
+        This used to return None (= allow all), which silently widened the
+        dispatch surface by 20 write tools on a single bad byte or chmod. A
+        MISSING file still means allow-all by design; an unreadable one now
+        denies everything and says so on /health.
+        """
+        bad = tmp_path / "allowed.txt"
+        bad.mkdir()  # exists() is True, read_text raises
+        assert tools_core._load_allowlist(str(bad)) == set()
+
+    def test_undecodable_file_denies_all(self, tmp_path):
+        bad = tmp_path / "allowed.txt"
+        bad.write_bytes(b"dashboard.delete_dashboard\n# caf\xe9\n")  # not UTF-8
+        assert tools_core._load_allowlist(str(bad)) == set()
+
+    def test_missing_file_still_allows_all_by_design(self, tmp_path):
+        assert tools_core._load_allowlist(str(tmp_path / "nope.txt")) is None
+
+    def test_read_failure_is_visible_on_health(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(tools_core, "ALLOWLIST_LOAD_FAILED", False)
+        assert tools_core.health_summary()["allowlist_ok"] is True
         bad = tmp_path / "allowed.txt"
         bad.mkdir()
-        assert tools_core._load_allowlist(str(bad)) is None
+        tools_core._load_allowlist(str(bad))
+        assert tools_core.health_summary()["allowlist_ok"] is False
 
 
 # ---------------------------------------------------------------------------
