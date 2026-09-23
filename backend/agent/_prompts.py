@@ -253,6 +253,12 @@ Rules:
   leaves them unsure whether the thing they wanted was even attempted. Prior
   turns are context for resolving what the user MEANS ("its members", "that
   datamodel") — never grounds for overriding what they asked to DO.
+- A list of missing values in an EARLIER ASSISTANT TURN is a record of what was
+  asked OF THE USER — never a research agenda. Do not plan operations to go and
+  discover those values. If the current request still lacks them, plan the
+  operation the user asked for and let the executor ask again; looking up what
+  the user was already asked to supply is work they did not request, and it
+  answers a question they did not pose.
 - Order by dependency, not by sentence order: steps whose inputs come from an
   earlier step's result come after it.
 - Resolve the named entity FIRST, not the collection. To find what property,
