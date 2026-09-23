@@ -1,0 +1,244 @@
+[
+  {
+    "tool_id": "git.git_fetch",
+    "description": "Download commits and tags from a Git project's remote repository.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "https_credentials": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "save": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "password",
+            "username"
+          ],
+          "description": "HTTP(S) username/password (or personal access token) for the remote repository. When omitted, credentials previously saved for the current user and this project are used; the request fails if none were saved."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Fetch all commits and tags for the project 'analytics-dashboard' using saved credentials.",
+        "arguments": {
+          "project": "analytics-dashboard"
+        },
+        "notes": "This call fetches all commits and tags from the remote repository for the specified project. It uses previously saved credentials for authentication."
+      },
+      {
+        "user_query": "Can you fetch the latest commits for the project 'sales-insights' using my HTTPS credentials?",
+        "arguments": {
+          "project": "sales-insights",
+          "https_credentials": {
+            "username": "admin_user",
+            "password": "securepassword123",
+            "save": false
+          }
+        },
+        "notes": "This call fetches commits and tags for the 'sales-insights' project using the provided HTTPS credentials. The credentials are not saved for future use."
+      },
+      {
+        "user_query": "Fetch commits and tags for the project 'customer-data' and save the provided credentials for future use.",
+        "arguments": {
+          "project": "customer-data",
+          "https_credentials": {
+            "username": "git_user",
+            "password": "mypassword",
+            "save": true
+          }
+        },
+        "notes": "This call fetches commits and tags for the 'customer-data' project using the provided HTTPS credentials. The credentials are saved for future use."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.git_pull",
+    "description": "Fetch and merge remote changes into a Git project's current branch.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "remote_branch": {
+          "type": "string",
+          "description": "Name of the branch on the remote repository to fetch and merge from. The commits are merged into the project's current local branch."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        },
+        "https_credentials": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "save": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "password",
+            "username"
+          ],
+          "description": "HTTP(S) username/password (or personal access token) for the remote repository. When omitted, credentials previously saved for the current user and this project are used; the request fails if none were saved."
+        }
+      },
+      "required": [
+        "project",
+        "remote_branch",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Pull the latest changes from the 'main' branch of the 'sales-analytics' project, ensuring the status checksum matches.",
+        "arguments": {
+          "project": "sales-analytics",
+          "remote_branch": "main",
+          "status_checksum": "abc123def456"
+        },
+        "notes": "This call fetches and merges changes from the 'main' branch of the 'sales-analytics' project. It ensures the project's current status matches the provided checksum before proceeding."
+      },
+      {
+        "user_query": "Can you update the 'marketing-insights' project with changes from the 'feature-updates' branch?",
+        "arguments": {
+          "project": "marketing-insights",
+          "remote_branch": "feature-updates",
+          "status_checksum": "789xyz654mno"
+        },
+        "notes": "This example fetches and merges changes from the 'feature-updates' branch into the current branch of the 'marketing-insights' project. It ensures the operation only proceeds if the provided status checksum matches the project's current state."
+      },
+      {
+        "user_query": "Sync the 'data-warehouse' project with the 'dev' branch using my Git credentials.",
+        "arguments": {
+          "project": "data-warehouse",
+          "remote_branch": "dev",
+          "status_checksum": "qwe987rty654",
+          "https_credentials": {
+            "username": "admin_user",
+            "password": "secure_password",
+            "save": true
+          }
+        },
+        "notes": "This call syncs the 'data-warehouse' project with the 'dev' branch using provided HTTPS credentials. The credentials are saved for future use, and the operation ensures the status checksum matches before proceeding."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.git_push",
+    "description": "Upload commits from a Git project's local branch to its remote repository.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "local_branch": {
+          "type": "string",
+          "description": "Name of the local branch whose commits should be pushed."
+        },
+        "remote_branch": {
+          "type": "string",
+          "description": "Name of the branch on the remote repository to push to."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        },
+        "force": {
+          "type": "boolean",
+          "description": "When ``True``, pushes with ``--force-with-lease``, overriding the remote branch's history with the local branch's history. This can discard commits pushed by others since the local branch's remote-tracking ref was last updated — use with care."
+        },
+        "https_credentials": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "save": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "password",
+            "username"
+          ],
+          "description": "HTTP(S) username/password (or personal access token) for the remote repository. When omitted, credentials previously saved for the current user and this project are used; the request fails if none were saved."
+        }
+      },
+      "required": [
+        "project",
+        "local_branch",
+        "remote_branch",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Push all commits from the local 'feature-branch' to the remote 'main' branch, forcing the update.",
+        "arguments": {
+          "project": "project-12345",
+          "local_branch": "feature-branch",
+          "remote_branch": "main",
+          "status_checksum": "abc123def456",
+          "force": true
+        },
+        "notes": "This call pushes all commits from the local 'feature-branch' to the remote 'main' branch, using force-with-lease to override the remote branch's history. Use this when you need to ensure the remote branch matches the local branch exactly, even if it discards others' commits."
+      },
+      {
+        "user_query": "How can I push the latest changes from 'dev' to 'staging'?",
+        "arguments": {
+          "project": "project-67890",
+          "local_branch": "dev",
+          "remote_branch": "staging",
+          "status_checksum": "789xyz123abc"
+        },
+        "notes": "This call pushes the latest commits from the local 'dev' branch to the remote 'staging' branch without forcing the update. Use this for standard updates where you want to preserve the remote branch's history."
+      },
+      {
+        "user_query": "Push the 'hotfix' branch to 'production' using HTTPS credentials.",
+        "arguments": {
+          "project": "project-54321",
+          "local_branch": "hotfix",
+          "remote_branch": "production",
+          "status_checksum": "456def789ghi",
+          "https_credentials": {
+            "username": "admin_user",
+            "password": "secure_password",
+            "save": false
+          }
+        },
+        "notes": "This call pushes the 'hotfix' branch to the 'production' branch on the remote repository, using HTTPS credentials for authentication. Use this when credentials are required and you do not want them saved for future use."
+      }
+    ]
+  }
+]

@@ -333,7 +333,7 @@ wheels = [
 
 [[package]]
 name = "fes-assistant"
-version = "2.7.5"
+version = "2.7.6"
 source = { virtual = "." }
 dependencies = [
     { name = "anyio" },
@@ -384,7 +384,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.13.4,<2.14" },
     { name = "pydantic-settings", specifier = ">=2.12,<2.13" },
     { name = "pyjwt", specifier = ">=2.10,<3" },
-    { name = "pysisense", specifier = "==2.2.0" },
+    { name = "pysisense", specifier = "==2.3.0" },
     { name = "python-dotenv", specifier = ">=1.0,<2" },
     { name = "python-multipart", specifier = ">=0.0.20,<0.0.21" },
     { name = "pyyaml", specifier = ">=6.0,<7" },
@@ -1221,7 +1221,7 @@ crypto = [
 
 [[package]]
 name = "pysisense"
-version = "2.2.0"
+version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jsbeautifier" },
@@ -1231,9 +1231,9 @@ dependencies = [
     { name = "requests" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cd/29/3f5c4d2089429e08838da218587fca7fea98174468c2b807f7c2aa19b22e/pysisense-2.2.0.tar.gz", hash = "sha256:518acfbf433420f7ed051792e89ce9deef528a3343f6daae4f418d91ca8fe122", size = 229103, upload-time = "2026-09-21T20:46:24.867Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/af/b1/6b8ae92a9b375ea664c6648f11574f3304fe9281d00866123c1858c55cdf/pysisense-2.3.0.tar.gz", hash = "sha256:a8e37f1896883463d2ae508db4a0fb05c905b22df2d6119a40eb576411bbde5c", size = 238850, upload-time = "2026-09-23T15:50:56.485Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ac/4a/f0f45f6b0cc841b2760367bbeb51b7c284d287cff63762e92a7ef8a102ec/pysisense-2.2.0-py3-none-any.whl", hash = "sha256:70e198622f0be2bd612ba24dcad53f496d0460ce5a1bd38cb28d414253b5529e", size = 286779, upload-time = "2026-09-21T20:46:23.398Z" },
+    { url = "https://files.pythonhosted.org/packages/bd/27/481b0ffb589ad1f40e39b43c37a719973c4e7cb40d81689d48e44abc12bf/pysisense-2.3.0-py3-none-any.whl", hash = "sha256:7e7bac7f7e53647b8bdfeec5c7ca9323f1c17e82fb45c959fbeb0a4164bd6b32", size = 301007, upload-time = "2026-09-23T15:50:54.683Z" },
 ]
 
 [[package]]

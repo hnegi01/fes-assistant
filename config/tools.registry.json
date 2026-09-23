@@ -45,8 +45,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -80,8 +80,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -113,8 +113,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -124,7 +124,7 @@
     "class": "AccessManagement",
     "method": "create_schedule_build",
     "description": "Schedule a recurring build for an ElastiCube.",
-    "full_doc": "Create a schedule build for a DataModel.\n\nSupports both cron-based schedules (e.g. every Monday at 9:00 UTC) and\ninterval-based schedules (e.g. every 2 days, 1 hour, 30 minutes). An\ninterval-based schedule is created when any of the ``interval_*``\nparameters are provided; otherwise a cron-based schedule is created from\n``days``, ``hour``, and ``minute``.\n\nParameters\n----------\ndatamodel_name : str\n    The name of the DataModel.\nbuild_type : str, optional\n    Type of the build, one of ``\"ACCUMULATE\"``, ``\"FULL\"``, or\n    ``\"SCHEMA_CHANGES\"``. Defaults to ``\"ACCUMULATE\"``.\ndays : list[str] | None, optional\n    Keyword-only. List of days for a cron schedule, e.g.\n    ``[\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"]`` or ``[\"*\"]``\n    for all days.\nhour : int | None, optional\n    Keyword-only. Hour in 24-hour format (UTC) for a cron schedule.\nminute : int | None, optional\n    Keyword-only. Minute of the hour (UTC) for a cron schedule.\ninterval_days : int | None, optional\n    Keyword-only. Interval in days for an interval-based schedule.\ninterval_hours : int | None, optional\n    Keyword-only. Interval in hours for an interval-based schedule.\ninterval_minutes : int | None, optional\n    Keyword-only. Interval in minutes for an interval-based schedule.\n\nReturns\n-------\ndict[str, Any]\n    The API response on success, or ``{\"error\": \"...\"}`` on failure or\n    invalid schedule configuration.",
+    "full_doc": "Schedule a recurring build for an ElastiCube.\n\nSends ``POST /api/v2/datamodels/{id}/schedule`` to store a build schedule\non the model. No build is started by this call; the model is built by\nSisense whenever the schedule comes due. Supports both cron-based\nschedules (e.g. every Monday at 9:00 UTC) and interval-based schedules\n(e.g. every 2 days, 1 hour, 30 minutes). An interval-based schedule is\ncreated when any of the ``interval_*`` parameters are provided; otherwise\na cron-based schedule is created from ``days``, ``hour``, and ``minute``.\n\nParameters\n----------\ndatamodel_name : str\n    The name of the DataModel.\nbuild_type : str, optional\n    Type of the build, one of ``\"ACCUMULATE\"``, ``\"FULL\"``, or\n    ``\"SCHEMA_CHANGES\"``. Defaults to ``\"ACCUMULATE\"``.\ndays : list[str] | None, optional\n    Keyword-only. List of days for a cron schedule, e.g.\n    ``[\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"]`` or ``[\"*\"]``\n    for all days.\nhour : int | None, optional\n    Keyword-only. Hour in 24-hour format (UTC) for a cron schedule.\nminute : int | None, optional\n    Keyword-only. Minute of the hour (UTC) for a cron schedule.\ninterval_days : int | None, optional\n    Keyword-only. Interval in days for an interval-based schedule.\ninterval_hours : int | None, optional\n    Keyword-only. Interval in hours for an interval-based schedule.\ninterval_minutes : int | None, optional\n    Keyword-only. Interval in minutes for an interval-based schedule.\n\nReturns\n-------\ndict[str, Any]\n    The API response on success, or ``{\"error\": \"...\"}`` on failure or\n    invalid schedule configuration.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -173,8 +173,8 @@
       "access_management",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -242,8 +242,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -275,8 +275,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -305,8 +305,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -336,8 +336,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -359,8 +359,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -389,8 +389,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -417,8 +417,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -440,8 +440,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -462,8 +462,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -484,8 +484,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -495,7 +495,7 @@
     "class": "AccessManagement",
     "method": "get_unused_columns_bulk",
     "description": "Run unused-column analysis for one or more data models and return a",
-    "full_doc": "Run unused-column analysis for one or more data models and return a\ncombined per-model outcome.\n\n\nUnder Dashboard Co-Authoring the export returns the owner's private copy, while\nviewers see the shared copy; for a published dashboard the shared copy is read\ninstead — its own filters, hierarchies and widgets — as administrator\n(``GET /api/dashboards/{id}?adminAccess=true``) or as owner (``sharedMode=true``).\nA shared copy neither route can read fails that model's analysis with the standard\nerror dict under ``\"errors\"`` rather than the private copy being analysed in its place.\nParameters\n----------\ndatamodels : str or list of str\n    One or more data model references to analyze. **Required.** Each\n    reference can be:\n      - a data model ID, or\n      - a data model title (name).\n    At runtime this parameter is tolerant of a single string and will\n    normalize it to a one-element list.\n\nReturns\n-------\ndict[str, Any]\n    Always a dict with ``\"results\"`` and ``\"errors\"``:\n      - ``\"results\"``: flat list of column rows across all processed\n        data models, each row shaped as ``get_datamodel_columns`` rows\n        plus a ``\"used\"`` boolean. A model that resolves and genuinely\n        has no columns in use contributes rows with ``used: False``.\n      - ``\"errors\"``: list of ``{\"ref\": ..., \"error\": ...}`` entries,\n        one per reference that could not be resolved or processed —\n        empty when every reference succeeded.\n    When **none** of the given references can be processed (or the\n    input is invalid), the dict additionally carries ``\"ok\": False``\n    and a top-level ``\"error\"`` summary, so standard failure detection\n    (``payload.get(\"ok\") is False``) still fires.",
+    "full_doc": "Run unused-column analysis for one or more data models and return a\ncombined per-model outcome.\n\n\nUnder Dashboard Co-Authoring the export returns the owner's private copy, while\nviewers see the shared copy; for a published dashboard the shared copy is read\ninstead — its own filters, hierarchies and widgets — as administrator\n(``GET /api/dashboards/{id}?adminAccess=true``) or as owner (``sharedMode=true``).\nA shared copy neither route can read fails that model's analysis with the standard\nerror dict under ``\"errors\"`` rather than the private copy being analysed in its place.\nA dashboard counts for the datasource its shared copy names, and for no other: a data\nmodel and a perspective over it are separate datasources here, so a dashboard on the\nperspective leaves the model's columns unused and vice versa. Because the dashboard\nlisting reports owner copies only, and never names a perspective, the data model and\nevery perspective over it are swept to find the dashboards worth opening\n(``GET /api/v2/datamodels/schema``, ``GET /api/v2/perspectives``); the copy that is\nread then decides which of them a dashboard belongs to. With the feature off there is\na single copy and only the given datasource is searched.\nParameters\n----------\ndatamodels : str or list of str\n    One or more data model references to analyze. **Required.** Each\n    reference can be:\n      - a data model ID, or\n      - a data model title (name).\n    At runtime this parameter is tolerant of a single string and will\n    normalize it to a one-element list.\n\nReturns\n-------\ndict[str, Any]\n    Always a dict with ``\"results\"`` and ``\"errors\"``:\n      - ``\"results\"``: flat list of column rows across all processed\n        data models, each row shaped as ``get_datamodel_columns`` rows\n        plus a ``\"used\"`` boolean. A model that resolves and genuinely\n        has no columns in use contributes rows with ``used: False``.\n      - ``\"errors\"``: list of ``{\"ref\": ..., \"error\": ...}`` entries,\n        one per reference that could not be resolved or processed —\n        empty when every reference succeeded.\n    When **none** of the given references can be processed (or the\n    input is invalid), the dict additionally carries ``\"ok\": False``\n    and a top-level ``\"error\"`` summary, so standard failure detection\n    (``payload.get(\"ok\") is False``) still fires.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -516,8 +516,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -547,8 +547,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -570,8 +570,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -638,8 +638,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -667,8 +667,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -696,8 +696,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -718,8 +718,8 @@
       "blox",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -756,8 +756,8 @@
       "blox",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -785,8 +785,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -835,8 +835,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -883,8 +883,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -912,8 +912,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -941,8 +941,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -972,8 +972,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1001,8 +1001,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1035,8 +1035,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1069,8 +1069,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1119,8 +1119,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1169,8 +1169,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1207,8 +1207,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1261,8 +1261,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1290,8 +1290,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1333,8 +1333,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1373,8 +1373,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1408,8 +1408,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1438,8 +1438,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1468,8 +1468,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1512,8 +1512,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1535,8 +1535,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1565,8 +1565,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1595,8 +1595,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1625,8 +1625,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1655,8 +1655,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1685,8 +1685,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1719,8 +1719,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1749,8 +1749,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1780,8 +1780,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1814,8 +1814,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1852,8 +1852,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1886,8 +1886,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1923,8 +1923,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -1962,8 +1962,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2000,8 +2000,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2039,8 +2039,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2085,8 +2085,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2115,8 +2115,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2158,8 +2158,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2192,8 +2192,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2229,8 +2229,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2240,7 +2240,7 @@
     "class": "DataModel",
     "method": "analyze_perspective_requirements",
     "description": "Work out which tables and columns of a data model its dashboards need, ready to build a perspective from.",
-    "full_doc": "Work out which tables and columns of a data model its dashboards need, ready to build a perspective from.\n\nRead-only. Finds every dashboard that uses the model — directly, through a\nsingle widget, or through a perspective already built over it — reads each one's fields\n(filters, hierarchies, widget panels, nested formulas, drill history) from the\ndashboard export — under Dashboard Co-Authoring, from the shared copy viewers see — its own filters,\nhierarchies and widgets, read as administrator or as owner; a shared copy neither can read fails that dashboard with a\n``shared_copy_unreadable`` error rather than analysing the owner's private copy in its\nplace — keeping only references that belong to this model, and resolves\nthem against the model's schema. It then adds what the joins need: for every pair\nof tables that meet in one query — a widget's own tables together with the tables\nof the dashboard's filters and hierarchies, which apply to every widget, including\nwidgets that have switched a filter off — it follows the shortest relation paths\nbetween them in the model and keeps both key columns of every relation on the way\nand any intermediate table. Tables used only by separate widgets, or by separate\ndashboards, need no join and get none. A perspective inherits a relation only when\nboth of its columns are kept, and it evaluates custom columns and custom tables\nthrough the root model, so nothing else is added.\n\nWhen two tables are joined by more than one equally short path, and at least one of\nthose paths runs through a table nothing else needs, the pair is a choice. For each\nwidget behind such a pair the method sends the widget's query, with the dashboard\nfilters applied, to ``POST /api/datasources/{model}/jaql/sql`` — translation only,\nnothing is executed — and reads from the returned SQL which of the candidate tables\nthe query engine actually joins through. ``perspective_tables`` keeps only those\npaths; ``perspective_tables_all_paths`` keeps every path; ``join_path_choices`` lists\nthe pair, every path and which ones are in use. When the translation cannot be\nobtained, or names none of the candidates, every path is kept in both lists and the\npair is reported as ``ambiguous_join_path``. Every relation between two kept tables is\nthen tested for a many-to-many join with one aggregate SQL query per side\n(``GET /api/datasources/{model}/sql``): a perspective inherits the root model's\nrelations, so a query spanning two kept tables joined many-to-many can fan out and\ndouble count. Such a pair is a warning with its evidence, never an error and never a\nreason to drop a table. Anything that could not be resolved or verified is reported as\nan issue rather than dropped.\n\nParameters\n----------\ndatamodel : str\n    The data model, as an ID or title.\ndetailed : bool, optional\n    Include the per-dashboard, per-column, per-dependency and per-issue detail.\n    Default ``False`` returns the summary view only.\n\nReturns\n-------\ndict[str, Any]\n    Always: ``datamodel`` (``oid``, ``title``, ``type``, counts of ``tables``, ``columns``,\n    ``relations``, ``custom_columns`` and ``custom_tables``, and the names of its existing\n    ``perspectives``); ``summary`` (``model_tables``, ``model_columns``, ``dashboards_analyzed``,\n    ``dashboards_failed``, ``tables_used_by_dashboards``, ``columns_used_by_dashboards``,\n    ``columns_required_for_dependencies``, ``tables_required_in_perspective``,\n    ``columns_required_in_perspective``, ``tables_required_all_paths``,\n    ``columns_required_all_paths``, ``tables_not_required``, ``columns_not_required``, and\n    ``issues`` by severity); ``perspective_tables`` — the ``{\"table\", \"columns\"}`` entries a\n    perspective must keep, ``columns`` always the explicit list of names: every used column\n    plus the join columns and intermediate tables of the paths the query engine uses (every\n    path where that could not be determined); ``perspective_tables_all_paths`` — the same\n    with every equally short path kept; ``join_path_choices`` — one entry per pair of\n    tables joined by more than one equally short path where some path runs through a\n    table nothing else needs, with ``from``, ``to``, ``needed_by`` (which dashboards, filters\n    and how many widgets put the two tables in one query), ``resolved`` (whether the\n    engine's path is known) and ``paths`` (each ``{\"via\": [...], \"in_use\": ...}`` — the\n    intermediate tables of one path and whether the engine uses it; ``None`` when not\n    resolved); ``errors`` — the distinct error messages; and ``warnings`` — warning counts\n    by kind, ``many_to_many_in_perspective`` always present (``0`` when none), plus\n    ``many_to_many_unchecked`` when a pair's SQL check failed.\n\n    With ``detailed=True`` also: ``required`` (``tables``: ``table``, ``columns_used``,\n    ``columns_total``, ``used_by_dashboards``; ``columns``: ``table``, ``column``, ``used_in`` —\n    ``\"filter\"``, ``\"hierarchy\"`` and/or ``\"widget\"`` — ``used_by``); ``dependencies`` (``columns``\n    with ``table``, ``column``, ``reason`` — always ``join_column`` — ``required_by``, ``detail``,\n    ``in_use`` — whether the column is in ``perspective_tables``; ``tables`` kept only as join\n    paths in ``perspective_tables``; ``tables_all_paths`` the same for every path; ``join_paths``);\n    ``not_required`` (``tables``, ``columns`` — relative to ``perspective_tables``); ``many_to_many``\n    (one entry per kept table pair joined many-to-many or not checkable: ``table_a``, ``columns_a``,\n    ``table_b``, ``columns_b``, ``duplicate_keys_a``, ``duplicate_keys_b``, ``is_m2m``, ``status``,\n    ``error``, and ``scope`` — ``\"perspective\"``, or ``\"all_paths\"`` for a pair kept only by the\n    all-paths variant); ``dashboards``\n    (``analyzed``: ``dashboard_id``, ``title``, ``match``, ``datasource`` — the model or the\n    perspective the dashboard sits on — ``copy`` — ``\"shared\"`` under Dashboard Co-Authoring\n    for a published dashboard, else ``\"private\"`` (the single copy) — ``owner``, ``owner_email``, ``tables_used``,\n    ``columns_used``, ``columns`` as ``\"Table.Column\"``, ``widgets_on_other_datasources``;\n    ``failed``); and ``issues`` (``severity``, ``kind``, ``dashboard``, ``widget_id``, ``detail``).\n    On failure to resolve the model, read its schema or list dashboards, the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
+    "full_doc": "Work out which tables and columns of a data model its dashboards need, ready to build a perspective from.\n\nRead-only. Finds every dashboard that uses the model — directly, through a\nsingle widget, or through a perspective already built over it — reads each one's fields\n(filters, hierarchies, widget panels, nested formulas, drill history) from the\ndashboard export — under Dashboard Co-Authoring, from the shared copy viewers see — its own filters,\nhierarchies and widgets, read as administrator or as owner; a shared copy neither can read fails that dashboard with a\n``shared_copy_unreadable`` error rather than analysing the owner's private copy in its\nplace — keeping only references that belong to this model or to a perspective over it,\nand resolves them against the model's schema. Which of those a dashboard shows is read\nfrom the copy that was opened, not from the dashboard listing, because the listing\nalways describes the owner's copy and the two copies can sit on different members of\nthe family. A dashboard whose widgets all query something else entirely contributes no\ncolumns and is reported as ``dashboard_on_other_datasource``. It then adds what the joins need: for every pair\nof tables that meet in one query — a widget's own tables together with the tables\nof the dashboard's filters and hierarchies, which apply to every widget, including\nwidgets that have switched a filter off — it follows the shortest relation paths\nbetween them in the model and keeps both key columns of every relation on the way\nand any intermediate table. Tables used only by separate widgets, or by separate\ndashboards, need no join and get none. A perspective inherits a relation only when\nboth of its columns are kept, and it evaluates custom columns and custom tables\nthrough the root model, so nothing else is added.\n\nTwo tables joined by more than one equally short path can be joined several ways, and\nthe answer depends on which — so every such pair is listed in ``join_path_choices``.\nFor each widget behind a pair the method sends the widget's query, with the dashboard\nfilters applied, to ``POST /api/datasources/{model}/jaql/sql`` — translation only,\nnothing is executed — and reads from the returned SQL which of the candidate tables\nthe query engine actually joins through. More than one path can be in use at once,\nsince different widgets may join the same two tables differently. ``changes_tables``\nsays whether picking a path would change which tables the perspective keeps: it is\ntrue only when some path runs through a table nothing else needs. Those are the pairs\nacted on — ``perspective_tables`` keeps the paths in use and\n``perspective_tables_all_paths`` keeps every path — and the ones reported as\n``ambiguous_join_path`` when the translation cannot be obtained or names none of the\ncandidates. A pair with ``changes_tables`` false is reported and never acted on:\nevery candidate table is kept either way, and narrowing to the path in use would drop\nthe other paths' join columns and with them their relations. Every relation between two kept tables is\nthen tested for a many-to-many join with one aggregate SQL query per side\n(``GET /api/datasources/{model}/sql``): a perspective inherits the root model's\nrelations, so a query spanning two kept tables joined many-to-many can fan out and\ndouble count. Such a pair is a warning with its evidence, never an error and never a\nreason to drop a table. Anything that could not be resolved or verified is reported as\nan issue rather than dropped.\n\nParameters\n----------\ndatamodel : str\n    The data model, as an ID or title.\ndetailed : bool, optional\n    Include the per-dashboard, per-column, per-dependency and per-issue detail.\n    Default ``False`` returns the summary view only.\n\nReturns\n-------\ndict[str, Any]\n    Always: ``datamodel`` (``oid``, ``title``, ``type``, counts of ``tables``, ``columns``,\n    ``relations``, ``custom_columns`` and ``custom_tables``, and the names of its existing\n    ``perspectives``); ``summary`` (``model_tables``, ``model_columns``, ``dashboards_analyzed``,\n    ``dashboards_failed``, ``tables_used_by_dashboards``, ``columns_used_by_dashboards``,\n    ``columns_required_for_dependencies``, ``tables_required_in_perspective``,\n    ``columns_required_in_perspective``, ``tables_required_all_paths``,\n    ``columns_required_all_paths``, ``tables_not_required``, ``columns_not_required``, and\n    ``issues`` by severity); ``perspective_tables`` — the ``{\"table\", \"columns\"}`` entries a\n    perspective must keep, ``columns`` always the explicit list of names: every used column\n    plus the join columns and intermediate tables of the paths the query engine uses (every\n    path where that could not be determined); ``perspective_tables_all_paths`` — the same\n    with every equally short path kept; ``join_path_choices`` — one entry per pair of\n    tables joined by more than one equally short path, with ``from``, ``to`` (table names,\n    in no particular order), ``needed_by`` (which dashboards, filters and how many widgets\n    put the two tables in one query), ``changes_tables`` (whether picking a path changes\n    which tables are kept), ``resolved`` (whether the engine's path is known) and ``paths``\n    (each ``{\"via\": [...], \"in_use\": ...}`` — the intermediate tables of one path, in order,\n    and whether the engine uses it; ``None`` when not resolved, and true on more than one\n    path when different widgets take different routes); ``errors`` — the distinct error messages; and ``warnings`` — warning counts\n    by kind, ``many_to_many_in_perspective`` always present (``0`` when none), plus\n    ``many_to_many_unchecked`` when a pair's SQL check failed.\n\n    With ``detailed=True`` also: ``required`` (``tables``: ``table``, ``columns_used``,\n    ``columns_total``, ``used_by_dashboards``; ``columns``: ``table``, ``column``, ``used_in`` —\n    ``\"filter\"``, ``\"hierarchy\"`` and/or ``\"widget\"`` — ``used_by``); ``dependencies`` (``columns``\n    with ``table``, ``column``, ``reason`` — always ``join_column`` — ``required_by``, ``detail``,\n    ``in_use`` — whether the column is in ``perspective_tables``; ``tables`` kept only as join\n    paths in ``perspective_tables``; ``tables_all_paths`` the same for every path; ``join_paths``);\n    ``not_required`` (``tables``, ``columns`` — relative to ``perspective_tables``); ``many_to_many``\n    (one entry per kept table pair joined many-to-many or not checkable: ``table_a``, ``columns_a``,\n    ``table_b``, ``columns_b``, ``duplicate_keys_a``, ``duplicate_keys_b``, ``is_m2m``, ``status``,\n    ``error``, and ``scope`` — ``\"perspective\"``, or ``\"all_paths\"`` for a pair kept only by the\n    all-paths variant); ``dashboards``\n    (``analyzed``: ``dashboard_id``, ``title``, ``match``, ``datasource`` — the model or the\n    perspective the dashboard sits on — ``copy`` — ``\"shared\"`` under Dashboard Co-Authoring\n    for a published dashboard, else ``\"private\"`` (the single copy) — ``owner``, ``owner_email``, ``tables_used``,\n    ``columns_used``, ``columns`` as ``\"Table.Column\"``, ``widgets_on_other_datasources``;\n    ``failed``); and ``issues`` (``severity``, ``kind``, ``dashboard``, ``widget_id``, ``detail``).\n    On failure to resolve the model, read its schema or list dashboards, the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2262,8 +2262,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2322,8 +2322,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2374,8 +2374,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2424,8 +2424,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [],
     "x-followup": {
       "note": "The change isn't queryable until the model is built or published.",
@@ -2509,8 +2509,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2574,8 +2574,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [],
     "x-followup": {
       "note": "The change isn't queryable until the model is built or published.",
@@ -2612,8 +2612,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2651,8 +2651,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2684,8 +2684,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2694,8 +2694,8 @@
     "sub_module": "datamodel.build",
     "class": "DataModel",
     "method": "deploy_datamodel",
-    "description": "Build an ElastiCube or publish a live data model, and optionally wait for the run to finish.",
-    "full_doc": "Deploy (build or publish) the specified data model based on its type.\n\nSupports both Elasticube (EXTRACT) and Live models. For EXTRACT models a\nbuild is triggered using ``build_type``, ``row_limit``, and ``schema_origin``.\nFor LIVE models a publish is triggered and ``row_limit`` and\n``schema_origin`` are ignored. Sends ``POST /api/v2/builds``, which only\naccepts the build: the returned object has ``status`` ``None`` and the build\nruns in the background. With ``wait=True`` the method then polls\n``GET /api/v2/builds/{oid}`` every ``poll_interval`` seconds until the build\nreaches a final state or ``timeout`` elapses, so that whatever follows — a\nquery, a perspective built over the model — sees the finished build.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to deploy.\nbuild_type : Literal[\"full\", \"by_table\", \"schema_changes\"], optional\n    Type of deployment for EXTRACT models. One of ``\"schema_changes\"``\n    (build only schema changes), ``\"by_table\"`` (build per each table's\n    config, e.g. incremental/accumulative), or ``\"full\"`` (rebuild the\n    entire model, the default). For LIVE models this is overridden to\n    ``\"publish\"``.\nrow_limit : int, optional\n    Maximum number of rows to process for EXTRACT builds. Defaults to ``0``\n    (no limit). Ignored for LIVE models.\nschema_origin : Literal[\"latest\", \"running\"], optional\n    Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen\n    in the Data page, the default) or ``\"running\"`` (last successfully built\n    version). Ignored for LIVE models.\nwait : bool, optional\n    Poll the build until it finishes instead of returning as soon as it is\n    accepted. Default ``False``.\ntimeout : float, optional\n    Seconds to wait for the build to finish when ``wait`` is true. Default ``900``.\npoll_interval : float, optional\n    Seconds between two status reads when ``wait`` is true; also the pause before\n    the first read, since the build is not readable in its first moments. Default ``5``.\n\nReturns\n-------\ndict[str, Any]\n    The build object from ``POST /api/v2/builds`` (``oid``, ``datamodelId``,\n    ``buildType``, ``status`` — ``None`` when just accepted — ``datamodelTitle``,\n    ``datamodelType``, ``created``, ``started``, ``completed``, ...). With ``wait=True``,\n    the same object as last read, with ``status`` ``\"done\"``, once the model's\n    ``lastSuccessfulBuildTime`` (``lastPublishTime`` for a live model) has moved to the\n    build's start or later — a failed rebuild leaves the previous build running and moves\n    only ``lastBuildTime``, so the build's own status is confirmed against the model. When\n    the build ends in any other final state (``\"failed\"``, ``\"cancelled\"``), the model never\n    confirms it, or it does not finish within ``timeout``, the standard ``{\"ok\": False,\n    \"error\": \"...\", ...}`` dict with the last build object read under ``build`` — every field\n    Sisense reported on it, verbatim — and the model's ``lastBuildTime``,\n    ``lastSuccessfulBuildTime`` and ``lastPublishTime`` under ``model`` when readable.\n    ``{\"ok\": False, \"error\": \"...\"}`` when the model is not found or the build is refused.",
+    "description": "Build (run) an ElastiCube or publish a live data model, and optionally wait for it to finish.",
+    "full_doc": "Build (run) an ElastiCube or publish a live data model, and optionally wait for it to finish.\n\nSupports both Elasticube (EXTRACT) and Live models. For EXTRACT models a\nbuild is triggered using ``build_type``, ``row_limit``, and ``schema_origin``.\nFor LIVE models a publish is triggered and ``row_limit`` and\n``schema_origin`` are ignored. Sends ``POST /api/v2/builds``, which only\naccepts the build: the returned object has ``status`` ``None`` and the build\nruns in the background. With ``wait=True`` the method then polls\n``GET /api/v2/builds/{oid}`` every ``poll_interval`` seconds until the build\nreaches a final state or ``timeout`` elapses, so that whatever follows — a\nquery, a perspective built over the model — sees the finished build.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to deploy.\nbuild_type : Literal[\"full\", \"by_table\", \"schema_changes\"], optional\n    Type of deployment for EXTRACT models. One of ``\"schema_changes\"``\n    (build only schema changes), ``\"by_table\"`` (build per each table's\n    config, e.g. incremental/accumulative), or ``\"full\"`` (rebuild the\n    entire model, the default). For LIVE models this is overridden to\n    ``\"publish\"``.\nrow_limit : int, optional\n    Maximum number of rows to process for EXTRACT builds. Defaults to ``0``\n    (no limit). Ignored for LIVE models.\nschema_origin : Literal[\"latest\", \"running\"], optional\n    Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen\n    in the Data page, the default) or ``\"running\"`` (last successfully built\n    version). Ignored for LIVE models.\nwait : bool, optional\n    Poll the build until it finishes instead of returning as soon as it is\n    accepted. Default ``False``.\ntimeout : float, optional\n    Seconds to wait for the build to finish when ``wait`` is true. Default ``900``.\npoll_interval : float, optional\n    Seconds between two status reads when ``wait`` is true; also the pause before\n    the first read, since the build is not readable in its first moments. Default ``5``.\n\nReturns\n-------\ndict[str, Any]\n    The build object from ``POST /api/v2/builds`` (``oid``, ``datamodelId``,\n    ``buildType``, ``status`` — ``None`` when just accepted — ``datamodelTitle``,\n    ``datamodelType``, ``created``, ``started``, ``completed``, ...). With ``wait=True``,\n    the same object as last read, with ``status`` ``\"done\"``, once the model's\n    ``lastSuccessfulBuildTime`` (``lastPublishTime`` for a live model) has moved to the\n    build's start or later — a failed rebuild leaves the previous build running and moves\n    only ``lastBuildTime``, so the build's own status is confirmed against the model. When\n    the build ends in any other final state (``\"failed\"``, ``\"cancelled\"``), the model never\n    confirms it, or it does not finish within ``timeout``, the standard ``{\"ok\": False,\n    \"error\": \"...\", ...}`` dict with the last build object read under ``build`` — every field\n    Sisense reported on it, verbatim — and the model's ``lastBuildTime``,\n    ``lastSuccessfulBuildTime`` and ``lastPublishTime`` under ``model`` when readable.\n    ``{\"ok\": False, \"error\": \"...\"}`` when the model is not found or the build is refused.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -2767,8 +2767,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2796,8 +2796,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2825,8 +2825,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2861,8 +2861,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2972,8 +2972,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -2994,8 +2994,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3023,8 +3023,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3045,8 +3045,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3083,8 +3083,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3112,8 +3112,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3141,8 +3141,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3170,8 +3170,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3199,8 +3199,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3228,8 +3228,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3257,8 +3257,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3290,8 +3290,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3312,8 +3312,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3341,8 +3341,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3379,8 +3379,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3408,8 +3408,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3452,8 +3452,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3493,8 +3493,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3526,8 +3526,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3555,8 +3555,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3662,8 +3662,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3796,8 +3796,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [],
     "x-followup": {
       "note": "The model isn't queryable until it's built or published.",
@@ -3851,8 +3851,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3888,8 +3888,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -3925,8 +3925,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4032,8 +4032,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4061,8 +4061,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4090,8 +4090,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4123,8 +4123,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4152,8 +4152,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4174,8 +4174,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4203,8 +4203,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4232,8 +4232,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4259,8 +4259,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4281,8 +4281,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4322,8 +4322,734 @@
       "folder",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.checkout_git_branch",
+    "module": "git",
+    "sub_module": "git.branches",
+    "class": "Git",
+    "method": "checkout_git_branch",
+    "description": "Switch a Git project to a branch and import its assets.",
+    "full_doc": "Switch a Git project to a branch and import its assets.\n\nSends ``POST /api/v2/projects/{project_id}/branches/{branch}/checkout``.\nUpdates the project's index and working tree to match the branch and\npoints HEAD at it, then validates and imports the resulting asset\nfiles into the application; assets that fail validation are not\nimported, while the rest still are (see the HTTP 453 note below).\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\nbranch : str\n    Name of the branch to check out.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure. HTTP 453 means the checkout\n    succeeded but one or more assets failed JSON validation on\n    import — those assets were not imported, and validation details\n    travel in the failure dict's ``raw_body``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "branch": {
+          "type": "string",
+          "description": "Name of the branch to check out."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "branch",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.checkout_git_commit",
+    "module": "git",
+    "sub_module": "git.commits",
+    "class": "Git",
+    "method": "checkout_git_commit",
+    "description": "Check out a Git commit of a project and import its assets.",
+    "full_doc": "Check out a Git commit of a project and import its assets.\n\nSends ``POST /api/v2/projects/{project_id}/commits/{commit}/checkout``.\nUpdates the project's index and working tree to match the commit\nand detaches HEAD, then validates and imports the resulting asset\nfiles into the application; assets that fail validation are not\nimported, while the rest still are (see the HTTP 453 note below).\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\ncommit : str\n    Commit hash to check out.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure. HTTP 453 means the checkout\n    succeeded but one or more assets failed JSON validation on\n    import — those assets were not imported, and validation details\n    travel in the failure dict's ``raw_body``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "commit": {
+          "type": "string",
+          "description": "Commit hash to check out."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "commit",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.create_git_branch",
+    "module": "git",
+    "sub_module": "git.branches",
+    "class": "Git",
+    "method": "create_git_branch",
+    "description": "Create a new Git branch in a project.",
+    "full_doc": "Create a new Git branch in a project.\n\nSends ``POST /api/v2/projects/{project_id}/branches``.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\nname : str\n    Name of the new branch.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\nparent : str, optional\n    Commit hash or commitish the new branch should start from.\n    Defaults to HEAD when omitted.\n\nReturns\n-------\ndict[str, Any]\n    The created branch object (``name``, ``parents``, ``head``) on\n    success, or ``{\"ok\": False, \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the new branch."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        },
+        "parent": {
+          "type": "string",
+          "description": "Commit hash or commitish the new branch should start from. Defaults to HEAD when omitted."
+        }
+      },
+      "required": [
+        "project",
+        "name",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.create_git_commit",
+    "module": "git",
+    "sub_module": "git.commits",
+    "class": "Git",
+    "method": "create_git_commit",
+    "description": "Create a new Git commit in a project.",
+    "full_doc": "Create a new Git commit in a project.\n\nSends ``POST /api/v2/projects/{project_id}/commits``. Files are\nauto-staged by Sisense, so ``changes`` only needs to list which\nalready-changed file paths to include — there is no separate stage\nstep.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\nmessage : str\n    Subject line and optional body of the new commit.\nchanges : list[str]\n    File paths whose changes should be included in the commit.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\n\nReturns\n-------\ndict[str, Any]\n    The created commit object on success, or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "message": {
+          "type": "string",
+          "description": "Subject line and optional body of the new commit."
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File paths whose changes should be included in the commit."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "message",
+        "changes",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.discard_git_project_changes",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "discard_git_project_changes",
+    "description": "Discard uncommitted file changes in a Git project's working tree.",
+    "full_doc": "Discard uncommitted file changes in a Git project's working tree.\n\nSends ``POST /api/v2/projects/{project_id}/discard``. Removes the\nlisted uncommitted changes from the project's local Git working\ntree, then validates and imports the resulting asset files into the\napplication; assets that fail validation are not imported, while\nthe rest still are (see the HTTP 453 note below).\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\nchanges : list[str]\n    File paths whose uncommitted changes should be discarded.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure. HTTP 453 means the discard\n    succeeded but one or more assets failed JSON validation on\n    import — those assets were not imported, and validation details\n    travel in the failure dict's ``raw_body``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File paths whose uncommitted changes should be discarded."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "changes",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.get_git_branch",
+    "module": "git",
+    "sub_module": "git.branches",
+    "class": "Git",
+    "method": "get_git_branch",
+    "description": "Retrieve a single Git branch of a project.",
+    "full_doc": "Retrieve a single Git branch of a project.\n\nSends ``GET /api/v2/projects/{project_id}/branches/{branch}``.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\nbranch : str\n    Branch name.\n\nReturns\n-------\ndict[str, Any]\n    The branch object (``name``, ``parents``, ``head``) on success,\n    or ``{\"ok\": False, \"error\": \"...\"}`` on failure (including an\n    unresolved ``project`` or an unknown ``branch``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "branch": {
+          "type": "string",
+          "description": "Branch name."
+        }
+      },
+      "required": [
+        "project",
+        "branch"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.get_git_branches",
+    "module": "git",
+    "sub_module": "git.branches",
+    "class": "Git",
+    "method": "get_git_branches",
+    "description": "List all Git branches of a project.",
+    "full_doc": "List all Git branches of a project.\n\nSends ``GET /api/v2/projects/{project_id}/branches``. Returns\nmetadata for every local and remote-tracking branch in the\nproject's local Git repository; remote-tracking branch names start\nwith ``origin/``.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\n\nReturns\n-------\nlist[dict[str, Any]] or dict[str, Any]\n    A list of branch objects (``name``, ``parents``, ``head``) on\n    success, or ``{\"ok\": False, \"error\": \"...\"}`` on failure\n    (including an unresolved ``project``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.get_git_commit",
+    "module": "git",
+    "sub_module": "git.commits",
+    "class": "Git",
+    "method": "get_git_commit",
+    "description": "Retrieve a single Git commit of a project.",
+    "full_doc": "Retrieve a single Git commit of a project.\n\nSends ``GET /api/v2/projects/{project_id}/commits/{commit}``.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\ncommit : str\n    Commit hash.\n\nReturns\n-------\ndict[str, Any]\n    The commit object (``hash``, ``authorName``, ``authorEmail``,\n    ``date``, ``parents``, ``refs``, ``message``) on success, or\n    ``{\"ok\": False, \"error\": \"...\"}`` on failure (including an\n    unresolved ``project`` or an unknown ``commit``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "commit": {
+          "type": "string",
+          "description": "Commit hash."
+        }
+      },
+      "required": [
+        "project",
+        "commit"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.get_git_commits",
+    "module": "git",
+    "sub_module": "git.commits",
+    "class": "Git",
+    "method": "get_git_commits",
+    "description": "List all Git commits of a project.",
+    "full_doc": "List all Git commits of a project.\n\nSends ``GET /api/v2/projects/{project_id}/commits``. Returns\nmetadata for every commit in the project's local Git repository.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\n\nReturns\n-------\nlist[dict[str, Any]] or dict[str, Any]\n    A list of commit objects (``hash``, ``authorName``,\n    ``authorEmail``, ``date``, ``parents``, ``refs``, ``message``)\n    on success, or ``{\"ok\": False, \"error\": \"...\"}`` on failure\n    (including an unresolved ``project``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.get_git_project",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "get_git_project",
+    "description": "Retrieve a single Git Integration project by ID.",
+    "full_doc": "Retrieve a single Git Integration project by ID.\n\nGit Integration is an optional Sisense feature that an admin must\nenable (Admin > App Configuration > Feature Management) before this\nendpoint returns project data. Sends\n``GET /api/v2/projects/{project_id}``. Each boolean flag below adds\nthe corresponding field to the response only when set to ``True``.\n\nParameters\n----------\nproject_id : str\n    OID of the Git project.\nbranch_mappings : bool, optional\n    Include an array of all local branches and their remote-tracking\n    branches.\ncommits : bool, optional\n    Include an array of all commits in the project's local Git\n    repository.\ncurrent_branch_name : bool, optional\n    Include the name of the currently checked-out branch.\nowner_id : bool, optional\n    Include the ID of the user who created the project.\ntag_names : bool, optional\n    Include an array of all local Git tag names.\n\nReturns\n-------\ndict[str, Any]\n    The Git project object on success, or ``{\"ok\": False, \"error\":\n    \"...\"}`` on failure (including when ``project_id`` does not\n    exist).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "description": "OID of the Git project."
+        },
+        "branch_mappings": {
+          "type": "boolean",
+          "description": "Include an array of all local branches and their remote-tracking branches."
+        },
+        "commits": {
+          "type": "boolean",
+          "description": "Include an array of all commits in the project's local Git repository."
+        },
+        "current_branch_name": {
+          "type": "boolean",
+          "description": "Include the name of the currently checked-out branch."
+        },
+        "owner_id": {
+          "type": "boolean",
+          "description": "Include the ID of the user who created the project."
+        },
+        "tag_names": {
+          "type": "boolean",
+          "description": "Include an array of all local Git tag names."
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.get_git_project_status",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "get_git_project_status",
+    "description": "Retrieve a Git project's current status checksum.",
+    "full_doc": "Retrieve a Git project's current status checksum.\n\nSends ``GET /api/v2/projects/{project_id}/status``. The returned\nchecksum reflects the project's current working-directory file\nchanges, current branch name, and HEAD commit. It must be sent as\nthe ``x-git-status-checksum`` header on any request that modifies\nthe project's local Git repository (branch/commit checkout,\ndiscard, pull, push, sync); the server rejects the request if the\nchecksum is stale, so callers should fetch a fresh one immediately\nbefore such a call.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"statusChecksum\": \"...\"}`` on success, or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure (including an unresolved\n    ``project``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.get_git_projects",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "get_git_projects",
+    "description": "List the Git Integration projects accessible to the current user.",
+    "full_doc": "List the Git Integration projects accessible to the current user.\n\nGit Integration is an optional Sisense feature that an admin must\nenable (Admin > App Configuration > Feature Management) before this\nendpoint returns project data. Sends ``GET /api/v2/projects``. Each\nboolean flag below adds the corresponding field to every returned\nproject only when set to ``True``; the response otherwise omits it.\n\nParameters\n----------\ncurrent_branch_name : bool, optional\n    Include each project's currently checked-out branch name.\nfavorites_only : bool, optional\n    Return only projects the current user has favorited.\nlast_commit_message : bool, optional\n    Include the subject/body of each project's last commit.\nlast_commit_date : bool, optional\n    Include the timestamp of each project's last commit.\nowner_id : bool, optional\n    Include the ID of the user who created each project.\ndetached_head_hash : bool, optional\n    Include the current commit hash for projects in a detached HEAD\n    state.\n\nReturns\n-------\nlist[dict[str, Any]] or dict[str, Any]\n    A list of Git project objects (``name``, ``oid``, ``owner``,\n    ``created``, ``lastModified``, ``syncedAt``, ``shares``,\n    ``userFavorites``, plus any fields enabled above) on success, or\n    ``{\"ok\": False, \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "current_branch_name": {
+          "type": "boolean",
+          "description": "Include each project's currently checked-out branch name."
+        },
+        "favorites_only": {
+          "type": "boolean",
+          "description": "Return only projects the current user has favorited."
+        },
+        "last_commit_message": {
+          "type": "boolean",
+          "description": "Include the subject/body of each project's last commit."
+        },
+        "last_commit_date": {
+          "type": "boolean",
+          "description": "Include the timestamp of each project's last commit."
+        },
+        "owner_id": {
+          "type": "boolean",
+          "description": "Include the ID of the user who created each project."
+        },
+        "detached_head_hash": {
+          "type": "boolean",
+          "description": "Include the current commit hash for projects in a detached HEAD state."
+        }
+      },
+      "required": []
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.git_fetch",
+    "module": "git",
+    "sub_module": "git.remote",
+    "class": "Git",
+    "method": "git_fetch",
+    "description": "Download commits and tags from a Git project's remote repository.",
+    "full_doc": "Download commits and tags from a Git project's remote repository.\n\nSends ``POST /api/v2/projects/{project_id}/fetch``. Downloads\ncommits from every branch and tag of the remote repository\nconnected to the project, updating the local repository's\nremote-tracking branches. Nothing is merged into the current\nbranch — see ``git_pull`` for that.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\nhttps_credentials : GitHttpsCredentialsPayload, optional\n    HTTP(S) username/password (or personal access token) for the\n    remote repository. When omitted, credentials previously saved\n    for the current user and this project are used; the request\n    fails if none were saved.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "https_credentials": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "save": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "password",
+            "username"
+          ],
+          "description": "HTTP(S) username/password (or personal access token) for the remote repository. When omitted, credentials previously saved for the current user and this project are used; the request fails if none were saved."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.git_pull",
+    "module": "git",
+    "sub_module": "git.remote",
+    "class": "Git",
+    "method": "git_pull",
+    "description": "Fetch and merge remote changes into a Git project's current branch.",
+    "full_doc": "Fetch and merge remote changes into a Git project's current branch.\n\nSends ``POST /api/v2/projects/{project_id}/pull``. Downloads\ncommits from ``remote_branch`` on the connected remote repository\nand merges them into the project's currently checked-out branch. If\nthe merge has conflicts, it is aborted and nothing is imported.\nOtherwise the resulting asset files are validated and imported into\nthe application; assets that fail validation are not imported,\nwhile the rest still are (see the HTTP 453 note below). New assets\nintroduced by the merge are added to the project; when they are\nowned by users without prior project access, a pending share is\ncreated for each and requires admin approval.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\nremote_branch : str\n    Name of the branch on the remote repository to fetch and merge\n    from. The commits are merged into the project's current local\n    branch.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\nhttps_credentials : GitHttpsCredentialsPayload, optional\n    HTTP(S) username/password (or personal access token) for the\n    remote repository. When omitted, credentials previously saved\n    for the current user and this project are used; the request\n    fails if none were saved.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure. HTTP 453 means the merge\n    succeeded but one or more assets failed JSON validation on\n    import — those assets were not imported, and validation details\n    travel in the failure dict's ``raw_body``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "remote_branch": {
+          "type": "string",
+          "description": "Name of the branch on the remote repository to fetch and merge from. The commits are merged into the project's current local branch."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        },
+        "https_credentials": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "save": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "password",
+            "username"
+          ],
+          "description": "HTTP(S) username/password (or personal access token) for the remote repository. When omitted, credentials previously saved for the current user and this project are used; the request fails if none were saved."
+        }
+      },
+      "required": [
+        "project",
+        "remote_branch",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.git_push",
+    "module": "git",
+    "sub_module": "git.remote",
+    "class": "Git",
+    "method": "git_push",
+    "description": "Upload commits from a Git project's local branch to its remote repository.",
+    "full_doc": "Upload commits from a Git project's local branch to its remote repository.\n\nSends ``POST /api/v2/projects/{project_id}/push``. If\n``remote_branch`` does not yet exist on the remote, it is created.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\nlocal_branch : str\n    Name of the local branch whose commits should be pushed.\nremote_branch : str\n    Name of the branch on the remote repository to push to.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\nforce : bool, optional\n    When ``True``, pushes with ``--force-with-lease``, overriding\n    the remote branch's history with the local branch's history.\n    This can discard commits pushed by others since the local\n    branch's remote-tracking ref was last updated — use with care.\nhttps_credentials : GitHttpsCredentialsPayload, optional\n    HTTP(S) username/password (or personal access token) for the\n    remote repository. When omitted, credentials previously saved\n    for the current user and this project are used; the request\n    fails if none were saved.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"remoteMessages\": [...], \"remoteUrl\": \"...\"}`` on success\n    (HTTP 200), or ``{\"ok\": False, \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "local_branch": {
+          "type": "string",
+          "description": "Name of the local branch whose commits should be pushed."
+        },
+        "remote_branch": {
+          "type": "string",
+          "description": "Name of the branch on the remote repository to push to."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        },
+        "force": {
+          "type": "boolean",
+          "description": "When ``True``, pushes with ``--force-with-lease``, overriding the remote branch's history with the local branch's history. This can discard commits pushed by others since the local branch's remote-tracking ref was last updated — use with care."
+        },
+        "https_credentials": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "save": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "password",
+            "username"
+          ],
+          "description": "HTTP(S) username/password (or personal access token) for the remote repository. When omitted, credentials previously saved for the current user and this project are used; the request fails if none were saved."
+        }
+      },
+      "required": [
+        "project",
+        "local_branch",
+        "remote_branch",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.resolve_git_project_reference",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "resolve_git_project_reference",
+    "description": "Resolve a Git project reference (ID or name) to a concrete project ID and name.",
+    "full_doc": "Resolve a Git project reference (ID or name) to a concrete project ID and name.\n\nAccepts either a 24-character Git project OID or a project name. An\nID-shaped reference is looked up with ``GET\n/api/v2/projects/{project_id}``; anything else (or a failed ID\nlookup) falls back to matching the ``name`` field of every project\nreturned by ``GET /api/v2/projects``, since project lookup by name\nhas no dedicated server-side endpoint.\n\nParameters\n----------\nproject_ref : str\n    Git project reference to resolve — an OID or a name.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": bool, \"status_code\": int, \"project_id\": str or\n    None, \"project_name\": str or None, \"error\": str or None}``.\n    ``status_code`` is ``200`` when resolved, ``404`` when no\n    project matches, or ``500`` on an unexpected error.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project_ref": {
+          "type": "string",
+          "description": "Git project reference to resolve — an OID or a name."
+        }
+      },
+      "required": [
+        "project_ref"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.sync_git_project",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "sync_git_project",
+    "description": "Synchronize a Git project's files with the current asset state.",
+    "full_doc": "Synchronize a Git project's files with the current asset state.\n\nSends ``POST /api/v2/projects/{project_id}/sync``. Exports the\ncurrent state of the project's tracked Sisense assets to files in\nits local Git repository, so the Git files match the assets in the\napplication — the opposite direction of a checkout or pull.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure (a locked project answers HTTP 423\n    — see ``unlock_git_project``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": []
+  },
+  {
+    "tool_id": "git.unlock_git_project",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "unlock_git_project",
+    "description": "Manually release a stuck Git lock on a project.",
+    "full_doc": "Manually release a stuck Git lock on a project.\n\nSends ``PATCH /api/v2/projects/{project_id}/unlock``. Sisense\nacquires a lock on a project while a request that modifies its\nlocal Git repository is in flight, and normally releases it when\nthat request completes; this endpoint is the manual escape hatch\nwhen a lock was left behind (for example, after an interrupted\nrequest). Requires an admin token — Sisense restricts this endpoint\nto admin users server-side.\n\nParameters\n----------\nproject : str\n    Git project reference — an OID or a name.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4358,8 +5084,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4395,8 +5121,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4447,8 +5173,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4469,8 +5195,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4505,8 +5231,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4538,8 +5264,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4574,8 +5300,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4606,8 +5332,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4638,8 +5364,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4675,8 +5401,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4718,8 +5444,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4769,8 +5495,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4835,8 +5561,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4872,8 +5598,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4922,8 +5648,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -4962,8 +5688,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5012,8 +5738,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5058,8 +5784,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5104,8 +5830,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5149,8 +5875,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5202,8 +5928,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5233,8 +5959,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5264,8 +5990,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5286,8 +6012,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5315,8 +6041,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5368,8 +6094,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5425,8 +6151,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5448,8 +6174,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5471,8 +6197,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5516,8 +6242,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5575,8 +6301,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5646,8 +6372,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5679,8 +6405,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5713,8 +6439,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5742,8 +6468,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5778,8 +6504,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5807,8 +6533,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5843,8 +6569,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5865,8 +6591,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5894,8 +6620,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5941,8 +6667,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5963,8 +6689,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -5997,8 +6723,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6031,8 +6757,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6060,8 +6786,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6089,8 +6815,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6134,8 +6860,8 @@
       "report_manager",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6202,8 +6928,8 @@
       "report_manager",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6231,8 +6957,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6265,8 +6991,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6296,8 +7022,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6327,8 +7053,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6358,8 +7084,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6389,8 +7115,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6420,8 +7146,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6451,8 +7177,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6482,8 +7208,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   },
   {
@@ -6516,8 +7242,8 @@
       "wellcheck",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": []
   }
 ]

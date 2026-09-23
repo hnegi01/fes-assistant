@@ -774,16 +774,14 @@ def _datasecurity_rules_schema(*, party_key: str, description: str) -> Dict[str,
 # release with different-but-fixed wording still trips it. Comparing against
 # our own text would let a stale override outlive — and silently beat — a
 # better upstream line.
-_SUMMARY_OVERRIDES: Dict[str, Tuple[str, str]] = {
-    "datamodel.deploy_datamodel": (
-        "Deploy (build or publish) the specified data model based on its type.",
-        "Build an ElastiCube or publish a live data model, and optionally wait for the run to finish.",
-    ),
-    "access_management.create_schedule_build": (
-        "Create a schedule build for a DataModel.",
-        "Schedule a recurring build for an ElastiCube.",
-    ),
-}
+# EMPTY as of pysisense 2.3.0 (2026-09-23): both entries that lived here —
+# datamodel.deploy_datamodel and access_management.create_schedule_build —
+# were adopted upstream almost verbatim, and the guard below is what told us,
+# by failing the moment the installed docstrings changed. That is the whole
+# lifecycle working: hard-code, push upstream, delete when it lands. Kept (not
+# deleted) because SDK docstring drift recurs and re-adding an entry should be
+# a one-line change, not a rebuild of the mechanism.
+_SUMMARY_OVERRIDES: Dict[str, Tuple[str, str]] = {}
 
 
 SCHEMA_RULES: Dict[str, Dict[str, Any]] = {

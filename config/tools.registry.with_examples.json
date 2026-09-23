@@ -45,8 +45,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Transfer ownership of the 'Sales Reports' folder to jane.doe@example.com, running as admin@example.com, and transfer the dashboards inside it too \u2014 the previous owner should keep edit access.",
@@ -114,8 +114,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Change the password for user 'user123' to 'NewSecurePassword123!'.",
@@ -172,8 +172,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Create multiple groups for the new project team: 'Data Analysts', 'Project Managers', and 'QA Engineers'.",
@@ -232,7 +232,7 @@
     "class": "AccessManagement",
     "method": "create_schedule_build",
     "description": "Schedule a recurring build for an ElastiCube.",
-    "full_doc": "Create a schedule build for a DataModel.\n\nSupports both cron-based schedules (e.g. every Monday at 9:00 UTC) and\ninterval-based schedules (e.g. every 2 days, 1 hour, 30 minutes). An\ninterval-based schedule is created when any of the ``interval_*``\nparameters are provided; otherwise a cron-based schedule is created from\n``days``, ``hour``, and ``minute``.\n\nParameters\n----------\ndatamodel_name : str\n    The name of the DataModel.\nbuild_type : str, optional\n    Type of the build, one of ``\"ACCUMULATE\"``, ``\"FULL\"``, or\n    ``\"SCHEMA_CHANGES\"``. Defaults to ``\"ACCUMULATE\"``.\ndays : list[str] | None, optional\n    Keyword-only. List of days for a cron schedule, e.g.\n    ``[\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"]`` or ``[\"*\"]``\n    for all days.\nhour : int | None, optional\n    Keyword-only. Hour in 24-hour format (UTC) for a cron schedule.\nminute : int | None, optional\n    Keyword-only. Minute of the hour (UTC) for a cron schedule.\ninterval_days : int | None, optional\n    Keyword-only. Interval in days for an interval-based schedule.\ninterval_hours : int | None, optional\n    Keyword-only. Interval in hours for an interval-based schedule.\ninterval_minutes : int | None, optional\n    Keyword-only. Interval in minutes for an interval-based schedule.\n\nReturns\n-------\ndict[str, Any]\n    The API response on success, or ``{\"error\": \"...\"}`` on failure or\n    invalid schedule configuration.",
+    "full_doc": "Schedule a recurring build for an ElastiCube.\n\nSends ``POST /api/v2/datamodels/{id}/schedule`` to store a build schedule\non the model. No build is started by this call; the model is built by\nSisense whenever the schedule comes due. Supports both cron-based\nschedules (e.g. every Monday at 9:00 UTC) and interval-based schedules\n(e.g. every 2 days, 1 hour, 30 minutes). An interval-based schedule is\ncreated when any of the ``interval_*`` parameters are provided; otherwise\na cron-based schedule is created from ``days``, ``hour``, and ``minute``.\n\nParameters\n----------\ndatamodel_name : str\n    The name of the DataModel.\nbuild_type : str, optional\n    Type of the build, one of ``\"ACCUMULATE\"``, ``\"FULL\"``, or\n    ``\"SCHEMA_CHANGES\"``. Defaults to ``\"ACCUMULATE\"``.\ndays : list[str] | None, optional\n    Keyword-only. List of days for a cron schedule, e.g.\n    ``[\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"]`` or ``[\"*\"]``\n    for all days.\nhour : int | None, optional\n    Keyword-only. Hour in 24-hour format (UTC) for a cron schedule.\nminute : int | None, optional\n    Keyword-only. Minute of the hour (UTC) for a cron schedule.\ninterval_days : int | None, optional\n    Keyword-only. Interval in days for an interval-based schedule.\ninterval_hours : int | None, optional\n    Keyword-only. Interval in hours for an interval-based schedule.\ninterval_minutes : int | None, optional\n    Keyword-only. Interval in minutes for an interval-based schedule.\n\nReturns\n-------\ndict[str, Any]\n    The API response on success, or ``{\"error\": \"...\"}`` on failure or\n    invalid schedule configuration.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -281,8 +281,8 @@
       "access_management",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Schedule a full build for the 'SalesDataModel' data model every Monday at 3:00 UTC.",
@@ -387,8 +387,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Create a Viewer user for Jane Doe at jane.doe@example.com, add them to the Sales and Marketing groups, and set their language to English and timezone to America/New_York.",
@@ -477,8 +477,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Create two users at once: john.doe@example.com with first name John and role admin, and jane.smith@example.com with first name Jane and role editor.",
@@ -567,8 +567,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Delete the group with ID 'group_12345'.",
@@ -620,8 +620,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Remove the user with the email john.doe@example.com from the system.",
@@ -665,8 +665,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show me all the dashboards and who they are shared with.",
@@ -711,8 +711,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show the columns available in the 'SalesAnalytics' DataModel.",
@@ -761,8 +761,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Retrieve all groups from the Sisense server.",
@@ -800,8 +800,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show which user I am currently logged in as.",
@@ -838,8 +838,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List all roles available in our Sisense instance.",
@@ -876,8 +876,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Retrieve all tenants from the Sisense server.",
@@ -903,7 +903,7 @@
     "class": "AccessManagement",
     "method": "get_unused_columns_bulk",
     "description": "Run unused-column analysis for one or more data models and return a",
-    "full_doc": "Run unused-column analysis for one or more data models and return a\ncombined per-model outcome.\n\n\nUnder Dashboard Co-Authoring the export returns the owner's private copy, while\nviewers see the shared copy; for a published dashboard the shared copy is read\ninstead \u2014 its own filters, hierarchies and widgets \u2014 as administrator\n(``GET /api/dashboards/{id}?adminAccess=true``) or as owner (``sharedMode=true``).\nA shared copy neither route can read fails that model's analysis with the standard\nerror dict under ``\"errors\"`` rather than the private copy being analysed in its place.\nParameters\n----------\ndatamodels : str or list of str\n    One or more data model references to analyze. **Required.** Each\n    reference can be:\n      - a data model ID, or\n      - a data model title (name).\n    At runtime this parameter is tolerant of a single string and will\n    normalize it to a one-element list.\n\nReturns\n-------\ndict[str, Any]\n    Always a dict with ``\"results\"`` and ``\"errors\"``:\n      - ``\"results\"``: flat list of column rows across all processed\n        data models, each row shaped as ``get_datamodel_columns`` rows\n        plus a ``\"used\"`` boolean. A model that resolves and genuinely\n        has no columns in use contributes rows with ``used: False``.\n      - ``\"errors\"``: list of ``{\"ref\": ..., \"error\": ...}`` entries,\n        one per reference that could not be resolved or processed \u2014\n        empty when every reference succeeded.\n    When **none** of the given references can be processed (or the\n    input is invalid), the dict additionally carries ``\"ok\": False``\n    and a top-level ``\"error\"`` summary, so standard failure detection\n    (``payload.get(\"ok\") is False``) still fires.",
+    "full_doc": "Run unused-column analysis for one or more data models and return a\ncombined per-model outcome.\n\n\nUnder Dashboard Co-Authoring the export returns the owner's private copy, while\nviewers see the shared copy; for a published dashboard the shared copy is read\ninstead \u2014 its own filters, hierarchies and widgets \u2014 as administrator\n(``GET /api/dashboards/{id}?adminAccess=true``) or as owner (``sharedMode=true``).\nA shared copy neither route can read fails that model's analysis with the standard\nerror dict under ``\"errors\"`` rather than the private copy being analysed in its place.\nA dashboard counts for the datasource its shared copy names, and for no other: a data\nmodel and a perspective over it are separate datasources here, so a dashboard on the\nperspective leaves the model's columns unused and vice versa. Because the dashboard\nlisting reports owner copies only, and never names a perspective, the data model and\nevery perspective over it are swept to find the dashboards worth opening\n(``GET /api/v2/datamodels/schema``, ``GET /api/v2/perspectives``); the copy that is\nread then decides which of them a dashboard belongs to. With the feature off there is\na single copy and only the given datasource is searched.\nParameters\n----------\ndatamodels : str or list of str\n    One or more data model references to analyze. **Required.** Each\n    reference can be:\n      - a data model ID, or\n      - a data model title (name).\n    At runtime this parameter is tolerant of a single string and will\n    normalize it to a one-element list.\n\nReturns\n-------\ndict[str, Any]\n    Always a dict with ``\"results\"`` and ``\"errors\"``:\n      - ``\"results\"``: flat list of column rows across all processed\n        data models, each row shaped as ``get_datamodel_columns`` rows\n        plus a ``\"used\"`` boolean. A model that resolves and genuinely\n        has no columns in use contributes rows with ``used: False``.\n      - ``\"errors\"``: list of ``{\"ref\": ..., \"error\": ...}`` entries,\n        one per reference that could not be resolved or processed \u2014\n        empty when every reference succeeded.\n    When **none** of the given references can be processed (or the\n    input is invalid), the dict additionally carries ``\"ok\": False``\n    and a top-level ``\"error\"`` summary, so standard failure detection\n    (``payload.get(\"ok\") is False``) still fires.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -924,8 +924,8 @@
       "access_management",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Find the unused columns in the 'Sales Data' and 'Marketing Analytics' data models.",
@@ -986,8 +986,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Find details for the user with email john.doe@example.com.",
@@ -1031,8 +1031,8 @@
       "users",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show me all the users in the system along with their roles and group memberships.",
@@ -1115,8 +1115,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Change john.doe@example.com's email address to john.doe.new@example.com and set their role to designer.",
@@ -1178,8 +1178,8 @@
       "groups",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List the members of the 'Data Analysts' group.",
@@ -1229,8 +1229,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Remove the custom Blox action called 'export_to_csv' from my Sisense instance.",
@@ -1273,8 +1273,8 @@
       "blox",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List the custom Blox actions available in my Sisense instance.",
@@ -1327,8 +1327,8 @@
       "blox",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Retrieve the style objects for the BloX widget with ID 'widget123' in dashboard 'dashboard456', using admin access.",
@@ -1383,8 +1383,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Save a custom Blox action named 'ExportDashboardAction' that exports dashboard dashboard_12345 to PDF.",
@@ -1485,8 +1485,8 @@
       "blox",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Update the style of the BloX widget with ID 'widget123' on dashboard 'dashboard456', replacing the current card style but leaving the config unchanged.",
@@ -1572,8 +1572,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Create a new Python notebook named 'Sales Analysis 2023'.",
@@ -1648,8 +1648,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Delete the notebook with ID 'abc123'.",
@@ -1699,8 +1699,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Export the notebook definition for notebook 123e4567-e89b-12d3-a456-426614174000.",
@@ -1752,8 +1752,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Fetch all available notebooks in the system.",
@@ -1805,8 +1805,8 @@
       "custom_code",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List the files in the 'data-analysis' notebook folder.",
@@ -1861,8 +1861,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Rename the notebook file at 'notebooks/custom_code_notebooks/12345/analysis.ipynb' to 'sales_analysis.ipynb'.",
@@ -1927,8 +1927,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Rename the 'DataScienceProjects' notebook folder to 'MLProjects'.",
@@ -2008,8 +2008,8 @@
       "custom_code",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Update notebook 123e4567-e89b-12d3-a456-426614174000 \u2014 set its title to 'Updated Sales Analysis' and its description to 'Notebook with updated insights for Q4 sales.'",
@@ -2098,8 +2098,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "As admin@sisense.com, add this raw script to dashboard dashboard_12345: function customBehavior() { console.log('Custom script executed'); }",
@@ -2175,8 +2175,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Give john.doe@example.com and the 'sales-team' group view access to dashboard 63f2c9e4b8a4e2001d3f9a23.",
@@ -2287,8 +2287,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "As admin@sisense.com, add the script console.log('Widget script executed'); to widget widget_67890 on dashboard dashboard_12345.",
@@ -2357,8 +2357,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Check whether I can take ownership of the dashboard with ID '12345abcde'.",
@@ -2422,8 +2422,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Transfer ownership of dashboard 'sales_dashboard_2023' to user 'new_owner_123', and set the original owner's access to 'view'.",
@@ -2490,8 +2490,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Compare all widget values on the 'Sales Overview' dashboard between the 'Production Data' and 'Test Data' datasources.",
@@ -2553,8 +2553,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Delete the dashboard with ID '63a9f0ea8b1d4c0012345678' and title 'Sales Overview'.",
@@ -2608,8 +2608,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Duplicate the dashboard with ID 'sales_dashboard_2023'.",
@@ -2660,8 +2660,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Export the definition of dashboard 5f7d3b2e4c8b9a0012345678.",
@@ -2726,8 +2726,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Find all BloX widgets across all dashboards visible to the API token user.",
@@ -2777,8 +2777,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List all dashboards available on the Sisense server.",
@@ -2823,8 +2823,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Fetch the dashboard with ID '5f7d3a2e4b8c9a0012345678'.",
@@ -2875,8 +2875,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Find the dashboard named 'Sales Performance Overview'.",
@@ -2927,8 +2927,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List the columns used in the 'Sales Performance' dashboard.",
@@ -2979,8 +2979,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Get the script for dashboard sales_dashboard_2023.",
@@ -3031,8 +3031,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show who has access to the 'Sales Overview' dashboard.",
@@ -3087,8 +3087,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show who has access to dashboard 5f7d3a2b8e4b0c0012345678, using admin access.",
@@ -3142,8 +3142,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List the widgets in the dashboard titled 'Sales Overview'.",
@@ -3195,8 +3195,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show me the dashboards I own with their titles and IDs.",
@@ -3257,8 +3257,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Find all dashboards using the data model 'Sales Data' and include dashboards with empty widget-datasource summaries.",
@@ -3319,8 +3319,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Retrieve the widget with ID 'widget123' from the dashboard 'dashboard456', ensuring admin access.",
@@ -3380,8 +3380,8 @@
       "dashboard",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Get the script for widget Sales_Overview in dashboard Q3_Performance.",
@@ -3442,8 +3442,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Import dashboards dashboard_123 'Sales Overview' and dashboard_456 'Marketing Performance', skipping any that already exist.",
@@ -3533,8 +3533,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Move dashboard dashboard_12345 into folder folder_67890.",
@@ -3596,8 +3596,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Publish the dashboard with ID 'dashboard_12345'.",
@@ -3661,8 +3661,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Rename dashboard 62f1a2b3c4d5e6f7890abc12 to 'Q3 Sales Performance'.",
@@ -3732,8 +3732,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Replace the datasource for the 'Sales Overview' dashboard to use the 'Regional Sales Perspective' and republish it.",
@@ -3790,8 +3790,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Resolve 'Sales Overview' to its dashboard ID and title.",
@@ -3855,8 +3855,8 @@
       "dashboard",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Update widget widget123 on dashboard dashboard456: title it 'Updated Sales Chart', make it a bar chart in blue with font size 12, labelled Q1, Q2, Q3, Q4 with values 15000, 20000, 18000 and 22000.",
@@ -3988,8 +3988,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Validate all widget queries for the dashboard 'Sales Performance' against the 'Global Sales Model' datasource.",
@@ -4049,8 +4049,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Give the 'Sales Team' group edit access and john.doe@example.com read access to the 'Revenue Analysis' data model.",
@@ -4113,7 +4113,7 @@
     "class": "DataModel",
     "method": "analyze_perspective_requirements",
     "description": "Work out which tables and columns of a data model its dashboards need, ready to build a perspective from.",
-    "full_doc": "Work out which tables and columns of a data model its dashboards need, ready to build a perspective from.\n\nRead-only. Finds every dashboard that uses the model \u2014 directly, through a\nsingle widget, or through a perspective already built over it \u2014 reads each one's fields\n(filters, hierarchies, widget panels, nested formulas, drill history) from the\ndashboard export \u2014 under Dashboard Co-Authoring, from the shared copy viewers see \u2014 its own filters,\nhierarchies and widgets, read as administrator or as owner; a shared copy neither can read fails that dashboard with a\n``shared_copy_unreadable`` error rather than analysing the owner's private copy in its\nplace \u2014 keeping only references that belong to this model, and resolves\nthem against the model's schema. It then adds what the joins need: for every pair\nof tables that meet in one query \u2014 a widget's own tables together with the tables\nof the dashboard's filters and hierarchies, which apply to every widget, including\nwidgets that have switched a filter off \u2014 it follows the shortest relation paths\nbetween them in the model and keeps both key columns of every relation on the way\nand any intermediate table. Tables used only by separate widgets, or by separate\ndashboards, need no join and get none. A perspective inherits a relation only when\nboth of its columns are kept, and it evaluates custom columns and custom tables\nthrough the root model, so nothing else is added.\n\nWhen two tables are joined by more than one equally short path, and at least one of\nthose paths runs through a table nothing else needs, the pair is a choice. For each\nwidget behind such a pair the method sends the widget's query, with the dashboard\nfilters applied, to ``POST /api/datasources/{model}/jaql/sql`` \u2014 translation only,\nnothing is executed \u2014 and reads from the returned SQL which of the candidate tables\nthe query engine actually joins through. ``perspective_tables`` keeps only those\npaths; ``perspective_tables_all_paths`` keeps every path; ``join_path_choices`` lists\nthe pair, every path and which ones are in use. When the translation cannot be\nobtained, or names none of the candidates, every path is kept in both lists and the\npair is reported as ``ambiguous_join_path``. Every relation between two kept tables is\nthen tested for a many-to-many join with one aggregate SQL query per side\n(``GET /api/datasources/{model}/sql``): a perspective inherits the root model's\nrelations, so a query spanning two kept tables joined many-to-many can fan out and\ndouble count. Such a pair is a warning with its evidence, never an error and never a\nreason to drop a table. Anything that could not be resolved or verified is reported as\nan issue rather than dropped.\n\nParameters\n----------\ndatamodel : str\n    The data model, as an ID or title.\ndetailed : bool, optional\n    Include the per-dashboard, per-column, per-dependency and per-issue detail.\n    Default ``False`` returns the summary view only.\n\nReturns\n-------\ndict[str, Any]\n    Always: ``datamodel`` (``oid``, ``title``, ``type``, counts of ``tables``, ``columns``,\n    ``relations``, ``custom_columns`` and ``custom_tables``, and the names of its existing\n    ``perspectives``); ``summary`` (``model_tables``, ``model_columns``, ``dashboards_analyzed``,\n    ``dashboards_failed``, ``tables_used_by_dashboards``, ``columns_used_by_dashboards``,\n    ``columns_required_for_dependencies``, ``tables_required_in_perspective``,\n    ``columns_required_in_perspective``, ``tables_required_all_paths``,\n    ``columns_required_all_paths``, ``tables_not_required``, ``columns_not_required``, and\n    ``issues`` by severity); ``perspective_tables`` \u2014 the ``{\"table\", \"columns\"}`` entries a\n    perspective must keep, ``columns`` always the explicit list of names: every used column\n    plus the join columns and intermediate tables of the paths the query engine uses (every\n    path where that could not be determined); ``perspective_tables_all_paths`` \u2014 the same\n    with every equally short path kept; ``join_path_choices`` \u2014 one entry per pair of\n    tables joined by more than one equally short path where some path runs through a\n    table nothing else needs, with ``from``, ``to``, ``needed_by`` (which dashboards, filters\n    and how many widgets put the two tables in one query), ``resolved`` (whether the\n    engine's path is known) and ``paths`` (each ``{\"via\": [...], \"in_use\": ...}`` \u2014 the\n    intermediate tables of one path and whether the engine uses it; ``None`` when not\n    resolved); ``errors`` \u2014 the distinct error messages; and ``warnings`` \u2014 warning counts\n    by kind, ``many_to_many_in_perspective`` always present (``0`` when none), plus\n    ``many_to_many_unchecked`` when a pair's SQL check failed.\n\n    With ``detailed=True`` also: ``required`` (``tables``: ``table``, ``columns_used``,\n    ``columns_total``, ``used_by_dashboards``; ``columns``: ``table``, ``column``, ``used_in`` \u2014\n    ``\"filter\"``, ``\"hierarchy\"`` and/or ``\"widget\"`` \u2014 ``used_by``); ``dependencies`` (``columns``\n    with ``table``, ``column``, ``reason`` \u2014 always ``join_column`` \u2014 ``required_by``, ``detail``,\n    ``in_use`` \u2014 whether the column is in ``perspective_tables``; ``tables`` kept only as join\n    paths in ``perspective_tables``; ``tables_all_paths`` the same for every path; ``join_paths``);\n    ``not_required`` (``tables``, ``columns`` \u2014 relative to ``perspective_tables``); ``many_to_many``\n    (one entry per kept table pair joined many-to-many or not checkable: ``table_a``, ``columns_a``,\n    ``table_b``, ``columns_b``, ``duplicate_keys_a``, ``duplicate_keys_b``, ``is_m2m``, ``status``,\n    ``error``, and ``scope`` \u2014 ``\"perspective\"``, or ``\"all_paths\"`` for a pair kept only by the\n    all-paths variant); ``dashboards``\n    (``analyzed``: ``dashboard_id``, ``title``, ``match``, ``datasource`` \u2014 the model or the\n    perspective the dashboard sits on \u2014 ``copy`` \u2014 ``\"shared\"`` under Dashboard Co-Authoring\n    for a published dashboard, else ``\"private\"`` (the single copy) \u2014 ``owner``, ``owner_email``, ``tables_used``,\n    ``columns_used``, ``columns`` as ``\"Table.Column\"``, ``widgets_on_other_datasources``;\n    ``failed``); and ``issues`` (``severity``, ``kind``, ``dashboard``, ``widget_id``, ``detail``).\n    On failure to resolve the model, read its schema or list dashboards, the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
+    "full_doc": "Work out which tables and columns of a data model its dashboards need, ready to build a perspective from.\n\nRead-only. Finds every dashboard that uses the model \u2014 directly, through a\nsingle widget, or through a perspective already built over it \u2014 reads each one's fields\n(filters, hierarchies, widget panels, nested formulas, drill history) from the\ndashboard export \u2014 under Dashboard Co-Authoring, from the shared copy viewers see \u2014 its own filters,\nhierarchies and widgets, read as administrator or as owner; a shared copy neither can read fails that dashboard with a\n``shared_copy_unreadable`` error rather than analysing the owner's private copy in its\nplace \u2014 keeping only references that belong to this model or to a perspective over it,\nand resolves them against the model's schema. Which of those a dashboard shows is read\nfrom the copy that was opened, not from the dashboard listing, because the listing\nalways describes the owner's copy and the two copies can sit on different members of\nthe family. A dashboard whose widgets all query something else entirely contributes no\ncolumns and is reported as ``dashboard_on_other_datasource``. It then adds what the joins need: for every pair\nof tables that meet in one query \u2014 a widget's own tables together with the tables\nof the dashboard's filters and hierarchies, which apply to every widget, including\nwidgets that have switched a filter off \u2014 it follows the shortest relation paths\nbetween them in the model and keeps both key columns of every relation on the way\nand any intermediate table. Tables used only by separate widgets, or by separate\ndashboards, need no join and get none. A perspective inherits a relation only when\nboth of its columns are kept, and it evaluates custom columns and custom tables\nthrough the root model, so nothing else is added.\n\nTwo tables joined by more than one equally short path can be joined several ways, and\nthe answer depends on which \u2014 so every such pair is listed in ``join_path_choices``.\nFor each widget behind a pair the method sends the widget's query, with the dashboard\nfilters applied, to ``POST /api/datasources/{model}/jaql/sql`` \u2014 translation only,\nnothing is executed \u2014 and reads from the returned SQL which of the candidate tables\nthe query engine actually joins through. More than one path can be in use at once,\nsince different widgets may join the same two tables differently. ``changes_tables``\nsays whether picking a path would change which tables the perspective keeps: it is\ntrue only when some path runs through a table nothing else needs. Those are the pairs\nacted on \u2014 ``perspective_tables`` keeps the paths in use and\n``perspective_tables_all_paths`` keeps every path \u2014 and the ones reported as\n``ambiguous_join_path`` when the translation cannot be obtained or names none of the\ncandidates. A pair with ``changes_tables`` false is reported and never acted on:\nevery candidate table is kept either way, and narrowing to the path in use would drop\nthe other paths' join columns and with them their relations. Every relation between two kept tables is\nthen tested for a many-to-many join with one aggregate SQL query per side\n(``GET /api/datasources/{model}/sql``): a perspective inherits the root model's\nrelations, so a query spanning two kept tables joined many-to-many can fan out and\ndouble count. Such a pair is a warning with its evidence, never an error and never a\nreason to drop a table. Anything that could not be resolved or verified is reported as\nan issue rather than dropped.\n\nParameters\n----------\ndatamodel : str\n    The data model, as an ID or title.\ndetailed : bool, optional\n    Include the per-dashboard, per-column, per-dependency and per-issue detail.\n    Default ``False`` returns the summary view only.\n\nReturns\n-------\ndict[str, Any]\n    Always: ``datamodel`` (``oid``, ``title``, ``type``, counts of ``tables``, ``columns``,\n    ``relations``, ``custom_columns`` and ``custom_tables``, and the names of its existing\n    ``perspectives``); ``summary`` (``model_tables``, ``model_columns``, ``dashboards_analyzed``,\n    ``dashboards_failed``, ``tables_used_by_dashboards``, ``columns_used_by_dashboards``,\n    ``columns_required_for_dependencies``, ``tables_required_in_perspective``,\n    ``columns_required_in_perspective``, ``tables_required_all_paths``,\n    ``columns_required_all_paths``, ``tables_not_required``, ``columns_not_required``, and\n    ``issues`` by severity); ``perspective_tables`` \u2014 the ``{\"table\", \"columns\"}`` entries a\n    perspective must keep, ``columns`` always the explicit list of names: every used column\n    plus the join columns and intermediate tables of the paths the query engine uses (every\n    path where that could not be determined); ``perspective_tables_all_paths`` \u2014 the same\n    with every equally short path kept; ``join_path_choices`` \u2014 one entry per pair of\n    tables joined by more than one equally short path, with ``from``, ``to`` (table names,\n    in no particular order), ``needed_by`` (which dashboards, filters and how many widgets\n    put the two tables in one query), ``changes_tables`` (whether picking a path changes\n    which tables are kept), ``resolved`` (whether the engine's path is known) and ``paths``\n    (each ``{\"via\": [...], \"in_use\": ...}`` \u2014 the intermediate tables of one path, in order,\n    and whether the engine uses it; ``None`` when not resolved, and true on more than one\n    path when different widgets take different routes); ``errors`` \u2014 the distinct error messages; and ``warnings`` \u2014 warning counts\n    by kind, ``many_to_many_in_perspective`` always present (``0`` when none), plus\n    ``many_to_many_unchecked`` when a pair's SQL check failed.\n\n    With ``detailed=True`` also: ``required`` (``tables``: ``table``, ``columns_used``,\n    ``columns_total``, ``used_by_dashboards``; ``columns``: ``table``, ``column``, ``used_in`` \u2014\n    ``\"filter\"``, ``\"hierarchy\"`` and/or ``\"widget\"`` \u2014 ``used_by``); ``dependencies`` (``columns``\n    with ``table``, ``column``, ``reason`` \u2014 always ``join_column`` \u2014 ``required_by``, ``detail``,\n    ``in_use`` \u2014 whether the column is in ``perspective_tables``; ``tables`` kept only as join\n    paths in ``perspective_tables``; ``tables_all_paths`` the same for every path; ``join_paths``);\n    ``not_required`` (``tables``, ``columns`` \u2014 relative to ``perspective_tables``); ``many_to_many``\n    (one entry per kept table pair joined many-to-many or not checkable: ``table_a``, ``columns_a``,\n    ``table_b``, ``columns_b``, ``duplicate_keys_a``, ``duplicate_keys_b``, ``is_m2m``, ``status``,\n    ``error``, and ``scope`` \u2014 ``\"perspective\"``, or ``\"all_paths\"`` for a pair kept only by the\n    all-paths variant); ``dashboards``\n    (``analyzed``: ``dashboard_id``, ``title``, ``match``, ``datasource`` \u2014 the model or the\n    perspective the dashboard sits on \u2014 ``copy`` \u2014 ``\"shared\"`` under Dashboard Co-Authoring\n    for a published dashboard, else ``\"private\"`` (the single copy) \u2014 ``owner``, ``owner_email``, ``tables_used``,\n    ``columns_used``, ``columns`` as ``\"Table.Column\"``, ``widgets_on_other_datasources``;\n    ``failed``); and ``issues`` (``severity``, ``kind``, ``dashboard``, ``widget_id``, ``detail``).\n    On failure to resolve the model, read its schema or list dashboards, the standard\n    ``{\"ok\": False, \"error\": \"...\", ...}`` dict.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -4135,8 +4135,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Analyze all dashboards for the 'Sales Data Model' and include detailed results for dependencies and issues.",
@@ -4220,8 +4220,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Create a PostgreSQL connection named 'SalesDB Connection' pointing at host sales-db.example.com on port 5432, database 'sales', with username analytics_user and password securepassword123, created by admin_user, enabled for live and elasticube models.",
@@ -4340,8 +4340,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Create a new extract (Elasticube) data model called 'Sales Analytics'.",
@@ -4415,8 +4415,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Create a dataset named 'SalesDataset' in the 'SalesDataModel' data model, using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema.",
@@ -4533,8 +4533,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Create a perspective named 'Sales Overview' on the 'Global Sales' data model, keeping only the 'Orders' table with all columns and the 'Customers' table with the 'Name' and 'Region' columns.",
@@ -4646,8 +4646,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Create a new table named 'sales_summary' in the 'ecommerce_data' data model.",
@@ -4714,8 +4714,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Delete the 'Sales Data' model from the 'LocalHost' server.",
@@ -4778,8 +4778,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Delete all datasecurity rules for the column 'customer_id' in the 'orders' table of the 'Sales_Model' datamodel.",
@@ -4839,8 +4839,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Delete the perspective named 'Sales Overview' from the data model titled 'Global Sales'.",
@@ -4873,8 +4873,8 @@
     "sub_module": "datamodel.build",
     "class": "DataModel",
     "method": "deploy_datamodel",
-    "description": "Build an ElastiCube or publish a live data model, and optionally wait for the run to finish.",
-    "full_doc": "Deploy (build or publish) the specified data model based on its type.\n\nSupports both Elasticube (EXTRACT) and Live models. For EXTRACT models a\nbuild is triggered using ``build_type``, ``row_limit``, and ``schema_origin``.\nFor LIVE models a publish is triggered and ``row_limit`` and\n``schema_origin`` are ignored. Sends ``POST /api/v2/builds``, which only\naccepts the build: the returned object has ``status`` ``None`` and the build\nruns in the background. With ``wait=True`` the method then polls\n``GET /api/v2/builds/{oid}`` every ``poll_interval`` seconds until the build\nreaches a final state or ``timeout`` elapses, so that whatever follows \u2014 a\nquery, a perspective built over the model \u2014 sees the finished build.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to deploy.\nbuild_type : Literal[\"full\", \"by_table\", \"schema_changes\"], optional\n    Type of deployment for EXTRACT models. One of ``\"schema_changes\"``\n    (build only schema changes), ``\"by_table\"`` (build per each table's\n    config, e.g. incremental/accumulative), or ``\"full\"`` (rebuild the\n    entire model, the default). For LIVE models this is overridden to\n    ``\"publish\"``.\nrow_limit : int, optional\n    Maximum number of rows to process for EXTRACT builds. Defaults to ``0``\n    (no limit). Ignored for LIVE models.\nschema_origin : Literal[\"latest\", \"running\"], optional\n    Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen\n    in the Data page, the default) or ``\"running\"`` (last successfully built\n    version). Ignored for LIVE models.\nwait : bool, optional\n    Poll the build until it finishes instead of returning as soon as it is\n    accepted. Default ``False``.\ntimeout : float, optional\n    Seconds to wait for the build to finish when ``wait`` is true. Default ``900``.\npoll_interval : float, optional\n    Seconds between two status reads when ``wait`` is true; also the pause before\n    the first read, since the build is not readable in its first moments. Default ``5``.\n\nReturns\n-------\ndict[str, Any]\n    The build object from ``POST /api/v2/builds`` (``oid``, ``datamodelId``,\n    ``buildType``, ``status`` \u2014 ``None`` when just accepted \u2014 ``datamodelTitle``,\n    ``datamodelType``, ``created``, ``started``, ``completed``, ...). With ``wait=True``,\n    the same object as last read, with ``status`` ``\"done\"``, once the model's\n    ``lastSuccessfulBuildTime`` (``lastPublishTime`` for a live model) has moved to the\n    build's start or later \u2014 a failed rebuild leaves the previous build running and moves\n    only ``lastBuildTime``, so the build's own status is confirmed against the model. When\n    the build ends in any other final state (``\"failed\"``, ``\"cancelled\"``), the model never\n    confirms it, or it does not finish within ``timeout``, the standard ``{\"ok\": False,\n    \"error\": \"...\", ...}`` dict with the last build object read under ``build`` \u2014 every field\n    Sisense reported on it, verbatim \u2014 and the model's ``lastBuildTime``,\n    ``lastSuccessfulBuildTime`` and ``lastPublishTime`` under ``model`` when readable.\n    ``{\"ok\": False, \"error\": \"...\"}`` when the model is not found or the build is refused.",
+    "description": "Build (run) an ElastiCube or publish a live data model, and optionally wait for it to finish.",
+    "full_doc": "Build (run) an ElastiCube or publish a live data model, and optionally wait for it to finish.\n\nSupports both Elasticube (EXTRACT) and Live models. For EXTRACT models a\nbuild is triggered using ``build_type``, ``row_limit``, and ``schema_origin``.\nFor LIVE models a publish is triggered and ``row_limit`` and\n``schema_origin`` are ignored. Sends ``POST /api/v2/builds``, which only\naccepts the build: the returned object has ``status`` ``None`` and the build\nruns in the background. With ``wait=True`` the method then polls\n``GET /api/v2/builds/{oid}`` every ``poll_interval`` seconds until the build\nreaches a final state or ``timeout`` elapses, so that whatever follows \u2014 a\nquery, a perspective built over the model \u2014 sees the finished build.\n\nParameters\n----------\ndatamodel_name : str\n    Name of the data model to deploy.\nbuild_type : Literal[\"full\", \"by_table\", \"schema_changes\"], optional\n    Type of deployment for EXTRACT models. One of ``\"schema_changes\"``\n    (build only schema changes), ``\"by_table\"`` (build per each table's\n    config, e.g. incremental/accumulative), or ``\"full\"`` (rebuild the\n    entire model, the default). For LIVE models this is overridden to\n    ``\"publish\"``.\nrow_limit : int, optional\n    Maximum number of rows to process for EXTRACT builds. Defaults to ``0``\n    (no limit). Ignored for LIVE models.\nschema_origin : Literal[\"latest\", \"running\"], optional\n    Schema source for EXTRACT builds. One of ``\"latest\"`` (schema as seen\n    in the Data page, the default) or ``\"running\"`` (last successfully built\n    version). Ignored for LIVE models.\nwait : bool, optional\n    Poll the build until it finishes instead of returning as soon as it is\n    accepted. Default ``False``.\ntimeout : float, optional\n    Seconds to wait for the build to finish when ``wait`` is true. Default ``900``.\npoll_interval : float, optional\n    Seconds between two status reads when ``wait`` is true; also the pause before\n    the first read, since the build is not readable in its first moments. Default ``5``.\n\nReturns\n-------\ndict[str, Any]\n    The build object from ``POST /api/v2/builds`` (``oid``, ``datamodelId``,\n    ``buildType``, ``status`` \u2014 ``None`` when just accepted \u2014 ``datamodelTitle``,\n    ``datamodelType``, ``created``, ``started``, ``completed``, ...). With ``wait=True``,\n    the same object as last read, with ``status`` ``\"done\"``, once the model's\n    ``lastSuccessfulBuildTime`` (``lastPublishTime`` for a live model) has moved to the\n    build's start or later \u2014 a failed rebuild leaves the previous build running and moves\n    only ``lastBuildTime``, so the build's own status is confirmed against the model. When\n    the build ends in any other final state (``\"failed\"``, ``\"cancelled\"``), the model never\n    confirms it, or it does not finish within ``timeout``, the standard ``{\"ok\": False,\n    \"error\": \"...\", ...}`` dict with the last build object read under ``build`` \u2014 every field\n    Sisense reported on it, verbatim \u2014 and the model's ``lastBuildTime``,\n    ``lastSuccessfulBuildTime`` and ``lastPublishTime`` under ``model`` when readable.\n    ``{\"ok\": False, \"error\": \"...\"}`` when the model is not found or the build is refused.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -4946,8 +4946,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Run a full build of the 'Sales_Analytics' data model.",
@@ -5002,8 +5002,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Describe the structure of the 'Sales Analytics' data model.",
@@ -5053,8 +5053,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show the detailed definition of the 'Sales Analytics' data model.",
@@ -5111,8 +5111,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Export the full schema for data model OID 'dm12345', including dependencies for 'dataContext' and 'formulaManagement'.",
@@ -5256,8 +5256,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Build an Athena connection payload named 'Athena_Connection_1' for region us-west-2 with S3 output location s3://athena-query-results/, schema 'default', workgroup 'primary', using access key AKIAEXAMPLE and secret SECRETEXAMPLE.",
@@ -5327,8 +5327,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List all data models in the system with their metadata.",
@@ -5372,8 +5372,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Find the connection details for the 'Salesforce_Prod' data source.",
@@ -5416,8 +5416,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List all the connections available in my Sisense environment.",
@@ -5470,8 +5470,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Fetch all rows from the 'sales_data' table in the 'ecommerce_model'.",
@@ -5525,8 +5525,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Fetch the data model titled 'Sales Dashboard'.",
@@ -5576,8 +5576,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Retrieve raw share entries for the 'Sales_Data_2023' EXTRACT data model.",
@@ -5627,8 +5627,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Retrieve all raw share entries for the LIVE data model with ID 'live-dm-12345'.",
@@ -5678,8 +5678,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show who has access to the 'Sales_Analytics' data model.",
@@ -5729,8 +5729,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show the data security rules for the 'SalesAnalytics' data model.",
@@ -5780,8 +5780,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show the detailed data security rules for the 'SalesAnalytics' data model, including share-level visibility.",
@@ -5835,8 +5835,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Retrieve the raw datasecurity rules for the 'Sales Data' extract model.",
@@ -5881,8 +5881,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show me a list of all ElastiCubes available on the server.",
@@ -5926,8 +5926,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show the schema of the 'Sales Analytics' data model, including its tables and columns.",
@@ -5986,8 +5986,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Retrieve all perspectives for the 'Sales Data' data model, including the default ones.",
@@ -6041,8 +6041,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Count the rows in each table of the 'SalesData' model.",
@@ -6107,8 +6107,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show the schema of the 'sales_data' table in the 'analytics_db' database, 'public' schema, on the 'primary_data_source' connection.",
@@ -6179,8 +6179,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Import a schema with a Sales table containing an integer OrderID column and a float Amount column, overwriting the existing model with ID '12345'.",
@@ -6286,8 +6286,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Look up the OID of the data model titled 'Sales Dashboard' on the 'LocalHost' server.",
@@ -6340,8 +6340,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Resolve 'Sales Analytics' to its data model ID and title.",
@@ -6469,8 +6469,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "In the 'Sales_Live' data model, restrict the Region column of the Orders table to EMEA for the group with id 6a5f9828054024987da24060.",
@@ -6628,8 +6628,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Set up a live data model called 'Sales_Live_Model' with dataset 'Sales_Live_Dataset', using the 'SalesDB' connection against the 'SalesDatabase' database and 'public' schema, including the customers and orders tables.",
@@ -6772,8 +6772,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Update connection conn_12345 \u2014 rename it to 'Updated Connection Name' and point it at host new-database-host.example.com on port 5432.",
@@ -6849,8 +6849,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Replace the shares on the 'Sales_Analytics_2023' EXTRACT data model: give user_12345 read and group_67890 write.",
@@ -6939,8 +6939,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Replace the shares on the LIVE data model 'live_model_123': give user_456 read and group_789 write.",
@@ -7104,8 +7104,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "In the 'Sales_Elasticube' data model, restrict the Region column of the DimCountries table to EMEA for the group with id 6a5f9828054024987da24060.",
@@ -7158,8 +7158,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Decrypt the value 'ENCRYPTED_PASSWORD_12345'.",
@@ -7215,8 +7215,8 @@
       "encryption",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Encrypt the value 'my_secure_password_123' so it can be stored safely.",
@@ -7276,8 +7276,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Create a folder named 'Sales Reports' under parent folder 63f2b8c9e4b0a3d2f8e4a123.",
@@ -7329,8 +7329,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Delete the folder with ID '12345abcde'.",
@@ -7373,8 +7373,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show me the entire folder structure for organizing dashboards.",
@@ -7418,8 +7418,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show the ancestor folders for the 'SalesData' structure.",
@@ -7469,8 +7469,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Fetch the details of the folder with ID '12345abcde'.",
@@ -7518,8 +7518,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show me all folders in a flat structure.",
@@ -7560,8 +7560,8 @@
       "folder",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Show the navigation tree for our Sisense folders.",
@@ -7617,8 +7617,8 @@
       "folder",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Rename the folder with ID '12345abcde' to 'Sales Reports'.",
@@ -7678,8 +7678,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all Blox actions, skipping any that already exist.",
@@ -7738,8 +7738,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7813,8 +7813,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -7858,8 +7858,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all datasecurity rules for all data models, providing progress updates.",
@@ -7912,8 +7912,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all folders, skipping any that already exist.",
@@ -7968,8 +7968,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all groups, skipping any that already exist.",
@@ -8026,8 +8026,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all notebooks, skipping any that already exist.",
@@ -8081,8 +8081,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all saved filters for all data models, skipping any that already exist.",
@@ -8135,8 +8135,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all saved formulas, skipping any that already exist.",
@@ -8194,8 +8194,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all users, overwriting any conflicts and ignoring custom roles.",
@@ -8260,8 +8260,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8340,8 +8340,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8436,8 +8436,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8512,8 +8512,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate row-level security rules for data models with IDs 'dm_12345' and 'dm_67890'.",
@@ -8592,8 +8592,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards, skipping any that already exist.",
@@ -8667,8 +8667,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all groups, skipping any that already exist.",
@@ -8747,8 +8747,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all notebooks by their IDs, skipping any that already exist.",
@@ -8828,8 +8828,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate saved filters for data models 'Sales_Data' and 'Marketing_Analytics', skipping any that already exist.",
@@ -8907,8 +8907,8 @@
       "mergetool",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all saved formulas for data models 'Sales Dashboard' and 'Marketing Dashboard', skipping any that already exist.",
@@ -8985,8 +8985,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all users, skipping any that already exist.",
@@ -9070,8 +9070,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Add a measure 'total_sales' on the 'sales_data' table of the 'sales_db' datasource that sums the sales_amount column (datasource fullname localhost/sales_db).",
@@ -9162,8 +9162,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List the saved dimensions for the 'SalesData' datasource.",
@@ -9216,8 +9216,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List the saved measures for the 'Sales' datasource.",
@@ -9261,8 +9261,8 @@
       "metadata",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List the datasources I can access in my Sisense environment.",
@@ -9306,8 +9306,8 @@
       "metadata",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Retrieve metadata for the 'sales_dashboard' object.",
@@ -9390,8 +9390,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all dashboards to the target environment, skipping any that already exist there.",
@@ -9479,8 +9479,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all data models with data security and formulas included, and overwrite any existing models in the target environment.",
@@ -9538,8 +9538,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all user groups from the source environment to the target environment.",
@@ -9572,8 +9572,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate all users from the source environment to the target environment.",
@@ -9628,8 +9628,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate shares from source dashboards dash123, dash456 and dash789 to target dashboards dashABC, dashDEF and dashGHI, without changing ownership.",
@@ -9735,8 +9735,8 @@
       "dashboards",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate the dashboards with IDs 'dash123' and 'dash456' to the target environment, skipping any that already exist.",
@@ -9846,8 +9846,8 @@
       "datamodel",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate the data models 'SalesData' and 'CustomerAnalytics' along with their shares to the target environment, and overwrite any existing models.",
@@ -9923,8 +9923,8 @@
       "groups",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate the 'Sales Team' and 'Marketing Team' groups to the target environment.",
@@ -9987,8 +9987,8 @@
       "users",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Migrate the users john.doe@example.com and jane.smith@example.com to the target environment.",
@@ -10048,8 +10048,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Disable the 'plugin-advanced-analytics' plugin.",
@@ -10106,8 +10106,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Disable the 'plugin-advanced-viz' and 'plugin-data-export' plugins in one bulk operation.",
@@ -10168,8 +10168,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Enable the 'plugin-sample' plugin.",
@@ -10226,8 +10226,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Enable the 'plugin-advanced-charts' and 'plugin-data-export' plugins in one bulk operation.",
@@ -10281,8 +10281,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "List all plugins installed on my Sisense instance.",
@@ -10326,8 +10326,8 @@
       "plugins",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Find the plugin named 'plugin-custom-theme'.",
@@ -10395,8 +10395,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Restore the plugin snapshot containing data_connector_v2, custom_theme_manager and audit_logger, in one bulk operation.",
@@ -10457,8 +10457,8 @@
       "plugins",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Save the current enabled and disabled state of all plugins as a snapshot so it can be restored later.",
@@ -10507,8 +10507,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Fetch total sales by region for 2023 from the 'SalesElasticube' datasource.",
@@ -10644,8 +10644,8 @@
       "queries",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Export Q3 2023 sales amounts from the 'sales_elasticube' datasource as CSV.",
@@ -10740,8 +10740,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Create a new report named 'Weekly Sales Report' with PDF and CSV formats enabled, and set it to overwrite existing files on the file share.",
@@ -10823,8 +10823,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Delete the report with ID 'report_12345'.",
@@ -10890,8 +10890,8 @@
       "report_manager",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Retrieve the report with ID 'report123' and include recipient data.",
@@ -10983,8 +10983,8 @@
       "report_manager",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Retrieve all enabled reports owned by user ID 'user123'.",
@@ -11041,8 +11041,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Run the report with ID 'sales_report_2023' immediately.",
@@ -11097,8 +11097,8 @@
       "report_manager",
       "write"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Update the report with ID 'report123' to enable it and set its priority to high.",
@@ -11173,8 +11173,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Analyze the structure of the dashboard titled 'Sales Overview'.",
@@ -11233,8 +11233,8 @@
       "dashboards",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Count the widgets on the 'Sales Overview' and 'Marketing Performance' dashboards.",
@@ -11294,8 +11294,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Check if any custom tables in the 'Sales Analytics' data model use UNION.",
@@ -11354,8 +11354,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Check if the tables in the 'Sales Analytics' data model have import queries configured.",
@@ -11414,8 +11414,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Find all island tables in the 'Sales Analytics' data model.",
@@ -11474,8 +11474,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Check for many-to-many relationships in the 'Sales Data' data model.",
@@ -11534,8 +11534,8 @@
       "datamodel",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Check the datatypes of the columns used in RLS rules for the 'Sales Dashboard' data model.",
@@ -11597,8 +11597,8 @@
       "wellcheck",
       "read"
     ],
-    "sdk_version": "2.2.0",
-    "updated_at": "2026-09-22T00:13:54Z",
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
     "examples": [
       {
         "user_query": "Find pivot widgets with more than 25 fields on the 'Sales Dashboard' and 'Marketing Dashboard' dashboards.",
@@ -11632,6 +11632,1229 @@
           "max_fields": 30
         },
         "notes": "This call reviews the 'Finance Dashboard', 'Operations Dashboard', and 'HR Dashboard' for pivot widgets with more than 30 fields. Ideal for a broader audit across multiple dashboards."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.checkout_git_branch",
+    "module": "git",
+    "sub_module": "git.branches",
+    "class": "Git",
+    "method": "checkout_git_branch",
+    "description": "Switch a Git project to a branch and import its assets.",
+    "full_doc": "Switch a Git project to a branch and import its assets.\n\nSends ``POST /api/v2/projects/{project_id}/branches/{branch}/checkout``.\nUpdates the project's index and working tree to match the branch and\npoints HEAD at it, then validates and imports the resulting asset\nfiles into the application; assets that fail validation are not\nimported, while the rest still are (see the HTTP 453 note below).\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\nbranch : str\n    Name of the branch to check out.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure. HTTP 453 means the checkout\n    succeeded but one or more assets failed JSON validation on\n    import \u2014 those assets were not imported, and validation details\n    travel in the failure dict's ``raw_body``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        },
+        "branch": {
+          "type": "string",
+          "description": "Name of the branch to check out."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "branch",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Switch the 'analytics_project' Git project to the 'feature_branch' branch, ensuring the status checksum matches the current project state.",
+        "arguments": {
+          "project": "analytics_project",
+          "branch": "feature_branch",
+          "status_checksum": "abc123def456"
+        },
+        "notes": "This call switches the specified Git project to the given branch and imports its assets, ensuring the operation is consistent with the project's current status."
+      },
+      {
+        "user_query": "Can you check out the 'sales_project' Git project to the 'release_candidate' branch?",
+        "arguments": {
+          "project": "sales_project",
+          "branch": "release_candidate",
+          "status_checksum": "789xyz654mno"
+        },
+        "notes": "Use this call to switch the 'sales_project' Git project to the 'release_candidate' branch, ensuring the assets are validated and imported."
+      },
+      {
+        "user_query": "Switch the 'marketing_project' Git project to the 'hotfix_branch' branch and validate its assets.",
+        "arguments": {
+          "project": "marketing_project",
+          "branch": "hotfix_branch",
+          "status_checksum": "checksum123456"
+        },
+        "notes": "This example demonstrates switching the 'marketing_project' Git project to the 'hotfix_branch' branch while validating and importing its assets."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.checkout_git_commit",
+    "module": "git",
+    "sub_module": "git.commits",
+    "class": "Git",
+    "method": "checkout_git_commit",
+    "description": "Check out a Git commit of a project and import its assets.",
+    "full_doc": "Check out a Git commit of a project and import its assets.\n\nSends ``POST /api/v2/projects/{project_id}/commits/{commit}/checkout``.\nUpdates the project's index and working tree to match the commit\nand detaches HEAD, then validates and imports the resulting asset\nfiles into the application; assets that fail validation are not\nimported, while the rest still are (see the HTTP 453 note below).\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\ncommit : str\n    Commit hash to check out.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure. HTTP 453 means the checkout\n    succeeded but one or more assets failed JSON validation on\n    import \u2014 those assets were not imported, and validation details\n    travel in the failure dict's ``raw_body``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        },
+        "commit": {
+          "type": "string",
+          "description": "Commit hash to check out."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "commit",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Check out the commit 'abc123' from the 'analytics_project' Git repository and ensure the status checksum matches 'def456'.",
+        "arguments": {
+          "project": "analytics_project",
+          "commit": "abc123",
+          "status_checksum": "def456"
+        },
+        "notes": "This call checks out the specified commit from the given Git project and validates the assets for import. Use this when you need to update the project to a specific commit and ensure its integrity."
+      },
+      {
+        "user_query": "How can I switch my 'sales_dashboard' Git project to commit '789xyz' while ensuring the status checksum '123abc' matches?",
+        "arguments": {
+          "project": "sales_dashboard",
+          "commit": "789xyz",
+          "status_checksum": "123abc"
+        },
+        "notes": "This call switches the Git project to the specified commit and imports validated assets. Use this when transitioning to a specific commit and ensuring the project status is consistent."
+      },
+      {
+        "user_query": "I need to check out commit '456def' from the 'marketing_insights' Git repository. The current status checksum is '789ghi'.",
+        "arguments": {
+          "project": "marketing_insights",
+          "commit": "456def",
+          "status_checksum": "789ghi"
+        },
+        "notes": "This call updates the Git project to the specified commit and imports validated assets. Use this when you want to align the project with a particular commit while ensuring the status checksum matches."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.create_git_branch",
+    "module": "git",
+    "sub_module": "git.branches",
+    "class": "Git",
+    "method": "create_git_branch",
+    "description": "Create a new Git branch in a project.",
+    "full_doc": "Create a new Git branch in a project.\n\nSends ``POST /api/v2/projects/{project_id}/branches``.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\nname : str\n    Name of the new branch.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\nparent : str, optional\n    Commit hash or commitish the new branch should start from.\n    Defaults to HEAD when omitted.\n\nReturns\n-------\ndict[str, Any]\n    The created branch object (``name``, ``parents``, ``head``) on\n    success, or ``{\"ok\": False, \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the new branch."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        },
+        "parent": {
+          "type": "string",
+          "description": "Commit hash or commitish the new branch should start from. Defaults to HEAD when omitted."
+        }
+      },
+      "required": [
+        "project",
+        "name",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Create a new branch named 'feature/add-user-auth' in the 'analytics-backend' project, starting from the latest commit, and ensure the status checksum matches.",
+        "arguments": {
+          "project": "analytics-backend",
+          "name": "feature/add-user-auth",
+          "status_checksum": "abc123def456"
+        },
+        "notes": "This creates a new branch named 'feature/add-user-auth' in the 'analytics-backend' project, starting from the latest commit (HEAD). Use this when you want to start a new feature branch."
+      },
+      {
+        "user_query": "Can you create a branch called 'hotfix/fix-login-bug' in the 'frontend-app' project, starting from commit 'a1b2c3d4', and ensure the checksum matches?",
+        "arguments": {
+          "project": "frontend-app",
+          "name": "hotfix/fix-login-bug",
+          "status_checksum": "789xyz654",
+          "parent": "a1b2c3d4"
+        },
+        "notes": "This creates a branch named 'hotfix/fix-login-bug' in the 'frontend-app' project, starting from the specified commit 'a1b2c3d4'. Use this for hotfixes that need to branch off a specific commit."
+      },
+      {
+        "user_query": "Start a new branch 'release/v2.0' in the 'data-pipeline' project, ensuring the status checksum matches.",
+        "arguments": {
+          "project": "data-pipeline",
+          "name": "release/v2.0",
+          "status_checksum": "checksum123"
+        },
+        "notes": "This creates a branch named 'release/v2.0' in the 'data-pipeline' project, starting from the latest commit (HEAD). Use this for preparing a new release branch."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.create_git_commit",
+    "module": "git",
+    "sub_module": "git.commits",
+    "class": "Git",
+    "method": "create_git_commit",
+    "description": "Create a new Git commit in a project.",
+    "full_doc": "Create a new Git commit in a project.\n\nSends ``POST /api/v2/projects/{project_id}/commits``. Files are\nauto-staged by Sisense, so ``changes`` only needs to list which\nalready-changed file paths to include \u2014 there is no separate stage\nstep.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\nmessage : str\n    Subject line and optional body of the new commit.\nchanges : list[str]\n    File paths whose changes should be included in the commit.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\n\nReturns\n-------\ndict[str, Any]\n    The created commit object on success, or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        },
+        "message": {
+          "type": "string",
+          "description": "Subject line and optional body of the new commit."
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File paths whose changes should be included in the commit."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "message",
+        "changes",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Commit all changes in the 'analytics_project' repository with the message 'Update dashboard metrics' and ensure the status checksum matches the current project state.",
+        "arguments": {
+          "project": "analytics_project",
+          "message": "Update dashboard metrics",
+          "changes": [
+            "dashboards/metrics.json",
+            "scripts/update_metrics.py"
+          ],
+          "status_checksum": "abc123def456"
+        },
+        "notes": "Creates a new commit in the 'analytics_project' repository, including changes to the specified files, with a descriptive commit message and ensuring the status checksum matches."
+      },
+      {
+        "user_query": "How can I commit changes to the 'sales_data' repository with the message 'Fix data aggregation issue'?",
+        "arguments": {
+          "project": "sales_data",
+          "message": "Fix data aggregation issue",
+          "changes": [
+            "data/aggregation_rules.json",
+            "scripts/fix_aggregation.py"
+          ],
+          "status_checksum": "789xyz123abc"
+        },
+        "notes": "Commits changes to the 'sales_data' repository, addressing a data aggregation issue, with the specified files included in the commit."
+      },
+      {
+        "user_query": "Commit the changes to the 'marketing_campaigns' repository with the message 'Add Q4 campaign details' and include the updated files.",
+        "arguments": {
+          "project": "marketing_campaigns",
+          "message": "Add Q4 campaign details",
+          "changes": [
+            "campaigns/q4_details.json",
+            "assets/q4_banner.png"
+          ],
+          "status_checksum": "456def789ghi"
+        },
+        "notes": "Adds a new commit to the 'marketing_campaigns' repository, including updates for the Q4 campaign details and assets."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.discard_git_project_changes",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "discard_git_project_changes",
+    "description": "Discard uncommitted file changes in a Git project's working tree.",
+    "full_doc": "Discard uncommitted file changes in a Git project's working tree.\n\nSends ``POST /api/v2/projects/{project_id}/discard``. Removes the\nlisted uncommitted changes from the project's local Git working\ntree, then validates and imports the resulting asset files into the\napplication; assets that fail validation are not imported, while\nthe rest still are (see the HTTP 453 note below).\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\nchanges : list[str]\n    File paths whose uncommitted changes should be discarded.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure. HTTP 453 means the discard\n    succeeded but one or more assets failed JSON validation on\n    import \u2014 those assets were not imported, and validation details\n    travel in the failure dict's ``raw_body``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File paths whose uncommitted changes should be discarded."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "changes",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Discard all uncommitted changes in the 'sales-analytics' Git project for files in the 'dashboards' folder, ensuring the status checksum matches.",
+        "arguments": {
+          "project": "sales-analytics",
+          "changes": [
+            "dashboards/"
+          ],
+          "status_checksum": "abc123def456"
+        },
+        "notes": "This call discards all uncommitted changes in the 'dashboards' folder of the 'sales-analytics' project, ensuring the operation proceeds only if the status checksum matches the current project state."
+      },
+      {
+        "user_query": "Can you discard changes to 'config.json' and 'settings.yaml' in the 'marketing-insights' Git project?",
+        "arguments": {
+          "project": "marketing-insights",
+          "changes": [
+            "config.json",
+            "settings.yaml"
+          ],
+          "status_checksum": "789xyz654mno"
+        },
+        "notes": "This call discards uncommitted changes to 'config.json' and 'settings.yaml' in the 'marketing-insights' project, ensuring the operation is consistent with the provided status checksum."
+      },
+      {
+        "user_query": "Discard uncommitted changes in the 'data-models' project for the files 'schema.sql' and 'mappings.json'.",
+        "arguments": {
+          "project": "data-models",
+          "changes": [
+            "schema.sql",
+            "mappings.json"
+          ],
+          "status_checksum": "checksum123456"
+        },
+        "notes": "This call removes uncommitted changes to 'schema.sql' and 'mappings.json' in the 'data-models' project, ensuring the operation only proceeds if the provided checksum matches the current project state."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_branch",
+    "module": "git",
+    "sub_module": "git.branches",
+    "class": "Git",
+    "method": "get_git_branch",
+    "description": "Retrieve a single Git branch of a project.",
+    "full_doc": "Retrieve a single Git branch of a project.\n\nSends ``GET /api/v2/projects/{project_id}/branches/{branch}``.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\nbranch : str\n    Branch name.\n\nReturns\n-------\ndict[str, Any]\n    The branch object (``name``, ``parents``, ``head``) on success,\n    or ``{\"ok\": False, \"error\": \"...\"}`` on failure (including an\n    unresolved ``project`` or an unknown ``branch``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        },
+        "branch": {
+          "type": "string",
+          "description": "Branch name."
+        }
+      },
+      "required": [
+        "project",
+        "branch"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Retrieve the 'main' branch of the Git project 'analytics-service'.",
+        "arguments": {
+          "project": "analytics-service",
+          "branch": "main"
+        },
+        "notes": "Fetches the 'main' branch of the 'analytics-service' Git project. Use this to inspect the branch details or verify its existence."
+      },
+      {
+        "user_query": "What is the status of the 'feature-xyz' branch in the 'data-pipeline' project?",
+        "arguments": {
+          "project": "data-pipeline",
+          "branch": "feature-xyz"
+        },
+        "notes": "Retrieves the 'feature-xyz' branch of the 'data-pipeline' Git project. Useful for checking the branch's metadata or confirming its presence."
+      },
+      {
+        "user_query": "Get details for the 'release-v1.2' branch in the 'customer-insights' repository.",
+        "arguments": {
+          "project": "customer-insights",
+          "branch": "release-v1.2"
+        },
+        "notes": "Fetches the 'release-v1.2' branch of the 'customer-insights' Git project. Ideal for reviewing branch information before deployment or integration."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_branches",
+    "module": "git",
+    "sub_module": "git.branches",
+    "class": "Git",
+    "method": "get_git_branches",
+    "description": "List all Git branches of a project.",
+    "full_doc": "List all Git branches of a project.\n\nSends ``GET /api/v2/projects/{project_id}/branches``. Returns\nmetadata for every local and remote-tracking branch in the\nproject's local Git repository; remote-tracking branch names start\nwith ``origin/``.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\n\nReturns\n-------\nlist[dict[str, Any]] or dict[str, Any]\n    A list of branch objects (``name``, ``parents``, ``head``) on\n    success, or ``{\"ok\": False, \"error\": \"...\"}`` on failure\n    (including an unresolved ``project``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "List all Git branches for the project 'analytics-service'.",
+        "arguments": {
+          "project": "analytics-service"
+        },
+        "notes": "Retrieves metadata for all local and remote-tracking branches in the 'analytics-service' Git project."
+      },
+      {
+        "user_query": "What are the Git branches available in the 'data-warehouse' project?",
+        "arguments": {
+          "project": "data-warehouse"
+        },
+        "notes": "Fetches a list of all branches, including remote-tracking ones, for the 'data-warehouse' Git project."
+      },
+      {
+        "user_query": "Show me the branches for the Git project 'customer-insights'.",
+        "arguments": {
+          "project": "customer-insights"
+        },
+        "notes": "Lists all branches for the 'customer-insights' project, providing details like branch names, parents, and heads."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_commit",
+    "module": "git",
+    "sub_module": "git.commits",
+    "class": "Git",
+    "method": "get_git_commit",
+    "description": "Retrieve a single Git commit of a project.",
+    "full_doc": "Retrieve a single Git commit of a project.\n\nSends ``GET /api/v2/projects/{project_id}/commits/{commit}``.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\ncommit : str\n    Commit hash.\n\nReturns\n-------\ndict[str, Any]\n    The commit object (``hash``, ``authorName``, ``authorEmail``,\n    ``date``, ``parents``, ``refs``, ``message``) on success, or\n    ``{\"ok\": False, \"error\": \"...\"}`` on failure (including an\n    unresolved ``project`` or an unknown ``commit``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        },
+        "commit": {
+          "type": "string",
+          "description": "Commit hash."
+        }
+      },
+      "required": [
+        "project",
+        "commit"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Retrieve the commit with hash 'abc123' from the project 'my-git-project'.",
+        "arguments": {
+          "project": "my-git-project",
+          "commit": "abc123"
+        },
+        "notes": "This retrieves details of the specified commit from the given Git project. Use this to inspect a specific commit's metadata and content."
+      },
+      {
+        "user_query": "What are the details of commit 'def456' in the project 'analytics-repo'?",
+        "arguments": {
+          "project": "analytics-repo",
+          "commit": "def456"
+        },
+        "notes": "This fetches information about a specific commit in the 'analytics-repo' project. Useful for auditing or debugging changes."
+      },
+      {
+        "user_query": "Get the metadata for commit '789xyz' in the repository 'data-pipeline'.",
+        "arguments": {
+          "project": "data-pipeline",
+          "commit": "789xyz"
+        },
+        "notes": "This retrieves the metadata of a specific commit from the 'data-pipeline' repository. Ideal for tracking changes or reviewing commit history."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_commits",
+    "module": "git",
+    "sub_module": "git.commits",
+    "class": "Git",
+    "method": "get_git_commits",
+    "description": "List all Git commits of a project.",
+    "full_doc": "List all Git commits of a project.\n\nSends ``GET /api/v2/projects/{project_id}/commits``. Returns\nmetadata for every commit in the project's local Git repository.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\n\nReturns\n-------\nlist[dict[str, Any]] or dict[str, Any]\n    A list of commit objects (``hash``, ``authorName``,\n    ``authorEmail``, ``date``, ``parents``, ``refs``, ``message``)\n    on success, or ``{\"ok\": False, \"error\": \"...\"}`` on failure\n    (including an unresolved ``project``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "List all Git commits for the project 'analytics-dashboard'.",
+        "arguments": {
+          "project": "analytics-dashboard"
+        },
+        "notes": "Fetches all Git commits for the project named 'analytics-dashboard'. Use this to review the commit history of a specific project."
+      },
+      {
+        "user_query": "What are the commits for the project with ID '12345abc'?",
+        "arguments": {
+          "project": "12345abc"
+        },
+        "notes": "Retrieves the commit history for the project identified by the OID '12345abc'. Useful when working with a project ID instead of a name."
+      },
+      {
+        "user_query": "Show me the Git commit history for the project 'data-pipeline'.",
+        "arguments": {
+          "project": "data-pipeline"
+        },
+        "notes": "Lists all commits for the project named 'data-pipeline'. Ideal for tracking changes in a specific project repository."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_project",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "get_git_project",
+    "description": "Retrieve a single Git Integration project by ID.",
+    "full_doc": "Retrieve a single Git Integration project by ID.\n\nGit Integration is an optional Sisense feature that an admin must\nenable (Admin > App Configuration > Feature Management) before this\nendpoint returns project data. Sends\n``GET /api/v2/projects/{project_id}``. Each boolean flag below adds\nthe corresponding field to the response only when set to ``True``.\n\nParameters\n----------\nproject_id : str\n    OID of the Git project.\nbranch_mappings : bool, optional\n    Include an array of all local branches and their remote-tracking\n    branches.\ncommits : bool, optional\n    Include an array of all commits in the project's local Git\n    repository.\ncurrent_branch_name : bool, optional\n    Include the name of the currently checked-out branch.\nowner_id : bool, optional\n    Include the ID of the user who created the project.\ntag_names : bool, optional\n    Include an array of all local Git tag names.\n\nReturns\n-------\ndict[str, Any]\n    The Git project object on success, or ``{\"ok\": False, \"error\":\n    \"...\"}`` on failure (including when ``project_id`` does not\n    exist).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "description": "OID of the Git project."
+        },
+        "branch_mappings": {
+          "type": "boolean",
+          "description": "Include an array of all local branches and their remote-tracking branches."
+        },
+        "commits": {
+          "type": "boolean",
+          "description": "Include an array of all commits in the project's local Git repository."
+        },
+        "current_branch_name": {
+          "type": "boolean",
+          "description": "Include the name of the currently checked-out branch."
+        },
+        "owner_id": {
+          "type": "boolean",
+          "description": "Include the ID of the user who created the project."
+        },
+        "tag_names": {
+          "type": "boolean",
+          "description": "Include an array of all local Git tag names."
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Retrieve the Git project with ID 'abc123' and include its commits.",
+        "arguments": {
+          "project_id": "abc123",
+          "commits": true
+        },
+        "notes": "Fetches the Git project with the specified ID and includes an array of all commits in the project's local Git repository."
+      },
+      {
+        "user_query": "What is the current branch name for the Git project with ID 'xyz789'?",
+        "arguments": {
+          "project_id": "xyz789",
+          "current_branch_name": true
+        },
+        "notes": "Retrieves the Git project with the specified ID and includes the name of the currently checked-out branch."
+      },
+      {
+        "user_query": "Get details of the Git project 'proj456', including its owner ID and local tag names.",
+        "arguments": {
+          "project_id": "proj456",
+          "owner_id": true,
+          "tag_names": true
+        },
+        "notes": "Fetches the Git project with the specified ID and includes the ID of the user who created the project and an array of all local Git tag names."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_project_status",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "get_git_project_status",
+    "description": "Retrieve a Git project's current status checksum.",
+    "full_doc": "Retrieve a Git project's current status checksum.\n\nSends ``GET /api/v2/projects/{project_id}/status``. The returned\nchecksum reflects the project's current working-directory file\nchanges, current branch name, and HEAD commit. It must be sent as\nthe ``x-git-status-checksum`` header on any request that modifies\nthe project's local Git repository (branch/commit checkout,\ndiscard, pull, push, sync); the server rejects the request if the\nchecksum is stale, so callers should fetch a fresh one immediately\nbefore such a call.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"statusChecksum\": \"...\"}`` on success, or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure (including an unresolved\n    ``project``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Retrieve the current status checksum for the Git project 'dashboard-reports'.",
+        "arguments": {
+          "project": "dashboard-reports"
+        },
+        "notes": "Fetches the status checksum for the 'dashboard-reports' Git project. This checksum is required for any subsequent operations that modify the project's Git repository."
+      },
+      {
+        "user_query": "What is the current status checksum of the Git project with ID '12345abcde'?",
+        "arguments": {
+          "project": "12345abcde"
+        },
+        "notes": "Retrieves the status checksum for the Git project identified by the OID '12345abcde'. This is useful for ensuring the project state is up-to-date before performing Git operations."
+      },
+      {
+        "user_query": "Get the status checksum for the Git project named 'analytics-engine'.",
+        "arguments": {
+          "project": "analytics-engine"
+        },
+        "notes": "Obtains the current status checksum for the 'analytics-engine' Git project. This checksum reflects the project's working directory changes, branch, and HEAD commit."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_projects",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "get_git_projects",
+    "description": "List the Git Integration projects accessible to the current user.",
+    "full_doc": "List the Git Integration projects accessible to the current user.\n\nGit Integration is an optional Sisense feature that an admin must\nenable (Admin > App Configuration > Feature Management) before this\nendpoint returns project data. Sends ``GET /api/v2/projects``. Each\nboolean flag below adds the corresponding field to every returned\nproject only when set to ``True``; the response otherwise omits it.\n\nParameters\n----------\ncurrent_branch_name : bool, optional\n    Include each project's currently checked-out branch name.\nfavorites_only : bool, optional\n    Return only projects the current user has favorited.\nlast_commit_message : bool, optional\n    Include the subject/body of each project's last commit.\nlast_commit_date : bool, optional\n    Include the timestamp of each project's last commit.\nowner_id : bool, optional\n    Include the ID of the user who created each project.\ndetached_head_hash : bool, optional\n    Include the current commit hash for projects in a detached HEAD\n    state.\n\nReturns\n-------\nlist[dict[str, Any]] or dict[str, Any]\n    A list of Git project objects (``name``, ``oid``, ``owner``,\n    ``created``, ``lastModified``, ``syncedAt``, ``shares``,\n    ``userFavorites``, plus any fields enabled above) on success, or\n    ``{\"ok\": False, \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "current_branch_name": {
+          "type": "boolean",
+          "description": "Include each project's currently checked-out branch name."
+        },
+        "favorites_only": {
+          "type": "boolean",
+          "description": "Return only projects the current user has favorited."
+        },
+        "last_commit_message": {
+          "type": "boolean",
+          "description": "Include the subject/body of each project's last commit."
+        },
+        "last_commit_date": {
+          "type": "boolean",
+          "description": "Include the timestamp of each project's last commit."
+        },
+        "owner_id": {
+          "type": "boolean",
+          "description": "Include the ID of the user who created each project."
+        },
+        "detached_head_hash": {
+          "type": "boolean",
+          "description": "Include the current commit hash for projects in a detached HEAD state."
+        }
+      },
+      "required": []
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "List all Git projects and include their last commit messages.",
+        "arguments": {
+          "last_commit_message": true
+        },
+        "notes": "This call retrieves all Git projects accessible to the current user and includes the subject and body of the last commit for each project."
+      },
+      {
+        "user_query": "Which Git projects have I favorited?",
+        "arguments": {
+          "favorites_only": true
+        },
+        "notes": "This call returns only the Git projects that the current user has marked as favorites."
+      },
+      {
+        "user_query": "Show all Git projects, including their current branch names and the IDs of their owners.",
+        "arguments": {
+          "current_branch_name": true,
+          "owner_id": true
+        },
+        "notes": "This call retrieves all Git projects accessible to the current user, including the currently checked-out branch name and the ID of the user who created each project."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.git_fetch",
+    "module": "git",
+    "sub_module": "git.remote",
+    "class": "Git",
+    "method": "git_fetch",
+    "description": "Download commits and tags from a Git project's remote repository.",
+    "full_doc": "Download commits and tags from a Git project's remote repository.\n\nSends ``POST /api/v2/projects/{project_id}/fetch``. Downloads\ncommits from every branch and tag of the remote repository\nconnected to the project, updating the local repository's\nremote-tracking branches. Nothing is merged into the current\nbranch \u2014 see ``git_pull`` for that.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\nhttps_credentials : GitHttpsCredentialsPayload, optional\n    HTTP(S) username/password (or personal access token) for the\n    remote repository. When omitted, credentials previously saved\n    for the current user and this project are used; the request\n    fails if none were saved.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        },
+        "https_credentials": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "save": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "password",
+            "username"
+          ],
+          "description": "HTTP(S) username/password (or personal access token) for the remote repository. When omitted, credentials previously saved for the current user and this project are used; the request fails if none were saved."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Fetch all commits and tags for the project 'analytics-dashboard' using saved credentials.",
+        "arguments": {
+          "project": "analytics-dashboard"
+        },
+        "notes": "This call fetches all commits and tags from the remote repository for the specified project. It uses previously saved credentials for authentication."
+      },
+      {
+        "user_query": "Can you fetch the latest commits for the project 'sales-insights' using my HTTPS credentials?",
+        "arguments": {
+          "project": "sales-insights",
+          "https_credentials": {
+            "username": "admin_user",
+            "password": "securepassword123",
+            "save": false
+          }
+        },
+        "notes": "This call fetches commits and tags for the 'sales-insights' project using the provided HTTPS credentials. The credentials are not saved for future use."
+      },
+      {
+        "user_query": "Fetch commits and tags for the project 'customer-data' and save the provided credentials for future use.",
+        "arguments": {
+          "project": "customer-data",
+          "https_credentials": {
+            "username": "git_user",
+            "password": "mypassword",
+            "save": true
+          }
+        },
+        "notes": "This call fetches commits and tags for the 'customer-data' project using the provided HTTPS credentials. The credentials are saved for future use."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.git_pull",
+    "module": "git",
+    "sub_module": "git.remote",
+    "class": "Git",
+    "method": "git_pull",
+    "description": "Fetch and merge remote changes into a Git project's current branch.",
+    "full_doc": "Fetch and merge remote changes into a Git project's current branch.\n\nSends ``POST /api/v2/projects/{project_id}/pull``. Downloads\ncommits from ``remote_branch`` on the connected remote repository\nand merges them into the project's currently checked-out branch. If\nthe merge has conflicts, it is aborted and nothing is imported.\nOtherwise the resulting asset files are validated and imported into\nthe application; assets that fail validation are not imported,\nwhile the rest still are (see the HTTP 453 note below). New assets\nintroduced by the merge are added to the project; when they are\nowned by users without prior project access, a pending share is\ncreated for each and requires admin approval.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\nremote_branch : str\n    Name of the branch on the remote repository to fetch and merge\n    from. The commits are merged into the project's current local\n    branch.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\nhttps_credentials : GitHttpsCredentialsPayload, optional\n    HTTP(S) username/password (or personal access token) for the\n    remote repository. When omitted, credentials previously saved\n    for the current user and this project are used; the request\n    fails if none were saved.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure. HTTP 453 means the merge\n    succeeded but one or more assets failed JSON validation on\n    import \u2014 those assets were not imported, and validation details\n    travel in the failure dict's ``raw_body``.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        },
+        "remote_branch": {
+          "type": "string",
+          "description": "Name of the branch on the remote repository to fetch and merge from. The commits are merged into the project's current local branch."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        },
+        "https_credentials": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "save": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "password",
+            "username"
+          ],
+          "description": "HTTP(S) username/password (or personal access token) for the remote repository. When omitted, credentials previously saved for the current user and this project are used; the request fails if none were saved."
+        }
+      },
+      "required": [
+        "project",
+        "remote_branch",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Pull the latest changes from the 'main' branch of the 'sales-analytics' project, ensuring the status checksum matches.",
+        "arguments": {
+          "project": "sales-analytics",
+          "remote_branch": "main",
+          "status_checksum": "abc123def456"
+        },
+        "notes": "This call fetches and merges changes from the 'main' branch of the 'sales-analytics' project. It ensures the project's current status matches the provided checksum before proceeding."
+      },
+      {
+        "user_query": "Can you update the 'marketing-insights' project with changes from the 'feature-updates' branch?",
+        "arguments": {
+          "project": "marketing-insights",
+          "remote_branch": "feature-updates",
+          "status_checksum": "789xyz654mno"
+        },
+        "notes": "This example fetches and merges changes from the 'feature-updates' branch into the current branch of the 'marketing-insights' project. It ensures the operation only proceeds if the provided status checksum matches the project's current state."
+      },
+      {
+        "user_query": "Sync the 'data-warehouse' project with the 'dev' branch using my Git credentials.",
+        "arguments": {
+          "project": "data-warehouse",
+          "remote_branch": "dev",
+          "status_checksum": "qwe987rty654",
+          "https_credentials": {
+            "username": "admin_user",
+            "password": "secure_password",
+            "save": true
+          }
+        },
+        "notes": "This call syncs the 'data-warehouse' project with the 'dev' branch using provided HTTPS credentials. The credentials are saved for future use, and the operation ensures the status checksum matches before proceeding."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.git_push",
+    "module": "git",
+    "sub_module": "git.remote",
+    "class": "Git",
+    "method": "git_push",
+    "description": "Upload commits from a Git project's local branch to its remote repository.",
+    "full_doc": "Upload commits from a Git project's local branch to its remote repository.\n\nSends ``POST /api/v2/projects/{project_id}/push``. If\n``remote_branch`` does not yet exist on the remote, it is created.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\nlocal_branch : str\n    Name of the local branch whose commits should be pushed.\nremote_branch : str\n    Name of the branch on the remote repository to push to.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\nforce : bool, optional\n    When ``True``, pushes with ``--force-with-lease``, overriding\n    the remote branch's history with the local branch's history.\n    This can discard commits pushed by others since the local\n    branch's remote-tracking ref was last updated \u2014 use with care.\nhttps_credentials : GitHttpsCredentialsPayload, optional\n    HTTP(S) username/password (or personal access token) for the\n    remote repository. When omitted, credentials previously saved\n    for the current user and this project are used; the request\n    fails if none were saved.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"remoteMessages\": [...], \"remoteUrl\": \"...\"}`` on success\n    (HTTP 200), or ``{\"ok\": False, \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        },
+        "local_branch": {
+          "type": "string",
+          "description": "Name of the local branch whose commits should be pushed."
+        },
+        "remote_branch": {
+          "type": "string",
+          "description": "Name of the branch on the remote repository to push to."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        },
+        "force": {
+          "type": "boolean",
+          "description": "When ``True``, pushes with ``--force-with-lease``, overriding the remote branch's history with the local branch's history. This can discard commits pushed by others since the local branch's remote-tracking ref was last updated \u2014 use with care."
+        },
+        "https_credentials": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "save": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "password",
+            "username"
+          ],
+          "description": "HTTP(S) username/password (or personal access token) for the remote repository. When omitted, credentials previously saved for the current user and this project are used; the request fails if none were saved."
+        }
+      },
+      "required": [
+        "project",
+        "local_branch",
+        "remote_branch",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Push all commits from the local 'feature-branch' to the remote 'main' branch, forcing the update.",
+        "arguments": {
+          "project": "project-12345",
+          "local_branch": "feature-branch",
+          "remote_branch": "main",
+          "status_checksum": "abc123def456",
+          "force": true
+        },
+        "notes": "This call pushes all commits from the local 'feature-branch' to the remote 'main' branch, using force-with-lease to override the remote branch's history. Use this when you need to ensure the remote branch matches the local branch exactly, even if it discards others' commits."
+      },
+      {
+        "user_query": "How can I push the latest changes from 'dev' to 'staging'?",
+        "arguments": {
+          "project": "project-67890",
+          "local_branch": "dev",
+          "remote_branch": "staging",
+          "status_checksum": "789xyz123abc"
+        },
+        "notes": "This call pushes the latest commits from the local 'dev' branch to the remote 'staging' branch without forcing the update. Use this for standard updates where you want to preserve the remote branch's history."
+      },
+      {
+        "user_query": "Push the 'hotfix' branch to 'production' using HTTPS credentials.",
+        "arguments": {
+          "project": "project-54321",
+          "local_branch": "hotfix",
+          "remote_branch": "production",
+          "status_checksum": "456def789ghi",
+          "https_credentials": {
+            "username": "admin_user",
+            "password": "secure_password",
+            "save": false
+          }
+        },
+        "notes": "This call pushes the 'hotfix' branch to the 'production' branch on the remote repository, using HTTPS credentials for authentication. Use this when credentials are required and you do not want them saved for future use."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.resolve_git_project_reference",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "resolve_git_project_reference",
+    "description": "Resolve a Git project reference (ID or name) to a concrete project ID and name.",
+    "full_doc": "Resolve a Git project reference (ID or name) to a concrete project ID and name.\n\nAccepts either a 24-character Git project OID or a project name. An\nID-shaped reference is looked up with ``GET\n/api/v2/projects/{project_id}``; anything else (or a failed ID\nlookup) falls back to matching the ``name`` field of every project\nreturned by ``GET /api/v2/projects``, since project lookup by name\nhas no dedicated server-side endpoint.\n\nParameters\n----------\nproject_ref : str\n    Git project reference to resolve \u2014 an OID or a name.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": bool, \"status_code\": int, \"project_id\": str or\n    None, \"project_name\": str or None, \"error\": str or None}``.\n    ``status_code`` is ``200`` when resolved, ``404`` when no\n    project matches, or ``500`` on an unexpected error.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project_ref": {
+          "type": "string",
+          "description": "Git project reference to resolve \u2014 an OID or a name."
+        }
+      },
+      "required": [
+        "project_ref"
+      ]
+    },
+    "mutates": false,
+    "tags": [
+      "git",
+      "read"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Resolve the Git project reference 'dashboard-service' to its concrete project ID and name.",
+        "arguments": {
+          "project_ref": "dashboard-service"
+        },
+        "notes": "This resolves the Git project reference 'dashboard-service', which is likely the name of a project, to its concrete project ID and name. Use this when you need to identify a project by its name."
+      },
+      {
+        "user_query": "What is the project ID and name for the Git project with the reference '5f2b3c4d5e6f7g8h9i0j1k2l'?",
+        "arguments": {
+          "project_ref": "5f2b3c4d5e6f7g8h9i0j1k2l"
+        },
+        "notes": "This resolves the Git project reference '5f2b3c4d5e6f7g8h9i0j1k2l', which appears to be an OID, to its concrete project ID and name. Use this when you have an OID and need to confirm the associated project details."
+      },
+      {
+        "user_query": "Find the project details for the Git reference 'analytics-core'.",
+        "arguments": {
+          "project_ref": "analytics-core"
+        },
+        "notes": "This resolves the Git project reference 'analytics-core', which is likely a project name, to its concrete project ID and name. Use this when you need to map a project name to its unique ID."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.sync_git_project",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "sync_git_project",
+    "description": "Synchronize a Git project's files with the current asset state.",
+    "full_doc": "Synchronize a Git project's files with the current asset state.\n\nSends ``POST /api/v2/projects/{project_id}/sync``. Exports the\ncurrent state of the project's tracked Sisense assets to files in\nits local Git repository, so the Git files match the assets in the\napplication \u2014 the opposite direction of a checkout or pull.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\nstatus_checksum : str\n    Checksum from ``GET /api/v2/projects/{project_id}/status``,\n    sent as the ``x-git-status-checksum`` header; the request fails\n    if it does not match the project's current status.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure (a locked project answers HTTP 423\n    \u2014 see ``unlock_git_project``).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Synchronize the Git project 'dashboard-reports' using the latest status checksum.",
+        "arguments": {
+          "project": "dashboard-reports",
+          "status_checksum": "abc123def456"
+        },
+        "notes": "This call synchronizes the 'dashboard-reports' Git project, ensuring its files match the current state of Sisense assets. The provided status checksum ensures the operation is performed on the correct project state."
+      },
+      {
+        "user_query": "How can I sync the Git project 'sales-analytics' with its current asset state?",
+        "arguments": {
+          "project": "sales-analytics",
+          "status_checksum": "789xyz654uvw"
+        },
+        "notes": "This example demonstrates syncing the 'sales-analytics' Git project. The status checksum ensures the operation is only performed if the project state matches the expected value."
+      },
+      {
+        "user_query": "Sync the Git project 'marketing-metrics' to align its files with the latest Sisense assets.",
+        "arguments": {
+          "project": "marketing-metrics",
+          "status_checksum": "112233aabbcc"
+        },
+        "notes": "This call aligns the 'marketing-metrics' Git project files with the current Sisense asset state. The status checksum prevents syncing if the project state has changed unexpectedly."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.unlock_git_project",
+    "module": "git",
+    "sub_module": "git.core",
+    "class": "Git",
+    "method": "unlock_git_project",
+    "description": "Manually release a stuck Git lock on a project.",
+    "full_doc": "Manually release a stuck Git lock on a project.\n\nSends ``PATCH /api/v2/projects/{project_id}/unlock``. Sisense\nacquires a lock on a project while a request that modifies its\nlocal Git repository is in flight, and normally releases it when\nthat request completes; this endpoint is the manual escape hatch\nwhen a lock was left behind (for example, after an interrupted\nrequest). Requires an admin token \u2014 Sisense restricts this endpoint\nto admin users server-side.\n\nParameters\n----------\nproject : str\n    Git project reference \u2014 an OID or a name.\n\nReturns\n-------\ndict[str, Any]\n    ``{\"success\": True}`` on success (HTTP 204), or ``{\"ok\": False,\n    \"error\": \"...\"}`` on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference \u2014 an OID or a name."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": true,
+    "tags": [
+      "git",
+      "write"
+    ],
+    "sdk_version": "2.3.0",
+    "updated_at": "2026-09-23T15:58:19Z",
+    "examples": [
+      {
+        "user_query": "Manually unlock the Git project 'dashboard-reports' to release a stuck lock.",
+        "arguments": {
+          "project": "dashboard-reports"
+        },
+        "notes": "Releases a stuck Git lock on the 'dashboard-reports' project. Use this if a previous operation left the project locked."
+      },
+      {
+        "user_query": "How can I unlock the Git project with ID '12345abcde'?",
+        "arguments": {
+          "project": "12345abcde"
+        },
+        "notes": "Releases a stuck Git lock on the project identified by the OID '12345abcde'. Useful for resolving issues caused by interrupted operations."
+      },
+      {
+        "user_query": "Unlock the Git project 'analytics-core' to clear a lock left by a failed request.",
+        "arguments": {
+          "project": "analytics-core"
+        },
+        "notes": "Clears a stuck Git lock on the 'analytics-core' project. This is typically needed after a failed or interrupted request."
       }
     ]
   }
