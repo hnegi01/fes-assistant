@@ -223,7 +223,7 @@
   },
   {
     "tool_id": "datamodel.deploy_datamodel",
-    "description": "Build an ElastiCube or publish a live data model, and optionally wait for the run to finish.",
+    "description": "Build (run) an ElastiCube or publish a live data model, and optionally wait for it to finish.",
     "parameters": {
       "type": "object",
       "properties": {

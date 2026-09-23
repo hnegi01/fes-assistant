@@ -1,0 +1,10 @@
+{
+  "package": "git",
+  "class": "Git",
+  "modules": {
+    "core": "Project listing and lookup, reference resolution, status checksum retrieval, manual unlock, asset/file sync, and discarding uncommitted changes.",
+    "branches": "List, retrieve, create, and check out Git branches of a project.",
+    "commits": "List, retrieve, create, and check out Git commits of a project.",
+    "remote": "Remote repository operations — fetch, pull, and push over HTTP(S)."
+  }
+}

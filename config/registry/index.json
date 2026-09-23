@@ -1,6 +1,6 @@
 {
-  "sdk_version": "2.2.0",
-  "updated_at": "2026-09-22T00:13:55Z",
+  "sdk_version": "2.3.0",
+  "updated_at": "2026-09-23T16:00:20Z",
   "packages": {
     "access_management": {
       "class": "AccessManagement",
@@ -46,7 +46,7 @@
       "modules": {
         "core": "Data model schema — get, list, describe, load, and delete data models; resolve by ID or title; list elasticubes; export/import a full schema definition for cross-environment migration.",
         "connections": "Connection management — get, update, and create data source connections; generate connection payloads for supported providers.",
-        "build": "Schema provisioning — create data models, datasets, and tables; deploy a data model with configurable build behavior.",
+        "build": "Schema provisioning — create data models, datasets, and tables; build an ElastiCube or publish a live data model.",
         "security": "Row-level security — get, update, and bulk-add datasecurity rules that restrict data access per user or group; retrieve raw, unprocessed rules for round-tripping between environments.",
         "shares": "Data model access — get and add share entries (users and groups) with READ, USE, or EDIT permission levels; get/replace raw (partyId-keyed) permissions for cross-environment migration.",
         "data": "Data retrieval — query table contents via SQL; get row counts per table across an entire data model (``get_data``, ``get_row_count``).",
@@ -65,6 +65,16 @@
       "description": "Manage the Sisense folder hierarchy and individual folder records.\n\nCovers folder CRUD (create, update, delete), lookup by name or ID,\nnavigation of the full folder tree, and retrieval of a folder's\nancestor chain. Does not manage dashboard content inside folders —\nuse the Dashboard class for that.",
       "modules": {
         "core": "Folder operations — create, update, and delete folders; look up a folder ID by name; retrieve the flat or tree folder structure; get a folder's ancestor chain."
+      }
+    },
+    "git": {
+      "class": "Git",
+      "description": "Sisense Git Integration: projects, branches, commits, and remote sync.\n\nGit Integration is an **optional** Sisense feature. An admin must enable\nit (Admin > App Configuration > Feature Management) before any endpoint\nin this class returns project data — until then, calls fail with a\nnormal Sisense error response. There is no API endpoint to check\nwhether the feature is enabled; the SDK does not attempt to detect it.\n\nEvery method that takes a ``project`` parameter accepts either the\nGit project's 24-character OID or its name, resolved internally via\n``resolve_git_project_reference``. Linux-only: there is no Windows\nequivalent of this API surface.",
+      "modules": {
+        "core": "Project listing and lookup, reference resolution, status checksum retrieval, manual unlock, asset/file sync, and discarding uncommitted changes.",
+        "branches": "List, retrieve, create, and check out Git branches of a project.",
+        "commits": "List, retrieve, create, and check out Git commits of a project.",
+        "remote": "Remote repository operations — fetch, pull, and push over HTTP(S)."
       }
     },
     "mergetool": {

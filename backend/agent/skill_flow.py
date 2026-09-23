@@ -800,7 +800,7 @@ def render_dialog(items: List[PlanItem], skill: Skill, root: Optional[Scope] = N
 
 _APPROVAL_PLACEHOLDER_RE = re.compile(
     r"\{([a-z_][a-z0-9_]*)\.(args|result|count)((?:\.[A-Za-z_][A-Za-z0-9_]*|\[\*\]|\[\d+\])*)"
-    r"(?:\|(s|count|pairs|unique|head:\d+|items_ran|items_skipped|items_failed|items_on_behalf|items_ran_owners|or:[^}]*))?\}"
+    r"(?:\|(s|count|pairs|join_paths|unique|head:\d+|items_ran|items_skipped|items_failed|items_on_behalf|items_ran_owners|or:[^}]*))?\}"
 )
 
 
@@ -849,6 +849,97 @@ def _item_label(item: Any) -> str:
         owner = item.get("owner_email")
         return f"{name} ({owner})" if owner else str(name)
     return str(item)
+
+
+def _route_label(path: Dict[str, Any]) -> str:
+    """One route, as the tables it crosses. `via` is a LIST: a longer route
+    crosses more than one table, even where every route on a given model
+    happens to cross exactly one."""
+    via = path.get("via") or []
+    return " → ".join(str(v) for v in via) if via else "direct"
+
+
+def _oxford(items: List[str]) -> str:
+    """a, b and c — the last join is a word, not a comma."""
+    if len(items) <= 1:
+        return items[0] if items else ""
+    return ", ".join(items[:-1]) + " and " + items[-1]
+
+
+def _render_join_paths(value: Any) -> str:
+    """The `join_path_choices` line: pairs of tables joinable more than one way.
+
+    Written in code because the template language has no min/max and no
+    predicates, and this needs both — the route-count range, and the split
+    between pairs that change the kept table set and pairs that do not.
+
+    Two things this must not get wrong, both called out by the SDK author:
+    more than one route can be in use at once (different widgets join the same
+    two tables differently), so the in-use routes render as a SET and never as
+    "the winner"; and `changes_tables` is read per entry, never derived from
+    the model-wide summary counters, which cannot be attributed to one pair.
+    """
+    # Accepts the whole analysis result (so the "cost of keeping every route"
+    # sentence can read the summary counters) or just the choices list.
+    summary: Dict[str, Any] = {}
+    if isinstance(value, dict):
+        summary = value.get("summary") or {}
+        entries = value.get("join_path_choices") or []
+    else:
+        entries = value or []
+    rows = [e for e in entries if isinstance(e, dict)]
+    if not rows:
+        return "**none found**"
+
+    counts = sorted({len(e.get("paths") or []) for e in rows})
+    if len(counts) == 1:
+        routes = f"{counts[0]} routes each"
+    elif len(counts) == 2:
+        routes = f"{counts[0]} or {counts[1]} routes each"
+    else:
+        routes = f"{counts[0]} to {counts[-1]} routes each"
+
+    pairs = f"**{len(rows)} pair{'' if len(rows) == 1 else 's'}, {routes}"
+    deciding = [e for e in rows if e.get("changes_tables")]
+
+    if not deciding:
+        # Not "the trim is safe", which explains nothing. Say WHY no route was
+        # picked: every route's tables are required by something anyway, so
+        # narrowing would remove no table and would cost the discarded routes'
+        # join columns. A route is only chosen when choosing saves tables —
+        # that is the `changes_tables: true` branch below.
+        out = pairs + "**. Every route's tables are required anyway, so no route was chosen and all are kept."
+        # Name the most interesting one: the pair genuinely joined several ways.
+        busiest = max(rows, key=lambda e: sum(1 for p in (e.get("paths") or []) if p.get("in_use")))
+        used = [p for p in (busiest.get("paths") or []) if p.get("in_use")]
+        if len(used) > 1:
+            out += (
+                f" Worth knowing: {busiest.get('from')} and {busiest.get('to')} are joined through "
+                f"{len(used)} different fact tables by different widgets on these dashboards"
+            )
+        return out
+
+    out = pairs + ", and here the choice matters**."
+    named = _oxford([f"{e.get('from')} to {e.get('to')}" for e in deciding[:3]])
+    more = f" and {len(deciding) - 3} more" if len(deciding) > 3 else ""
+    out += f" {named}{more} can each go through any of the {len(deciding[0].get('paths') or [])} fact tables."
+    used = []
+    for e in deciding:
+        for p in e.get("paths") or []:
+            if p.get("in_use"):
+                lbl = _route_label(p)
+                if lbl not in used:
+                    used.append(lbl)
+    if used:
+        verb = "is" if len(used) == 1 else "are"
+        out += f" The widgets use {_oxford(used)}, so that {verb} what the perspective keeps."
+    # What the alternative would have cost. Only meaningful when a choice was
+    # actually made, and only available when we were handed the whole result.
+    t_all, c_all = summary.get("tables_required_all_paths"), summary.get("columns_required_all_paths")
+    t_use, c_use = summary.get("tables_required_in_perspective"), summary.get("columns_required_in_perspective")
+    if None not in (t_all, c_all, t_use, c_use) and (t_all, c_all) != (t_use, c_use):
+        out += f" Keeping every route instead would need **{t_all} tables and {c_all} columns**"
+    return out
 
 
 def render_text(
@@ -963,6 +1054,9 @@ def render_text(
             n = int(filt[5:])
             shown = ", ".join(str(v) for v in value[:n])
             return shown + (f" … and {len(value) - n} more" if len(value) > n else "")
+        if filt == "join_paths":
+            # Takes the whole analysis result (dict) or just the choices list.
+            return _render_join_paths(value)
         if filt == "pairs" and isinstance(value, list):
             out = []
             for e in value:

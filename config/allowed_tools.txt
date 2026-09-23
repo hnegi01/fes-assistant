@@ -261,3 +261,22 @@ datamodel.delete_perspective                # [write] Delete a perspective by na
 datamodel.get_perspectives                  # Retrieve perspectives — all of them, those of one data model, or sp...
 # --- new in pysisense 2.2.0 ---
 dashboard.compare_dashboard_values  # Run every widget's query against two datasources and report whether...
+# --- new in pysisense 2.3.0 ---
+# git.checkout_git_branch            # [write] Switch a Git project to a branch and import its assets.
+# git.checkout_git_commit            # [write] Check out a Git commit of a project and import its assets.
+# git.create_git_branch              # [write] Create a new Git branch in a project.
+# git.create_git_commit              # [write] Create a new Git commit in a project.
+# git.discard_git_project_changes    # [write] Discard uncommitted file changes in a Git project's working tree.
+# git.get_git_branch                 # Retrieve a single Git branch of a project.
+# git.get_git_branches               # List all Git branches of a project.
+# git.get_git_commit                 # Retrieve a single Git commit of a project.
+# git.get_git_commits                # List all Git commits of a project.
+# git.get_git_project                # Retrieve a single Git Integration project by ID.
+# git.get_git_project_status         # Retrieve a Git project's current status checksum.
+# git.get_git_projects               # List the Git Integration projects accessible to the current user.
+# git.git_fetch                      # [write] Download commits and tags from a Git project's remote repository.
+# git.git_pull                       # [write] Fetch and merge remote changes into a Git project's current branch.
+# git.git_push                       # [write] Upload commits from a Git project's local branch to its remote repo...
+# git.resolve_git_project_reference  # Resolve a Git project reference (ID or name) to a concrete project...
+# git.sync_git_project               # [write] Synchronize a Git project's files with the current asset state.
+# git.unlock_git_project             # [write] Manually release a stuck Git lock on a project.
