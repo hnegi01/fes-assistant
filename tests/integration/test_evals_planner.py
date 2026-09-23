@@ -246,6 +246,14 @@ EVAL_CASES = [
             },
         ],
         "expect_tools_any": [],
+        # Every missing field can only come from the USER, so the correct turn
+        # executes NOTHING and asks. Measured 2026-09-22: the trigger is the
+        # bullet list of missing values in the prior assistant turn — the
+        # planner read it as a research agenda. Same request with no history,
+        # or with an assistant reply that has no list, was clean 16/16; with
+        # the list it explored 8/8. AGENT_PLAN_SYSTEM_PROMPT now carries the
+        # invariant, and this ceiling is what proves it.
+        "expect_max_steps": 0,
         "forbid_tools": ["get_datasources", "get_elasticubes"],
         # The invariant is "it names what is missing instead of exploring", not a
         # house phrasing. Live 2026-09-21 it said "essential details like type,
@@ -497,6 +505,15 @@ def test_planner_eval(backend_url, tenant_config, eval_identities, case):
     if case.get("expect_min_steps"):
         assert len(tools) >= case["expect_min_steps"], (
             f"expected >= {case['expect_min_steps']} executed steps, got {len(tools)}{ctx}"
+        )
+    # A CEILING, not just a floor. forbid_tools only catches the wandering it
+    # happens to name: this case forbade get_datasources/get_elasticubes and
+    # passed runs that explored via get_all_datamodel and get_connections_all
+    # instead. When the right answer is "ask, don't look anything up", the
+    # honest assertion is on the COUNT.
+    if case.get("expect_max_steps") is not None:
+        assert len(tools) <= case["expect_max_steps"], (
+            f"expected <= {case['expect_max_steps']} executed steps, got {len(tools)}{ctx}"
         )
     if case.get("expect_sequential"):
         spans = _tool_call_spans(str(body.get("trace_id") or ""))
