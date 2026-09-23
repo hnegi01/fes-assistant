@@ -1,0 +1,207 @@
+[
+  {
+    "tool_id": "git.checkout_git_branch",
+    "description": "Switch a Git project to a branch and import its assets.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "branch": {
+          "type": "string",
+          "description": "Name of the branch to check out."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "branch",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Switch the 'analytics_project' Git project to the 'feature_branch' branch, ensuring the status checksum matches the current project state.",
+        "arguments": {
+          "project": "analytics_project",
+          "branch": "feature_branch",
+          "status_checksum": "abc123def456"
+        },
+        "notes": "This call switches the specified Git project to the given branch and imports its assets, ensuring the operation is consistent with the project's current status."
+      },
+      {
+        "user_query": "Can you check out the 'sales_project' Git project to the 'release_candidate' branch?",
+        "arguments": {
+          "project": "sales_project",
+          "branch": "release_candidate",
+          "status_checksum": "789xyz654mno"
+        },
+        "notes": "Use this call to switch the 'sales_project' Git project to the 'release_candidate' branch, ensuring the assets are validated and imported."
+      },
+      {
+        "user_query": "Switch the 'marketing_project' Git project to the 'hotfix_branch' branch and validate its assets.",
+        "arguments": {
+          "project": "marketing_project",
+          "branch": "hotfix_branch",
+          "status_checksum": "checksum123456"
+        },
+        "notes": "This example demonstrates switching the 'marketing_project' Git project to the 'hotfix_branch' branch while validating and importing its assets."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.create_git_branch",
+    "description": "Create a new Git branch in a project.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the new branch."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        },
+        "parent": {
+          "type": "string",
+          "description": "Commit hash or commitish the new branch should start from. Defaults to HEAD when omitted."
+        }
+      },
+      "required": [
+        "project",
+        "name",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Create a new branch named 'feature/add-user-auth' in the 'analytics-backend' project, starting from the latest commit, and ensure the status checksum matches.",
+        "arguments": {
+          "project": "analytics-backend",
+          "name": "feature/add-user-auth",
+          "status_checksum": "abc123def456"
+        },
+        "notes": "This creates a new branch named 'feature/add-user-auth' in the 'analytics-backend' project, starting from the latest commit (HEAD). Use this when you want to start a new feature branch."
+      },
+      {
+        "user_query": "Can you create a branch called 'hotfix/fix-login-bug' in the 'frontend-app' project, starting from commit 'a1b2c3d4', and ensure the checksum matches?",
+        "arguments": {
+          "project": "frontend-app",
+          "name": "hotfix/fix-login-bug",
+          "status_checksum": "789xyz654",
+          "parent": "a1b2c3d4"
+        },
+        "notes": "This creates a branch named 'hotfix/fix-login-bug' in the 'frontend-app' project, starting from the specified commit 'a1b2c3d4'. Use this for hotfixes that need to branch off a specific commit."
+      },
+      {
+        "user_query": "Start a new branch 'release/v2.0' in the 'data-pipeline' project, ensuring the status checksum matches.",
+        "arguments": {
+          "project": "data-pipeline",
+          "name": "release/v2.0",
+          "status_checksum": "checksum123"
+        },
+        "notes": "This creates a branch named 'release/v2.0' in the 'data-pipeline' project, starting from the latest commit (HEAD). Use this for preparing a new release branch."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_branch",
+    "description": "Retrieve a single Git branch of a project.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "branch": {
+          "type": "string",
+          "description": "Branch name."
+        }
+      },
+      "required": [
+        "project",
+        "branch"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve the 'main' branch of the Git project 'analytics-service'.",
+        "arguments": {
+          "project": "analytics-service",
+          "branch": "main"
+        },
+        "notes": "Fetches the 'main' branch of the 'analytics-service' Git project. Use this to inspect the branch details or verify its existence."
+      },
+      {
+        "user_query": "What is the status of the 'feature-xyz' branch in the 'data-pipeline' project?",
+        "arguments": {
+          "project": "data-pipeline",
+          "branch": "feature-xyz"
+        },
+        "notes": "Retrieves the 'feature-xyz' branch of the 'data-pipeline' Git project. Useful for checking the branch's metadata or confirming its presence."
+      },
+      {
+        "user_query": "Get details for the 'release-v1.2' branch in the 'customer-insights' repository.",
+        "arguments": {
+          "project": "customer-insights",
+          "branch": "release-v1.2"
+        },
+        "notes": "Fetches the 'release-v1.2' branch of the 'customer-insights' Git project. Ideal for reviewing branch information before deployment or integration."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_branches",
+    "description": "List all Git branches of a project.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "List all Git branches for the project 'analytics-service'.",
+        "arguments": {
+          "project": "analytics-service"
+        },
+        "notes": "Retrieves metadata for all local and remote-tracking branches in the 'analytics-service' Git project."
+      },
+      {
+        "user_query": "What are the Git branches available in the 'data-warehouse' project?",
+        "arguments": {
+          "project": "data-warehouse"
+        },
+        "notes": "Fetches a list of all branches, including remote-tracking ones, for the 'data-warehouse' Git project."
+      },
+      {
+        "user_query": "Show me the branches for the Git project 'customer-insights'.",
+        "arguments": {
+          "project": "customer-insights"
+        },
+        "notes": "Lists all branches for the 'customer-insights' project, providing details like branch names, parents, and heads."
+      }
+    ]
+  }
+]

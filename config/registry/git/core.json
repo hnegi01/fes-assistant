@@ -1,0 +1,360 @@
+[
+  {
+    "tool_id": "git.discard_git_project_changes",
+    "description": "Discard uncommitted file changes in a Git project's working tree.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File paths whose uncommitted changes should be discarded."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "changes",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Discard all uncommitted changes in the 'sales-analytics' Git project for files in the 'dashboards' folder, ensuring the status checksum matches.",
+        "arguments": {
+          "project": "sales-analytics",
+          "changes": [
+            "dashboards/"
+          ],
+          "status_checksum": "abc123def456"
+        },
+        "notes": "This call discards all uncommitted changes in the 'dashboards' folder of the 'sales-analytics' project, ensuring the operation proceeds only if the status checksum matches the current project state."
+      },
+      {
+        "user_query": "Can you discard changes to 'config.json' and 'settings.yaml' in the 'marketing-insights' Git project?",
+        "arguments": {
+          "project": "marketing-insights",
+          "changes": [
+            "config.json",
+            "settings.yaml"
+          ],
+          "status_checksum": "789xyz654mno"
+        },
+        "notes": "This call discards uncommitted changes to 'config.json' and 'settings.yaml' in the 'marketing-insights' project, ensuring the operation is consistent with the provided status checksum."
+      },
+      {
+        "user_query": "Discard uncommitted changes in the 'data-models' project for the files 'schema.sql' and 'mappings.json'.",
+        "arguments": {
+          "project": "data-models",
+          "changes": [
+            "schema.sql",
+            "mappings.json"
+          ],
+          "status_checksum": "checksum123456"
+        },
+        "notes": "This call removes uncommitted changes to 'schema.sql' and 'mappings.json' in the 'data-models' project, ensuring the operation only proceeds if the provided checksum matches the current project state."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_project",
+    "description": "Retrieve a single Git Integration project by ID.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "description": "OID of the Git project."
+        },
+        "branch_mappings": {
+          "type": "boolean",
+          "description": "Include an array of all local branches and their remote-tracking branches."
+        },
+        "commits": {
+          "type": "boolean",
+          "description": "Include an array of all commits in the project's local Git repository."
+        },
+        "current_branch_name": {
+          "type": "boolean",
+          "description": "Include the name of the currently checked-out branch."
+        },
+        "owner_id": {
+          "type": "boolean",
+          "description": "Include the ID of the user who created the project."
+        },
+        "tag_names": {
+          "type": "boolean",
+          "description": "Include an array of all local Git tag names."
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve the Git project with ID 'abc123' and include its commits.",
+        "arguments": {
+          "project_id": "abc123",
+          "commits": true
+        },
+        "notes": "Fetches the Git project with the specified ID and includes an array of all commits in the project's local Git repository."
+      },
+      {
+        "user_query": "What is the current branch name for the Git project with ID 'xyz789'?",
+        "arguments": {
+          "project_id": "xyz789",
+          "current_branch_name": true
+        },
+        "notes": "Retrieves the Git project with the specified ID and includes the name of the currently checked-out branch."
+      },
+      {
+        "user_query": "Get details of the Git project 'proj456', including its owner ID and local tag names.",
+        "arguments": {
+          "project_id": "proj456",
+          "owner_id": true,
+          "tag_names": true
+        },
+        "notes": "Fetches the Git project with the specified ID and includes the ID of the user who created the project and an array of all local Git tag names."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_project_status",
+    "description": "Retrieve a Git project's current status checksum.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Retrieve the current status checksum for the Git project 'dashboard-reports'.",
+        "arguments": {
+          "project": "dashboard-reports"
+        },
+        "notes": "Fetches the status checksum for the 'dashboard-reports' Git project. This checksum is required for any subsequent operations that modify the project's Git repository."
+      },
+      {
+        "user_query": "What is the current status checksum of the Git project with ID '12345abcde'?",
+        "arguments": {
+          "project": "12345abcde"
+        },
+        "notes": "Retrieves the status checksum for the Git project identified by the OID '12345abcde'. This is useful for ensuring the project state is up-to-date before performing Git operations."
+      },
+      {
+        "user_query": "Get the status checksum for the Git project named 'analytics-engine'.",
+        "arguments": {
+          "project": "analytics-engine"
+        },
+        "notes": "Obtains the current status checksum for the 'analytics-engine' Git project. This checksum reflects the project's working directory changes, branch, and HEAD commit."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.get_git_projects",
+    "description": "List the Git Integration projects accessible to the current user.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "current_branch_name": {
+          "type": "boolean",
+          "description": "Include each project's currently checked-out branch name."
+        },
+        "favorites_only": {
+          "type": "boolean",
+          "description": "Return only projects the current user has favorited."
+        },
+        "last_commit_message": {
+          "type": "boolean",
+          "description": "Include the subject/body of each project's last commit."
+        },
+        "last_commit_date": {
+          "type": "boolean",
+          "description": "Include the timestamp of each project's last commit."
+        },
+        "owner_id": {
+          "type": "boolean",
+          "description": "Include the ID of the user who created each project."
+        },
+        "detached_head_hash": {
+          "type": "boolean",
+          "description": "Include the current commit hash for projects in a detached HEAD state."
+        }
+      },
+      "required": []
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "List all Git projects and include their last commit messages.",
+        "arguments": {
+          "last_commit_message": true
+        },
+        "notes": "This call retrieves all Git projects accessible to the current user and includes the subject and body of the last commit for each project."
+      },
+      {
+        "user_query": "Which Git projects have I favorited?",
+        "arguments": {
+          "favorites_only": true
+        },
+        "notes": "This call returns only the Git projects that the current user has marked as favorites."
+      },
+      {
+        "user_query": "Show all Git projects, including their current branch names and the IDs of their owners.",
+        "arguments": {
+          "current_branch_name": true,
+          "owner_id": true
+        },
+        "notes": "This call retrieves all Git projects accessible to the current user, including the currently checked-out branch name and the ID of the user who created each project."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.resolve_git_project_reference",
+    "description": "Resolve a Git project reference (ID or name) to a concrete project ID and name.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project_ref": {
+          "type": "string",
+          "description": "Git project reference to resolve — an OID or a name."
+        }
+      },
+      "required": [
+        "project_ref"
+      ]
+    },
+    "mutates": false,
+    "examples": [
+      {
+        "user_query": "Resolve the Git project reference 'dashboard-service' to its concrete project ID and name.",
+        "arguments": {
+          "project_ref": "dashboard-service"
+        },
+        "notes": "This resolves the Git project reference 'dashboard-service', which is likely the name of a project, to its concrete project ID and name. Use this when you need to identify a project by its name."
+      },
+      {
+        "user_query": "What is the project ID and name for the Git project with the reference '5f2b3c4d5e6f7g8h9i0j1k2l'?",
+        "arguments": {
+          "project_ref": "5f2b3c4d5e6f7g8h9i0j1k2l"
+        },
+        "notes": "This resolves the Git project reference '5f2b3c4d5e6f7g8h9i0j1k2l', which appears to be an OID, to its concrete project ID and name. Use this when you have an OID and need to confirm the associated project details."
+      },
+      {
+        "user_query": "Find the project details for the Git reference 'analytics-core'.",
+        "arguments": {
+          "project_ref": "analytics-core"
+        },
+        "notes": "This resolves the Git project reference 'analytics-core', which is likely a project name, to its concrete project ID and name. Use this when you need to map a project name to its unique ID."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.sync_git_project",
+    "description": "Synchronize a Git project's files with the current asset state.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        },
+        "status_checksum": {
+          "type": "string",
+          "description": "Checksum from ``GET /api/v2/projects/{project_id}/status``, sent as the ``x-git-status-checksum`` header; the request fails if it does not match the project's current status."
+        }
+      },
+      "required": [
+        "project",
+        "status_checksum"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Synchronize the Git project 'dashboard-reports' using the latest status checksum.",
+        "arguments": {
+          "project": "dashboard-reports",
+          "status_checksum": "abc123def456"
+        },
+        "notes": "This call synchronizes the 'dashboard-reports' Git project, ensuring its files match the current state of Sisense assets. The provided status checksum ensures the operation is performed on the correct project state."
+      },
+      {
+        "user_query": "How can I sync the Git project 'sales-analytics' with its current asset state?",
+        "arguments": {
+          "project": "sales-analytics",
+          "status_checksum": "789xyz654uvw"
+        },
+        "notes": "This example demonstrates syncing the 'sales-analytics' Git project. The status checksum ensures the operation is only performed if the project state matches the expected value."
+      },
+      {
+        "user_query": "Sync the Git project 'marketing-metrics' to align its files with the latest Sisense assets.",
+        "arguments": {
+          "project": "marketing-metrics",
+          "status_checksum": "112233aabbcc"
+        },
+        "notes": "This call aligns the 'marketing-metrics' Git project files with the current Sisense asset state. The status checksum prevents syncing if the project state has changed unexpectedly."
+      }
+    ]
+  },
+  {
+    "tool_id": "git.unlock_git_project",
+    "description": "Manually release a stuck Git lock on a project.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Git project reference — an OID or a name."
+        }
+      },
+      "required": [
+        "project"
+      ]
+    },
+    "mutates": true,
+    "examples": [
+      {
+        "user_query": "Manually unlock the Git project 'dashboard-reports' to release a stuck lock.",
+        "arguments": {
+          "project": "dashboard-reports"
+        },
+        "notes": "Releases a stuck Git lock on the 'dashboard-reports' project. Use this if a previous operation left the project locked."
+      },
+      {
+        "user_query": "How can I unlock the Git project with ID '12345abcde'?",
+        "arguments": {
+          "project": "12345abcde"
+        },
+        "notes": "Releases a stuck Git lock on the project identified by the OID '12345abcde'. Useful for resolving issues caused by interrupted operations."
+      },
+      {
+        "user_query": "Unlock the Git project 'analytics-core' to clear a lock left by a failed request.",
+        "arguments": {
+          "project": "analytics-core"
+        },
+        "notes": "Clears a stuck Git lock on the 'analytics-core' project. This is typically needed after a failed or interrupted request."
+      }
+    ]
+  }
+]
