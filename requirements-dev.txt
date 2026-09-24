@@ -180,7 +180,7 @@ numpy==2.3.5
     #   pandas
     #   pydeck
     #   streamlit
-openai==2.50.0
+openai==3.16.2
     # via litellm
 orjson==3.11.9
     # via
