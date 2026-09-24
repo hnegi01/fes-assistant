@@ -164,6 +164,15 @@ under the section named.
   - it is about a tool existing at all → the allowlist. Don't overload it.
   - SDK truths (enums, preconditions) should migrate **upstream** over time so a
     rebuild derives them.
+- **An SDK bump is a ritual, not a pin change.** Changing `pysisense==` touches
+  the registry, the allowlist, the skills' templates and a release. Sequence and
+  traps: `docs/development.md`. The three that bite: `uv sync` can **silently**
+  leave the lock on the old version and the images build from the **lock**; a
+  changed response shape can need work in `skills/*/SKILL.md` and the filters in
+  `skill_flow.py`, not just `config/`; and green tests are not the end — the
+  registry ships **inside the images**, so a bump reaches production only through
+  an app release. Read the SDK's changelog FIRST: the diff that matters is the
+  changed behaviour of tools already exposed, which no rebuild will surface.
 - **`example[0]` is dual-purpose and curated to a double bar:** an imperative
   command (users see it as "you could ask…"), and every value its arguments set
   is spoken in its query — it teaches *extraction*, never *invention*.
