@@ -9,13 +9,13 @@ aiohttp==3.14.3
     # via litellm
 aiosignal==1.4.0
     # via aiohttp
-altair==6.2.2
+altair==6.3.0
     # via streamlit
 annotated-doc==0.0.5
     # via fastapi
 annotated-types==0.8.0
     # via pydantic
-anyio==4.11.0
+anyio==4.15.1
     # via
     #   fes-assistant
     #   httpx
@@ -32,9 +32,9 @@ attrs==26.1.0
     #   referencing
 blinker==1.9.0
     # via streamlit
-boto3==1.43.59
+boto3==1.43.98
     # via fes-assistant
-botocore==1.43.59
+botocore==1.43.98
     # via
     #   boto3
     #   s3transfer
@@ -43,11 +43,11 @@ certifi==2026.7.22
     #   httpcore
     #   httpx
     #   requests
-cffi==2.1.0 ; platform_python_implementation != 'PyPy'
+cffi==2.1.1 ; platform_python_implementation != 'PyPy'
     # via cryptography
-charset-normalizer==3.4.9
+charset-normalizer==3.5.1
     # via requests
-click==8.4.2
+click==8.5.0
     # via
     #   huggingface-hub
     #   litellm
@@ -66,7 +66,7 @@ distro==1.9.0
     #   openai
 editorconfig==0.17.1
     # via jsbeautifier
-fastapi==0.123.10
+fastapi==0.141.1
     # via fes-assistant
 fastuuid==0.14.0
     # via litellm
@@ -76,13 +76,13 @@ frozenlist==1.8.0
     # via
     #   aiohttp
     #   aiosignal
-fsspec==2026.7.0
+fsspec==2026.9.0
     # via huggingface-hub
 h11==0.16.0
     # via
     #   httpcore
     #   uvicorn
-hf-xet==1.5.2 ; platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
+hf-xet==1.6.0 ; platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
     # via huggingface-hub
 httpcore==1.0.9
     # via httpx
@@ -99,9 +99,9 @@ httpx==0.28.1
     #   openai
 httpx-sse==0.4.3
     # via mcp
-huggingface-hub==1.25.1
+huggingface-hub==1.32.0
     # via tokenizers
-idna==3.18
+idna==3.20
     # via
     #   anyio
     #   httpx
@@ -118,7 +118,7 @@ jinja2==3.1.6
     #   altair
     #   litellm
     #   pydeck
-jiter==0.16.0
+jiter==0.17.0
     # via openai
 jmespath==1.1.0
     # via
@@ -138,43 +138,43 @@ jsonschema==4.26.0
     #   mcp
 jsonschema-specifications==2025.9.1
     # via jsonschema
-langchain-core==1.5.2
+langchain-core==1.6.4
     # via
     #   langgraph
     #   langgraph-checkpoint
     #   langgraph-prebuilt
     #   langgraph-sdk
-langchain-protocol==0.0.18
+langchain-protocol==0.0.19
     # via
     #   langchain-core
     #   langgraph-sdk
-langgraph==1.2.10
+langgraph==1.2.12
     # via fes-assistant
-langgraph-checkpoint==4.1.1
+langgraph-checkpoint==4.2.0
     # via
     #   langgraph
     #   langgraph-prebuilt
 langgraph-prebuilt==1.1.0
     # via langgraph
-langgraph-sdk==0.4.2
+langgraph-sdk==0.4.5
     # via langgraph
-langsmith==0.10.12
+langsmith==0.13.0
     # via
     #   fes-assistant
     #   langchain-core
-litellm==1.89.6
+litellm==1.102.0
     # via fes-assistant
 markupsafe==3.0.3
     # via jinja2
 mcp==1.24.0
     # via fes-assistant
-multidict==6.7.1
+multidict==6.9.1
     # via
     #   aiohttp
     #   yarl
-narwhals==2.24.0
+narwhals==2.26.0
     # via altair
-numpy==2.3.5
+numpy==2.4.6
     # via
     #   fes-assistant
     #   pandas
@@ -182,13 +182,13 @@ numpy==2.3.5
     #   streamlit
 openai==2.50.0
     # via litellm
-orjson==3.11.9
+orjson==3.12.0
     # via
     #   langgraph-sdk
     #   langsmith
 ormsgpack==1.12.2
     # via langgraph-checkpoint
-packaging==26.2
+packaging==26.3
     # via
     #   altair
     #   huggingface-hub
@@ -205,11 +205,11 @@ pillow==12.3.0
     # via streamlit
 pluggy==1.6.0
     # via pytest
-propcache==0.5.2
+propcache==0.5.4
     # via
     #   aiohttp
     #   yarl
-protobuf==7.35.1
+protobuf==7.36.2
     # via streamlit
 pyarrow==24.0.0
     # via
@@ -229,17 +229,17 @@ pydantic==2.13.5
     #   openai
     #   pydantic-settings
     #   pysisense
-pydantic-core==2.46.5
+pydantic-core==2.49.0
     # via pydantic
-pydantic-settings==2.12.0
+pydantic-settings==2.15.0
     # via
     #   fes-assistant
     #   mcp
 pydeck==0.9.3
     # via streamlit
-pygments==2.20.0
+pygments==2.21.0
     # via pytest
-pyjwt==2.13.0
+pyjwt==2.14.0
     # via
     #   fes-assistant
     #   mcp
@@ -250,12 +250,12 @@ python-dateutil==2.9.0.post0
     # via
     #   botocore
     #   pandas
-python-dotenv==1.2.2
+python-dotenv==1.2.3
     # via
     #   fes-assistant
     #   litellm
     #   pydantic-settings
-python-multipart==0.0.20
+python-multipart==0.0.32
     # via
     #   fes-assistant
     #   mcp
@@ -274,7 +274,7 @@ referencing==0.37.0
     # via
     #   jsonschema
     #   jsonschema-specifications
-regex==2026.7.19
+regex==2026.9.10
     # via tiktoken
 requests==2.34.2
     # via
@@ -290,7 +290,7 @@ rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-ruff==0.16.0
+ruff==0.16.8
 s3transfer==0.19.2
     # via boto3
 six==1.17.0
@@ -300,7 +300,7 @@ sniffio==1.3.1
     #   anyio
     #   langsmith
     #   openai
-sse-starlette==3.4.6
+sse-starlette==3.4.11
     # via
     #   fes-assistant
     #   mcp
@@ -310,17 +310,17 @@ starlette==0.50.0
     #   mcp
     #   sse-starlette
     #   streamlit
-streamlit==1.62.0
+streamlit==1.64.0
     # via fes-assistant
 tenacity==9.1.4
     # via langchain-core
-tiktoken==0.13.0
+tiktoken==0.14.0
     # via litellm
-tokenizers==0.23.1
+tokenizers==0.23.2
     # via litellm
 toml==0.10.2
     # via streamlit
-tqdm==4.70.0
+tqdm==4.70.1
     # via
     #   huggingface-hub
     #   openai
@@ -344,14 +344,14 @@ typing-extensions==4.16.0
     #   starlette
     #   streamlit
     #   typing-inspection
-typing-inspection==0.4.2
+typing-inspection==0.4.4
     # via
     #   mcp
     #   pydantic
     #   pydantic-settings
-tzdata==2026.3
+tzdata==2026.4
     # via pandas
-urllib3==2.7.0
+urllib3==2.8.0
     # via
     #   botocore
     #   requests
@@ -359,7 +359,7 @@ uuid-utils==0.17.0
     # via
     #   langchain-core
     #   langsmith
-uvicorn==0.38.0
+uvicorn==0.53.0
     # via
     #   fes-assistant
     #   mcp
@@ -375,7 +375,7 @@ xxhash==3.8.1
     # via
     #   langgraph
     #   langsmith
-yarl==1.24.5
+yarl==1.25.1
     # via aiohttp
 zipp==4.1.0
     # via importlib-metadata
