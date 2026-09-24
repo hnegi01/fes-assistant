@@ -35,7 +35,7 @@ dependencies = [
     "pyarrow==24.0.0",
     "numpy>=2.3,<2.4",
     "PyYAML>=6.0,<7",
-    "anyio==4.11.0",
+    "anyio==4.14.2",
     "boto3>=1.35.0",
     "langgraph>=1.0,<2",
 ]
