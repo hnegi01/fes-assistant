@@ -210,10 +210,39 @@ At runtime, only the JSON files in `config/` are needed.
 ### Bumping the PySisense pin — the ritual
 
 ```
-bump pin → uv sync → scripts/01 → scripts/02 → scripts/04 --apply
-   → review the staged tools in config/allowed_tools.txt
-   → pytest tests/unit (both engines) → eval batteries
+read the SDK changelog → bump pin → uv sync → scripts/01 → scripts/02
+   → scripts/04 --apply → review the staged tools in config/allowed_tools.txt
+   → pytest tests/unit (both engines) → integration + eval batteries
+   → release the app (new FES version) → deploy
 ```
+
+**Start with the changelog, not the pin.** The diff that matters is rarely the
+new tools; it is the changed behaviour of tools already exposed. pysisense
+2.3.0 fixed the scoping of a dashboard whose two copies name different
+datasources — the bug that made `analyze_perspective_requirements` report four
+dashboards with **zero** columns and raise no warning, which reads as "these
+dashboards use nothing" rather than "I could not resolve their datasource".
+Two exposed tools changed behaviour with no signature change, and nothing in
+the rebuild would have told you.
+
+**A changed RESPONSE SHAPE can need work in the skills, not just the
+registry.** 2.3.0 started populating `join_path_choices`, which the skill's
+`## Ask` had always rendered as "none found". Surfacing it took a new
+`|join_paths` filter and a rewritten line. Read the changelog's "Changed"
+section against `skills/*/SKILL.md` and the filters in
+`skill_flow.py::render_text`, not only against the registry.
+
+**When the guard test fails, that is the mechanism working.**
+`TestSummaryOverrides` compares each `_SUMMARY_OVERRIDES` entry against the
+INSTALLED docstring. A failure after a bump means the SDK changed that line —
+usually because it adopted the replacement upstream. Delete the entry and
+regenerate; do not re-record it to make the test pass. Both entries died this
+way in 2.3.0.
+
+**The ritual does not end at green tests.** The registry ships inside the
+images, so a bump reaches production only through an app release. Bump the FES
+version, merge to main, let CD publish, then deploy. Leaving it at "tests pass"
+means local and production run different SDKs.
 
 **Verify the bump in all five places before believing it:** `pyproject.toml`,
 `uv.lock`, `requirements.txt`, `requirements-dev.txt`, and the venv.
