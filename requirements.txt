@@ -172,7 +172,7 @@ litellm==1.89.6
     # via fes-assistant
 markupsafe==3.0.3
     # via jinja2
-mcp==1.24.0
+mcp==1.28.1
     # via fes-assistant
 multidict==6.7.1
     # via

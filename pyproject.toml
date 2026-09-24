@@ -18,7 +18,7 @@ dependencies = [
     # scripted the capture. See PR #20.)
     "streamlit>=1.60,<1.63",
     "pysisense==2.3.1",
-    "mcp>=1.24,<1.25",
+    "mcp>=1.24,<1.29",
     "python-dotenv>=1.0,<2",
     "PyJWT>=2.10,<3",
     "python-multipart>=0.0.20,<0.0.21",
