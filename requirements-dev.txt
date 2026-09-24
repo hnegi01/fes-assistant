@@ -255,7 +255,7 @@ python-dotenv==1.2.2
     #   fes-assistant
     #   litellm
     #   pydantic-settings
-python-multipart==0.0.20
+python-multipart==0.0.31
     # via
     #   fes-assistant
     #   mcp
