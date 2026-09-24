@@ -23,7 +23,7 @@ dependencies = [
     "PyJWT>=2.10,<3",
     "python-multipart>=0.0.20,<0.0.21",
     "pydantic>=2.13.4,<2.14",
-    "pydantic-settings>=2.12,<2.13",
+    "pydantic-settings>=2.12,<2.15",
     "sse-starlette>=3.0,<4",
     "pandas>=2.3,<2.4",
     # pyarrow is a streamlit transitive dep; pinned explicitly because 25.0.0

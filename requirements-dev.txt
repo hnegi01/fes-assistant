@@ -231,7 +231,7 @@ pydantic==2.13.5
     #   pysisense
 pydantic-core==2.46.5
     # via pydantic
-pydantic-settings==2.12.0
+pydantic-settings==2.14.2
     # via
     #   fes-assistant
     #   mcp
